@@ -55,8 +55,10 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.LombokNode;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.javac.Javac;
+import lombok.javac.JavacAST;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -80,8 +82,7 @@ public class HandleConstructor {
 			if (level == AccessLevel.NONE) return;
 			String staticName = ann.staticName();
 			boolean force = ann.force();
-			List<JavacNode> fields = force ? findFinalFields(typeNode) : List.<JavacNode>nil();
-			handleConstructor.generateConstructor(typeNode, level, onConstructor, fields, force, staticName, SkipIfConstructorExists.NO, annotationNode);
+			handleConstructor.generateConstructor(typeNode, level, onConstructor, List.<JavacNode>nil(), force, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -128,7 +129,7 @@ public class HandleConstructor {
 			//Skip static fields.
 			if ((fieldFlags & Flags.STATIC) != 0) continue;
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-			boolean isNonNull = nullMarked && !findAnnotations(child, NON_NULL_PATTERN).isEmpty();
+			boolean isNonNull = nullMarked && hasNonNullAnnotations(child);
 			if ((isFinal || isNonNull) && fieldDecl.init == null) fields.append(child);
 		}
 		return fields.toList();
@@ -201,9 +202,8 @@ public class HandleConstructor {
 		
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
 		if (v == null || !v) return;
-
-		List<JavacNode> fields = findFinalFields(typeNode);
-		generate(typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), fields, true, null, SkipIfConstructorExists.NO, source, true);
+		
+		generate(typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), List.<JavacNode>nil(), true, null, SkipIfConstructorExists.NO, source, true);
 	}
 	
 	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
@@ -221,8 +221,8 @@ public class HandleConstructor {
 	private void generate(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source, boolean noArgs) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
-		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
+
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
 					boolean skipGeneration = annotationTypeMatches(NoArgsConstructor.class, child) ||
@@ -232,7 +232,6 @@ public class HandleConstructor {
 					if (!skipGeneration && skipIfConstructorExists == SkipIfConstructorExists.YES) {
 						skipGeneration = annotationTypeMatches(Builder.class, child);
 					}
-					
 					if (skipGeneration) {
 						if (staticConstrRequired) {
 							// @Data has asked us to generate a constructor, but we're going to skip this instruction, as an explicit 'make a constructor' annotation
@@ -248,8 +247,7 @@ public class HandleConstructor {
 		}
 		
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
-		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
+
 		ListBuffer<Type> argTypes = new ListBuffer<Type>();
 		for (JavacNode fieldNode : fields) {
 			Type mirror = getMirrorForFieldType(fieldNode);
@@ -260,7 +258,15 @@ public class HandleConstructor {
 			argTypes.append(mirror);
 		}
 		List<Type> argTypes_ = argTypes == null ? null : argTypes.toList();
-		injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+
+		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
+			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
+			injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+		}
+		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source, argTypes_);
+	}
+	
+	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, LombokNode<JavacAST, JavacNode, JCTree> source, List<Type> argTypes_) {
 		if (staticConstrRequired) {
 			ClassSymbol sym = ((JCClassDecl) typeNode.get()).sym;
 			Type returnType = sym == null ? null : sym.type;
@@ -304,7 +310,7 @@ public class HandleConstructor {
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
-	@SuppressWarnings("deprecation") public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, boolean allToDefault, JavacNode source) {
+	@SuppressWarnings("deprecation") public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fieldsToParam, boolean forceDefaults, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
@@ -312,7 +318,10 @@ public class HandleConstructor {
 		
 		boolean addConstructorProperties;
 		
-		if (fields.isEmpty()) {
+		List<JavacNode> fieldsToDefault = fieldsNeedingBuilderDefaults(typeNode, fieldsToParam);
+		List<JavacNode> fieldsToExplicit = forceDefaults ? fieldsNeedingExplicitDefaults(typeNode, fieldsToParam) : List.<JavacNode>nil();
+		
+		if (fieldsToParam.isEmpty()) {
 			addConstructorProperties = false;
 		} else {
 			Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES);
@@ -324,35 +333,86 @@ public class HandleConstructor {
 		ListBuffer<JCStatement> assigns = new ListBuffer<JCStatement>();
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		
-		for (JavacNode fieldNode : fields) {
+		for (JavacNode fieldNode : fieldsToParam) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
 			Name rawName = field.name;
-			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
-			if (!allToDefault) {
-				List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
-				long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-				JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
-				params.append(param);
-				if (!nonNulls.isEmpty()) {
-					JCStatement nullCheck = generateNullCheck(maker, fieldNode, param, source);
-					if (nullCheck != null) nullChecks.append(nullCheck);
-				}
+			List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(fieldNode);
+			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, field.vartype, null);
+			params.append(param);
+			if (hasNonNullAnnotations(fieldNode)) {
+				JCStatement nullCheck = generateNullCheck(maker, fieldNode, param, source);
+				if (nullCheck != null) nullChecks.append(nullCheck);
 			}
 			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);
-			JCExpression assign = maker.Assign(thisX, allToDefault ? getDefaultExpr(maker, field.vartype) : maker.Ident(fieldName));
+			JCExpression assign = maker.Assign(thisX, maker.Ident(fieldName));
+			assigns.append(maker.Exec(assign));
+		}
+		
+		for (JavacNode fieldNode : fieldsToExplicit) {
+			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
+			Name rawName = field.name;
+			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);
+			JCExpression assign = maker.Assign(thisX, getDefaultExpr(maker, field.vartype));
+			assigns.append(maker.Exec(assign));
+		}
+		
+		for (JavacNode fieldNode : fieldsToDefault) {
+			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
+			Name rawName = field.name;
+			Name fieldName = removePrefixFromField(fieldNode);
+			Name nameOfDefaultProvider = typeNode.toName("$default$" + fieldName);
+			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);
+			JCExpression assign = maker.Assign(thisX, maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(((JCClassDecl) typeNode.get()).name), nameOfDefaultProvider), List.<JCExpression>nil()));
 			assigns.append(maker.Exec(assign));
 		}
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
-		if (!allToDefault && addConstructorProperties && !isLocalType(typeNode) && LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
-			addConstructorProperties(mods, typeNode, fields);
+		if (addConstructorProperties && !isLocalType(typeNode) && LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
+			addConstructorProperties(mods, typeNode, fieldsToParam);
 		}
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
 			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
+	}
+	
+	/**
+	 * For each field which is not final and has no initializer that gets 'removed' by {@code @Builder.Default} there is no need to
+	 * write an explicit 'this.x = foo' in the constructor, so strip them away here.
+	 */
+	private static List<JavacNode> fieldsNeedingBuilderDefaults(JavacNode typeNode, List<JavacNode> fieldsToParam) {
+		ListBuffer<JavacNode> out = new ListBuffer<JavacNode>();
+		top:
+		for (JavacNode node : typeNode.down()) {
+			if (node.getKind() != Kind.FIELD) continue top;
+			JCVariableDecl varDecl = (JCVariableDecl) node.get();
+			if ((varDecl.mods.flags & Flags.STATIC) != 0) continue top;
+			for (JavacNode ftp : fieldsToParam) if (node == ftp) continue top;
+			if (JavacHandlerUtil.hasAnnotation(Builder.Default.class, node)) out.append(node);
+		}
+		return out.toList();
+	}
+	
+	/**
+	 * Return each field which is final and has no initializer, and which is not already a parameter.
+	 */
+	private static List<JavacNode> fieldsNeedingExplicitDefaults(JavacNode typeNode, List<JavacNode> fieldsToParam) {
+		ListBuffer<JavacNode> out = new ListBuffer<JavacNode>();
+		top:
+		for (JavacNode node : typeNode.down()) {
+			if (node.getKind() != Kind.FIELD) continue top;
+			JCVariableDecl varDecl = (JCVariableDecl) node.get();
+			if (varDecl.init != null) continue top;
+			if ((varDecl.mods.flags & Flags.FINAL) == 0) continue top;
+			if ((varDecl.mods.flags & Flags.STATIC) != 0) continue top;
+			for (JavacNode ftp : fieldsToParam) if (node == ftp) continue top;
+			if (JavacHandlerUtil.hasAnnotation(Builder.Default.class, node)) continue top;
+			out.append(node);
+		}
+		return out.toList();
 	}
 	
 	private static JCExpression getDefaultExpr(JavacTreeMaker maker, JCExpression type) {
@@ -418,10 +478,9 @@ public class HandleConstructor {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
 			JCExpression pType = cloneType(maker, field.vartype, source, typeNode.getContext());
-			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
-			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(fieldNode);
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, pType, null);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, pType, null);
 			params.append(param);
 			args.append(maker.Ident(fieldName));
 		}

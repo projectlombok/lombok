@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2017 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,9 +97,7 @@ class Javac9BaseFileObjectWrapper extends com.sun.tools.javac.file.PathFileObjec
 	}
 	
 	@Override public boolean equals(Object obj) {
-		if (!(obj instanceof Javac9BaseFileObjectWrapper)) {
-			return false;
-		}
+		if (!(obj instanceof Javac9BaseFileObjectWrapper)) return false;
 		return delegate.equals(((Javac9BaseFileObjectWrapper)obj).delegate);
 	}
 	

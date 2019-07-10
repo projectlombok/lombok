@@ -1,10 +1,10 @@
 FROM ubuntu:16.04 as downloader
 
-ARG jdk=10
+ARG jdk=11
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
-ARG gradle=4.7
+ARG gradle=5.1.1
 ADD provision/gradle/gradle-${gradle}.sh provision/gradle/gradle-${gradle}.sh
 RUN provision/gradle/gradle-${gradle}.sh
 
@@ -22,7 +22,7 @@ ADD gradle/files/ ./
 ARG lombokjar=lombok.jar
 ADD https://projectlombok.org/downloads/${lombokjar} lombok.jar
 
-ARG jdk=10
+ARG jdk=11
 ENV JDK_VERSION=${jdk}
 ENV JAVA_HOME=/opt/jdk
 ENV GRADLE_HOME=/opt/gradle/gradle

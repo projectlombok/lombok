@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2017 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,6 +64,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.FloatLiteral;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LongLiteral;
+import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
@@ -96,10 +97,9 @@ public class HandleConstructor {
 			
 			boolean force = ann.force();
 			
-			List<EclipseNode> fields = force ? findFinalFields(typeNode) : Collections.<EclipseNode>emptyList();
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor", annotationNode);
 			
-			handleConstructor.generateConstructor(typeNode, level, fields, force, staticName, SkipIfConstructorExists.NO, onConstructor, annotationNode);
+			handleConstructor.generateConstructor(typeNode, level, Collections.<EclipseNode>emptyList(), force, staticName, SkipIfConstructorExists.NO, onConstructor, annotationNode);
 		}
 	}
 	
@@ -132,10 +132,6 @@ public class HandleConstructor {
 		return findFields(typeNode, true);
 	}
 	
-	private static List<EclipseNode> findFinalFields(EclipseNode typeNode) {
-		return findFields(typeNode, false);
-	}
-	
 	private static List<EclipseNode> findFields(EclipseNode typeNode, boolean nullMarked) {
 		List<EclipseNode> fields = new ArrayList<EclipseNode>();
 		for (EclipseNode child : typeNode.down()) {
@@ -143,7 +139,7 @@ public class HandleConstructor {
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 			if (!filterField(fieldDecl)) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			boolean isNonNull = nullMarked && findAnnotations(fieldDecl, NON_NULL_PATTERN).length != 0;
+			boolean isNonNull = nullMarked && hasNonNullAnnotations(child);
 			if ((isFinal || isNonNull) && fieldDecl.initialization == null) fields.add(child);
 		}
 		return fields;
@@ -215,9 +211,8 @@ public class HandleConstructor {
 		
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
 		if (v == null || !v) return;
-
-		List<EclipseNode> fields = findFinalFields(typeNode);
-		generate(typeNode, AccessLevel.PRIVATE, fields, true, null, SkipIfConstructorExists.NO, Collections.<Annotation>emptyList(), sourceNode, true);
+		
+		generate(typeNode, AccessLevel.PRIVATE, Collections.<EclipseNode>emptyList(), true, null, SkipIfConstructorExists.NO, Collections.<Annotation>emptyList(), sourceNode, true);
 	}
 	
 	public void generateRequiredArgsConstructor(
@@ -235,20 +230,19 @@ public class HandleConstructor {
 	}
 	
 	public void generateConstructor(
-		EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists,
+		EclipseNode typeNode, AccessLevel level, List<EclipseNode> fieldsToParam, boolean forceDefaults, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 		List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
-		generate(typeNode, level, fields, allToDefault, staticName, skipIfConstructorExists, onConstructor, sourceNode, false);
+		generate(typeNode, level, fieldsToParam, forceDefaults, staticName, skipIfConstructorExists, onConstructor, sourceNode, false);
 	}
 	
 	public void generate(
-			EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists,
+			EclipseNode typeNode, AccessLevel level, List<EclipseNode> fieldsToParam, boolean forceDefaults, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 			List<Annotation> onConstructor, EclipseNode sourceNode, boolean noArgs) {
 			
 		ASTNode source = sourceNode.get();
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
-		
-		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
+
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
@@ -278,12 +272,18 @@ public class HandleConstructor {
 		
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
 		
-		ConstructorDeclaration constr = createConstructor(
-			staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, allToDefault,
-			sourceNode, onConstructor);
-		injectMethod(typeNode, constr);
+		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
+			ConstructorDeclaration constr = createConstructor(
+				staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fieldsToParam, forceDefaults,
+				sourceNode, onConstructor);
+			injectMethod(typeNode, constr);
+		}
+		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, fieldsToParam, source);
+	}
+	
+	private void generateStaticConstructor(boolean staticConstrRequired, EclipseNode typeNode, String staticName, AccessLevel level, Collection<EclipseNode> fields, ASTNode source) {
 		if (staticConstrRequired) {
-			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, allToDefault ? Collections.<EclipseNode>emptyList() : fields, source);
+			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
 			injectMethod(typeNode, staticConstr);
 		}
 	}
@@ -342,8 +342,16 @@ public class HandleConstructor {
 		return new Annotation[] { ann };
 	}
 	
+	private static final char[] DEFAULT_PREFIX = {'$', 'd', 'e', 'f', 'a', 'u', 'l', 't', '$'};
+	private static final char[] prefixWith(char[] prefix, char[] name) {
+		char[] out = new char[prefix.length + name.length];
+		System.arraycopy(prefix, 0, out, 0, prefix.length);
+		System.arraycopy(name, 0, out, prefix.length, name.length);
+		return out;
+	}
+	
 	@SuppressWarnings("deprecation") public static ConstructorDeclaration createConstructor(
-		AccessLevel level, EclipseNode type, Collection<EclipseNode> fields, boolean allToDefault,
+		AccessLevel level, EclipseNode type, Collection<EclipseNode> fieldsToParam, boolean forceDefaults,
 		EclipseNode sourceNode, List<Annotation> onConstructor) {
 		
 		ASTNode source = sourceNode.get();
@@ -354,8 +362,11 @@ public class HandleConstructor {
 		
 		if (isEnum) level = AccessLevel.PRIVATE;
 		
+		List<EclipseNode> fieldsToDefault = fieldsNeedingBuilderDefaults(type, fieldsToParam);
+		List<EclipseNode> fieldsToExplicit = forceDefaults ? fieldsNeedingExplicitDefaults(type, fieldsToParam) : Collections.<EclipseNode>emptyList();
+		
 		boolean addConstructorProperties;
-		if (fields.isEmpty()) {
+		if (fieldsToParam.isEmpty()) {
 			addConstructorProperties = false;
 		} else {
 			Boolean v = type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES);
@@ -381,7 +392,7 @@ public class HandleConstructor {
 		List<Statement> assigns = new ArrayList<Statement>();
 		List<Statement> nullChecks = new ArrayList<Statement>();
 		
-		for (EclipseNode fieldNode : fields) {
+		for (EclipseNode fieldNode : fieldsToParam) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			char[] rawName = field.name;
 			char[] fieldName = removePrefixFromField(fieldNode);
@@ -390,33 +401,64 @@ public class HandleConstructor {
 			int e = (int) p;
 			thisX.receiver = new ThisReference(s, e);
 			
-			Expression assignmentExpr = allToDefault ? getDefaultExpr(field.type, s, e) : new SingleNameReference(fieldName, p);
+			Expression assignmentExpr = new SingleNameReference(fieldName, p);
 			
 			Assignment assignment = new Assignment(thisX, assignmentExpr, (int) p);
 			assignment.sourceStart = (int) (p >> 32); assignment.sourceEnd = assignment.statementEnd = (int) (p >> 32);
 			assigns.add(assignment);
-			if (!allToDefault) {
-				long fieldPos = (((long) field.sourceStart) << 32) | field.sourceEnd;
-				Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
-				Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
-				Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
-				if (nonNulls.length != 0) {
-					Statement nullCheck = generateNullCheck(parameter, sourceNode);
-					if (nullCheck != null) nullChecks.add(nullCheck);
-				}
-				parameter.annotations = copyAnnotations(source, nonNulls, nullables);
-				params.add(parameter);
+			long fieldPos = (((long) field.sourceStart) << 32) | field.sourceEnd;
+			Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
+			Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
+			if (hasNonNullAnnotations(fieldNode)) {
+				Statement nullCheck = generateNullCheck(parameter, sourceNode);
+				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
+			parameter.annotations = copyAnnotations(source, copyableAnnotations);
+			params.add(parameter);
+		}
+		
+		for (EclipseNode fieldNode : fieldsToExplicit) {
+			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+			char[] rawName = field.name;
+			FieldReference thisX = new FieldReference(rawName, p);
+			int s = (int) (p >> 32);
+			int e = (int) p;
+			thisX.receiver = new ThisReference(s, e);
+			
+			Expression assignmentExpr = getDefaultExpr(field.type, s, e);
+			
+			Assignment assignment = new Assignment(thisX, assignmentExpr, (int) p);
+			assignment.sourceStart = (int) (p >> 32); assignment.sourceEnd = assignment.statementEnd = (int) (p >> 32);
+			assigns.add(assignment);
+		}
+		
+		for (EclipseNode fieldNode : fieldsToDefault) {
+			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+			char[] rawName = field.name;
+			FieldReference thisX = new FieldReference(rawName, p);
+			int s = (int) (p >> 32);
+			int e = (int) p;
+			thisX.receiver = new ThisReference(s, e);
+			
+			MessageSend inv = new MessageSend();
+			inv.sourceStart = source.sourceStart;
+			inv.sourceEnd = source.sourceEnd;
+			inv.receiver = new SingleNameReference(((TypeDeclaration) type.get()).name, 0L);
+			inv.selector = prefixWith(DEFAULT_PREFIX, removePrefixFromField(fieldNode));
+			
+			Assignment assignment = new Assignment(thisX, inv, (int) p);
+			assignment.sourceStart = (int) (p >> 32); assignment.sourceEnd = assignment.statementEnd = (int) (p >> 32);
+			assigns.add(assignment);
 		}
 		
 		nullChecks.addAll(assigns);
-		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
-		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
+		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[0]);
+		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[0]);
 		
 		/* Generate annotations that must  be put on the generated method, and attach them. */ {
 			Annotation[] constructorProperties = null;
-			if (!allToDefault && addConstructorProperties && !isLocalType(type)) {
-				constructorProperties = createConstructorProperties(source, fields);
+			if (addConstructorProperties && !isLocalType(type)) {
+				constructorProperties = createConstructorProperties(source, fieldsToParam);
 			}
 			
 			constructor.annotations = copyAnnotations(source,
@@ -426,6 +468,35 @@ public class HandleConstructor {
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		return constructor;
+	}
+	
+	private static List<EclipseNode> fieldsNeedingBuilderDefaults(EclipseNode type, Collection<EclipseNode> fieldsToParam) {
+		List<EclipseNode> out = new ArrayList<EclipseNode>();
+		top:
+		for (EclipseNode node : type.down()) {
+			if (node.getKind() != Kind.FIELD) continue top;
+			FieldDeclaration fd = (FieldDeclaration) node.get();
+			if ((fd.modifiers & ClassFileConstants.AccStatic) != 0) continue top;
+			for (EclipseNode ftp : fieldsToParam) if (node == ftp) continue top;
+			if (EclipseHandlerUtil.hasAnnotation(Builder.Default.class, node)) out.add(node);
+		}
+		return out;
+	}
+	
+	private static List<EclipseNode> fieldsNeedingExplicitDefaults(EclipseNode type, Collection<EclipseNode> fieldsToParam) {
+		List<EclipseNode> out = new ArrayList<EclipseNode>();
+		top:
+		for (EclipseNode node : type.down()) {
+			if (node.getKind() != Kind.FIELD) continue top;
+			FieldDeclaration fd = (FieldDeclaration) node.get();
+			if (fd.initialization != null) continue top;
+			if ((fd.modifiers & ClassFileConstants.AccFinal) == 0) continue top;
+			if ((fd.modifiers & ClassFileConstants.AccStatic) != 0) continue top;
+			for (EclipseNode ftp : fieldsToParam) if (node == ftp) continue top;
+			if (EclipseHandlerUtil.hasAnnotation(Builder.Default.class, node)) continue top;
+			out.add(node);
+		}
+		return out;
 	}
 	
 	private static Expression getDefaultExpr(TypeReference type, int s, int e) {
@@ -480,12 +551,12 @@ public class HandleConstructor {
 			assigns.add(nameRef);
 			
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			parameter.annotations = copyAnnotations(source, findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
+			parameter.annotations = copyAnnotations(source, findCopyableAnnotations(fieldNode));
 			params.add(parameter);
 		}
 		
-		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
-		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
+		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[0]);
+		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[0]);
 		constructor.statements = new Statement[] { new ReturnStatement(statement, (int) (p >> 32), (int)p) };
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDecl.scope);

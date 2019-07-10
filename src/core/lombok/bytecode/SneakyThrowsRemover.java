@@ -52,7 +52,7 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 		
 		class SneakyThrowsRemoverVisitor extends MethodVisitor {
 			SneakyThrowsRemoverVisitor(MethodVisitor mv) {
-				super(Opcodes.ASM6, mv);
+				super(Opcodes.ASM7, mv);
 			}
 			
 			private boolean methodInsnQueued = false;
@@ -177,7 +177,7 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 			}
 		}
 		
-		reader.accept(new ClassVisitor(Opcodes.ASM5, writer) {
+		reader.accept(new ClassVisitor(Opcodes.ASM7, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 				return new SneakyThrowsRemoverVisitor(super.visitMethod(access, name, desc, signature, exceptions));
 			}

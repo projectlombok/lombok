@@ -1,11 +1,19 @@
 import lombok.experimental.FieldNameConstants;
 import lombok.AccessLevel;
-public @FieldNameConstants class FieldNameConstantsBasic {
-  public static final java.lang.String FIELD_BUT_PRINT_ME_PLEASE = "butPrintMePlease";
-  protected static final java.lang.String FIELD_I_AM_A_DVD_PLAYER = "iAmADvdPlayer";
-  @FieldNameConstants(level = AccessLevel.PROTECTED) String iAmADvdPlayer;
+public @FieldNameConstants(level = AccessLevel.PACKAGE) class FieldNameConstantsBasic {
+  static final @java.lang.SuppressWarnings("all") class Fields {
+    public static final java.lang.String iAmADvdPlayer = "iAmADvdPlayer";
+    public static final java.lang.String butPrintMePlease = "butPrintMePlease";
+    <clinit>() {
+    }
+    private @java.lang.SuppressWarnings("all") Fields() {
+      super();
+    }
+  }
+  String iAmADvdPlayer;
   int $skipMe;
   static double skipMeToo;
+  @FieldNameConstants.Exclude int andMe;
   String butPrintMePlease;
   <clinit>() {
   }

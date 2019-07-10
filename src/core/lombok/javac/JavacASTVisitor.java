@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,6 +89,13 @@ public interface JavacASTVisitor {
 	void endVisitLocal(JavacNode localNode, JCVariableDecl local);
 	
 	/**
+	 * Visits a node that represents a type reference. Anything from {@code int} to {@code T} to {@code foo.pkg.Bar<T>.Baz<?> @Ann []}.
+	 */
+	void visitTypeUse(JavacNode typeUseNode, JCTree typeUse);
+	void visitAnnotationOnTypeUse(JCTree typeUse, JavacNode annotationNode, JCAnnotation annotation);
+	void endVisitTypeUse(JavacNode typeUseNode, JCTree typeUse);
+	
+	/**
 	 * Visits a statement that isn't any of the other visit methods (e.g. JCClassDecl).
 	 * The statement object is guaranteed to be either a JCStatement or a JCExpression.
 	 */
@@ -149,8 +156,12 @@ public interface JavacASTVisitor {
 			print("</CUD>");
 		}
 		
+		private String printFlags(long f) {
+			return Flags.toString(f);
+		}
+		
 		@Override public void visitType(JavacNode node, JCClassDecl type) {
-			print("<TYPE %s>", type.name);
+			print("<TYPE %s> %s", type.name, printFlags(type.mods.flags));
 			indent++;
 			if (printContent) {
 				print("%s", type);
@@ -185,7 +196,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitField(JavacNode node, JCVariableDecl field) {
-			print("<FIELD %s %s>", field.vartype, field.name);
+			print("<FIELD %s %s> %s", field.vartype, field.name, printFlags(field.mods.flags));
 			indent++;
 			if (printContent) {
 				if (field.init != null) print("%s", field.init);
@@ -210,7 +221,7 @@ public interface JavacASTVisitor {
 					type = "DEFAULTCONSTRUCTOR";
 				} else type = "CONSTRUCTOR";
 			} else type = "METHOD";
-			print("<%s %s> returns: %s", type, method.name, method.restype);
+			print("<%s %s> %s returns: %s", type, method.name, printFlags(method.mods.flags), method.restype);
 			indent++;
 			if (printContent) {
 				if (method.body == null) print("(ABSTRACT)");
@@ -230,7 +241,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitMethodArgument(JavacNode node, JCVariableDecl arg, JCMethodDecl method) {
-			print("<METHODARG %s %s>", arg.vartype, arg.name);
+			print("<METHODARG %s %s> %s", arg.vartype, arg.name, printFlags(arg.mods.flags));
 			indent++;
 		}
 		
@@ -244,7 +255,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitLocal(JavacNode node, JCVariableDecl local) {
-			print("<LOCAL %s %s>", local.vartype, local.name);
+			print("<LOCAL %s %s> %s", local.vartype, local.name, printFlags(local.mods.flags));
 			indent++;
 		}
 		
@@ -255,6 +266,21 @@ public interface JavacASTVisitor {
 		@Override public void endVisitLocal(JavacNode node, JCVariableDecl local) {
 			indent--;
 			print("</LOCAL %s %s>", local.vartype, local.name);
+		}
+		
+		@Override public void visitTypeUse(JavacNode node, JCTree typeUse) {
+			print("<TYPE %s>", typeUse.getClass());
+			indent++;
+			print("%s", typeUse);
+		}
+		
+		@Override public void visitAnnotationOnTypeUse(JCTree typeUse, JavacNode node, JCAnnotation annotation) {
+			print("<ANNOTATION: %s />", annotation);
+		}
+		
+		@Override public void endVisitTypeUse(JavacNode node, JCTree typeUse) {
+			indent--;
+			print("</TYPE %s>", typeUse.getClass());
 		}
 		
 		@Override public void visitStatement(JavacNode node, JCTree statement) {

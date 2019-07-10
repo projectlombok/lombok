@@ -20,7 +20,7 @@ final @lombok.Value class ValueCallSuper extends ValueParent {
     return (other instanceof ValueCallSuper);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    int result = super.hashCode();
+    final int result = super.hashCode();
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {

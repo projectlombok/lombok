@@ -33,7 +33,7 @@
 		<p>
 			See the small print of <a href="/features/ToString"><code>@ToString</code></a>, <a href="/features/EqualsAndHashCode"><code>@EqualsAndHashCode</code></a>, <a href="/features/GetterSetter"><code>@Getter / @Setter</code></a> and <a href="/features/constructor">@RequiredArgsConstructor</a>.
 		</p><p>
-			Any annotations named <code>@NonNull</code> (case insensitive) on a field are interpreted as: This field must not ever hold <em>null</em>. Therefore, these annotations result in an explicit null check in the generated constructor for the provided field. Also, these annotations (as well as any annotation named <code>@Nullable</code>) are copied to the constructor parameter, in both the true constructor and any static constructor. The same principle applies to generated getters and setters (see the documentation for <a href="/features/GetterSetter">@Getter / @Setter</a>)
+			Various well known annotations about nullity cause null checks to be inserted and will be copied to the relevant places (such as the method for getters, and the parameter for the constructor and setters). See <a href="/features/GetterSetter">Getter/Setter</a> documentation's small print for more information.
 		</p><p>
 			By default, any variables that start with a $ symbol are excluded automatically. You can include them by specifying an explicit annotation (<code>@Getter</code> or <code>@ToString</code>, for example) and using the 'of' parameter.
 		</p>

@@ -10,6 +10,10 @@
 			<code>@Builder</code> with <code>@Singular</code> adds a clear method since lombok v1.16.8.
 		</p><p>
 			<code>@Builder.Default</code> functionality was added in lombok v1.16.16.
+		</p><p>
+			<code>@Builder(builderMethodName = "")</code> is legal (and will suppress generation of the builder method) starting with lombok v1.18.8.
+		</p><p>
+			<code>@Builder(access = AccessLevel.PACKAGE)</code> is legal (and will generate the builder class, the builder method, etc with the indicated access level) starting with lombok v1.18.8.
 		</p>
 	</@f.history>
 	
@@ -62,10 +66,12 @@
 					The <em>builder()</em> method's name (default: <code>"builder"</code>)
 				</li><li>
 					If you want <code>toBuilder()</code> (default: no)
+				</li><li>
+					The access level of all generated elements (default: <code>public</code>).
 				</li>
 			</ul>
 			Example usage where all options are changed from their defaults:<br />
-			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true)</code><br />
+			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true, access = AccessLevel.PRIVATE)</code><br />
 		</p>
 	</@f.overview>
 	
@@ -129,10 +135,35 @@
 		</p>
 	</@f.featureSection>
 
+	<@f.featureSection>
+		<h3 id="jackson"><a name="jackson">With Jackson</a></h3>
+		<p>
+			You can customize parts of your builder, for example adding another method to the builder class, or annotating a method in the builder class, by making the builder class yourself. Lombok will generate everything that you do not manually add, and put it into this builder class. For example, if you are trying to configure <a href="https://github.com/FasterXML/jackson">jackson</a> to use a specific subtype for a collection, you can write something like:<div class="snippet"><div class="java" align="left"><pre>
+@Value @Builder
+@JsonDeserialize(builder = JacksonExample.JacksonExampleBuilder.class)
+public class JacksonExample {
+	@Singular private List&lt;Foo&gt; foos;
+	
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JacksonExampleBuilder implements JacksonExampleBuilderMeta {
+	}
+	
+	private interface JacksonExampleBuilderMeta {
+		@JsonDeserialize(contentAs = FooImpl.class) JacksonExampleBuilder foos(List&lt;? extends Foo&gt; foos)
+	}
+}
+</pre></div></div>
+		</p>
+	</@f.featureSection>
+	
 	<@f.snippets name="Builder" />
 
 	<@f.confKeys>
 		<dt>
+			<code>lombok.builder.className</code> = [a java identifier with an optional star to indicate where the return type name goes] (default: <code>*Builder</code>)
+		</dt><dd>
+			Unless you explicitly pick the builder's class name with the <code>builderClassName</code> parameter, this name is chosen; any star in the name is replaced with the relevant return type.
+		</dd><dt>
 			<code>lombok.builder.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@Builder</code> as a warning or error if configured.
@@ -158,6 +189,22 @@
 			An <code>ArrayList</code> is used to store added elements as call methods of a <code>@Singular</code> marked field, if the target collection is from the <code>java.util</code> package, <em>even if the collection is a set or map</em>. Because lombok ensures that generated collections are compacted, a new backing instance of a set or map must be constructed anyway, and storing the data as an <code>ArrayList</code> during the build process is more efficient that storing it as a map or set. This behaviour is not externally visible, an implementation detail of the current implementation of the <code>java.util</code> recipes for <code>@Singular @Builder</code>.
 		</p><p>
 			With <code>toBuilder = true</code> applied to methods, any type parameter of the annotated method itself must also show up in the return type.
+		</p><p>
+			The initializer on a <code>@Builder.Default</code> field is removed and stored in a static method, in order to guarantee that this initializer won't be executed at all if a value is specified in the build. This does mean the initializer cannot refer to <code>this</code>, <code>super</code> or any non-static member. If lombok generates a constructor for you, it'll also initialize this field with the initializer.
+		</p><p>
+			Various well known annotations about nullity cause null checks to be inserted and will be copied to parameter of the builder's 'setter' method. See <a href="/features/GetterSetter">Getter/Setter</a> documentation's small print for more information.
+		</p><p>
+			You can suppress the generation of the <code>builder()</code> method, for example because you <em>just</em> want the <code>toBuilder()</code> functionality, by using:
+			<code>@Builder(builderMethodName = "")</code>. Any warnings about missing <code>@Builder.Default</code> annotations will disappear when you do this, as such warnings
+			are not relevant when only using <code>toBuilder()</code> to make builder instances.
+		</p><p>
+			You can use <code>@Builder</code> for copy constructors: <code>foo.toBuilder().build()</code> makes a shallow clone. Consider suppressing the generating of the
+			<code>builder</code> method if you just want this functionality, by using: <code>@Builder(toBuilder = true, builderMethodName = "")</code>.
+		</p><p>
+			Due to a peculiar way javac processes static imports, trying to do a non-star static import of the static <code>builder()</code> method won't work. Either use a star static import: `import static TypeThatHasABuilder.*;` or don't statically import the <code>builder</code> method.
+		</p><p>
+			If setting the access level to <code>PROTECTED</code>, all methods generated inside the builder class are actually generated as <code>public</code>; the meaning of the
+			<code>protected</code> keyword is different inside the inner class, and the precise behaviour that <code>PROTECTED</code> would indicate (access by any source in the same package is allowed, as well as any subclasses <em>from the outer class, marked with <code>@Builder</code></em> is not possible, and marking the inner members <code>public</code> is as close as we can get.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

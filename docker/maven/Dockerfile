@@ -1,10 +1,10 @@
 FROM ubuntu:16.04 as downloader
 
-ARG jdk=10
+ARG jdk=11
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
-ARG maven=3.5.0
+ARG maven=3.6.0
 ADD provision/maven/maven-${maven}.sh provision/maven/maven-${maven}.sh
 RUN provision/maven/maven-${maven}.sh
 
@@ -19,7 +19,7 @@ WORKDIR workspace
 
 ADD shared/ ./
 
-ARG jdk=10
+ARG jdk=11
 ADD maven/files/jdk-${jdk} ./
 
 ARG lombokjar=lombok.jar

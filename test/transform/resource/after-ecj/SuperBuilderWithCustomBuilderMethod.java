@@ -13,13 +13,13 @@ public class SuperBuilderWithCustomBuilderMethod {
         this.field1 = field1;
         return self();
       }
-      public @java.lang.SuppressWarnings("all") B item(String item) {
+      public @java.lang.SuppressWarnings("all") B item(final String item) {
         if ((this.items == null))
             this.items = new java.util.ArrayList<String>();
         this.items.add(item);
         return self();
       }
-      public @java.lang.SuppressWarnings("all") B items(java.util.Collection<? extends String> items) {
+      public @java.lang.SuppressWarnings("all") B items(final java.util.Collection<? extends String> items) {
         if ((this.items == null))
             this.items = new java.util.ArrayList<String>();
         this.items.addAll(items);
@@ -38,7 +38,7 @@ public class SuperBuilderWithCustomBuilderMethod {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl<A> self() {
         return this;
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") Parent<A> build() {
@@ -87,7 +87,7 @@ public class SuperBuilderWithCustomBuilderMethod {
       private ChildBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl<A> self() {
         return this;
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") Child<A> build() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,9 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
@@ -48,6 +50,8 @@ import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
@@ -56,6 +60,7 @@ import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.SuperReference;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
@@ -87,6 +92,7 @@ import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.StatementMaker;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.TypeReferenceMaker;
+import lombok.eclipse.handlers.HandleBuilder.BuilderFieldData;
 import lombok.experimental.NonFinal;
 import lombok.experimental.SuperBuilder;
 
@@ -95,23 +101,18 @@ import lombok.experimental.SuperBuilder;
 public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	private static final char[] CLEAN_FIELD_NAME = "$lombokUnclean".toCharArray();
 	private static final char[] CLEAN_METHOD_NAME = "$lombokClean".toCharArray();
+	private static final char[] DEFAULT_PREFIX = "$default$".toCharArray();
 	private static final char[] SET_PREFIX = "$set".toCharArray();
 	private static final char[] SELF_METHOD_NAME = "self".toCharArray();
+	private static final String TO_BUILDER_METHOD_NAME_STRING = "toBuilder";
+	private static final char[] TO_BUILDER_METHOD_NAME = TO_BUILDER_METHOD_NAME_STRING.toCharArray();
+	private static final char[] FILL_VALUES_METHOD_NAME = "$fillValuesFrom".toCharArray();
+	private static final char[] FILL_VALUES_STATIC_METHOD_NAME = "$fillValuesFromInstanceIntoBuilder".toCharArray();
+	private static final char[] INSTANCE_VARIABLE_NAME = "instance".toCharArray();
+	private static final String BUILDER_VARIABLE_NAME_STRING = "b";
+	private static final char[] BUILDER_VARIABLE_NAME = BUILDER_VARIABLE_NAME_STRING.toCharArray();
 	
 	private static final AbstractMethodDeclaration[] EMPTY_METHODS = {};
-	
-	private static class BuilderFieldData {
-		TypeReference type;
-		char[] rawName;
-		char[] name;
-		char[] nameOfSetFlag;
-		SingularData singularData;
-		ObtainVia obtainVia;
-		EclipseNode obtainViaNode;
-		EclipseNode originalFieldNode;
-		
-		List<EclipseNode> createdFields = new ArrayList<EclipseNode>();
-	}
 	
 	@Override
 	public void handle(AnnotationValues<SuperBuilder> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -119,17 +120,26 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
 		
-		SuperBuilder builderInstance = annotation.getInstance();
+		SuperBuilder superbuilderAnnotation = annotation.getInstance();
 		
-		String builderMethodName = builderInstance.builderMethodName();
-		String buildMethodName = builderInstance.buildMethodName();
+		String builderMethodName = superbuilderAnnotation.builderMethodName();
+		String buildMethodName = superbuilderAnnotation.buildMethodName();
 		
 		if (builderMethodName == null) builderMethodName = "builder";
 		if (buildMethodName == null) buildMethodName = "build";
 		
-		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
+		boolean generateBuilderMethod;
+		if (builderMethodName.isEmpty()) {
+			generateBuilderMethod = false;
+		} else if (!checkName("builderMethodName", builderMethodName, annotationNode)) {
+			return;
+		} else {
+			generateBuilderMethod = true;
+		}
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
-		
+
+		boolean toBuilder = superbuilderAnnotation.toBuilder();
+
 		EclipseNode tdParent = annotationNode.up();
 		
 		java.util.List<BuilderFieldData> builderFields = new ArrayList<BuilderFieldData>();
@@ -146,15 +156,20 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		// Gather all fields of the class that should be set by the builder.
 		List<EclipseNode> allFields = new ArrayList<EclipseNode>();
+		List<EclipseNode> nonFinalNonDefaultedFields = null;
+		
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, tdParent) || hasAnnotation("lombok.experimental.Value", tdParent));
 		for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 			FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 			EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 			boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
 			
+			Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
+			
 			BuilderFieldData bfd = new BuilderFieldData();
 			bfd.rawName = fieldNode.getName().toCharArray();
 			bfd.name = removePrefixFromField(fieldNode);
+			bfd.annotations = copyAnnotations(fd, copyableAnnotations);
 			bfd.type = fd.type;
 			bfd.singularData = getSingularData(fieldNode, ast);
 			bfd.originalFieldNode = fieldNode;
@@ -170,23 +185,17 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 			
 			if (fd.initialization != null && isDefault == null) {
-				if (isFinal) {
-					continue;
-				}
-				fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
+				if (isFinal) continue;
+				if (nonFinalNonDefaultedFields == null) nonFinalNonDefaultedFields = new ArrayList<EclipseNode>();
+				nonFinalNonDefaultedFields.add(fieldNode);
 			}
 			
 			if (isDefault != null) {
+				bfd.nameOfDefaultProvider = prefixWith(DEFAULT_PREFIX, bfd.name);
 				bfd.nameOfSetFlag = prefixWith(bfd.name, SET_PREFIX);
-				// The @Builder annotation removes the initializing expression on the field and moves
-				// it to a method called "$default$FIELDNAME". This method is then called upon building.
-				// We do NOT do this, because this is unexpected and may lead to bugs when using other 
-				// constructors (see, e.g., issue #1347).
-				// Instead, we keep the init expression and only set a new value in the builder-based
-				// constructor if it was set in the builder. Drawback is that the init expression is
-				// always executed, even if it was unnecessary because its value is overwritten by the 
-				// builder.
-				// TODO: Once the issue is resolved in @Builder, we can adapt the solution here. 
+				
+				MethodDeclaration md = HandleBuilder.generateDefaultProvider(bfd.nameOfDefaultProvider, td.typeParameters, fieldNode, ast);
+				if (md != null) injectMethod(tdParent, md);
 			}
 			addObtainVia(bfd, fieldNode);
 			builderFields.add(bfd);
@@ -194,7 +203,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 		
 		// Set the names of the builder classes.
-		String builderClassName = String.valueOf(td.name) + "Builder";
+		String builderClassNameTemplate = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
+		if (builderClassNameTemplate == null || builderClassNameTemplate.isEmpty()) builderClassNameTemplate = "*Builder";
+		String builderClassName = builderClassNameTemplate.replace("*", String.valueOf(td.name));
 		String builderImplClassName = builderClassName + "Impl";
 		
 		typeParams = td.typeParameters != null ? td.typeParameters : new TypeParameter[0];
@@ -219,7 +230,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (extendsClause instanceof QualifiedTypeReference) {
 			QualifiedTypeReference qualifiedTypeReference = (QualifiedTypeReference)extendsClause;
 			String superclassClassName = String.valueOf(qualifiedTypeReference.getLastToken());
-			String superclassBuilderClassName = superclassClassName + "Builder";
+			String superclassBuilderClassName = builderClassNameTemplate.replace("*", superclassClassName);
 			
 			char[][] tokens = Arrays.copyOf(qualifiedTypeReference.tokens, qualifiedTypeReference.tokens.length + 1);
 			tokens[tokens.length] = superclassBuilderClassName.toCharArray();
@@ -257,14 +268,28 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		generateBuilderBasedConstructor(tdParent, typeParams, builderFields, annotationNode, builderClassName,
 			superclassBuilderClass != null);
 		
-		// Create the abstract builder class.
+		// Create the abstract builder class, or reuse an existing one.
 		EclipseNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
 			builderType = generateBuilderAbstractClass(tdParent, builderClassName, superclassBuilderClass,
 				typeParams, ast, classGenericName, builderGenericName);
 		} else {
-			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
-			return;
+			TypeDeclaration builderTypeDeclaration = (TypeDeclaration) builderType.get();
+			if ((builderTypeDeclaration.modifiers & (ClassFileConstants.AccStatic | ClassFileConstants.AccAbstract)) == 0) {
+				annotationNode.addError("Existing Builder must be an abstract static inner class.");
+				return;
+			}
+			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderType, annotationNode);
+			// Generate errors for @Singular BFDs that have one already defined node.
+			for (BuilderFieldData bfd : builderFields) {
+				SingularData sd = bfd.singularData;
+				if (sd == null) continue;
+				EclipseSingularizer singularizer = sd.getSingularizer();
+				if (singularizer == null) continue;
+				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(builderType, sd)) {
+					bfd.singularData = null;
+				}
+			}
 		}
 		
 		// Check validity of @ObtainVia fields, and add check if adding cleaning for @Singular is necessary.
@@ -296,7 +321,14 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			cleanDecl.type = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
 			injectFieldAndMarkGenerated(builderType, cleanDecl);
 		}
-		
+
+		if (toBuilder) {
+			// Generate $fillValuesFrom() method in the abstract builder.
+			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClass != null, builderGenericName, classGenericName, builderClassName, typeParams));
+			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
+			injectMethod(builderType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields, ast));
+		}
+
 		// Generate abstract self() and build() methods in the abstract builder.
 		injectMethod(builderType, generateAbstractSelfMethod(tdParent, superclassBuilderClass != null, builderGenericName));
 		injectMethod(builderType, generateAbstractBuildMethod(tdParent, buildMethodName, superclassBuilderClass != null, classGenericName, ast));
@@ -323,28 +355,56 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		if (addCleaning) injectMethod(builderType, generateCleanMethod(builderFields, builderType, ast));
 		
-		if ((td.modifiers & ClassFileConstants.AccAbstract) != 0) {
+		boolean isAbstract = (td.modifiers & ClassFileConstants.AccAbstract) != 0;
+		if (isAbstract) {
 			// Only non-abstract classes get the Builder implementation.
 			return;
 		}
 		
-		// Create the builder implementation class.
+		// Create the builder implementation class, or reuse an existing one.
 		EclipseNode builderImplType = findInnerClass(tdParent, builderImplClassName);
 		if (builderImplType == null) {
 			builderImplType = generateBuilderImplClass(tdParent, builderImplClassName, builderClassName, typeParams, ast);
 		} else {
-			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
-			return;
+			TypeDeclaration builderImplTypeDeclaration = (TypeDeclaration) builderImplType.get();
+			if ((builderImplTypeDeclaration.modifiers & ClassFileConstants.AccAbstract) != 0 ||
+					(builderImplTypeDeclaration.modifiers & ClassFileConstants.AccStatic) == 0) {
+				annotationNode.addError("Existing BuilderImpl must be a non-abstract static inner class.");
+				return;
+			}
+			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderImplType, annotationNode);
+		}
+
+		if (toBuilder) {
+			// Add the toBuilder() method to the annotated class.
+			switch (methodExists(TO_BUILDER_METHOD_NAME_STRING, tdParent, 0)) {
+			case EXISTS_BY_USER:
+				annotationNode.addWarning("Not generating toBuilder() as it already exists.");
+				break;
+			case NOT_EXISTS:
+				injectMethod(tdParent, generateToBuilderMethod(builderClassName, builderImplClassName, tdParent, typeParams, ast));
+			default:
+				// Should not happen.
+			}
+		}
+
+		// Create the self() and build() methods in the BuilderImpl.
+		injectMethod(builderImplType, generateSelfMethod(builderImplType, typeParams, p));
+		if (methodExists(buildMethodName, builderImplType, -1) == MemberExistsResult.NOT_EXISTS) {
+			injectMethod(builderImplType, generateBuildMethod(tdParent, buildMethodName, returnType, ast));
 		}
 		
-		// Create the self() and build() methods in the BuilderImpl.
-		injectMethod(builderImplType, generateSelfMethod(builderImplType));
-		injectMethod(builderImplType, generateBuildMethod(tdParent, buildMethodName, returnType, ast));
-		
 		// Add the builder() method to the annotated class.
-		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
+		if (generateBuilderMethod && methodExists(builderMethodName, tdParent, -1) != MemberExistsResult.NOT_EXISTS) generateBuilderMethod = false;
+		if (generateBuilderMethod) {
 			MethodDeclaration md = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, tdParent, typeParams, ast);
 			if (md != null) injectMethod(tdParent, md);
+		}
+		
+		if (nonFinalNonDefaultedFields != null && generateBuilderMethod) {
+			for (EclipseNode fieldNode : nonFinalNonDefaultedFields) {
+				fieldNode.addWarning("@SuperBuilder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
+			}
 		}
 	}
 	
@@ -440,7 +500,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		constructor.selector = typeDeclaration.name;
 		if (callBuilderBasedSuperConstructor) {
 			constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.Super);
-			constructor.constructorCall.arguments = new Expression[] {new SingleNameReference("b".toCharArray(), p)};
+			constructor.constructorCall.arguments = new Expression[] {new SingleNameReference(BUILDER_VARIABLE_NAME, p)};
 		} else {
 			constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
 		}
@@ -454,49 +514,55 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND)};
 		TypeReference builderType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), mergeToTypeReferences(typeParams, wildcards), 0, p);
-		constructor.arguments = new Argument[] {new Argument("b".toCharArray(), p, builderType, Modifier.FINAL)};
+		constructor.arguments = new Argument[] {new Argument(BUILDER_VARIABLE_NAME, p, builderType, Modifier.FINAL)};
 		
 		List<Statement> statements = new ArrayList<Statement>();
-		List<Statement> nullChecks = new ArrayList<Statement>();
 		
 		for (BuilderFieldData fieldNode : builderFields) {
 			char[] fieldName = removePrefixFromField(fieldNode.originalFieldNode);
-			FieldReference thisX = new FieldReference(fieldNode.rawName, p);
+			FieldReference fieldInThis = new FieldReference(fieldNode.rawName, p);
 			int s = (int) (p >> 32);
 			int e = (int) p;
-			thisX.receiver = new ThisReference(s, e);
+			fieldInThis.receiver = new ThisReference(s, e);
 			
 			Expression assignmentExpr;
 			if (fieldNode.singularData != null && fieldNode.singularData.getSingularizer() != null) {
-				fieldNode.singularData.getSingularizer().appendBuildCode(fieldNode.singularData, typeNode, statements, fieldNode.name, "b");
+				fieldNode.singularData.getSingularizer().appendBuildCode(fieldNode.singularData, typeNode, statements, fieldNode.name, BUILDER_VARIABLE_NAME_STRING);
 				assignmentExpr = new SingleNameReference(fieldNode.name, p);
 			} else {
-				char[][] variableInBuilder = new char[][] {"b".toCharArray(), fieldName};
+				char[][] variableInBuilder = new char[][] {BUILDER_VARIABLE_NAME, fieldName};
 				long[] positions = new long[] {p, p};
 				assignmentExpr = new QualifiedNameReference(variableInBuilder, positions, s, e);
 			}
-			Statement assignment = new Assignment(thisX, assignmentExpr, (int) p);
+			Statement assignment = new Assignment(fieldInThis, assignmentExpr, (int) p);
 			
-			// In case of @Builder.Default, only set the value if it really was set in the builder.
+			// In case of @Builder.Default, set the value to the default if it was NOT set in the builder.
 			if (fieldNode.nameOfSetFlag != null) {
-				char[][] variableInBuilder = new char[][] {"b".toCharArray(), fieldNode.nameOfSetFlag};
+				char[][] setVariableInBuilder = new char[][] {BUILDER_VARIABLE_NAME, fieldNode.nameOfSetFlag};
 				long[] positions = new long[] {p, p};
-				QualifiedNameReference builderRef = new QualifiedNameReference(variableInBuilder, positions, s, e);
-				assignment = new IfStatement(builderRef, assignment, s, e);
+				QualifiedNameReference setVariableInBuilderRef = new QualifiedNameReference(setVariableInBuilder, positions, s, e);
+
+				MessageSend defaultMethodCall = new MessageSend();
+				defaultMethodCall.sourceStart = source.sourceStart;
+				defaultMethodCall.sourceEnd = source.sourceEnd;
+				defaultMethodCall.receiver = new SingleNameReference(((TypeDeclaration) typeNode.get()).name, 0L);
+				defaultMethodCall.selector = fieldNode.nameOfDefaultProvider;
+				defaultMethodCall.typeArguments = typeParameterNames(((TypeDeclaration) typeNode.get()).typeParameters);
+				
+				Statement defaultAssignment = new Assignment(fieldInThis, defaultMethodCall, (int) p);
+				IfStatement ifBlockForDefault = new IfStatement(setVariableInBuilderRef, assignment, defaultAssignment, s, e);
+				statements.add(ifBlockForDefault);
+			} else {
+				statements.add(assignment);
 			}
-			statements.add(assignment);
 			
-			Annotation[] nonNulls = findAnnotations((FieldDeclaration)fieldNode.originalFieldNode.get(), NON_NULL_PATTERN);
-			if (nonNulls.length != 0) {
-				Statement nullCheck = generateNullCheck((FieldDeclaration)fieldNode.originalFieldNode.get(), sourceNode);
-				if (nullCheck != null) {
-					nullChecks.add(nullCheck);
-				}
+			if (hasNonNullAnnotations(fieldNode.originalFieldNode)) {
+				Statement nullCheck = generateNullCheck((FieldDeclaration) fieldNode.originalFieldNode.get(), sourceNode);
+				if (nullCheck != null) statements.add(nullCheck);
 			}
 		}
 		
-		nullChecks.addAll(statements);
-		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
+		constructor.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		
@@ -526,6 +592,166 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return out;
 	}
 	
+	/**
+	 * Generates a <code>toBuilder()</code> method in the annotated class that looks like this:
+	 * <pre>
+	 * public ParentBuilder&lt;?, ?&gt; toBuilder() {
+	 *     return new <i>Foobar</i>BuilderImpl().$fillValuesFrom(this);
+	 * }
+	 * </pre>
+	 */
+	private MethodDeclaration generateToBuilderMethod(String builderClassName, String builderImplClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		out.selector = TO_BUILDER_METHOD_NAME;
+		out.modifiers = ClassFileConstants.AccPublic;
+		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		
+		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND) };
+		out.returnType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), mergeToTypeReferences(typeParams, wildcards), 0, p);
+		
+		AllocationExpression newClass = new AllocationExpression();
+		newClass.type = namePlusTypeParamsToTypeReference(builderImplClassName.toCharArray(), typeParams, p);
+		MessageSend invokeFillMethod = new MessageSend();
+		invokeFillMethod.receiver = newClass;
+		invokeFillMethod.selector = FILL_VALUES_METHOD_NAME;
+		invokeFillMethod.arguments = new Expression[] {new ThisReference(0, 0)};
+		out.statements = new Statement[] {new ReturnStatement(invokeFillMethod, pS, pE)};
+		
+		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
+		return out;
+	}
+
+	/**
+	 * Generates a <code>$fillValuesFrom()</code> method in the abstract builder class that looks
+	 * like this:
+	 * <pre>
+	 * protected B $fillValuesFrom(final C instance) {
+	 *     super.$fillValuesFrom(instance);
+	 *     FoobarBuilderImpl.$fillValuesFromInstanceIntoBuilder(instance, this);
+	 *     return self();
+	 * }
+	 * </pre>
+	 */
+	private MethodDeclaration generateFillValuesMethod(EclipseNode tdParent, boolean inherited, String builderGenericName, String classGenericName, String builderClassName, TypeParameter[] typeParams) {
+		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
+		out.selector = FILL_VALUES_METHOD_NAME;
+		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		out.modifiers = ClassFileConstants.AccProtected;
+		if (inherited) out.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, tdParent.get())};
+		out.returnType = new SingleTypeReference(builderGenericName.toCharArray(), 0);
+		
+		TypeReference builderType = new SingleTypeReference(classGenericName.toCharArray(), 0);
+		out.arguments = new Argument[] {new Argument(INSTANCE_VARIABLE_NAME, 0, builderType, Modifier.FINAL)};
+
+		List<Statement> body = new ArrayList<Statement>();
+
+		if (inherited) {
+			// Call super.
+			MessageSend callToSuper = new MessageSend();
+			callToSuper.receiver = new SuperReference(0, 0);
+			callToSuper.selector = FILL_VALUES_METHOD_NAME;
+			callToSuper.arguments = new Expression[] {new SingleNameReference(INSTANCE_VARIABLE_NAME, 0)};
+			body.add(callToSuper);
+		}
+
+		// Call the builder implemention's helper method that actually fills the values from the instance.
+		MessageSend callStaticFillValuesMethod = new MessageSend();
+		callStaticFillValuesMethod.receiver = new SingleNameReference(builderClassName.toCharArray(), 0);
+		callStaticFillValuesMethod.selector = FILL_VALUES_STATIC_METHOD_NAME;
+		callStaticFillValuesMethod.arguments = new Expression[] {new SingleNameReference(INSTANCE_VARIABLE_NAME, 0), new ThisReference(0, 0)};
+		body.add(callStaticFillValuesMethod);
+
+		// Return self().
+		MessageSend returnCall = new MessageSend();
+		returnCall.receiver = ThisReference.implicitThis();
+		returnCall.selector = SELF_METHOD_NAME;
+		body.add(new ReturnStatement(returnCall, 0, 0));
+		
+		out.statements = body.isEmpty() ? null : body.toArray(new Statement[0]);
+		
+		return out;
+	}
+
+	/**
+	 * Generates a <code>$fillValuesFromInstanceIntoBuilder()</code> method in
+	 * the builder implementation class that copies all fields from the instance
+	 * to the builder. It looks like this:
+	 * 
+	 * <pre>
+	 * protected B $fillValuesFromInstanceIntoBuilder(Foobar instance, FoobarBuilder&lt;?, ?&gt; b) {
+	 * 	b.field(instance.field);
+	 * }
+	 * </pre>
+	 */
+	private MethodDeclaration generateStaticFillValuesMethod(EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, java.util.List<BuilderFieldData> builderFields, ASTNode source) {
+		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
+		out.selector = FILL_VALUES_STATIC_METHOD_NAME;
+		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		out.modifiers = ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic;
+		out.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
+		
+		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND)};
+		TypeReference builderType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), mergeToTypeReferences(typeParams, wildcards), 0, 0);
+		Argument builderArgument = new Argument(BUILDER_VARIABLE_NAME, 0, builderType, Modifier.FINAL);
+		TypeReference parentArgument = createTypeReferenceWithTypeParameters(tdParent.getName(), typeParams);
+		out.arguments = new Argument[] {new Argument(INSTANCE_VARIABLE_NAME, 0, parentArgument, Modifier.FINAL), builderArgument};
+
+		// Add type params if there are any.
+		if (typeParams.length > 0) out.typeParameters = copyTypeParams(typeParams, source);
+
+		List<Statement> body = new ArrayList<Statement>();
+
+		// Call the builder's setter methods to fill the values from the instance.
+		for (BuilderFieldData bfd : builderFields) {
+			MessageSend exec = createSetterCallWithInstanceValue(bfd, tdParent, source);
+			body.add(exec);
+		}
+		
+		out.statements = body.isEmpty() ? null : body.toArray(new Statement[0]);
+		
+		return out;
+	}
+
+	private MessageSend createSetterCallWithInstanceValue(BuilderFieldData bfd, EclipseNode type, ASTNode source) {
+		char[] setterName = bfd.name;
+		MessageSend ms = new MessageSend();
+		Expression[] tgt = new Expression[bfd.singularData == null ? 1 : 2];
+		
+		if (bfd.obtainVia == null || !bfd.obtainVia.field().isEmpty()) {
+			char[] fieldName = bfd.obtainVia == null ? bfd.rawName : bfd.obtainVia.field().toCharArray();
+			for (int i = 0; i < tgt.length; i++) {
+				FieldReference fr = new FieldReference(fieldName, 0);
+				fr.receiver = new SingleNameReference(INSTANCE_VARIABLE_NAME, 0);
+				tgt[i] = fr;
+			}
+		} else {
+			String obtainName = bfd.obtainVia.method();
+			boolean obtainIsStatic = bfd.obtainVia.isStatic();
+			for (int i = 0; i < tgt.length; i++) {
+				MessageSend obtainExpr = new MessageSend();
+				obtainExpr.receiver = obtainIsStatic ? new SingleNameReference(type.getName().toCharArray(), 0) : new SingleNameReference(INSTANCE_VARIABLE_NAME, 0);
+				obtainExpr.selector = obtainName.toCharArray();
+				if (obtainIsStatic) obtainExpr.arguments = new Expression[] {new SingleNameReference(INSTANCE_VARIABLE_NAME, 0)};
+				tgt[i] = obtainExpr;
+			}
+		}
+		if (bfd.singularData == null) {
+			ms.arguments = tgt;
+		} else {
+			Expression ifNull = new EqualExpression(tgt[0], new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
+			MessageSend emptyCollection = new MessageSend();
+			emptyCollection.receiver = generateQualifiedNameRef(source, bfd.singularData.getSingularizer().getEmptyMakerReceiver(bfd.singularData.getTargetFqn()));
+			emptyCollection.selector = bfd.singularData.getSingularizer().getEmptyMakerSelector(bfd.singularData.getTargetFqn());
+			ms.arguments = new Expression[] {new ConditionalExpression(ifNull, emptyCollection, tgt[1])};
+		}
+		ms.receiver = new SingleNameReference(BUILDER_VARIABLE_NAME, 0);
+		ms.selector = setterName;
+		return ms;
+	}
+	
 	private MethodDeclaration generateAbstractSelfMethod(EclipseNode tdParent, boolean override, String builderGenericName) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
 		out.selector = SELF_METHOD_NAME;
@@ -536,13 +762,13 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return out;
 	}
 	
-	private MethodDeclaration generateSelfMethod(EclipseNode builderImplType) {
+	private MethodDeclaration generateSelfMethod(EclipseNode builderImplType, TypeParameter[] typeParams, long p) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) builderImplType.top().get()).compilationResult);
 		out.selector = SELF_METHOD_NAME;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.modifiers = ClassFileConstants.AccProtected;
 		out.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, builderImplType.get())};
-		out.returnType = new SingleTypeReference(builderImplType.getName().toCharArray(), 0);
+		out.returnType = namePlusTypeParamsToTypeReference(builderImplType.getName().toCharArray(), typeParams, p);
 		out.statements = new Statement[] {new ReturnStatement(new ThisReference(0, 0), 0, 0)};
 		return out;
 	}
@@ -578,7 +804,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// Use a constructor that only has this builder as parameter.
 		allocationStatement.arguments = new Expression[] {new ThisReference(0, 0)};
 		statements.add(new ReturnStatement(allocationStatement, 0, 0));
-		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[statements.size()]);
+		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
 		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
 	}
@@ -662,13 +888,13 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		};
 		
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode);
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode, bfd.annotations, bfd.originalFieldNode);
 		} else {
-			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, deprecate, builderType, true, returnTypeMaker, returnStatementMaker);
+			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, deprecate, builderType, true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
 		}
 	}
 
-	private void generateSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode) {
+	private void generateSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode, Annotation[] annosOnParam, EclipseNode originalFieldNode) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY_METHODS;
@@ -684,8 +910,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		String setterName = fieldNode.getName();
 		
+		List<Annotation> methodAnnsList = Collections.<Annotation>emptyList();
+		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, nameOfSetFlag, returnType, returnStatement, ClassFileConstants.AccPublic,
-			sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
+			sourceNode, methodAnnsList, annosOnParam != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annosOnParam)) : Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}
 	
@@ -815,6 +1044,16 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		for (int i = 0; i < refs1.length; i++) result[i] = refs1[i];
 		for (int i = 0; i < refs2.length; i++) result[refs1.length + i] = refs2[i];
 		return result;
+	}
+	
+	private TypeReference[] typeParameterNames(TypeParameter[] typeParameters) {
+		if (typeParameters == null) return null;
+		
+		TypeReference[] trs = new TypeReference[typeParameters.length];
+		for (int i = 0; i < trs.length; i++) {
+			trs[i] = new SingleTypeReference(typeParameters[i].name, 0);
+		}
+		return trs;
 	}
 	
 	private EclipseNode findInnerClass(EclipseNode parent, String name) {

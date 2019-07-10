@@ -1,6 +1,6 @@
 FROM ubuntu:16.04 as downloader
 
-ARG jdk=10
+ARG jdk=11
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
@@ -19,7 +19,7 @@ WORKDIR workspace
 
 ADD shared/ ./
 
-ARG jdk=10
+ARG jdk=11
 ADD ant/files/jdk-${jdk} ./
 
 ARG lombokjar=lombok.jar

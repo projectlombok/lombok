@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,9 @@
  */
 package lombok.core.configuration;
 
-public final class TypeName {
+import lombok.core.JavaIdentifiers;
+
+public final class TypeName implements ConfigurationValueType {
 	private final String name;
 	
 	private TypeName(String name) {
@@ -29,7 +31,21 @@ public final class TypeName {
 	}
 	
 	public static TypeName valueOf(String name) {
-		return new TypeName(name);
+		if (name == null || name.trim().isEmpty()) return null;
+		
+		String trimmedName = name.trim();
+		for (String identifier : trimmedName.split("\\.")) {
+			if (!JavaIdentifiers.isValidJavaIdentifier(identifier)) throw new IllegalArgumentException("Invalid type name " + trimmedName + " (part " + identifier + ")");
+		}
+		return new TypeName(trimmedName);
+	}
+	
+	public static String description() {
+		return "type-name";
+	}
+	
+	public static String exampleValue() {
+		return "<fully.qualified.Type>";
 	}
 	
 	@Override public boolean equals(Object obj) {
@@ -43,5 +59,13 @@ public final class TypeName {
 	
 	@Override public String toString() {
 		return name;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public char[] getCharArray() {
+		return name.toCharArray();
 	}
 }

@@ -64,7 +64,7 @@
   public @java.lang.SuppressWarnings("all") void setNonNull(final @lombok.NonNull String nonNull) {
     if ((nonNull == null))
         {
-          throw new java.lang.NullPointerException("nonNull is marked @NonNull but is null");
+          throw new java.lang.NullPointerException("nonNull is marked non-null but is null");
         }
     this.nonNull = nonNull;
   }

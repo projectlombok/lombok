@@ -7,7 +7,7 @@ public @lombok.Getter @lombok.ToString @lombok.RequiredArgsConstructor enum Data
     return this.someField;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-    return (("DataOnEnum(someField=" + this.getSomeField()) + ")");
+    return (((("DataOnEnum." + this.name()) + "(someField=") + this.getSomeField()) + ")");
   }
   private @java.lang.SuppressWarnings("all") DataOnEnum(final String someField) {
     super();

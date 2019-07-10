@@ -10,13 +10,13 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder dangerMouse(String dangerMouse) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder dangerMouse(final String dangerMouse) {
       if ((this.dangerMice == null))
           this.dangerMice = com.google.common.collect.ImmutableSet.builder();
       this.dangerMice.add(dangerMouse);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder dangerMice(java.lang.Iterable<? extends String> dangerMice) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder dangerMice(final java.lang.Iterable<? extends String> dangerMice) {
       if ((this.dangerMice == null))
           this.dangerMice = com.google.common.collect.ImmutableSet.builder();
       this.dangerMice.addAll(dangerMice);
@@ -26,13 +26,13 @@ import lombok.Singular;
       this.dangerMice = null;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder thing(Integer key, Number value) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder thing(final Integer key, final Number value) {
       if ((this.things == null))
           this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
       this.things.put(key, value);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder things(java.util.Map<? extends Integer, ? extends Number> things) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder things(final java.util.Map<? extends Integer, ? extends Number> things) {
       if ((this.things == null))
           this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
       this.things.putAll(things);
@@ -42,13 +42,13 @@ import lombok.Singular;
       this.things = null;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder doohickey(Class<?> doohickey) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder doohickey(final Class<?> doohickey) {
       if ((this.doohickeys == null))
           this.doohickeys = com.google.common.collect.ImmutableList.builder();
       this.doohickeys.add(doohickey);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder doohickeys(java.lang.Iterable<? extends Class<?>> doohickeys) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder doohickeys(final java.lang.Iterable<? extends Class<?>> doohickeys) {
       if ((this.doohickeys == null))
           this.doohickeys = com.google.common.collect.ImmutableList.builder();
       this.doohickeys.addAll(doohickeys);

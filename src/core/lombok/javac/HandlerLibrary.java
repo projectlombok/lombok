@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -36,6 +37,7 @@ import java.util.TreeSet;
 import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 
+import lombok.core.AlreadyHandledAnnotations;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
 import lombok.core.HandlerPriority;
 import lombok.core.SpiLoadUtil;
@@ -57,7 +59,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
  */
 public class HandlerLibrary {
 	private final TypeLibrary typeLibrary = new TypeLibrary();
-	private final Map<String, AnnotationHandlerContainer<?>> annotationHandlers = new HashMap<String, AnnotationHandlerContainer<?>>();
+	private final Map<String, List<AnnotationHandlerContainer<?>>> annotationHandlers = new HashMap<String, List<AnnotationHandlerContainer<?>>>();
 	private final Collection<VisitorContainer> visitorHandlers = new ArrayList<VisitorContainer>();
 	private final Messager messager;
 	
@@ -78,7 +80,7 @@ public class HandlerLibrary {
 		VisitorContainer(JavacASTVisitor visitor) {
 			this.visitor = visitor;
 			HandlerPriority hp = visitor.getClass().getAnnotation(HandlerPriority.class);
-			this.priority = hp == null ? 0L : (((long)hp.value()) << 32) + hp.subValue();
+			this.priority = hp == null ? 0L : (((long) hp.value()) << 32) + hp.subValue();
 			this.resolutionResetNeeded = visitor.getClass().isAnnotationPresent(ResolutionResetNeeded.class);
 		}
 		
@@ -96,6 +98,7 @@ public class HandlerLibrary {
 		private final Class<T> annotationClass;
 		private final long priority;
 		private final boolean resolutionResetNeeded;
+		private final boolean evenIfAlreadyHandled;
 		
 		AnnotationHandlerContainer(JavacAnnotationHandler<T> handler, Class<T> annotationClass) {
 			this.handler = handler;
@@ -103,6 +106,7 @@ public class HandlerLibrary {
 			HandlerPriority hp = handler.getClass().getAnnotation(HandlerPriority.class);
 			this.priority = hp == null ? 0L : (((long)hp.value()) << 32) + hp.subValue();
 			this.resolutionResetNeeded = handler.getClass().isAnnotationPresent(ResolutionResetNeeded.class);
+			this.evenIfAlreadyHandled = handler.getClass().isAnnotationPresent(AlreadyHandledAnnotations.class);
 		}
 		
 		public void handle(final JavacNode node) {
@@ -115,6 +119,10 @@ public class HandlerLibrary {
 		
 		public boolean isResolutionResetNeeded() {
 			return resolutionResetNeeded;
+		}
+		
+		public boolean isEvenIfAlreadyHandled() {
+			return evenIfAlreadyHandled;
 		}
 	}
 	
@@ -132,9 +140,11 @@ public class HandlerLibrary {
 	private void calculatePriorities() {
 		SortedSet<Long> set = new TreeSet<Long>();
 		SortedSet<Long> resetNeeded = new TreeSet<Long>();
-		for (AnnotationHandlerContainer<?> container : annotationHandlers.values()) {
-			set.add(container.getPriority());
-			if (container.isResolutionResetNeeded()) resetNeeded.add(container.getPriority());
+		for (List<AnnotationHandlerContainer<?>> containers : annotationHandlers.values()) {
+			for (AnnotationHandlerContainer<?> container : containers) {
+				set.add(container.getPriority());
+				if (container.isResolutionResetNeeded()) resetNeeded.add(container.getPriority());
+			}
 		}
 		for (VisitorContainer container : visitorHandlers) {
 			set.add(container.getPriority());
@@ -173,9 +183,9 @@ public class HandlerLibrary {
 			Class<? extends Annotation> annotationClass = handler.getAnnotationHandledByThisHandler();
 			AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
 			String annotationClassName = container.annotationClass.getName().replace("$", ".");
-			if (lib.annotationHandlers.put(annotationClassName, container) != null) {
-				lib.javacWarning("Duplicate handlers for annotation type: " + annotationClassName);
-			}
+			List<AnnotationHandlerContainer<?>> list = lib.annotationHandlers.get(annotationClassName);
+			if (list == null) lib.annotationHandlers.put(annotationClassName, list = new ArrayList<AnnotationHandlerContainer<?>>(1));
+			list.add(container);
 			lib.typeLibrary.addType(container.annotationClass.getName());
 		}
 	}
@@ -236,19 +246,25 @@ public class HandlerLibrary {
 		String rawType = annotation.annotationType.toString();
 		String fqn = resolver.typeRefToFullyQualifiedName(node, typeLibrary, rawType);
 		if (fqn == null) return;
-		AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
-		if (container == null) return;
+		List<AnnotationHandlerContainer<?>> containers = annotationHandlers.get(fqn);
+		if (containers == null) return;
 		
-		try {
-			if (container.getPriority() == priority) {
-				if (checkAndSetHandled(annotation)) container.handle(node);
+		for (AnnotationHandlerContainer<?> container : containers) {
+			try {
+				if (container.getPriority() == priority) {
+					if (checkAndSetHandled(annotation)) {
+						container.handle(node);
+					} else {
+						if (container.isEvenIfAlreadyHandled()) container.handle(node);
+					}
+				}
+			} catch (AnnotationValueDecodeFail fail) {
+				fail.owner.setError(fail.getMessage(), fail.idx);
+			} catch (Throwable t) {
+				String sourceName = "(unknown).java";
+				if (unit != null && unit.sourcefile != null) sourceName = unit.sourcefile.getName();
+				javacError(String.format("Lombok annotation handler %s failed on " + sourceName, container.handler.getClass()), t);
 			}
-		} catch (AnnotationValueDecodeFail fail) {
-			fail.owner.setError(fail.getMessage(), fail.idx);
-		} catch (Throwable t) {
-			String sourceName = "(unknown).java";
-			if (unit != null && unit.sourcefile != null) sourceName = unit.sourcefile.getName();
-			javacError(String.format("Lombok annotation handler %s failed on " + sourceName, container.handler.getClass()), t);
 		}
 	}
 	

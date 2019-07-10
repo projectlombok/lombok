@@ -236,8 +236,6 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	}
 	
 	public MethodDeclaration createGetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, boolean lazy, List<Annotation> onMethod) {
-		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-		
 		// Remember the type; lazy will change it;
 		TypeReference returnType = copyType(((FieldDeclaration) fieldNode.get()).type, source);
 		
@@ -271,11 +269,10 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			}
 			
 			method.annotations = copyAnnotations(source,
-					onMethod.toArray(new Annotation[0]),
-					findAnnotations(field, NON_NULL_PATTERN),
-					findAnnotations(field, NULLABLE_PATTERN),
-					findDelegatesAndMarkAsHandled(fieldNode),
-					deprecated);
+				onMethod.toArray(new Annotation[0]),
+				findCopyableAnnotations(fieldNode),
+				findDelegatesAndMarkAsHandled(fieldNode),
+				deprecated);
 		}
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);

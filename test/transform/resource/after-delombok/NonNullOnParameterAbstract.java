@@ -1,7 +1,7 @@
 abstract class NonNullOnParameterAbstract {
 	public void test(@lombok.NonNull String arg) {
 		if (arg == null) {
-			throw new java.lang.NullPointerException("arg is marked @NonNull but is null");
+			throw new java.lang.NullPointerException("arg is marked non-null but is null");
 		}
 		System.out.println("Hey");
 	}

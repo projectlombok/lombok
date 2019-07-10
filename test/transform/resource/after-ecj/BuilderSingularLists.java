@@ -10,13 +10,13 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> child(T child) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> child(final T child) {
       if ((this.children == null))
           this.children = new java.util.ArrayList<T>();
       this.children.add(child);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> children(java.util.Collection<? extends T> children) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> children(final java.util.Collection<? extends T> children) {
       if ((this.children == null))
           this.children = new java.util.ArrayList<T>();
       this.children.addAll(children);
@@ -27,13 +27,13 @@ import lombok.Singular;
           this.children.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> scarf(Number scarf) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> scarf(final Number scarf) {
       if ((this.scarves == null))
           this.scarves = new java.util.ArrayList<Number>();
       this.scarves.add(scarf);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> scarves(java.util.Collection<? extends Number> scarves) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> scarves(final java.util.Collection<? extends Number> scarves) {
       if ((this.scarves == null))
           this.scarves = new java.util.ArrayList<Number>();
       this.scarves.addAll(scarves);
@@ -44,13 +44,13 @@ import lombok.Singular;
           this.scarves.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> rawList(java.lang.Object rawList) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> rawList(final java.lang.Object rawList) {
       if ((this.rawList == null))
           this.rawList = new java.util.ArrayList<java.lang.Object>();
       this.rawList.add(rawList);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> rawList(java.util.Collection<?> rawList) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> rawList(final java.util.Collection<?> rawList) {
       if ((this.rawList == null))
           this.rawList = new java.util.ArrayList<java.lang.Object>();
       this.rawList.addAll(rawList);

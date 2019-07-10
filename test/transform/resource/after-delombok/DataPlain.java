@@ -152,6 +152,7 @@ final class Data3 {
 final class Data4 extends java.util.Timer {
 	int x;
 	Data4() {
+		super();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {
@@ -210,7 +211,7 @@ class Data5 {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		int result = 1;
+		final int result = 1;
 		return result;
 	}
 	@java.lang.Override
@@ -233,7 +234,7 @@ final class Data6 {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		int result = 1;
+		final int result = 1;
 		return result;
 	}
 	@java.lang.Override

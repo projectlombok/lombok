@@ -1,0 +1,10 @@
+<project name="delombokAntTest" default="delombok">
+	<target name="delombok">
+		<taskdef classname="lombok.delombok.ant.Tasks$Delombok" classpath="../../../dist/lombok.jar" name="delombok" />
+		<mkdir dir="tgt" />
+		<delombok verbose="true" encoding="UTF-8" to="tgt" from="src">
+			<format value="suppressWarnings:skip" />
+		</delombok>
+	</target>
+</project>
+

@@ -15,7 +15,7 @@ class EqualsAndHashCodeConfigKeys1Parent {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		int result = 1;
+		final int result = 1;
 		return result;
 	}
 }

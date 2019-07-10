@@ -20,7 +20,7 @@ interface EqualsAndHashCodeNestedShadow {
         return (other instanceof EqualsAndHashCodeNestedShadow.Bar.Foo);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-        int result = 1;
+        final int result = 1;
         return result;
       }
     }
@@ -47,7 +47,7 @@ interface EqualsAndHashCodeNestedShadow {
         return (other instanceof EqualsAndHashCodeNestedShadow.Baz.Foo);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-        int result = 1;
+        final int result = 1;
         return result;
       }
     }

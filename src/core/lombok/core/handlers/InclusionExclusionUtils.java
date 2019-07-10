@@ -106,7 +106,7 @@ public class InclusionExclusionUtils {
 		return name;
 	}
 	
-	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N, I extends Annotation> List<Included<L, I>> handleIncludeExcludeMarking(Class<I> inclType, String replaceName, Class<? extends Annotation> exclType, LombokNode<A, L, N> typeNode, AnnotationValues<?> annotation, LombokNode<A, L, N> annotationNode) {
+	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N, I extends Annotation> List<Included<L, I>> handleIncludeExcludeMarking(Class<I> inclType, String replaceName, Class<? extends Annotation> exclType, LombokNode<A, L, N> typeNode, AnnotationValues<?> annotation, LombokNode<A, L, N> annotationNode, boolean includeTransient) {
 		List<String> oldExcludes = (annotation != null && annotation.isExplicit("exclude")) ? annotation.getAsStringList("exclude") : null;
 		List<String> oldIncludes = (annotation != null && annotation.isExplicit("of")) ? annotation.getAsStringList("of") : null;
 		
@@ -175,6 +175,7 @@ public class InclusionExclusionUtils {
 			}
 			if (child.getKind() != Kind.FIELD) continue;
 			if (child.isStatic()) continue;
+			if (child.isTransient() && !includeTransient) continue;
 			if (name.startsWith("$")) continue;
 			if (child.isEnumMember()) continue;
 			members.add(new Included<L, I>(child, null, true));
@@ -200,7 +201,7 @@ public class InclusionExclusionUtils {
 	}
 	
 	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> List<Included<L, ToString.Include>> handleToStringMarking(LombokNode<A, L, N> typeNode, AnnotationValues<ToString> annotation, LombokNode<A, L, N> annotationNode) {
-		List<Included<L, ToString.Include>> members = handleIncludeExcludeMarking(ToString.Include.class, "name", ToString.Exclude.class, typeNode, annotation, annotationNode);
+		List<Included<L, ToString.Include>> members = handleIncludeExcludeMarking(ToString.Include.class, "name", ToString.Exclude.class, typeNode, annotation, annotationNode, true);
 		
 		Collections.sort(members, new Comparator<Included<L, ToString.Include>>() {
 			@Override public int compare(Included<L, ToString.Include> a, Included<L, ToString.Include> b) {
@@ -222,6 +223,6 @@ public class InclusionExclusionUtils {
 	}
 	
 	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> List<Included<L, EqualsAndHashCode.Include>> handleEqualsAndHashCodeMarking(LombokNode<A, L, N> typeNode, AnnotationValues<EqualsAndHashCode> annotation, LombokNode<A, L, N> annotationNode) {
-		return handleIncludeExcludeMarking(EqualsAndHashCode.Include.class, "replaces", EqualsAndHashCode.Exclude.class, typeNode, annotation, annotationNode);
+		return handleIncludeExcludeMarking(EqualsAndHashCode.Include.class, "replaces", EqualsAndHashCode.Exclude.class, typeNode, annotation, annotationNode, false);
 	}
 }

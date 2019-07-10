@@ -116,23 +116,24 @@ public class ClassFileMetaData {
 		int end = pos + size;
 		
 		// the resulting string might be smaller
-		StringBuilder result = new StringBuilder(size);
+		char[] result = new char[size];
+		int length = 0;
 		while (pos < end) {
 			int first = (byteCode[pos++] & 0xFF);
 			if (first < 0x80) {
-				result.append((char)first);
+				result[length++] = (char)first;
 			} else if ((first & 0xE0) == 0xC0) {
 				int x = (first & 0x1F) << 6;
 				int y = (byteCode[pos++] & 0x3F);
-				result.append((char)(x | y));
+				result[length++] = (char)(x | y);
 			} else {
 				int x = (first & 0x0F) << 12;
 				int y = (byteCode[pos++] & 0x3F) << 6;
 				int z = (byteCode[pos++] & 0x3F);
-				result.append((char)(x | y | z));
+				result[length++] = (char)(x | y | z);
 			}
 		}
-		return result.toString();
+		return new String(result, 0, length);
 	}
 	
 	/**

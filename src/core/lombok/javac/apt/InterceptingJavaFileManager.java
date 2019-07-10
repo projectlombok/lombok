@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,11 +42,6 @@ final class InterceptingJavaFileManager extends ForwardingJavaFileManager<JavaFi
 	}
 	
 	@Override public JavaFileObject getJavaFileForOutput(Location location, String className, final Kind kind, FileObject sibling) throws IOException {
-		if (className.contains("lombok.dummy.ForceNewRound")) {
-			final String name = className.replace(".", "/") + kind.extension;
-			return LombokFileObjects.createEmpty(compiler, name, kind);
-		}
-		
 		JavaFileObject fileObject = fileManager.getJavaFileForOutput(location, className, kind, sibling);
 		if (kind != Kind.CLASS) return fileObject;
 		

@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import lombok.Lombok;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
@@ -36,8 +37,8 @@ public class Javac6BasedLombokOptions extends LombokOptions {
 	static {
 		try {
 			Class<?> optionNameClass = Class.forName("com.sun.tools.javac.main.OptionName");
-			optionName_valueOf = optionNameClass.getMethod("valueOf", String.class);
-			options_put = Class.forName("com.sun.tools.javac.util.Options").getMethod("put", optionNameClass, String.class);
+			optionName_valueOf = Permit.getMethod(optionNameClass, "valueOf", String.class);
+			options_put = Permit.getMethod(Class.forName("com.sun.tools.javac.util.Options"), "put", optionNameClass, String.class);
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Can't initialize Javac6-based lombok options due to reflection issue.", e);
 		}

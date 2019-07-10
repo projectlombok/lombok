@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.core.AST.Kind;
+import lombok.permit.Permit;
 
 /**
  * Represents a single annotation in a source file and can be used to query the parameters present on it.
@@ -210,7 +211,7 @@ public class AnnotationValues<A extends Annotation> {
 	
 	public <T> T getDefaultIf(String methodName, Class<T> type, T defaultValue) {
 		try {
-			return type.cast(type.getMethod(methodName).getDefaultValue());
+			return type.cast(Permit.getMethod(type, methodName).getDefaultValue());
 		} catch (Exception e) {
 			return defaultValue;
 		}

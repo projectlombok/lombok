@@ -43,13 +43,10 @@
 
 		<title>${title}</title>
 
-		<script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"
-			integrity="sha384-bPV3mA2eo3edoq56VzcPBmG1N1QVUfjYMxVIJPPzyFJyFZ8GFfN7Npt06Zr23qts" crossorigin="anonymous"></script>
+		<script src="/js/modernizr.min.js"></script>
 
 		<link href="/css/bootstrap.css" rel="stylesheet" />
-		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css"
-			integrity="sha384-CmLV3WR+cw/TcN50vJSYAs2EAzhDD77tQvGcmoZ1KEzxtpl2K5xkrpFz9N2H9ClN" crossorigin="anonymous">
-
+		<link href="/css/font-awesome.min.css" rel="stylesheet" />
 		<link href="/css/custom.css" rel="stylesheet" />
 
 		<#list load as ld>
@@ -57,10 +54,8 @@
 				<link href="${ld?url_path}" rel="stylesheet" />
 			</#if>
 		</#list>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"
-			integrity="sha384-Pn+PczAsODRZ2PiGg0IheRROpP7lXO1NTIjiPo6cca8TliBvaeil42fobhzvZd74" crossorigin="anonymous"></script>
-		<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"
-			integrity="sha384-VI5+XuguQ/l3kUhh4knz7Hxptx47wpQbVRDnp8v7Vvuhzwn1PEYb/uvtH6KLxv6d" crossorigin="anonymous"></script>
+		<script src="/js/jquery.min.js"></script>
+		<script src="/js/bootstrap.min.js"></script>
 
 		<script src="/js/history.js"></script>
 		<script src="/js/main.js"></script>
@@ -100,9 +95,10 @@ ga('send', 'pageview');
 						<li class="dropdown">
 							<a class="dropdown-toggle pointer" data-toggle="dropdown">Community<span class="caret"></span></a>
 							<ul class="dropdown-menu" aria-labelledby="themes">
-								<li><a href="https://groups.google.com/group/project-lombok" rel="noopener">Discuss / Help</a></li>
-								<li><a href="https://github.com/rzwitserloot/lombok/issues" rel="noopener">Issues</a></li>
+								<li><a href="https://groups.google.com/group/project-lombok">Discuss / Help</a></li>
+								<li><a href="https://github.com/rzwitserloot/lombok/issues">Issues</a></li>
 								<li><a href="/contributing/index">Documentation for contributors</a></li>
+								<li><a href="/contact">Contact the team behind Project Lombok</a></li>
 							</ul>
 						</li>
 						<li>
@@ -111,7 +107,7 @@ ga('send', 'pageview');
 							</a>
 						</li>
 						<li class="dropdown">
-							<a href="/setup/overview" class="smallOnly"><span>Install</span></a>
+							<a href="/setup/overview" class="smallOnly"><span>How to use</span></a>
 							<a class="dropdown-toggle pointer wideOnly" data-toggle="dropdown">Install<span class="caret"></span></a>
 							<ul class="dropdown-menu" aria-labelledby="themes">
 								<#list setupTargets as cat, tgtList>

@@ -29,21 +29,31 @@ public class SuperBuilderWithDefaults {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl<N> self() {
         return this;
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") Parent<N> build() {
         return new Parent<N>(this);
       }
     }
-    private @lombok.Builder.Default long millis = System.currentTimeMillis();
-    private @lombok.Builder.Default N numberField = null;
+    private @lombok.Builder.Default long millis;
+    private @lombok.Builder.Default N numberField;
+    private static @java.lang.SuppressWarnings("all") <N extends Number>long $default$millis() {
+      return System.currentTimeMillis();
+    }
+    private static @java.lang.SuppressWarnings("all") <N extends Number>N $default$numberField() {
+      return null;
+    }
     protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<N, ?, ?> b) {
       super();
       if (b.millis$set)
           this.millis = b.millis;
+      else
+          this.millis = Parent.<N>$default$millis();
       if (b.numberField$set)
           this.numberField = b.numberField;
+      else
+          this.numberField = Parent.<N>$default$numberField();
     }
     public static @java.lang.SuppressWarnings("all") <N extends Number>ParentBuilder<N, ?, ?> builder() {
       return new ParentBuilderImpl<N>();
@@ -78,11 +88,16 @@ public class SuperBuilderWithDefaults {
         return new Child(this);
       }
     }
-    private @lombok.Builder.Default double doubleField = Math.PI;
+    private @lombok.Builder.Default double doubleField;
+    private static @java.lang.SuppressWarnings("all") double $default$doubleField() {
+      return Math.PI;
+    }
     protected @java.lang.SuppressWarnings("all") Child(final ChildBuilder<?, ?> b) {
       super(b);
-      if (b.doubleField$set)
+      if (b.doubleField$set) 
           this.doubleField = b.doubleField;
+      else
+          this.doubleField = Child.$default$doubleField();
     }
     public static @java.lang.SuppressWarnings("all") ChildBuilder<?, ?> builder() {
       return new ChildBuilderImpl();

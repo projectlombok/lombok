@@ -1,3 +1,51 @@
+.importantNotification {
+	background-color: #FFEBCD;
+	border-radius: 20px;
+	padding: 10px;
+	margin: 10px;
+}
+
+.tidelift-link-inline {
+	border-radius: 18px;
+	background-color: #626980;
+	background-color: #626980;
+	background-image: url('/img/tidelift-mark.png');
+	background-repeat: no-repeat;
+	background-position: 6px;
+	background-size: 12px;
+	padding: 2px 8px 2px 26px;
+	color: white;
+}
+
+.tidelift-link {
+	border-bottom-left-radius: 18px;
+	border-top-left-radius: 18px;
+	background-color: #626980;
+	box-sizing: border-box;
+	color: white;
+	display: flex;
+	top: 46px;
+	right: 0px;
+	position: absolute;
+	background-image: url('/img/tidelift-mark.png');
+	background-repeat: no-repeat;
+	background-position: 10px;
+	background-size: 12px;
+	padding: 6px 12px 6px 28px;
+}
+
+.tidelift-link:hover, .tidelift-link-inline:hover {
+	color: white;
+}
+
+#tideliftlink {
+	margin-left: 2px;
+	padding: 4px 6px 4px 20px;
+	background-color: #4b5168;
+	border-radius: 5px;
+	color: white;
+}
+
 #clickForVideo {
 	padding: 20px 30px;
 	background-color: #DDD;
@@ -5,6 +53,40 @@
 	margin-left: auto;
 	margin-right: auto;
 	margin-bottom: 40px;
+}
+
+pre {
+	text-align: left;
+}
+
+.tideliftb {
+	border-radius: 4px;
+	border: 2px solid #D9230F;
+	font-size: 28px;
+	width: 330px;
+	line-height: 48px;
+	display: inline-block;
+	margin: 16px 0;
+	text-align: center;
+}
+
+.tideliftb1 {
+	background-color: white;
+	float: left;
+	color: #D9230F;
+}
+
+.tideliftb1:hover {
+	color: #D9230F;
+}
+
+.tideliftb2 {
+	background-color: #D9230F;
+	color: #FCFCFC;
+}
+
+.tideliftb2:hover {
+	color: #FCFCFC;
 }
 
 .buttonLike {
@@ -34,6 +116,10 @@
 	font-style: italic;
 	font-size: 10px;
 	margin-top: 20px;
+}
+
+.tidelift {
+	font-size: 16px;
 }
 
 .formErr {

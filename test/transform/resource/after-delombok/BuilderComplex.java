@@ -3,7 +3,7 @@ class BuilderComplex {
 	private static <T extends Number> void testVoidWithGenerics(T number, int arg2, String arg3, BuilderComplex selfRef) {
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class VoidBuilder<T extends Number> {
+	public static class TestVoidName<T extends Number> {
 		@java.lang.SuppressWarnings("all")
 		private T number;
 		@java.lang.SuppressWarnings("all")
@@ -13,25 +13,25 @@ class BuilderComplex {
 		@java.lang.SuppressWarnings("all")
 		private BuilderComplex selfRef;
 		@java.lang.SuppressWarnings("all")
-		VoidBuilder() {
+		TestVoidName() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public VoidBuilder<T> number(final T number) {
+		public TestVoidName<T> number(final T number) {
 			this.number = number;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public VoidBuilder<T> arg2(final int arg2) {
+		public TestVoidName<T> arg2(final int arg2) {
 			this.arg2 = arg2;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public VoidBuilder<T> arg3(final String arg3) {
+		public TestVoidName<T> arg3(final String arg3) {
 			this.arg3 = arg3;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public VoidBuilder<T> selfRef(final BuilderComplex selfRef) {
+		public TestVoidName<T> selfRef(final BuilderComplex selfRef) {
 			this.selfRef = selfRef;
 			return this;
 		}
@@ -42,11 +42,11 @@ class BuilderComplex {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderComplex.VoidBuilder(number=" + this.number + ", arg2=" + this.arg2 + ", arg3=" + this.arg3 + ", selfRef=" + this.selfRef + ")";
+			return "BuilderComplex.TestVoidName(number=" + this.number + ", arg2=" + this.arg2 + ", arg3=" + this.arg3 + ", selfRef=" + this.selfRef + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T extends Number> VoidBuilder<T> builder() {
-		return new VoidBuilder<T>();
+	public static <T extends Number> TestVoidName<T> builder() {
+		return new TestVoidName<T>();
 	}
 }

@@ -27,6 +27,8 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import lombok.permit.Permit;
+
 public abstract class FieldAugment<T, F> {
 	private static Object getDefaultValue(Class<?> type) {
 		if (type == boolean.class) return false;
@@ -101,10 +103,9 @@ public abstract class FieldAugment<T, F> {
 	
 	private static Field findField(Class<?> type, Class<?> wantedType, String name) {
 		try {
-			Field f = type.getDeclaredField(name);
+			Field f = Permit.getField(type, name);
 			if (Modifier.isStatic(f.getModifiers()) || Modifier.isFinal(f.getModifiers())) return null;
 			if (!typeIsAssignmentCompatible(f.getType(), wantedType)) return null;
-			f.setAccessible(true);
 			return f;
 		} catch (Exception e) {
 			return null;

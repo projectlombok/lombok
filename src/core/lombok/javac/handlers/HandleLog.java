@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,19 @@
 package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.javac.Javac.CTC_BOT;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-
-import java.lang.annotation.Annotation;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.IdentifierName;
+import lombok.core.configuration.LogDeclaration;
+import lombok.core.configuration.LogDeclaration.LogFactoryParameter;
+import lombok.core.handlers.LoggingFramework;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -46,32 +50,44 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
 public class HandleLog {
+	private static final IdentifierName LOG = IdentifierName.valueOf("log");
+	
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode, String loggerTopic) {
 		deleteAnnotationIfNeccessary(annotationNode, framework.getAnnotationClass());
-
+		
 		JavacNode typeNode = annotationNode.up();
 		switch (typeNode.getKind()) {
 		case TYPE:
-			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
-			if (logFieldName == null) logFieldName = "log";
+			IdentifierName logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
+			if (logFieldName == null) logFieldName = LOG;
 			
 			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
 			
-			if ((((JCClassDecl)typeNode.get()).mods.flags & Flags.INTERFACE) != 0) {
-				annotationNode.addError("@Log is legal only on classes and enums.");
+			if ((((JCClassDecl) typeNode.get()).mods.flags & Flags.INTERFACE) != 0) {
+				annotationNode.addError(framework.getAnnotationAsString() + " is legal only on classes and enums.");
 				return;
 			}
-			if (fieldExists(logFieldName, typeNode) != MemberExistsResult.NOT_EXISTS) {
+			if (fieldExists(logFieldName.getName(), typeNode) != MemberExistsResult.NOT_EXISTS) {
 				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
-
+			
+			if (loggerTopic != null && loggerTopic.trim().isEmpty()) loggerTopic = null;
+			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
+				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");
+				loggerTopic = null;
+			}
+			if (framework.getDeclaration().getParametersWithoutTopic() == null && loggerTopic == null) {
+				annotationNode.addError(framework.getAnnotationAsString() + " requires a topic.");
+				loggerTopic = "";
+			}
+			
 			JCFieldAccess loggingType = selfType(typeNode);
-			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName, useStatic, loggerTopic);
+			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName.getName(), useStatic, loggerTopic);
 			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
@@ -88,27 +104,49 @@ public class HandleLog {
 	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic, String loggerTopic) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
+		LogDeclaration logDeclaration = framework.getDeclaration();
 		// private static final <loggerType> log = <factoryMethod>(<parameter>);
-		JCExpression loggerType = chainDotsString(typeNode, framework.getLoggerTypeName());
-		JCExpression factoryMethod = chainDotsString(typeNode, framework.getLoggerFactoryMethodName());
+		JCExpression loggerType = chainDotsString(typeNode, logDeclaration.getLoggerType().getName());
+		JCExpression factoryMethod = chainDotsString(typeNode, logDeclaration.getLoggerFactoryType().getName() + "." + logDeclaration.getLoggerFactoryMethod().getName());
 		
-		JCExpression loggerName;
-		if (!framework.passTypeName) {
-			loggerName = null;
-		} else if (loggerTopic == null || loggerTopic.trim().length() == 0) {
-			loggerName = framework.createFactoryParameter(typeNode, loggingType);
-		} else {
-			loggerName = maker.Literal(loggerTopic);
-		}
-		
-		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, loggerName != null ? List.<JCExpression>of(loggerName) : List.<JCExpression>nil());
+		java.util.List<LogFactoryParameter> parameters = loggerTopic != null ? logDeclaration.getParametersWithTopic() : logDeclaration.getParametersWithoutTopic();
+		JCExpression[] factoryParameters = createFactoryParameters(typeNode, loggingType, parameters, loggerTopic);
+		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, List.<JCExpression>from(factoryParameters));
 		
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
-				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
-				typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
+			maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
+			typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
 		
 		injectFieldAndMarkGenerated(typeNode, fieldDecl);
 		return true;
+	}
+	
+	private static JCExpression[] createFactoryParameters(JavacNode typeNode, JCFieldAccess loggingType, java.util.List<LogFactoryParameter> parameters, String loggerTopic) {
+		JCExpression[] expressions = new JCExpression[parameters.size()];
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		for (int i = 0; i < parameters.size(); i++) {
+			LogFactoryParameter parameter = parameters.get(i);
+			switch (parameter) {
+			case TYPE:
+				expressions[i] = loggingType;
+				break;
+			case NAME:
+				JCExpression method = maker.Select(loggingType, typeNode.toName("getName"));
+				expressions[i] = maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
+				break;
+			case TOPIC:
+				expressions[i] = maker.Literal(loggerTopic);
+				break;
+			case NULL:
+				expressions[i] = maker.Literal(CTC_BOT, null);
+				break;
+			default:
+				throw new IllegalStateException("Unknown logger factory parameter type: " + parameter);
+			}
+		}
+		
+		return expressions;
 	}
 	
 	/**
@@ -199,71 +237,20 @@ public class HandleLog {
 		}
 	}
 	
-	enum LoggingFramework {
-		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
-		COMMONS(lombok.extern.apachecommons.CommonsLog.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory.getLog"),
-		
-		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
-		JUL(lombok.extern.java.Log.class, "java.util.logging.Logger", "java.util.logging.Logger.getLogger") {
-			@Override public JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType) {
-				JavacTreeMaker maker = typeNode.getTreeMaker();
-				JCExpression method = maker.Select(loggingType, typeNode.toName("getName"));
-				return maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
+	/**
+	 * Handles the {@link lombok.CustomLog} annotation for javac.
+	 */
+	@ProviderFor(JavacAnnotationHandler.class)
+	public static class HandleCustomLog extends JavacAnnotationHandler<lombok.CustomLog> {
+		@Override public void handle(AnnotationValues<lombok.CustomLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_CUSTOM_FLAG_USAGE, "@CustomLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
+			LogDeclaration logDeclaration = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_CUSTOM_DECLARATION);
+			if (logDeclaration == null) {
+				annotationNode.addError("The @CustomLog is not configured; please set log.custom.declaration in lombok.config.");
+				return;
 			}
-		},
-		
-		// private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(TargetType.class);
-		LOG4J(lombok.extern.log4j.Log4j.class, "org.apache.log4j.Logger", "org.apache.log4j.Logger.getLogger"),
-		
-		// private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(TargetType.class);
-		LOG4J2(lombok.extern.log4j.Log4j2.class, "org.apache.logging.log4j.Logger", "org.apache.logging.log4j.LogManager.getLogger"),
-		
-		// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TargetType.class);
-		SLF4J(lombok.extern.slf4j.Slf4j.class, "org.slf4j.Logger", "org.slf4j.LoggerFactory.getLogger"),
-		
-		// private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(TargetType.class);
-		XSLF4J(lombok.extern.slf4j.XSlf4j.class, "org.slf4j.ext.XLogger", "org.slf4j.ext.XLoggerFactory.getXLogger"),
-		
-		// private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(TargetType.class);
-		JBOSSLOG(lombok.extern.jbosslog.JBossLog.class, "org.jboss.logging.Logger", "org.jboss.logging.Logger.getLogger"),
-		
-		// private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
-		FLOGGER(lombok.extern.flogger.Flogger.class, "com.google.common.flogger.FluentLogger", "com.google.common.flogger.FluentLogger.forEnclosingClass", false),
-		;
-		
-		private final Class<? extends Annotation> annotationClass;
-		private final String loggerTypeName;
-		private final String loggerFactoryName;
-		private final boolean passTypeName;
-		
-		LoggingFramework(Class<? extends Annotation> annotationClass, String loggerTypeName, String loggerFactoryName, boolean passTypeName) {
-			this.annotationClass = annotationClass;
-			this.loggerTypeName = loggerTypeName;
-			this.loggerFactoryName = loggerFactoryName;
-			this.passTypeName = passTypeName;
-		}
-		
-		LoggingFramework(Class<? extends Annotation> annotationClass, String loggerTypeName, String loggerFactoryName) {
-			this.annotationClass = annotationClass;
-			this.loggerTypeName = loggerTypeName;
-			this.loggerFactoryName = loggerFactoryName;
-			this.passTypeName = true;
-		}
-		
-		final Class<? extends Annotation> getAnnotationClass() {
-			return annotationClass;
-		}
-		
-		final String getLoggerTypeName() {
-			return loggerTypeName;
-		}
-		
-		final String getLoggerFactoryMethodName() {
-			return loggerFactoryName;
-		}
-		
-		JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType) {
-			return loggingType;
+			LoggingFramework framework = new LoggingFramework(lombok.CustomLog.class, logDeclaration);
+			processAnnotation(framework, annotation, annotationNode, annotation.getInstance().topic());
 		}
 	}
 }

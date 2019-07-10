@@ -1,3 +1,4 @@
+import java.math.BigDecimal;
 import java.util.*;
 import lombok.val;
 public class ValWeirdTypes<Z> {
@@ -60,5 +61,17 @@ public class ValWeirdTypes<Z> {
     final @val int[] copy = intArray;
     final @val java.lang.Object[] single = multiDimArray[0];
     final @val int singleInt = copy[0];
+  }
+  public void arraysAsList() {
+    final @val java.util.List<java.lang.Class<? extends java.io.Serializable>> x = Arrays.asList(String.class, BigDecimal.class);
+    for (final @val java.lang.Class<? extends java.io.Serializable> y : x)
+      {
+      }
+  }
+  public @SuppressWarnings("all") void arraysAsList2() {
+    final @val java.util.List<java.lang.Class<? extends java.lang.Comparable>> x = Arrays.asList(String.class, BigDecimal.class, Comparable.class);
+    for (final @val java.lang.Class<? extends java.lang.Comparable> y : x)
+      {
+      }
   }
 }

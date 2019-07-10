@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,27 @@
  */
 package lombok.eclipse.agent;
 
+import lombok.permit.Permit;
+import org.eclipse.jdt.core.compiler.CategorizedProblem;
+import org.eclipse.jdt.internal.compiler.CompilationResult;
+import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
+import org.eclipse.jdt.internal.compiler.ast.FunctionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
+import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
@@ -42,11 +53,15 @@ import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
+import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 
 import java.lang.reflect.Field;
 
+import static lombok.Lombok.sneakyThrow;
 import static lombok.eclipse.Eclipse.poss;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.makeType;
+import static org.eclipse.jdt.core.compiler.CategorizedProblem.CAT_TYPE;
 
 public class PatchVal {
 	
@@ -196,8 +211,8 @@ public class PatchVal {
 			Field a = null, b = null;
 			
 			try {
-				a = LocalDeclaration.class.getDeclaredField("$initCopy");
-				b = LocalDeclaration.class.getDeclaredField("$iterableCopy");
+				a = Permit.getField(LocalDeclaration.class, "$initCopy");
+				b = Permit.getField(LocalDeclaration.class, "$iterableCopy");
 			} catch (Throwable t) {
 				//ignore - no $initCopy exists when running in ecj.
 			}
@@ -210,16 +225,16 @@ public class PatchVal {
 		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
 		boolean decomponent = false;
 		
-        boolean val = isVal(local, scope);
-        boolean var = isVar(local, scope);
-        if (!(val || var)) return false;
+		boolean val = isVal(local, scope);
+		boolean var = isVar(local, scope);
+		if (!(val || var)) return false;
 		
 		StackTraceElement[] st = new Throwable().getStackTrace();
 		for (int i = 0; i < st.length - 2 && i < 10; i++) {
 			if (st[i].getClassName().equals("lombok.launch.PatchFixesHider$Val")) {
 				boolean valInForStatement = val &&
-						st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
-						st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement");
+					st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
+					st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement");
 				if (valInForStatement) return false;
 				break;
 			}
@@ -263,13 +278,14 @@ public class PatchVal {
 			if (resolved != null) {
 				try {
 					replacement = makeType(resolved, local.type, false);
+					if (!decomponent) init.resolvedType = replacement.resolveType(scope);
 				} catch (Exception e) {
-					// Some type thing failed. It might be an IntersectionType
+					// Some type thing failed.
 				}
 			}
 		}
 		
-		if(val) local.modifiers |= ClassFileConstants.AccFinal;
+		if (val) local.modifiers |= ClassFileConstants.AccFinal;
 		local.annotations = addValAnnotation(local.annotations, local.type, scope);
 		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(local.type, 3));
 		
@@ -298,7 +314,7 @@ public class PatchVal {
 		if (val) forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
 		forEach.elementVariable.annotations = addValAnnotation(forEach.elementVariable.annotations, forEach.elementVariable.type, scope);
 		forEach.elementVariable.type = replacement != null ? replacement :
-				new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(forEach.elementVariable.type, 3));
+			new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(forEach.elementVariable.type, 3));
 		
 		return false;
 	}
@@ -326,7 +342,7 @@ public class PatchVal {
 				resolved = ((ArrayBinding) resolved).elementsType();
 				return resolved;
 			} else if (resolved instanceof ReferenceBinding) {
-				ReferenceBinding iterableType = ((ReferenceBinding)resolved).findSuperTypeOriginatingFrom(TypeIds.T_JavaLangIterable, false);
+				ReferenceBinding iterableType = ((ReferenceBinding) resolved).findSuperTypeOriginatingFrom(TypeIds.T_JavaLangIterable, false);
 				
 				TypeBinding[] arguments = null;
 				if (iterableType != null) switch (iterableType.kind()) {
@@ -350,11 +366,106 @@ public class PatchVal {
 	}
 	
 	private static TypeBinding resolveForExpression(Expression collection, BlockScope scope) {
+		CompilationUnitDeclaration referenceContext = scope.compilationUnitScope().referenceContext;
+		ProblemReporter oldProblemReporter = referenceContext.problemReporter;
+		referenceContext.problemReporter = new ProblemReporter(DefaultErrorHandlingPolicies.exitOnFirstError(),
+				oldProblemReporter.options, oldProblemReporter.problemFactory);
 		try {
 			return collection.resolveType(scope);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			// Known cause of issues; for example: val e = mth("X"), where mth takes 2 arguments.
 			return null;
+		} catch (AbortCompilation e) {
+			if (collection instanceof ConditionalExpression) {
+				ConditionalExpression cexp = (ConditionalExpression) collection;
+				Expression ifTrue = cexp.valueIfTrue;
+				Expression ifFalse = cexp.valueIfFalse;
+				TypeBinding ifTrueResolvedType = ifTrue.resolvedType;
+				CategorizedProblem problem = e.problem;
+				if (ifTrueResolvedType != null && ifFalse.resolvedType == null && problem.getCategoryID() == CAT_TYPE) {
+					CompilationResult compilationResult = e.compilationResult;
+					CategorizedProblem[] problems = compilationResult.problems;
+					int problemCount = compilationResult.problemCount;
+					for (int i = 0; i < problemCount; ++i) {
+						if (problems[i] == problem) {
+							problems[i] = null;
+							if (i + 1 < problemCount) {
+								System.arraycopy(problems, i + 1, problems, i, problemCount - i + 1);
+							}
+							break;
+						}
+					}
+					compilationResult.removeProblem(problem);
+					if (!compilationResult.hasErrors()) {
+						clearIgnoreFurtherInvestigationField(scope.referenceContext());
+						setValue(getField(CompilationResult.class, "hasMandatoryErrors"), compilationResult, false);
+					}
+					
+					if (ifFalse instanceof FunctionalExpression) {
+						FunctionalExpression functionalExpression = (FunctionalExpression) ifFalse;
+						functionalExpression.setExpectedType(ifTrueResolvedType);
+					}
+					if (ifFalse.resolvedType == null) {
+						ifFalse.resolve(scope);
+					}
+					
+					return ifTrueResolvedType;
+				}
+			}
+			throw e;
+		} finally {
+			referenceContext.problemReporter = oldProblemReporter;
+		}
+	}
+	
+	private static void clearIgnoreFurtherInvestigationField(ReferenceContext currentContext) {
+		if (currentContext instanceof AbstractMethodDeclaration) {
+			AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) currentContext;
+			methodDeclaration.ignoreFurtherInvestigation = false;
+		} else if (currentContext instanceof LambdaExpression) {
+			LambdaExpression lambdaExpression = (LambdaExpression) currentContext;
+			setValue(getField(LambdaExpression.class, "ignoreFurtherInvestigation"), lambdaExpression, false);
+			
+			Scope parent = lambdaExpression.enclosingScope.parent;
+			while (parent != null) {
+				switch(parent.kind) {
+					case Scope.CLASS_SCOPE:
+					case Scope.METHOD_SCOPE:
+						ReferenceContext parentAST = parent.referenceContext();
+						if (parentAST != lambdaExpression) {
+							clearIgnoreFurtherInvestigationField(parentAST);
+							return;
+						}
+					default:
+						parent = parent.parent;
+						break;
+				}
+			}
+			
+		} else if (currentContext instanceof TypeDeclaration) {
+			TypeDeclaration typeDeclaration = (TypeDeclaration) currentContext;
+			typeDeclaration.ignoreFurtherInvestigation = false;
+		} else if (currentContext instanceof CompilationUnitDeclaration) {
+			CompilationUnitDeclaration typeDeclaration = (CompilationUnitDeclaration) currentContext;
+			typeDeclaration.ignoreFurtherInvestigation = false;
+		} else {
+			throw new UnsupportedOperationException("clearIgnoreFurtherInvestigationField for " + currentContext.getClass());
+		}
+	}
+	
+	private static void setValue(Field field, Object object, Object value) {
+		try {
+			field.set(object, value);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		}
+	}
+	
+	private static Field getField(Class clazz, String name) {
+		try {
+			return Permit.getField(clazz, name);
+		} catch (NoSuchFieldException e) {
+			throw sneakyThrow(e);
 		}
 	}
 }

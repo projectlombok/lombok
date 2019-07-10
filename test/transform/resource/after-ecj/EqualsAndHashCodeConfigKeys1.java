@@ -16,7 +16,7 @@
     return (other instanceof EqualsAndHashCodeConfigKeys1Parent);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    int result = 1;
+    final int result = 1;
     return result;
   }
 }

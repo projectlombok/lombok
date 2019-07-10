@@ -31,11 +31,11 @@ import lombok.core.ClassLiteral;
 import lombok.core.FieldSelect;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
-import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -56,6 +56,8 @@ public class Eclipse {
 	 */
 	public static final int ECLIPSE_DO_NOT_TOUCH_FLAG = ASTNode.Bit24;
 	
+	private static final Pattern SPLIT_AT_DOT = Pattern.compile("\\.");
+	
 	private Eclipse() {
 		//Prevent instantiation
 	}
@@ -65,19 +67,25 @@ public class Eclipse {
 	 * but we need to deal with it. This turns [[java][lang][String]] into "java.lang.String".
 	 */
 	public static String toQualifiedName(char[][] typeName) {
-		int len = typeName.length - 1;
+		int len = typeName.length - 1; // number of dots
+		if (len == 0) return new String(typeName[0]);
+		
 		for (char[] c : typeName) len += c.length;
-		StringBuilder sb = new StringBuilder(len);
-		boolean first = true;
-		for (char[] c : typeName) {
-			sb.append(first ? "" : ".").append(c);
-			first = false;
+		char[] ret = new char[len];
+		char[] part = typeName[0];
+		System.arraycopy(part, 0, ret, 0, part.length);
+		int pos = part.length;
+		for (int i = 1; i < typeName.length; i++) {
+			ret[pos++] = '.';
+			part = typeName[i];
+			System.arraycopy(part, 0, ret, pos, part.length);
+			pos += part.length;
 		}
-		return sb.toString();
+		return new String(ret);
 	}
 	
 	public static char[][] fromQualifiedName(String typeName) {
-		String[] split = typeName.split("\\.");
+		String[] split = SPLIT_AT_DOT.split(typeName);
 		char[][] result = new char[split.length][];
 		for (int i = 0; i < split.length; i++) {
 			result[i] = split[i].toCharArray();
@@ -131,7 +139,7 @@ public class Eclipse {
 	 * 
 	 * Only the simple name is checked - the package and any containing class are ignored.
 	 */
-	public static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
+	public static Annotation[] findAnnotations(AbstractVariableDeclaration field, Pattern namePattern) {
 		List<Annotation> result = new ArrayList<Annotation>();
 		if (field.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
 		for (Annotation annotation : field.annotations) {
@@ -178,11 +186,11 @@ public class Eclipse {
 			default: return null;
 			}
 		} else if (e instanceof ClassLiteralAccess) {
-			return new ClassLiteral(Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName()));
+			return new ClassLiteral(Eclipse.toQualifiedName(((ClassLiteralAccess) e).type.getTypeName()));
 		} else if (e instanceof SingleNameReference) {
 			return new FieldSelect(new String(((SingleNameReference)e).token));
 		} else if (e instanceof QualifiedNameReference) {
-			String qName = Eclipse.toQualifiedName(((QualifiedNameReference)e).tokens);
+			String qName = Eclipse.toQualifiedName(((QualifiedNameReference) e).tokens);
 			int idx = qName.lastIndexOf('.');
 			return new FieldSelect(idx == -1 ? qName : qName.substring(idx+1));
 		} else if (e instanceof UnaryExpression) {

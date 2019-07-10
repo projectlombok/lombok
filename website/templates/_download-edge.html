@@ -9,6 +9,41 @@
 			${changelogEdge?no_esc}
 		</div><div class="row text-center">
 			<h2><a href="/lombok-edge.jar" id="downloadLink">Download edge release now!</a></h2>
+			<p>
+				You can use the edge release from maven using the projectlombok.org repository:<pre>
+&lt;repositories&gt;
+	&lt;repository&gt;
+		&lt;id&gt;projectlombok.org&lt;/id&gt;
+		&lt;url&gt;https://projectlombok.org/edge-releases&lt;/url&gt;
+	&lt;/repository&gt;
+&lt;/repositories&gt;</pre>
+<pre>
+&lt;dependencies&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+		&lt;artifactId&gt;lombok&lt;/artifactId&gt;
+		&lt;version&gt;edge-SNAPSHOT&lt;/version&gt;
+		&lt;scope&gt;provided&lt;/scope&gt;
+	&lt;/dependency&gt;
+&lt;/dependencies&gt;</pre>
+			</p>
+			<p>
+				You can use the edge release from gradle using the projectlombok.org repository:<pre>
+repositories {
+	mavenCentral()
+	maven { url 'https://projectlombok.org/edge-releases' }
+}
+
+plugins {
+	id 'net.ltgt.apt' version '0.10'
+}
+
+dependencies {
+	compileOnly 'org.projectlombok:lombok:edge-SNAPSHOT'
+	
+	apt 'org.projectlombok:lombok:edge-SNAPSHOT'
+}</pre>
+			</p>
 		</div><div class="row text-center">
 			<p>
 				Cutting edge a bit too gutsy for you? You can grab the <a href="download.html">stable release</a> instead.

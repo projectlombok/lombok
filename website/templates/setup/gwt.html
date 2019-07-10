@@ -13,4 +13,22 @@ java <strong>-javaagent:lombok.jar=ECJ</strong> <em>(rest of arguments)</em>
 			Thanks to Stephen Haberman for figuring this out.
 		</p>
 	</@s.introduction>
+	
+	<@s.section title="GWT plugin in Eclipse">
+		<p>
+			To use the GWT plugin in eclipse together with Lombok:<br />
+			Install lombok into eclipse as normal (start <code>lombok.jar</code> as an application).<br />
+			Download the JDT variant that GWT uses. For GWT v2.8.2 you'll need <a href="https://github.com/gwtproject/tools/raw/master/lib/eclipse/org.eclipse.jdt.core_3.11.2-CUSTOM-GWT-2.8-20160205.jar">org.eclipse.jdt.core 3.11.2</a>; for the current GWT development snapshot, this is <a href="https://github.com/gwtproject/tools/raw/master/lib/eclipse/org.eclipse.jdt.core_3.13.50-CUSTOM-GWT-20171215.jar">org.eclipse.jdt.core 3.13.50</a>. For more versions, search for jar files matching 'org.eclipse.jdt.core-{VERSION}-CUSTOM-GWT-{date}.jar in the <a href="https://github.com/gwtproject/tools/tree/master/lib/eclipse">lib/eclipse section GWT's github page</a>.<br />
+			Configure the 'GWT/Compile' option in the eclipse GWT plugin; in the advanced section, add the following VM arguments:<br />
+<pre>-javaagent:/path/to/lombok.jar=ECJ
+-Xbootclasspath/p:/path/to/lombok.jar:/path/to/org.eclipse.jdt.core_fromPreviousStep.jar</pre>
+Where the colon should be replaced with a semicolon on windows.<br />
+			GWT Dev Mode needs a similar configuration: In the VM arguments section ('Arguments' tab), add:
+<pre>-javaagent:/path/to/lombok.jar=ECJ</pre>
+			and in the 'Classpath' tab, add both lombok.jar and the org.eclipse.jdt.core file you downloaded.
+		</p>
+		<p>
+			The above instructions are contributed by Stas via the forum. Let us know if they work, or if you run into issues. Thanks and have fun!
+		</p>
+	</@s.section>
 </@s.scaffold>

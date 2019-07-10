@@ -21,6 +21,7 @@
  */
 package lombok.installer.eclipse;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ import lombok.installer.OsUtils;
 public class StandardProductDescriptor implements EclipseProductDescriptor {
 	
 	private static final String USER_HOME = System.getProperty("user.home", ".");
-	private static final String[] WINDOWS_ROOTS = {"\\", "\\Program Files", "\\Program Files (x86)", USER_HOME};
+	private static final String[] WINDOWS_ROOTS = windowsRoots();
 	private static final String[] MAC_ROOTS = {"/Applications", USER_HOME};
 	private static final String[] UNIX_ROOTS = {USER_HOME};
 	
@@ -154,5 +155,17 @@ public class StandardProductDescriptor implements EclipseProductDescriptor {
 			return base + alternative.replaceAll("[\\/]", "\\" + pathSeparator);
 		}
 		return base + pathSeparator + alternative.replaceAll("[\\/]", "\\" + pathSeparator);
+	}
+	
+	private static String[] windowsRoots() {
+		String localAppData = windowsLocalAppData();
+		if (localAppData == null) return new String[] {"\\", "\\Program Files", "\\Program Files (x86)", USER_HOME};
+		return new String[] {"\\", "\\Program Files", "\\Program Files (x86)", USER_HOME, localAppData};
+	}
+	
+	private static String windowsLocalAppData() {
+		String localAppData = System.getenv("LOCALAPPDATA");
+		File file = localAppData == null ? null : new File(localAppData);
+		return file != null && file.exists() && file.canRead() && file.isDirectory() ? localAppData : null;
 	}
 }

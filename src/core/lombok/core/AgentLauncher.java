@@ -22,6 +22,7 @@
 package lombok.core;
 
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,9 +36,10 @@ public class AgentLauncher {
 		for (AgentInfo info : AGENTS) {
 			try {
 				Class<?> agentClass = Class.forName(info.className());
-				AgentLaunchable agent = (AgentLaunchable) agentClass.newInstance();
+				AgentLaunchable agent = (AgentLaunchable) agentClass.getConstructor().newInstance();
 				agent.runAgent(agentArgs, instrumentation, injected, launchingContext);
 			} catch (Throwable t) {
+				if (t instanceof InvocationTargetException) t = t.getCause();
 				info.problem(t, instrumentation);
 			}
 		}

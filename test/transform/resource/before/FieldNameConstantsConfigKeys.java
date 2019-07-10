@@ -1,5 +1,4 @@
-//CONF: lombok.fieldNameConstants.prefix = 
-//CONF: lombok.fieldNameConstants.suffix = _SFX
+//CONF: lombok.fieldNameConstants.innerTypeName = Foobar
 
 @lombok.experimental.FieldNameConstants
 public class FieldNameConstantsConfigKeys {

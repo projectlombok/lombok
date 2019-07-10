@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.util.Arrays;
@@ -30,17 +30,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.ToString;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.core.handlers.InclusionExclusionUtils;
-import lombok.core.handlers.InclusionExclusionUtils.Included;
-import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -58,11 +47,25 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.SuperReference;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.ToString;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.configuration.CallSuperType;
+import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.core.handlers.InclusionExclusionUtils;
+import lombok.core.handlers.InclusionExclusionUtils.Included;
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
 
 /**
  * Handles the {@code ToString} annotation for eclipse.
@@ -119,12 +122,6 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		boolean notAClass = (modifiers &
 				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
 		
-		if (callSuper == null) {
-			try {
-				callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
-			} catch (Exception ignore) {}
-		}
-		
 		if (typeDecl == null || notAClass) {
 			errorNode.addError("@ToString is only supported on a class or enum.");
 			return;
@@ -132,6 +129,27 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
+			if (callSuper == null) {
+				if (isDirectDescendantOfObject(typeNode)) {
+					callSuper = false;
+				} else {
+					CallSuperType cst = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_CALL_SUPER);
+					if (cst == null) cst = CallSuperType.SKIP;
+					switch (cst) {
+					default:
+					case SKIP:
+						callSuper = false;
+						break;
+					case WARN:
+						errorNode.addWarning("Generating toString implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this intentional, add '@ToString(callSuper=false)' to your type.");
+						callSuper = false;
+						break;
+					case CALL:
+						callSuper = true;
+						break;
+					}
+				}
+			}
 			MethodDeclaration toString = createToString(typeNode, members, includeFieldNames, callSuper, errorNode.get(), fieldAccess);
 			injectMethod(typeNode, toString);
 			break;
@@ -149,6 +167,8 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		boolean includeNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		
 		String typeName = getTypeName(type);
+		boolean isEnum = type.isEnumType();
+
 		char[] suffix = ")".toCharArray();
 		String infixS = ", ";
 		char[] infix = infixS.toCharArray();
@@ -156,31 +176,54 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		long p = (long)pS << 32 | pE;
 		final int PLUS = OperatorIds.PLUS;
 		
-		char[] prefix;
+		String prefix;
 		
 		if (callSuper) {
-			prefix = (typeName + "(super=").toCharArray();
+			prefix = "(super=";
 		} else if (members.isEmpty()) {
-			prefix = (typeName + "()").toCharArray();
+			prefix = isEnum ? "" : "()";
 		} else if (includeNames) {
 			Included<EclipseNode, ToString.Include> firstMember = members.iterator().next();
 			String name = firstMember.getInc() == null ? "" : firstMember.getInc().name();
 			if (name.isEmpty()) name = firstMember.getNode().getName();
-			prefix = (typeName + "(" + name + "=").toCharArray();
+			prefix = "(" + name + "=";
 		} else {
-			prefix = (typeName + "(").toCharArray();
+			prefix = "(";
 		}
 		
 		boolean first = true;
-		Expression current = new StringLiteral(prefix, pS, pE, 0);
-		setGeneratedBy(current, source);
+		Expression current;
+		if (!isEnum) {
+			current = new StringLiteral((typeName + prefix).toCharArray(), pS, pE, 0);
+			setGeneratedBy(current, source);
+		} else {
+			current = new StringLiteral((typeName + ".").toCharArray(), pS, pE, 0);
+			setGeneratedBy(current, source);
+
+			MessageSend thisName = new MessageSend();
+			thisName.sourceStart = pS; thisName.sourceEnd = pE;
+			setGeneratedBy(thisName, source);
+			thisName.receiver = new ThisReference(pS, pE);
+			setGeneratedBy(thisName.receiver, source);
+			thisName.selector = "name".toCharArray();
+			current = new BinaryExpression(current, thisName, PLUS);
+			setGeneratedBy(current, source);
+			
+			if (!prefix.isEmpty()) {
+				StringLiteral px = new StringLiteral(prefix.toCharArray(), pS, pE, 0);
+				setGeneratedBy(px, source);				
+				current = new BinaryExpression(current, px, PLUS);
+				current.sourceStart = pS; current.sourceEnd = pE;
+				setGeneratedBy(current, source);
+			}
+		}
 		
 		if (callSuper) {
 			MessageSend callToSuper = new MessageSend();
 			callToSuper.sourceStart = pS; callToSuper.sourceEnd = pE;
 			setGeneratedBy(callToSuper, source);
 			callToSuper.receiver = new SuperReference(pS, pE);
-			setGeneratedBy(callToSuper, source);
+			setGeneratedBy(callToSuper.receiver, source);
 			callToSuper.selector = "toString".toCharArray();
 			current = new BinaryExpression(current, callToSuper, PLUS);
 			setGeneratedBy(current, source);

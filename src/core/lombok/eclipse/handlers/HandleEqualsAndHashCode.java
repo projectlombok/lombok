@@ -69,7 +69,6 @@ import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -228,7 +227,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	
 	public MethodDeclaration createHashCode(EclipseNode type, Collection<Included<EclipseNode, EqualsAndHashCode.Include>> members, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		setGeneratedBy(method, source);
@@ -247,7 +246,14 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		List<Statement> statements = new ArrayList<Statement>();
 		
-		final boolean isEmpty = members.isEmpty();
+		boolean isEmpty = true;
+		for (Included<EclipseNode, EqualsAndHashCode.Include> member : members) {
+			TypeReference fType = getFieldType(member.getNode(), fieldAccess);
+			if (fType.getLastToken() != null) {
+				isEmpty = false;
+				break;
+			}
+		}
 		
 		/* final int PRIME = X; */ {
 			/* Without members, PRIME isn't used, as that would trigger a 'local variable not used' warning. */
@@ -283,6 +289,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			resultDecl.initialization = init;
 			resultDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 			resultDecl.type.sourceStart = pS; resultDecl.type.sourceEnd = pE;
+			if (isEmpty) resultDecl.modifiers |= Modifier.FINAL;
 			setGeneratedBy(resultDecl.type, source);
 			statements.add(resultDecl);
 		}
@@ -304,6 +311,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					setGeneratedBy(intForBool, source);
 					statements.add(createResultCalculation(source, intForBool));
 				} else if (Arrays.equals(TypeConstants.LONG, token)) {
+					/* (int)(ref >>> 32 ^ ref) */
 					statements.add(createLocalDeclaration(source, dollarFieldName, TypeReference.baseTypeReference(TypeIds.T_long, 0), fieldAccessor));
 					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);
 					setGeneratedBy(copy1, source);
@@ -383,7 +391,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			setGeneratedBy(returnStatement, source);
 			statements.add(returnStatement);
 		}
-		method.statements = statements.toArray(new Statement[statements.size()]);
+		method.statements = statements.toArray(new Statement[0]);
 		return method;
 	}
 
@@ -730,7 +738,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			setGeneratedBy(returnStatement, source);
 			statements.add(returnStatement);
 		}
-		method.statements = statements.toArray(new Statement[statements.size()]);
+		method.statements = statements.toArray(new Statement[0]);
 		return method;
 	}
 	
@@ -818,30 +826,5 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		CastExpression expr = makeCastExpression(xorParts, intRef, source);
 		expr.sourceStart = pS; expr.sourceEnd = pE;
 		return expr;
-	}
-	
-	public NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-		
-		NameReference ref;
-		
-		if (varNames.length > 1) ref = new QualifiedNameReference(varNames, new long[varNames.length], pS, pE);
-		else ref = new SingleNameReference(varNames[0], p);
-		setGeneratedBy(ref, source);
-		return ref;
-	}
-	
-	public TypeReference generateQualifiedTypeRef(ASTNode source, char[]... varNames) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-		
-		TypeReference ref;
-		
-		long[] poss = Eclipse.poss(source, varNames.length);
-		if (varNames.length > 1) ref = new QualifiedTypeReference(varNames, poss);
-		else ref = new SingleTypeReference(varNames[0], p);
-		setGeneratedBy(ref, source);
-		return ref;
 	}
 }

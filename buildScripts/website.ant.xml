@@ -112,6 +112,50 @@ such as applying the templates to produce the website, converting the changelog 
 				<include name="LICENSE" />
 			</fileset>
 		</copy>
+		
+		<get src="https://code.jquery.com/jquery-3.3.1.min.js" dest="build/website/js/jquery.min.js" />
+		<fail message="jQuery checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/jquery.min.js" algorithm="SHA-384" property="b6c405aa91117aeed92e1055d9566502eef370e57ead76d8945d9ca81f2dc48ffc6996a38e9e01a9df95e83e4882f293" verifyproperty="jquery.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js" dest="build/website/js/modernizr.min.js" />
+		<fail message="modernizr checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/modernizr.min.js" algorithm="SHA-384" property="6cf577980d9ea3779da2ae7a57370f0661b537541551f8d833154824f3f3c85272159f0615f37b369b74e99af6deab6c" verifyproperty="modernizr.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js" dest="build/website/js/bootstrap.min.js" />
+		<fail message="bootstrap checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/bootstrap.min.js" algorithm="SHA-384" property="0a17eaab1b995029c948adfe31798f348c84e996d687620ca84db8d6b622a89c7232267a396fc9999439b2dc0450b4f2" verifyproperty="bootstrap.ok" />
+			</not></condition>
+		</fail>
+
+		<get src="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" dest="build/website/css/font-awesome.min.css" />
+		<fail message="font-awesome checksum failed">
+			<condition><not>
+				<checksum file="build/website/css/font-awesome.min.css" algorithm="SHA-384" property="c2f7d7a6aa596554062ba4c08793d594639f40d1d2a03db16c4f9090fc4200594d11ebe8107dd2974b226d570e4159cd" verifyproperty="fontawesome.ok" />
+			</not></condition>
+		</fail>
+		
+		<mkdir dir="build/website/fonts" />
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff" dest="build/website/fonts/fontawesome-webfont.woff" />
+		<fail message="woff checksum failed">
+			<condition><not>
+				<checksum file="build/website/fonts/fontawesome-webfont.woff" algorithm="SHA-384" property="9a2008ccbb9e142d9ad62db6439db4a0543073f376c2d6987bddd0cab298963e5fd13d3e0e4404a4cb3b4be32f9135bf" verifyproperty="woff.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2" dest="build/website/fonts/fontawesome-webfont.woff2" />
+		<fail message="woff2 checksum failed">
+			<condition><not>
+				<checksum file="build/website/fonts/fontawesome-webfont.woff2" algorithm="SHA-384" property="c267dab02b05137a7d06041209c8a227447a1af392b0a29924c5c1bd3882b966b7ca96b9c971958d2773b94fce37a3fa" verifyproperty="woff2.ok" />
+			</not></condition>
+		</fail>
+		
 		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
@@ -185,9 +229,11 @@ such as applying the templates to produce the website, converting the changelog 
 			<arg value="build/website-edge/download-edge.html" />
 		</java>
 		<copy file="dist/lombok.jar" tofile="build/website-edge/lombok-edge.jar" />
-		
 		<tar destfile="dist/website-edge.tar.bz2" compression="bzip2">
 			<tarfileset dir="build/website-edge" />
+			<tarfileset dir="build">
+				<include name="edge-releases/**" />
+			</tarfileset>
 		</tar>
 	</target>
 	
@@ -209,6 +255,23 @@ such as applying the templates to produce the website, converting the changelog 
 			username="${ssh.username}"
 			keyfile="${ssh.keyfile}"
 			knownHosts="ssh.knownHosts" />
+		<exec executable="/usr/bin/git" failonerror="true">
+			<arg value="merge-base" />
+			<arg value="--is-ancestor" />
+			<arg value="edge" />
+			<arg value="master" />
+		</exec>
+		<exec executable="/usr/bin/git">
+			<arg value="branch" />
+			<arg value="-f" />
+			<arg value="edge" />
+			<arg value="master" />
+		</exec>
+		<exec executable="/usr/bin/git">
+			<arg value="push" />
+			<arg value="origin" />
+			<arg value="edge:refs/heads/edge" />
+		</exec>
 	</target>
 	
 	<target name="javadoc" description="Generates the javadoc" depends="-ensure-version, -ensure-fullversion" unless="skip.javadoc">
@@ -218,21 +281,21 @@ such as applying the templates to produce the website, converting the changelog 
 		<property name="javadoc.overview.html" location="build/javadoc.overview.html" />
 		<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
 			Welcome to the lombok javadoc.&nbsp;If you're just looking to learn more about using lombok
-			You probably want to look at <a href="https://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
+			You probably want to look at <a href="https://projectlombok.org/features/all">the feature documentation</a>.&nbsp;Otherwise,
 			check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
 			write your own plugins, the other packages are what you're looking for.</body></html>
 		]]></echo>
-		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
+		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" source="1.8" Overview="${javadoc.overview.html}">
 			<package name="lombok" />
 			<package name="lombok.experimental" />
 			<package name="lombok.extern.*" />
 			<classpath refid="build.path" />
 			<classpath location="build/lombok" />
 			<header><![CDATA[<a href='https://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
-			<bottom><![CDATA[<i>Copyright &copy; 2009-2018 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
+			<bottom><![CDATA[<i>Copyright &copy; 2009-2019 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<!-- bugfix for boneheaded javadoc bug where ?is-external=true is inserted before an anchor ref, breaking the anchor ref.
-		is-external=true doesn't actually do anything, so, we'll just get rid of it. -->
+		is-external=true doesn't actually do anything except mess with titles, so, we'll just get rid of it. -->
 		<replaceregexp match="\?is-external=true#" replace="#" flags="gi">
 			<fileset dir="build/api" includes="**/*.html" />
 		</replaceregexp>
@@ -241,12 +304,25 @@ such as applying the templates to produce the website, converting the changelog 
 			<fileset dir="build/api" includes="**/*.html" />
 			<filterchain>
 				<linecontainsregexp negate="true">
-					<regexp pattern="(Generated by javadoc)|(.META NAME=.date.)" />
+					<regexp pattern="(Generated by javadoc)|(.META NAME=.date.)|(meta name=.dc.created.)" />
 				</linecontainsregexp>
 			</filterchain>
 		</copy>
 		<copy todir="doc/api">
-			<fileset dir="build/api" excludes="**/*.html" />
+			<fileset dir="build/api" includes="**/*.css" />
+			<filterchain>
+				<linecontainsregexp negate="true">
+					<regexp pattern="@import.*dejavu.css.*" />
+				</linecontainsregexp>
+			</filterchain>
 		</copy>
+		<copy todir="doc/api">
+			<fileset dir="build/api">
+				<exclude name="**/*.html" />
+				<exclude name="**/*.css" />
+			</fileset>
+		</copy>
+		<echo append="true" file="doc/api/module-search-index.js"></echo>
+		<echo append="true" file="doc/api/tag-search-index.js"></echo>
 	</target>
 </project>

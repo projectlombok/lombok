@@ -188,7 +188,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
     return (other instanceof Data5);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    int result = 1;
+    final int result = 1;
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
@@ -207,7 +207,7 @@ final @Data class Data6 {
     return true;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    int result = 1;
+    final int result = 1;
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {

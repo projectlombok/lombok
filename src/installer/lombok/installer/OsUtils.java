@@ -53,14 +53,14 @@ public final class OsUtils {
 		dll1.deleteOnExit();
 		dll2.deleteOnExit();
 		try {
-			if (unpackDLL("WindowsDriveInfo-i386.dll", dll1)) {
+			if (unpackDLL("WindowsDriveInfo-i386.binary", dll1)) {
 				System.load(dll1.getAbsolutePath());
 				return;
 			}
 		} catch (Throwable ignore) {}
 		
 		try {
-			if (unpackDLL("WindowsDriveInfo-x86_64.dll", dll2)) {
+			if (unpackDLL("WindowsDriveInfo-x86_64.binary", dll2)) {
 				System.load(dll2.getAbsolutePath());
 			}
 		} catch (Throwable ignore) {}

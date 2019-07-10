@@ -77,7 +77,7 @@
 				ji.attr("title", n.text());
 				a.prepend(ji);
 			};
-			i.src = 'files/' + this.logo;
+			i.src = '/files/' + this.logo;
 		}
 		return d;
 	}
@@ -132,6 +132,7 @@
 	var supPerBar = 4;
 	function updateSupporterBar() {
 		var s = $(".supporterBar");
+		if (s.length === 0) return;
 		s.find(".introText").show();
 		s.append($("<div />").addClass("sbCnt"));
 		var sf = s.find(".supporterFooter").show();
@@ -213,7 +214,7 @@
 		});
 		if (s.children().length < 1) {
 			var x = $("<div />").addClass("noSupportersBox").html(
-				"We don't have any supporters yet this month.<br /><a href=\"https://patreon.com/lombok\" rel=\"noopener\">Become a patron</a> " +
+				"We don't have any supporters yet this month.<br /><a href=\"https://patreon.com/lombok\">Become a patron</a> " +
 				"or <a href=\"/order-license-info\">order a professional or enterprise license</a> today!");
 			s.append(x);
 		}

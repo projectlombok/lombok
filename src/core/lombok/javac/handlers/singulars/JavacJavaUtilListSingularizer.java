@@ -46,12 +46,11 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.lang.Iterable");
 	}
 	
+	@Override protected String getEmptyMaker(String target) {
+		return "java.util.Collections.emptyList";
+	}
+	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
-		if (useGuavaInstead(builderType)) {
-			guavaListSetSingularizer.appendBuildCode(data, builderType, source, statements, targetVariableName, builderVariable);
-			return;
-		}
-		
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();

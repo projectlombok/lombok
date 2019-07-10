@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,10 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
-import lombok.core.DiagnosticsReceiver;
-
 import com.sun.tools.javac.file.BaseFileManager;
+
+import lombok.core.DiagnosticsReceiver;
+import lombok.permit.Permit;
 
 //Can't use SimpleJavaFileObject so we copy/paste most of its content here, because javac doesn't follow the interface,
 //and casts to its own BaseFileObject type. D'oh!
@@ -87,16 +88,14 @@ final class LombokFileObjects {
 	}
 		
 	static Method getDecoderMethod(String className) {
-		Method m = null;
 		try {
-			m = Class.forName(className).getDeclaredMethod("getDecoder", boolean.class);
-			m.setAccessible(true);
+			return Permit.getMethod(Class.forName(className), "getDecoder", boolean.class);
 		} catch (NoSuchMethodException e) {
 			// Intentional fallthrough - getDecoder(boolean) is not always present.
 		} catch (ClassNotFoundException e) {
 			// Intentional fallthrough - getDecoder(boolean) is not always present.
 		}
-		return m;
+		return null;
 	}
 	
 	private LombokFileObjects() {}
@@ -153,10 +152,6 @@ final class LombokFileObjects {
 		throw new IllegalArgumentException(sb.toString());
 	}
 	
-	static JavaFileObject createEmpty(Compiler compiler, String name, Kind kind) {
-		return compiler.wrap(new EmptyLombokFileObject(name, kind));
-	}
-	
 	static JavaFileObject createIntercepting(Compiler compiler, JavaFileObject delegate, String fileName, DiagnosticsReceiver diagnostics) {
 		return compiler.wrap(new InterceptingJavaFileObject(delegate, fileName, diagnostics, compiler.getDecoderMethod()));
 	}
@@ -169,7 +164,17 @@ final class LombokFileObjects {
 		}
 		
 		@Override public JavaFileObject wrap(LombokFileObject fileObject) {
-			return new Javac9BaseFileObjectWrapper(fileManager, toPath(fileObject), fileObject);
+			Path p; try {
+				p = toPath(fileObject);
+			} catch (Exception e) {
+				p = null;
+			}
+			
+			// J9BFOW extends javac's internal file base impl of javax.tools.JavaFileObject.
+			// J9JFOW just straight implements it. Probably J9JFOW is fine, but we decided to extend java's internal impl possibly for a reason.
+			// Some exotic build environments don't _have_ file objects and crash with FileNotFoundEx, so if that happens, let's try the alternative.
+			if (p != null) return new Javac9BaseFileObjectWrapper(fileManager, p, fileObject);
+			return new Javac9JavaFileObjectWrapper(fileObject);
 		}
 		
 		@Override public Method getDecoderMethod() {

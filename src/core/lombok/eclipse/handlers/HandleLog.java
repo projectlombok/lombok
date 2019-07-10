@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,20 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.eclipse.Eclipse.fromQualifiedName;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-
-import lombok.ConfigurationKeys;
-import lombok.core.AnnotationValues;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
+import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
@@ -47,7 +43,18 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
+import lombok.ConfigurationKeys;
+import lombok.core.AnnotationValues;
+import lombok.core.configuration.IdentifierName;
+import lombok.core.configuration.LogDeclaration;
+import lombok.core.configuration.LogDeclaration.LogFactoryParameter;
+import lombok.core.handlers.LoggingFramework;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
+
 public class HandleLog {
+	private static final IdentifierName LOG = IdentifierName.valueOf("log");
+
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
@@ -57,8 +64,8 @@ public class HandleLog {
 		
 		switch (owner.getKind()) {
 		case TYPE:
-			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
-			if (logFieldName == null) logFieldName = "log";
+			IdentifierName logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
+			if (logFieldName == null) logFieldName = LOG;
 			
 			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
 			
@@ -66,24 +73,32 @@ public class HandleLog {
 			if (owner.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) owner.get();
 			int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
 			
-			boolean notAClass = (modifiers &
-					(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
+			boolean notAClass = (modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
 			
 			if (typeDecl == null || notAClass) {
 				annotationNode.addError(framework.getAnnotationAsString() + " is legal only on classes and enums.");
 				return;
 			}
 			
-			if (fieldExists(logFieldName, owner) != MemberExistsResult.NOT_EXISTS) {
+			if (fieldExists(logFieldName.getName(), owner) != MemberExistsResult.NOT_EXISTS) {
 				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
 			
-			ClassLiteralAccess loggingType = selfType(owner, source);
+			if (loggerTopic != null && loggerTopic.trim().isEmpty()) loggerTopic = null;
+			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
+				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");
+				loggerTopic = null;
+			}
+			if (framework.getDeclaration().getParametersWithoutTopic() == null && loggerTopic == null) {
+				annotationNode.addError(framework.getAnnotationAsString() + " requires a topic.");
+				loggerTopic = "";
+			}
 			
-			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName, useStatic, loggerTopic);
+			ClassLiteralAccess loggingType = selfType(owner, source);
+			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName.getName(), useStatic, loggerTopic);
 			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
-			// TODO temporary workaround for issue 217. http://code.google.com/p/projectlombok/issues/detail?id=217
+			// TODO temporary workaround for issue 290. https://github.com/rzwitserloot/lombok/issues/290
 			// injectFieldSuppressWarnings(owner, fieldDeclaration);
 			injectField(owner, fieldDeclaration);
 			owner.rebuild();
@@ -95,12 +110,12 @@ public class HandleLog {
 	
 	public static ClassLiteralAccess selfType(EclipseNode type, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-
+		long p = (long) pS << 32 | pE;
+		
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		TypeReference typeReference = new SingleTypeReference(typeDeclaration.name, p);
 		setGeneratedBy(typeReference, source);
-
+		
 		ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, typeReference);
 		setGeneratedBy(result, source);
 		
@@ -111,30 +126,23 @@ public class HandleLog {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
-		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
+		// private static final <loggerType> log = <factoryMethod>(<parameter>);
 		FieldDeclaration fieldDecl = new FieldDeclaration(logFieldName.toCharArray(), 0, -1);
 		setGeneratedBy(fieldDecl, source);
 		fieldDecl.declarationSourceEnd = -1;
 		fieldDecl.modifiers = Modifier.PRIVATE | (useStatic ? Modifier.STATIC : 0) | Modifier.FINAL;
 		
-		fieldDecl.type = createTypeReference(framework.getLoggerTypeName(), source);
+		LogDeclaration logDeclaration = framework.getDeclaration();
+		fieldDecl.type = createTypeReference(logDeclaration.getLoggerType().getName(), source);
 		
 		MessageSend factoryMethodCall = new MessageSend();
 		setGeneratedBy(factoryMethodCall, source);
-
-		factoryMethodCall.receiver = createNameReference(framework.getLoggerFactoryTypeName(), source);
-		factoryMethodCall.selector = framework.getLoggerFactoryMethodName().toCharArray();
 		
-		Expression parameter;
-		if (!framework.passTypeName) {
-			parameter = null;
-		} else if (loggerTopic == null || loggerTopic.trim().length() == 0) {
-			parameter = framework.createFactoryParameter(loggingType, source);
-		} else {
-			parameter = new StringLiteral(loggerTopic.toCharArray(), pS, pE, 0);
-		}
+		factoryMethodCall.receiver = createNameReference(logDeclaration.getLoggerFactoryType().getName(), source);
+		factoryMethodCall.selector = logDeclaration.getLoggerFactoryMethod().getCharArray();
 		
-		factoryMethodCall.arguments = parameter != null ? new Expression[] { parameter } : null;
+		List<LogFactoryParameter> parameters = loggerTopic != null ? logDeclaration.getParametersWithTopic() : logDeclaration.getParametersWithoutTopic();
+		factoryMethodCall.arguments = createFactoryParameters(loggingType, source, parameters, loggerTopic);
 		factoryMethodCall.nameSourcePosition = p;
 		factoryMethodCall.sourceStart = pS;
 		factoryMethodCall.sourceEnd = factoryMethodCall.statementEnd = pE;
@@ -146,23 +154,62 @@ public class HandleLog {
 	
 	public static TypeReference createTypeReference(String typeName, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
-		TypeReference typeReference;
-		if (typeName.contains(".")) {
-			
-			char[][] typeNameTokens = fromQualifiedName(typeName);
-			long[] pos = new long[typeNameTokens.length];
-			Arrays.fill(pos, p);
-			
-			typeReference = new QualifiedTypeReference(typeNameTokens, pos);
-		}
-		else {
-			typeReference = null;
-		}
+		char[][] typeNameTokens = fromQualifiedName(typeName);
+		long[] pos = new long[typeNameTokens.length];
+		Arrays.fill(pos, p);
 		
+		TypeReference typeReference = new QualifiedTypeReference(typeNameTokens, pos);
 		setGeneratedBy(typeReference, source);
 		return typeReference;
+	}
+	
+	private static final Expression[] createFactoryParameters(ClassLiteralAccess loggingType, Annotation source, List<LogFactoryParameter> parameters, String loggerTopic) {
+		Expression[] expressions = new Expression[parameters.size()];
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		
+		for (int i = 0; i < parameters.size(); i++) {
+			LogFactoryParameter parameter = parameters.get(i);
+			
+			switch(parameter) {
+			case TYPE:
+				expressions[i] = createFactoryTypeParameter(loggingType, source);
+				break;
+			case NAME:
+				long p = (long) pS << 32 | pE;
+				
+				MessageSend factoryParameterCall = new MessageSend();
+				setGeneratedBy(factoryParameterCall, source);
+				
+				factoryParameterCall.receiver = createFactoryTypeParameter(loggingType, source);
+				factoryParameterCall.selector = "getName".toCharArray();
+				
+				factoryParameterCall.nameSourcePosition = p;
+				factoryParameterCall.sourceStart = pS;
+				factoryParameterCall.sourceEnd = factoryParameterCall.statementEnd = pE;
+				
+				expressions[i] = factoryParameterCall;
+				break;
+			case TOPIC:
+				expressions[i] = new StringLiteral(loggerTopic.toCharArray(), pS, pE, 0);
+				break;
+			case NULL:
+				expressions[i] = new NullLiteral(pS, pE);
+				break;
+			default:
+				throw new IllegalStateException("Unknown logger factory parameter type: " + parameter);
+			}
+		}
+		
+		return expressions;
+	}
+	
+	private static final Expression createFactoryTypeParameter(ClassLiteralAccess loggingType, Annotation source) {
+		TypeReference copy = copyType(loggingType.type, source);
+		ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, copy);
+		setGeneratedBy(result, source);
+		return result;
 	}
 	
 	/**
@@ -253,92 +300,20 @@ public class HandleLog {
 		}
 	}
 	
-	enum LoggingFramework {
-		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
-		COMMONS("org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog", "@CommonsLog"),
-		
-		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
-		JUL("java.util.logging.Logger", "java.util.logging.Logger", "getLogger", "@Log") {
-			@Override public Expression createFactoryParameter(ClassLiteralAccess type, Annotation source) {
-				int pS = source.sourceStart, pE = source.sourceEnd;
-				long p = (long)pS << 32 | pE;
-				
-				MessageSend factoryParameterCall = new MessageSend();
-				setGeneratedBy(factoryParameterCall, source);
-				
-				factoryParameterCall.receiver = super.createFactoryParameter(type, source);
-				factoryParameterCall.selector = "getName".toCharArray();
-				
-				factoryParameterCall.nameSourcePosition = p;
-				factoryParameterCall.sourceStart = pS;
-				factoryParameterCall.sourceEnd = factoryParameterCall.statementEnd = pE;
-				
-				return factoryParameterCall;
+	/**
+	 * Handles the {@link lombok.CustomLog} annotation for Eclipse.
+	 */
+	@ProviderFor(EclipseAnnotationHandler.class)
+	public static class HandleCustomLog extends EclipseAnnotationHandler<lombok.CustomLog> {
+		@Override public void handle(AnnotationValues<lombok.CustomLog> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_CUSTOM_FLAG_USAGE, "@CustomLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
+			LogDeclaration logDeclaration = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_CUSTOM_DECLARATION);
+			if (logDeclaration == null) {
+				annotationNode.addError("The @CustomLog annotation is not configured; please set log.custom.declaration in lombok.config.");
+				return;
 			}
-		},
-		
-		// private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(TargetType.class);
-		LOG4J("org.apache.log4j.Logger", "org.apache.log4j.Logger", "getLogger", "@Log4j"),
-
-		// private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(TargetType.class);
-		LOG4J2("org.apache.logging.log4j.Logger", "org.apache.logging.log4j.LogManager", "getLogger", "@Log4j2"),
-
-		// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TargetType.class);
-		SLF4J("org.slf4j.Logger", "org.slf4j.LoggerFactory", "getLogger", "@Slf4j"),
-		
-		// private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(TargetType.class);
-		XSLF4J("org.slf4j.ext.XLogger", "org.slf4j.ext.XLoggerFactory", "getXLogger", "@XSlf4j"),
-
-		// private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(TargetType.class);
-		JBOSSLOG("org.jboss.logging.Logger", "org.jboss.logging.Logger", "getLogger", "@JBossLog"),
-		
-		// private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
-		FLOGGER("com.google.common.flogger.FluentLogger", "com.google.common.flogger.FluentLogger", "forEnclosingClass", "@Flogger", false),
-		;
-		
-		private final String loggerTypeName;
-		private final String loggerFactoryTypeName;
-		private final String loggerFactoryMethodName;
-		private final String annotationAsString;
-		private final boolean passTypeName;
-		
-		LoggingFramework(String loggerTypeName, String loggerFactoryTypeName, String loggerFactoryMethodName, String annotationAsString, boolean passTypeName) {
-			this.loggerTypeName = loggerTypeName;
-			this.loggerFactoryTypeName = loggerFactoryTypeName;
-			this.loggerFactoryMethodName = loggerFactoryMethodName;
-			this.annotationAsString = annotationAsString;
-			this.passTypeName = passTypeName;
+			LoggingFramework framework = new LoggingFramework(lombok.CustomLog.class, logDeclaration);
+			processAnnotation(framework, annotation, source, annotationNode, annotation.getInstance().topic());
 		}
-		
-		LoggingFramework(String loggerTypeName, String loggerFactoryTypeName, String loggerFactoryMethodName, String annotationAsString) {
-			this.loggerTypeName = loggerTypeName;
-			this.loggerFactoryTypeName = loggerFactoryTypeName;
-			this.loggerFactoryMethodName = loggerFactoryMethodName;
-			this.annotationAsString = annotationAsString;
-			this.passTypeName = true;
-		}
-		
-		final String getAnnotationAsString() {
-			return annotationAsString;
-		}
-		
-		final String getLoggerTypeName() {
-			return loggerTypeName;
-		}
-		
-		final String getLoggerFactoryTypeName() {
-			return loggerFactoryTypeName;
-		}
-		
-		final String getLoggerFactoryMethodName() {
-			return loggerFactoryMethodName;
-		}
-		
-		Expression createFactoryParameter(ClassLiteralAccess loggingType, Annotation source) {
-			TypeReference copy = copyType(loggingType.type, source);
-			ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, copy);
-			setGeneratedBy(result, source);
-			return result;
-		};
 	}
 }

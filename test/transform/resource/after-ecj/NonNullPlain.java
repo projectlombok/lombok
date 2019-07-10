@@ -9,7 +9,7 @@ import java.lang.annotation.*;
     super();
     if ((s == null))
         {
-          throw new java.lang.NullPointerException("s is marked @NonNull but is null");
+          throw new java.lang.NullPointerException("s is marked non-null but is null");
         }
     this.i = i;
     this.s = s;
@@ -29,7 +29,7 @@ import java.lang.annotation.*;
   public @java.lang.SuppressWarnings("all") void setS(final @lombok.NonNull String s) {
     if ((s == null))
         {
-          throw new java.lang.NullPointerException("s is marked @NonNull but is null");
+          throw new java.lang.NullPointerException("s is marked non-null but is null");
         }
     this.s = s;
   }

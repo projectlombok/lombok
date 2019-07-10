@@ -1,8 +1,16 @@
 import java.util.List;
 public class SuperBuilderWithDefaults {
 	public static class Parent<N extends Number> {
-		private long millis = System.currentTimeMillis();
-		private N numberField = null;
+		private long millis;
+		private N numberField;
+		@java.lang.SuppressWarnings("all")
+		private static <N extends Number> long $default$millis() {
+			return System.currentTimeMillis();
+		}
+		@java.lang.SuppressWarnings("all")
+		private static <N extends Number> N $default$numberField() {
+			return null;
+		}
 		@java.lang.SuppressWarnings("all")
 		public static abstract class ParentBuilder<N extends Number, C extends Parent<N>, B extends ParentBuilder<N, C, B>> {
 			@java.lang.SuppressWarnings("all")
@@ -42,7 +50,7 @@ public class SuperBuilderWithDefaults {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl self() {
+			protected ParentBuilderImpl<N> self() {
 				return this;
 			}
 			@java.lang.Override
@@ -54,7 +62,9 @@ public class SuperBuilderWithDefaults {
 		@java.lang.SuppressWarnings("all")
 		protected Parent(final ParentBuilder<N, ?, ?> b) {
 			if (b.millis$set) this.millis = b.millis;
-			if (b.numberField$set) this.numberField = b.numberField;
+			 else this.millis = Parent.<N>$default$millis();
+			if (b.numberField$set) this.numberField = b.numberField; 
+			 else this.numberField = Parent.<N>$default$numberField();
 		}
 		@java.lang.SuppressWarnings("all")
 		public static <N extends Number> ParentBuilder<N, ?, ?> builder() {
@@ -62,7 +72,11 @@ public class SuperBuilderWithDefaults {
 		}
 	}
 	public static class Child extends Parent<Integer> {
-		private double doubleField = Math.PI;
+		private double doubleField;
+		@java.lang.SuppressWarnings("all")
+		private static double $default$doubleField() {
+			return Math.PI;
+		}
 		@java.lang.SuppressWarnings("all")
 		public static abstract class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<Integer, C, B> {
 			@java.lang.SuppressWarnings("all")
@@ -107,6 +121,7 @@ public class SuperBuilderWithDefaults {
 		protected Child(final ChildBuilder<?, ?> b) {
 			super(b);
 			if (b.doubleField$set) this.doubleField = b.doubleField;
+			 else this.doubleField = Child.$default$doubleField();
 		}
 		@java.lang.SuppressWarnings("all")
 		public static ChildBuilder<?, ?> builder() {

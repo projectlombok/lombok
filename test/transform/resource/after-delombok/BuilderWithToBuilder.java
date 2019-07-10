@@ -86,7 +86,9 @@ class BuilderWithToBuilder<T> {
 	}
 	@java.lang.SuppressWarnings("all")
 	public BuilderWithToBuilderBuilder<T> toBuilder() {
-		return new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.rrr(this)).bars(this.bars);
+		final BuilderWithToBuilderBuilder<T> builder = new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.<T>rrr(this));
+		if (this.bars != null) builder.bars(this.bars);
+		return builder;
 	}
 }
 class ConstructorWithToBuilder<T> {
@@ -94,15 +96,17 @@ class ConstructorWithToBuilder<T> {
 	private String mTwo;
 	private T foo;
 	@lombok.Singular
-	private List<T> bars;
-	public ConstructorWithToBuilder(String mOne, T bar) {
+	private com.google.common.collect.ImmutableList<T> bars;
+	public ConstructorWithToBuilder(String mOne, T baz, com.google.common.collect.ImmutableList<T> bars) {
 	}
 	@java.lang.SuppressWarnings("all")
 	public static class ConstructorWithToBuilderBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		private String mOne;
 		@java.lang.SuppressWarnings("all")
-		private T bar;
+		private T baz;
+		@java.lang.SuppressWarnings("all")
+		private com.google.common.collect.ImmutableList<T> bars;
 		@java.lang.SuppressWarnings("all")
 		ConstructorWithToBuilderBuilder() {
 		}
@@ -112,18 +116,23 @@ class ConstructorWithToBuilder<T> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorWithToBuilderBuilder<T> bar(final T bar) {
-			this.bar = bar;
+		public ConstructorWithToBuilderBuilder<T> baz(final T baz) {
+			this.baz = baz;
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		public ConstructorWithToBuilderBuilder<T> bars(final com.google.common.collect.ImmutableList<T> bars) {
+			this.bars = bars;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		public ConstructorWithToBuilder<T> build() {
-			return new ConstructorWithToBuilder<T>(mOne, bar);
+			return new ConstructorWithToBuilder<T>(mOne, baz, bars);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "ConstructorWithToBuilder.ConstructorWithToBuilderBuilder(mOne=" + this.mOne + ", bar=" + this.bar + ")";
+			return "ConstructorWithToBuilder.ConstructorWithToBuilderBuilder(mOne=" + this.mOne + ", baz=" + this.baz + ", bars=" + this.bars + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
@@ -132,54 +141,6 @@ class ConstructorWithToBuilder<T> {
 	}
 	@java.lang.SuppressWarnings("all")
 	public ConstructorWithToBuilderBuilder<T> toBuilder() {
-		return new ConstructorWithToBuilderBuilder<T>().mOne(this.mOne).bar(this.foo);
-	}
-}
-class StaticWithToBuilder<T, K> {
-	private String mOne;
-	private String mTwo;
-	private T foo;
-	private K bar;
-	@lombok.Singular
-	private List<T> bars;
-	public static <Z> StaticWithToBuilder<Z, String> test(String mOne, Z bar) {
-		return new StaticWithToBuilder<Z, String>();
-	}
-	@java.lang.SuppressWarnings("all")
-	public static class StaticWithToBuilderBuilder<Z> {
-		@java.lang.SuppressWarnings("all")
-		private String mOne;
-		@java.lang.SuppressWarnings("all")
-		private Z bar;
-		@java.lang.SuppressWarnings("all")
-		StaticWithToBuilderBuilder() {
-		}
-		@java.lang.SuppressWarnings("all")
-		public StaticWithToBuilderBuilder<Z> mOne(final String mOne) {
-			this.mOne = mOne;
-			return this;
-		}
-		@java.lang.SuppressWarnings("all")
-		public StaticWithToBuilderBuilder<Z> bar(final Z bar) {
-			this.bar = bar;
-			return this;
-		}
-		@java.lang.SuppressWarnings("all")
-		public StaticWithToBuilder<Z, String> build() {
-			return StaticWithToBuilder.<Z>test(mOne, bar);
-		}
-		@java.lang.Override
-		@java.lang.SuppressWarnings("all")
-		public java.lang.String toString() {
-			return "StaticWithToBuilder.StaticWithToBuilderBuilder(mOne=" + this.mOne + ", bar=" + this.bar + ")";
-		}
-	}
-	@java.lang.SuppressWarnings("all")
-	public static <Z> StaticWithToBuilderBuilder<Z> builder() {
-		return new StaticWithToBuilderBuilder<Z>();
-	}
-	@java.lang.SuppressWarnings("all")
-	public StaticWithToBuilderBuilder<T> toBuilder() {
-		return new StaticWithToBuilderBuilder<T>().mOne(this.mOne).bar(this.foo);
+		return new ConstructorWithToBuilderBuilder<T>().mOne(this.mOne).baz(this.foo).bars(this.bars);
 	}
 }

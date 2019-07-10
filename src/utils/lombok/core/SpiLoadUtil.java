@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -108,10 +109,13 @@ public class SpiLoadUtil {
 					
 					@Override public C next() {
 						try {
-							return target.cast(Class.forName(names.next(), true, fLoader).newInstance());
+							return target.cast(Class.forName(names.next(), true, fLoader).getConstructor().newInstance());
 						} catch (Exception e) {
-							if (e instanceof RuntimeException) throw (RuntimeException)e;
-							throw new RuntimeException(e);
+							Throwable t = e;
+							if (t instanceof InvocationTargetException) t = t.getCause();
+							if (t instanceof RuntimeException) throw (RuntimeException) t;
+							if (t instanceof Error) throw (Error) t;
+							throw new RuntimeException(t);
 						}
 					}
 					

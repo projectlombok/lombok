@@ -92,7 +92,7 @@ final class EqualsAndHashCode3 extends EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		int result = 1;
+		final int result = 1;
 		return result;
 	}
 }
@@ -114,7 +114,7 @@ class EqualsAndHashCode4 extends EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		int result = super.hashCode();
+		final int result = super.hashCode();
 		return result;
 	}
 }

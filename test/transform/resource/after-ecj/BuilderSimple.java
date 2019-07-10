@@ -1,6 +1,6 @@
 import java.util.List;
-@lombok.Builder class BuilderSimple<T> {
-  public static @java.lang.SuppressWarnings("all") class BuilderSimpleBuilder<T> {
+@lombok.Builder(access = lombok.AccessLevel.PROTECTED) class BuilderSimple<T> {
+  protected static @java.lang.SuppressWarnings("all") class BuilderSimpleBuilder<T> {
     private @java.lang.SuppressWarnings("all") int yes;
     private @java.lang.SuppressWarnings("all") List<T> also;
     @java.lang.SuppressWarnings("all") BuilderSimpleBuilder() {
@@ -30,7 +30,7 @@ import java.util.List;
     this.yes = yes;
     this.also = also;
   }
-  public static @java.lang.SuppressWarnings("all") <T>BuilderSimpleBuilder<T> builder() {
+  protected static @java.lang.SuppressWarnings("all") <T>BuilderSimpleBuilder<T> builder() {
     return new BuilderSimpleBuilder<T>();
   }
 }

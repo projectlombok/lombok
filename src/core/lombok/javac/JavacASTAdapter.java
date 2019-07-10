@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,6 +94,15 @@ public class JavacASTAdapter implements JavacASTVisitor {
 	
 	/** {@inheritDoc} */
 	@Override public void endVisitLocal(JavacNode localNode, JCVariableDecl local) {}
+	
+	/** {@inheritDoc} */
+	@Override public void visitTypeUse(JavacNode typeUseNode, JCTree typeUse) {}
+	
+	/** {@inheritDoc} */
+	@Override public void visitAnnotationOnTypeUse(JCTree typeUse, JavacNode annotationNode, JCAnnotation annotation) {}
+	
+	/** {@inheritDoc} */
+	@Override public void endVisitTypeUse(JavacNode typeUseNode, JCTree typeUse) {}
 	
 	/** {@inheritDoc} */
 	@Override public void visitStatement(JavacNode statementNode, JCTree statement) {}

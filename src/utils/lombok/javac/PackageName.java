@@ -28,13 +28,15 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 
+import lombok.permit.Permit;
+
 // Supports JDK6-9
 public class PackageName {
 	private static final Method packageNameMethod = getPackageNameMethod();
 	
 	private static Method getPackageNameMethod() {
 		try {
-			return JCCompilationUnit.class.getDeclaredMethod("getPackageName");
+			return Permit.getMethod(JCCompilationUnit.class, "getPackageName");
 		} catch (Exception e) {
 			return null;
 		}

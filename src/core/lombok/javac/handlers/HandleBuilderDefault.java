@@ -26,6 +26,8 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 
 import lombok.Builder;
 import lombok.core.AST.Kind;
@@ -46,6 +48,15 @@ public class HandleBuilderDefault extends JavacAnnotationHandler<Builder.Default
 				&& !hasAnnotation(SuperBuilder.class, classWithAnnotatedField)) {
 			annotationNode.addWarning("@Builder.Default requires @Builder or @SuperBuilder on the class for it to mean anything.");
 			deleteAnnotationIfNeccessary(annotationNode, Builder.Default.class);
+		}
+		
+		/** HandleBuilder is going to wipe out the import, at which point '@Builder.Default' is no longer clear. */
+		if (ast.annotationType instanceof JCFieldAccess) {
+			JCFieldAccess jfa = (JCFieldAccess) ast.annotationType;
+			if (jfa.selected instanceof JCIdent && ((JCIdent) jfa.selected).name.contentEquals("Builder") && jfa.name.contentEquals("Default")) {
+				JCFieldAccess newJfaSel = annotationNode.getTreeMaker().Select(annotationNode.getTreeMaker().Ident(annotationNode.toName("lombok")), ((JCIdent) jfa.selected).name);
+				jfa.selected = newJfaSel;
+			}
 		}
 	}
 }

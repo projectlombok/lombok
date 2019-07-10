@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
+import static lombok.javac.handlers.HandleDelegate.HANDLE_DELEGATE_PRIORITY;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.ConfigurationKeys;
 import lombok.val;
@@ -49,7 +50,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
 @ProviderFor(JavacASTVisitor.class)
-@HandlerPriority(65536) // 2^16; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
+@HandlerPriority(HANDLE_DELEGATE_PRIORITY + 100) // run slightly after HandleDelegate; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
 @ResolutionResetNeeded
 public class HandleVal extends JavacASTAdapter {
 	

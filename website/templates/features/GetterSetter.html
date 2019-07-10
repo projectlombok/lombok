@@ -45,6 +45,10 @@
 			<code>lombok.getter.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@Getter</code> as a warning or error if configured.
+		</dd><dt>
+			<code>lombok.copyableAnnotations</code> = [<em>A list of fully qualified types</em>] (default: empty list)
+		</dt><dd>
+			Lombok will copy any of these annotations from the field to the setter parameter, and to the getter method. Note that lombok ships with a bunch of annotations 'out of the box' which are known to be copyable: All popular nullable/nonnull annotations.
 		</dd>
 	</@f.confKeys>
 
@@ -58,7 +62,9 @@
 		</p><p>
 			Any variation on <code>boolean</code> will <em>not</em> result in using the <code>is</code> prefix instead of the <code>get</code> prefix; for example, returning <code>java.lang.Boolean</code> results in a <code>get</code> prefix, not an <code>is</code> prefix.
 		</p><p>
-			Any annotations named <code>@NonNull</code> (case insensitive) on the field are interpreted as: This field must not ever hold <em>null</em>. Therefore, these annotations result in an explicit null check in the generated setter. Also, these annotations (as well as any annotation named <code>@Nullable</code> or <code>@CheckForNull</code>) are copied to setter parameter and getter method.
+			A number of annotations from popular libraries that indicate non-nullness, such as <code>javax.annotation.Nonnull</code>, if present on the field, result in an explicit null check in the generated setter.
+		</p><p>
+			Various well-known annotations about nullability, such as <code>org.eclipse.jdt.annotation.NonNull</code>, are automatically copied over to the right place (method for getters, parameter for setters). You can specify additional annotations that should always be copied via lombok <a href="/features/configuration">configuration key</a> <code>lombok.copyableAnnotations</code>.
 		</p><p>
 			You can annotate a class with a <code>@Getter</code> or <code>@Setter</code> annotation. Doing so is equivalent to annotating all non-static fields in that class with that annotation. <code>@Getter</code>/<code>@Setter</code> annotations on fields take precedence over the ones on classes.
 		</p><p>

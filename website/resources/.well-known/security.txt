@@ -1,0 +1,4 @@
+Contact: https://tidelift.com/security
+Contact: mailto:info@projectlombok.org
+
+# If encrypted communication is required, let us know and we'll provide a public GPG key.

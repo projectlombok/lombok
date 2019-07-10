@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,22 +38,29 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 
 /**
  * Eclipse specific version of the LombokNode class.
  */
 public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode, ASTNode> {
+	private EclipseAST ast;
 	/** {@inheritDoc} */
 	EclipseNode(EclipseAST ast, ASTNode node, List<EclipseNode> children, Kind kind) {
-		super(ast, node, children, kind);
+		super(node, children, kind);
+		this.ast = ast;
 	}
 	
+	@Override 
+	public EclipseAST getAst() {
+		return ast;
+	}
 	/**
 	 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
 	 */
 	public void traverse(EclipseASTVisitor visitor) {
-		if (!this.isCompleteParse() && visitor.getClass().isAnnotationPresent(DeferUntilPostDiet.class)) return;
+		if (visitor.isDeferUntilPostDiet() && !isCompleteParse()) return;
 		
 		switch (getKind()) {
 		case COMPILATION_UNIT:
@@ -113,9 +120,17 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 			case LOCAL:
 				visitor.visitAnnotationOnLocal((LocalDeclaration) parent.get(), this, (Annotation) get());
 				break;
+			case TYPE_USE:
+				visitor.visitAnnotationOnTypeUse((TypeReference) parent.get(), this, (Annotation) get());
+				break;
 			default:
 				throw new AssertionError("Annotation not expected as child of a " + up().getKind());
 			}
+			break;
+		case TYPE_USE:
+			visitor.visitTypeUse(this, (TypeReference) get());
+			ast.traverseChildren(visitor, this);
+			visitor.endVisitTypeUse(this, (TypeReference) get());
 			break;
 		case STATEMENT:
 			visitor.visitStatement(this, (Statement) get());
@@ -242,6 +257,11 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 	@Override public boolean isEnumMember() {
 		if (getKind() != Kind.FIELD) return false;
 		return ((FieldDeclaration) node).getKind() == 3;
+	}
+	
+	@Override public boolean isEnumType() {
+		if (getKind() != Kind.TYPE) return false;
+		return (((TypeDeclaration) node).modifiers & ClassFileConstants.AccEnum) != 0;
 	}
 	
 	@Override public int countMethodParameters() {

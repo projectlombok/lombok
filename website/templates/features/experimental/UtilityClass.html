@@ -39,6 +39,8 @@
 	<@f.smallPrint>
 		<p>
 			There isn't currently any way to create non-static members, or to define your own constructor. If you want to instantiate the utility class, even only as an internal implementation detail, <code>@UtilityClass</code> cannot be used.
+		</p><p>
+			Due to a peculiar way javac processes static imports, trying to do a non-star static import of any of the members of a `@UtilityClass` won't work. Either use a star static import: `import static TypeMarkedWithUtilityClass.*;` or don't statically import any of the members.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

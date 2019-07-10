@@ -26,16 +26,16 @@ class ConstructorsWithAccessorsNonNull {
 	@java.lang.SuppressWarnings("all")
 	public ConstructorsWithAccessorsNonNull(@lombok.NonNull final Integer plower, @lombok.NonNull final Integer upper, @lombok.NonNull final Integer huh, @lombok.NonNull final Integer _huh2) {
 		if (plower == null) {
-			throw new java.lang.NullPointerException("plower is marked @NonNull but is null");
+			throw new java.lang.NullPointerException("plower is marked non-null but is null");
 		}
 		if (upper == null) {
-			throw new java.lang.NullPointerException("upper is marked @NonNull but is null");
+			throw new java.lang.NullPointerException("upper is marked non-null but is null");
 		}
 		if (huh == null) {
-			throw new java.lang.NullPointerException("huh is marked @NonNull but is null");
+			throw new java.lang.NullPointerException("huh is marked non-null but is null");
 		}
 		if (_huh2 == null) {
-			throw new java.lang.NullPointerException("_huh2 is marked @NonNull but is null");
+			throw new java.lang.NullPointerException("_huh2 is marked non-null but is null");
 		}
 		this.plower = plower;
 		this.pUpper = upper;

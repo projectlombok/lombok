@@ -5,7 +5,7 @@ public final class UtilityClassExample {
 		throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
 	}
 
-	public static void addSomething(int in) {
+	public static int addSomething(int in) {
 		return in + CONSTANT;
 	}
 }

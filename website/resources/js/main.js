@@ -37,9 +37,9 @@
 		if (self.data("clc")) return;
 		var href = self.attr("href");
 		self.data("clc", true);
-		if (!href || href.substr(0, 4) === "http" || href === "/api/" || href === "/" || href === "/supporters" || href === "/order-license") return;
+		if (!href || href.substr(0, 4) === "http" || href.substr(0, 1) === "#" || href === "/api/" || href === "/" || href === "/supporters" || href === "/order-license") return;
 		var ext = href.substr(href.length - 4, 4);
-		if (ext === ".xml" || ext === ".jar") return;
+		if (ext === ".xml" || ext === ".jar" || ext === ".pdf") return;
 		self.on("click", function(evt) {
 			evt.preventDefault();
 			var key = toKey(window.location.pathname);
@@ -94,7 +94,23 @@
 		});
 	}
 	
+	function seekVideo() {
+		var t = window.location.hash;
+		if (!t) return;
+		var s = /^#?(?:(\d\d?):)?(\d\d?):(\d\d?)$/.exec(t);
+		if (!s) return;
+		var videoj = $("#presentationVideo");
+		if (!videoj || videoj.length == 0) return;
+		var video = videoj[0];
+		var h = parseInt(s[1]);
+		if (!h) h = 0;
+		var m = parseInt(s[2]);
+		var s = parseInt(s[3]);
+		video.currentTime = (((h * 60) + m) * 60) + s;
+	}
+	
 	$(ajaxFeaturePages);
 	$(clickToTap);
 	$(clickForVideo);
+	$(seekVideo);
 })($);

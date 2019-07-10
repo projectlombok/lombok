@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
@@ -57,6 +61,7 @@ import lombok.javac.CommentCatcher;
 import lombok.javac.Javac;
 import lombok.javac.LombokOptions;
 import lombok.javac.apt.LombokProcessor;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.comp.Todo;
@@ -88,7 +93,8 @@ public class Delombok {
 	private boolean noCopy;
 	private boolean onlyChanged;
 	private boolean force = false;
-	private String classpath, sourcepath, bootclasspath;
+	private boolean disablePreview;
+	private String classpath, sourcepath, bootclasspath, modulepath;
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
 	private Map<String, String> formatPrefs = new HashMap<String, String>();
@@ -138,6 +144,10 @@ public class Delombok {
 		@Description("override Bootclasspath (analogous to javac -bootclasspath option)")
 		private String bootclasspath;
 		
+		@Description("Module path (analogous to javac --module-path option)")
+		@FullName("module-path")
+		private String modulepath;
+		
 		@Description("Files to delombok. Provide either a file, or a directory. If you use a directory, all files in it (recursive) are delombok-ed")
 		@Sequential
 		private List<String> input = new ArrayList<String>();
@@ -148,6 +158,10 @@ public class Delombok {
 		
 		@Description("Output only changed files (implies -n)")
 		private boolean onlyChanged;
+		
+		@Description("By default lombok enables preview features if available (introduced in JDK 12). With this option, lombok won't do that.")
+		@FullName("disable-preview")
+		private boolean disablePreview;
 		
 		private boolean help;
 	}
@@ -182,21 +196,50 @@ public class Delombok {
 		return out.toString();
 	}
 	
+	static String getPathOfSelf() {
+		String url = Delombok.class.getResource("Delombok.class").toString();
+		if (url.endsWith("lombok/delombok/Delombok.class")) {
+			url = urlDecode(url.substring(0, url.length() - "lombok/delombok/Delombok.class".length()));
+		} else if (url.endsWith("lombok/delombok/Delombok.SCL.lombok")) {
+			url = urlDecode(url.substring(0, url.length() - "lombok/delombok/Delombok.SCL.lombok".length()));
+		} else {
+			return null;
+		}
+		if (url.startsWith("jar:file:") && url.endsWith("!/")) return url.substring(9, url.length() - 2);
+		if (url.startsWith("file:")) return url.substring(5);
+		return null;
+	}
+	
+	private static String urlDecode(String in) {
+		try {
+			return URLDecoder.decode(in, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalError("UTF-8 not supported");
+		}
+	}
+	
 	public static void main(String[] rawArgs) {
+		try {
+			rawArgs = fileExpand(rawArgs);
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			System.exit(1);
+		}
+		
 		CmdReader<CmdArgs> reader = CmdReader.of(CmdArgs.class);
 		CmdArgs args;
 		try {
 			args = reader.make(rawArgs);
 		} catch (InvalidCommandLineException e) {
 			System.err.println("ERROR: " + e.getMessage());
-			System.err.println(reader.generateCommandLineHelp("delombok"));
+			System.err.println(cmdHelp(reader));
 			System.exit(1);
 			return;
 		}
 		
 		if (args.help || (args.input.isEmpty() && !args.formatHelp)) {
 			if (!args.help) System.err.println("ERROR: no files or directories to delombok specified.");
-			System.err.println(reader.generateCommandLineHelp("delombok"));
+			System.err.println(cmdHelp(reader));
 			System.exit(args.help ? 0 : 1);
 			return;
 		}
@@ -243,6 +286,7 @@ public class Delombok {
 		
 		if (args.verbose) delombok.setVerbose(true);
 		if (args.nocopy || args.onlyChanged) delombok.setNoCopy(true);
+		if (args.disablePreview) delombok.setDisablePreview(true);
 		if (args.onlyChanged) delombok.setOnlyChanged(true);
 		if (args.print) {
 			delombok.setOutputToStandardOut();
@@ -253,6 +297,7 @@ public class Delombok {
 		if (args.classpath != null) delombok.setClasspath(args.classpath);
 		if (args.sourcepath != null) delombok.setSourcepath(args.sourcepath);
 		if (args.bootclasspath != null) delombok.setBootclasspath(args.bootclasspath);
+		if (args.modulepath != null) delombok.setModulepath(args.modulepath);
 		
 		try {
 			for (String in : args.input) {
@@ -273,13 +318,121 @@ public class Delombok {
 			if (!args.quiet) {
 				String msg = e.getMessage();
 				if (msg != null && msg.startsWith("DELOMBOK: ")) System.err.println(msg.substring("DELOMBOK: ".length()));
-				else {
-					e.printStackTrace();
-				}
+				else e.printStackTrace();
 				System.exit(1);
 				return;
 			}
 		}
+	}
+	
+	private static String cmdHelp(CmdReader<CmdArgs> reader) {
+		String x = reader.generateCommandLineHelp("delombok");
+		int idx = x.indexOf('\n');
+		return x.substring(0, idx) + "\n You can use @filename.args to read arguments from the file 'filename.args'.\n" + x.substring(idx);
+	}
+	
+	private static String[] fileExpand(String[] rawArgs) throws IOException {
+		String[] out = rawArgs;
+		int offset = 0;
+		for (int i = 0; i < rawArgs.length; i++) {
+			if (rawArgs[i].length() > 0 && rawArgs[i].charAt(0) == '@') {
+				String[] parts = readArgsFromFile(rawArgs[i].substring(1));
+				String[] newOut = new String[out.length + parts.length - 1];
+				System.arraycopy(out, 0, newOut, 0, i + offset);
+				System.arraycopy(parts, 0, newOut, i + offset, parts.length);
+				System.arraycopy(out, i + offset + 1, newOut, i + offset + parts.length, out.length - (i + offset + 1));
+				offset += parts.length - 1;
+				out = newOut;
+			}
+		}
+		
+		return out;
+	}
+	
+	private static String[] readArgsFromFile(String file) throws IOException {
+		InputStream in = new FileInputStream(file);
+		StringBuilder s = new StringBuilder();
+		try {
+			InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+			char[] c = new char[4096];
+			while (true) {
+				int r = isr.read(c);
+				if (r == -1) break;
+				s.append(c, 0, r);
+			}
+		} finally {
+			in.close();
+		}
+		
+		List<String> x = new ArrayList<String>();
+		StringBuilder a = new StringBuilder();
+		int state = 1;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (state < 0) {
+				state = -state;
+				if (c != '\n') a.append(c);
+				continue;
+			}
+			if (state == 1) {
+				if (c == '\\') {
+					state = -1;
+					continue;
+				}
+				if (c == '"') {
+					state = 2;
+					continue;
+				}
+				if (c == '\'') {
+					state = 3;
+					continue;
+				}
+				if (Character.isWhitespace(c)) {
+					String aa = a.toString();
+					if (!aa.isEmpty()) x.add(aa);
+					a.setLength(0);
+					continue;
+				}
+				a.append(c);
+				continue;
+			}
+			if (state == 2) {
+				if (c == '\\') {
+					state = -2;
+					continue;
+				}
+				if (c == '"') {
+					state = 1;
+					x.add(a.toString());
+					a.setLength(0);
+					continue;
+				}
+				a.append(c);
+				continue;
+			}
+			if (state == 3) {
+				if (c == '\'') {
+					state = 1;
+					x.add(a.toString());
+					a.setLength(0);
+					continue;
+				}
+				a.append(c);
+				continue;
+			}
+		}
+		if (state == 1) {
+			String aa = a.toString();
+			if (!aa.isEmpty()) x.add(aa);
+		} else if (state < 0) {
+			throw new IOException("Unclosed backslash escape in @ file");
+		} else if (state == 2) {
+			throw new IOException("Unclosed \" in @ file");
+		} else if (state == 3) {
+			throw new IOException("Unclosed ' in @ file");
+		}
+		
+		return x.toArray(new String[0]);
 	}
 	
 	public static class InvalidFormatOptionException extends Exception {
@@ -369,6 +522,10 @@ public class Delombok {
 		this.noCopy = noCopy;
 	}
 	
+	public void setDisablePreview(boolean disablePreview) {
+		this.disablePreview = disablePreview;
+	}
+	
 	public void setOnlyChanged(boolean onlyChanged) {
 		this.onlyChanged = onlyChanged;
 	}
@@ -383,6 +540,10 @@ public class Delombok {
 	
 	public void setOutputToStandardOut() {
 		this.output = null;
+	}
+	
+	public void setModulepath(String modulepath) {
+		this.modulepath = modulepath;
 	}
 	
 	public void addDirectory(File base) throws IOException {
@@ -488,7 +649,7 @@ public class Delombok {
 	private static final Field MODULE_FIELD = getModuleField();
 	private static Field getModuleField() {
 		try {
-			return JCCompilationUnit.class.getField("modle");
+			return Permit.getField(JCCompilationUnit.class, "modle");
 		} catch (NoSuchFieldException e) {
 			return null;
 		} catch (SecurityException e) {
@@ -525,8 +686,22 @@ public class Delombok {
 				argsList.add("-encoding");
 				argsList.add(charset.name());
 			}
+			String pathToSelfJar = getPathOfSelf();
+			if (pathToSelfJar != null) {
+				argsList.add("--module-path");
+				argsList.add((modulepath == null || modulepath.isEmpty()) ? pathToSelfJar : (pathToSelfJar + File.pathSeparator + modulepath));
+			} else if (modulepath != null && !modulepath.isEmpty()) {
+				argsList.add("--module-path");
+				argsList.add(modulepath);
+			}
+			
+			if (!disablePreview && Javac.getJavaCompilerVersion() >= 11) argsList.add("--enable-preview");
+			
 			String[] argv = argsList.toArray(new String[0]);
 			args.init("javac", argv);
+			options.put("diags.legacy", "TRUE");
+		} else {
+			if (modulepath != null && !modulepath.isEmpty()) throw new IllegalStateException("DELOMBOK: Option --module-path requires usage of JDK9 or higher.");
 		}
 		
 		CommentCatcher catcher = CommentCatcher.create(context);
@@ -591,6 +766,7 @@ public class Delombok {
 		Object care = callAttributeMethodOnJavaCompiler(delegate, delegate.todo);
 		
 		callFlowMethodOnJavaCompiler(delegate, care);
+		
 		FormatPreferences fps = new FormatPreferences(formatPrefs);
 		for (JCCompilationUnit unit : roots) {
 			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit), fps);
@@ -647,10 +823,10 @@ public class Delombok {
 	private static Object callAttributeMethodOnJavaCompiler(JavaCompiler compiler, Todo arg) {
 		if (attributeMethod == null) {
 			try {
-				attributeMethod = JavaCompiler.class.getDeclaredMethod("attribute", java.util.Queue.class);
+				attributeMethod = Permit.getMethod(JavaCompiler.class, "attribute", java.util.Queue.class);
 			} catch (NoSuchMethodException e) {
 				try {
-					attributeMethod = JavaCompiler.class.getDeclaredMethod("attribute", com.sun.tools.javac.util.ListBuffer.class);
+					attributeMethod = Permit.getMethod(JavaCompiler.class, "attribute", com.sun.tools.javac.util.ListBuffer.class);
 				} catch (NoSuchMethodException e2) {
 					throw Lombok.sneakyThrow(e2);
 				}
@@ -669,10 +845,10 @@ public class Delombok {
 	private static void callFlowMethodOnJavaCompiler(JavaCompiler compiler, Object arg) {
 		if (flowMethod == null) {
 			try {
-				flowMethod = JavaCompiler.class.getDeclaredMethod("flow", java.util.Queue.class);
+				flowMethod = Permit.getMethod(JavaCompiler.class, "flow", java.util.Queue.class);
 			} catch (NoSuchMethodException e) {
 				try {
-					flowMethod = JavaCompiler.class.getDeclaredMethod("flow", com.sun.tools.javac.util.List.class);
+					flowMethod = Permit.getMethod(JavaCompiler.class, "flow", com.sun.tools.javac.util.List.class);
 				} catch (NoSuchMethodException e2) {
 					throw Lombok.sneakyThrow(e2);
 				}
