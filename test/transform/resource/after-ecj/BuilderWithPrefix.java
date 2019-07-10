@@ -13,7 +13,7 @@ import java.util.List;
       return new BuilderWithPrefix<T>(unprefixed);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((("BuilderWithPrefix.BuilderWithPrefixBuilder(unprefixed=" + this.unprefixed) + ")");
+      return (("BuilderWithPrefix.BuilderWithPrefixBuilder(unprefixed=" + this.unprefixed) + ")");
     }
   }
   private int unprefixed;

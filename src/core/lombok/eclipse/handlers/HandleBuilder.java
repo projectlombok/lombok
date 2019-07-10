@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.sun.tools.javac.util.Name;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -482,7 +483,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : builderFields) {
-			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain, accessForInners, bfd.originalFieldNode);
+			makePrefixedSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain, accessForInners, bfd.originalFieldNode, builderInstance.setterPrefix());
 		}
 		
 		{
@@ -840,7 +841,46 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			sourceNode, methodAnnsList, annotations != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annotations)) : Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}
-	
+
+	public void makePrefixedSetterMethodsForBuilder(EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain, AccessLevel access, EclipseNode originalFieldNode, String prefix) {
+		boolean deprecate = isFieldDeprecated(bfd.originalFieldNode);
+		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
+			makePrefixedSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, sourceNode, fluent, chain, bfd.annotations, access, originalFieldNode, prefix);
+		} else {
+			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, deprecate, builderType, fluent, chain, access);
+		}
+	}
+
+	private void makePrefixedSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, EclipseNode sourceNode, boolean fluent, boolean chain, Annotation[] annotations, AccessLevel access, EclipseNode originalFieldNode, String prefix) {
+		TypeDeclaration td = (TypeDeclaration) builderType.get();
+		AbstractMethodDeclaration[] existing = td.methods;
+		if (existing == null) existing = EMPTY;
+		int len = existing.length;
+		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
+		char[] name = fd.name;
+
+		for (int i = 0; i < len; i++) {
+			if (!(existing[i] instanceof MethodDeclaration)) continue;
+			char[] existingName = existing[i].selector;
+			if (Arrays.equals(name, existingName) && !isTolerate(fieldNode, existing[i])) return;
+		}
+
+		String setterPrefix = prefix.isEmpty() ? "set" : prefix;
+		String setterName;
+		if(fluent) {
+			setterName = prefix.isEmpty() ? fieldNode.getName() : HandlerUtil.buildAccessorName(setterPrefix, fieldNode.getName());
+		} else {
+			setterName = HandlerUtil.buildAccessorName(setterPrefix, fieldNode.getName());
+		}
+
+		List<Annotation> methodAnnsList = Collections.<Annotation>emptyList();
+		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
+		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, nameOfSetFlag, chain, toEclipseModifier(access),
+															 sourceNode, methodAnnsList, annotations != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annotations)) : Collections.<Annotation>emptyList());
+		injectMethod(builderType, setter);
+	}
+
 	public EclipseNode makeBuilderClass(boolean isStatic, EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source, AccessLevel access) {
 		TypeDeclaration parent = (TypeDeclaration) tdParent.get();
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);

@@ -430,7 +430,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : builderFields) {
-			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain, accessForInners);
+			makePrefixedSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain, accessForInners, builderInstance.setterPrefix());
 		}
 		
 		{
@@ -745,29 +745,67 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), fluent, chain, access);
 		}
 	}
-	
+
 	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, AccessLevel access) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
-		
+
 		for (JavacNode child : builderType.down()) {
 			if (child.getKind() != Kind.METHOD) continue;
 			JCMethodDecl methodDecl = (JCMethodDecl) child.get();
 			Name existingName = methodDecl.name;
 			if (existingName.equals(fieldName) && !isTolerate(fieldNode, methodDecl)) return;
 		}
-		
+
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
-		
+
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
-		
+
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
 		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(access), deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, methodAnns, annosOnParam);
 		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
 		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER);
-		
+
 		injectMethod(builderType, newMethod);
 	}
-	
+
+	public void makePrefixedSetterMethodsForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain, AccessLevel access, String prefix) {
+		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
+		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
+			makePrefixedSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, fluent, chain, fieldNode.annotations, fieldNode.originalFieldNode, access, prefix);
+		} else {
+			// TODO prefixed version
+			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), fluent, chain, access);
+		}
+	}
+
+	private void makePrefixedSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, AccessLevel access, String prefix) {
+		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
+
+		for (JavacNode child : builderType.down()) {
+			if (child.getKind() != Kind.METHOD) continue;
+			JCMethodDecl methodDecl = (JCMethodDecl) child.get();
+			Name existingName = methodDecl.name;
+			if (existingName.equals(fieldName) && !isTolerate(fieldNode, methodDecl)) return;
+		}
+
+		String setterPrefix = prefix.isEmpty() ? "set" : prefix;
+		String setterName;
+		if(fluent) {
+			setterName = prefix.isEmpty() ? fieldNode.getName() : HandlerUtil.buildAccessorName(setterPrefix, fieldNode.getName());
+		} else {
+			setterName = HandlerUtil.buildAccessorName(setterPrefix, fieldNode.getName());
+		}
+
+		JavacTreeMaker maker = fieldNode.getTreeMaker();
+
+		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(access), deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, methodAnns, annosOnParam);
+		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
+		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER);
+
+		injectMethod(builderType, newMethod);
+	}
+
 	public JavacNode makeBuilderClass(boolean isStatic, JavacNode source, JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast, AccessLevel access) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		int modifiers = toJavacModifier(access);
