@@ -285,6 +285,9 @@ such as applying the templates to produce the website, converting the changelog 
 			check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
 			write your own plugins, the other packages are what you're looking for.</body></html>
 		]]></echo>
+		<tstamp>
+			<format property="javadoc.year" pattern="yyyy"/>
+		</tstamp>
 		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" source="1.8" Overview="${javadoc.overview.html}">
 			<package name="lombok" />
 			<package name="lombok.experimental" />
@@ -292,7 +295,7 @@ such as applying the templates to produce the website, converting the changelog 
 			<classpath refid="build.path" />
 			<classpath location="build/lombok" />
 			<header><![CDATA[<a href='https://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
-			<bottom><![CDATA[<i>Copyright &copy; 2009-2019 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
+			<bottom><![CDATA[<i>Copyright &copy; 2009-${javadoc.year} The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<!-- bugfix for boneheaded javadoc bug where ?is-external=true is inserted before an anchor ref, breaking the anchor ref.
 		is-external=true doesn't actually do anything except mess with titles, so, we'll just get rid of it. -->
