@@ -1,6 +1,9 @@
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 public class JacksonJsonProperty {
 	@JsonProperty("kebab-case-prop")
+	@JsonSetter(nulls = Nulls.SKIP)
 	public String kebabCaseProp;
 	@java.lang.SuppressWarnings("all")
 	JacksonJsonProperty(final String kebabCaseProp) {
@@ -14,6 +17,7 @@ public class JacksonJsonProperty {
 		JacksonJsonPropertyBuilder() {
 		}
 		@JsonProperty("kebab-case-prop")
+		@JsonSetter(nulls = Nulls.SKIP)
 		@java.lang.SuppressWarnings("all")
 		public JacksonJsonPropertyBuilder kebabCaseProp(final String kebabCaseProp) {
 			this.kebabCaseProp = kebabCaseProp;
@@ -34,6 +38,7 @@ public class JacksonJsonProperty {
 		return new JacksonJsonPropertyBuilder();
 	}
 	@JsonProperty("kebab-case-prop")
+	@JsonSetter(nulls = Nulls.SKIP)
 	@java.lang.SuppressWarnings("all")
 	public void setKebabCaseProp(final String kebabCaseProp) {
 		this.kebabCaseProp = kebabCaseProp;
