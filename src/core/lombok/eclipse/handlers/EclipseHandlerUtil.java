@@ -1816,12 +1816,12 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
-	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
+	 * Generates a new statement that checks if the given local variable is null, and if so, throws a specified exception with the
 	 * variable name as message.
 	 * 
 	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
-	public static Statement generateNullCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode) {
+	public static Statement generateNullCheck(TypeReference type, char[] variable, EclipseNode sourceNode) {
 		NullCheckExceptionType exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
 		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
 		
@@ -1830,11 +1830,11 @@ public class EclipseHandlerUtil {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
-		if (isPrimitive(variable.type)) return null;
+		if (isPrimitive(type)) return null;
 		AllocationExpression exception = new AllocationExpression();
 		setGeneratedBy(exception, source);
 		
-		SingleNameReference varName = new SingleNameReference(variable.name, p);
+		SingleNameReference varName = new SingleNameReference(variable, p);
 		setGeneratedBy(varName, source);
 		NullLiteral nullLiteral = new NullLiteral(pS, pE);
 		setGeneratedBy(nullLiteral, source);
@@ -1844,7 +1844,7 @@ public class EclipseHandlerUtil {
 		equalExpression.sourceStart = pS; equalExpression.statementEnd = equalExpression.sourceEnd = pE;
 		setGeneratedBy(equalExpression, source);
 
-		StringLiteral message = new StringLiteral(exceptionType.toExceptionMessage(new String(variable.name)).toCharArray(), pS, pE, 0);
+		StringLiteral message = new StringLiteral(exceptionType.toExceptionMessage(new String(variable)).toCharArray(), pS, pE, 0);
 		setGeneratedBy(message, source);
 		
 		if (exceptionType == NullCheckExceptionType.ASSERTION) {
@@ -1873,6 +1873,16 @@ public class EclipseHandlerUtil {
 		IfStatement ifStatement = new IfStatement(equalExpression, throwBlock, 0, 0);
 		setGeneratedBy(ifStatement, source);
 		return ifStatement;
+	}
+	
+	/**
+	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
+	 * variable name as message.
+	 * 
+	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
+	 */
+	public static Statement generateNullCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode) {
+		return generateNullCheck(variable.type, variable.name, sourceNode);
 	}
 	
 	/**

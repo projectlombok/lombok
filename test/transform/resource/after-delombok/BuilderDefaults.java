@@ -21,19 +21,19 @@ public final class BuilderDefaults {
 		@java.lang.SuppressWarnings("all")
 		private boolean x$set;
 		@java.lang.SuppressWarnings("all")
-		private int x;
+		private int x$value;
 		@java.lang.SuppressWarnings("all")
 		private String name;
 		@java.lang.SuppressWarnings("all")
 		private boolean z$set;
 		@java.lang.SuppressWarnings("all")
-		private long z;
+		private long z$value;
 		@java.lang.SuppressWarnings("all")
 		BuilderDefaultsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsBuilder x(final int x) {
-			this.x = x;
+			this.x$value = x;
 			x$set = true;
 			return this;
 		}
@@ -44,22 +44,22 @@ public final class BuilderDefaults {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsBuilder z(final long z) {
-			this.z = z;
+			this.z$value = z;
 			z$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaults build() {
-			int x = this.x;
-			if (!x$set) x = BuilderDefaults.$default$x();
-			long z = this.z;
-			if (!z$set) z = BuilderDefaults.$default$z();
-			return new BuilderDefaults(x, name, z);
+			int x$value = this.x$value;
+			if (!x$set) x$value = BuilderDefaults.$default$x();
+			long z$value = this.z$value;
+			if (!z$set) z$value = BuilderDefaults.$default$z();
+			return new BuilderDefaults(x$value, name, z$value);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderDefaults.BuilderDefaultsBuilder(x=" + this.x + ", name=" + this.name + ", z=" + this.z + ")";
+			return "BuilderDefaults.BuilderDefaultsBuilder(x$value=" + this.x$value + ", name=" + this.name + ", z$value=" + this.z$value + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")

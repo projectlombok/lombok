@@ -81,6 +81,7 @@ import lombok.ConfigurationKeys;
 import lombok.Singular;
 import lombok.ToString;
 import lombok.core.AST.Kind;
+import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -103,6 +104,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	private static final char[] CLEAN_METHOD_NAME = "$lombokClean".toCharArray();
 	private static final char[] DEFAULT_PREFIX = "$default$".toCharArray();
 	private static final char[] SET_PREFIX = "$set".toCharArray();
+	private static final char[] VALUE_PREFIX = "$value".toCharArray();
 	private static final char[] SELF_METHOD_NAME = "self".toCharArray();
 	private static final String TO_BUILDER_METHOD_NAME_STRING = "toBuilder";
 	private static final char[] TO_BUILDER_METHOD_NAME = TO_BUILDER_METHOD_NAME_STRING.toCharArray();
@@ -169,6 +171,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			BuilderFieldData bfd = new BuilderFieldData();
 			bfd.rawName = fieldNode.getName().toCharArray();
 			bfd.name = removePrefixFromField(fieldNode);
+			bfd.builderFieldName = bfd.name;
 			bfd.annotations = copyAnnotations(fd, copyableAnnotations);
 			bfd.type = fd.type;
 			bfd.singularData = getSingularData(fieldNode, ast);
@@ -193,6 +196,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			if (isDefault != null) {
 				bfd.nameOfDefaultProvider = prefixWith(DEFAULT_PREFIX, bfd.name);
 				bfd.nameOfSetFlag = prefixWith(bfd.name, SET_PREFIX);
+				bfd.builderFieldName = prefixWith(bfd.name, VALUE_PREFIX);
 				
 				MethodDeclaration md = HandleBuilder.generateDefaultProvider(bfd.nameOfDefaultProvider, td.typeParameters, fieldNode, ast);
 				if (md != null) injectMethod(tdParent, md);
@@ -519,7 +523,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		List<Statement> statements = new ArrayList<Statement>();
 		
 		for (BuilderFieldData fieldNode : builderFields) {
-			char[] fieldName = removePrefixFromField(fieldNode.originalFieldNode);
 			FieldReference fieldInThis = new FieldReference(fieldNode.rawName, p);
 			int s = (int) (p >> 32);
 			int e = (int) p;
@@ -527,10 +530,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			
 			Expression assignmentExpr;
 			if (fieldNode.singularData != null && fieldNode.singularData.getSingularizer() != null) {
-				fieldNode.singularData.getSingularizer().appendBuildCode(fieldNode.singularData, typeNode, statements, fieldNode.name, BUILDER_VARIABLE_NAME_STRING);
-				assignmentExpr = new SingleNameReference(fieldNode.name, p);
+				fieldNode.singularData.getSingularizer().appendBuildCode(fieldNode.singularData, typeNode, statements, fieldNode.builderFieldName, BUILDER_VARIABLE_NAME_STRING);
+				assignmentExpr = new SingleNameReference(fieldNode.builderFieldName, p);
 			} else {
-				char[][] variableInBuilder = new char[][] {BUILDER_VARIABLE_NAME, fieldName};
+				char[][] variableInBuilder = new char[][] {BUILDER_VARIABLE_NAME, fieldNode.builderFieldName};
 				long[] positions = new long[] {p, p};
 				assignmentExpr = new QualifiedNameReference(variableInBuilder, positions, s, e);
 			}
@@ -844,12 +847,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				EclipseNode field = null, setFlag = null;
 				for (EclipseNode exists : existing) {
 					char[] n = ((FieldDeclaration) exists.get()).name;
-					if (Arrays.equals(n, bfd.name)) field = exists;
+					if (Arrays.equals(n, bfd.builderFieldName)) field = exists;
 					if (bfd.nameOfSetFlag != null && Arrays.equals(n, bfd.nameOfSetFlag)) setFlag = exists;
 				}
 				
 				if (field == null) {
-					FieldDeclaration fd = new FieldDeclaration(bfd.name, 0, 0);
+					FieldDeclaration fd = new FieldDeclaration(bfd.builderFieldName, 0, 0);
 					fd.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 					fd.modifiers = ClassFileConstants.AccPrivate;
 					fd.type = copyType(bfd.type);
@@ -888,13 +891,13 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		};
 		
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode, bfd.annotations, bfd.originalFieldNode);
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.name, bfd.nameOfSetFlag, true, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode, bfd.annotations, bfd.originalFieldNode);
 		} else {
 			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, deprecate, builderType, true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
 		}
 	}
 
-	private void generateSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode, Annotation[] annosOnParam, EclipseNode originalFieldNode) {
+	private void generateSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] paramName, char[] nameOfSetFlag, boolean fluent, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode, Annotation[] annosOnParam, EclipseNode originalFieldNode) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY_METHODS;
@@ -908,12 +911,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			if (Arrays.equals(name, existingName) && !isTolerate(fieldNode, existing[i])) return;
 		}
 		
-		String setterName = fieldNode.getName();
+		String setterName = fluent ? new String(paramName) : HandlerUtil.buildAccessorName("set", new String(paramName));
 		
 		List<Annotation> methodAnnsList = Collections.<Annotation>emptyList();
 		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
 		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
-		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, nameOfSetFlag, returnType, returnStatement, ClassFileConstants.AccPublic,
+		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, paramName, nameOfSetFlag, returnType, returnStatement, ClassFileConstants.AccPublic,
 			sourceNode, methodAnnsList, annosOnParam != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annosOnParam)) : Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}

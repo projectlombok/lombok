@@ -26,50 +26,50 @@ public class BuilderDefaultsGenerics<N extends Number, T, R extends List<T>> {
 		@java.lang.SuppressWarnings("all")
 		private boolean callable$set;
 		@java.lang.SuppressWarnings("all")
-		private java.util.concurrent.Callable<N> callable;
+		private java.util.concurrent.Callable<N> callable$value;
 		@java.lang.SuppressWarnings("all")
 		private boolean tee$set;
 		@java.lang.SuppressWarnings("all")
-		private T tee;
+		private T tee$value;
 		@java.lang.SuppressWarnings("all")
 		private boolean arrr$set;
 		@java.lang.SuppressWarnings("all")
-		private R arrr;
+		private R arrr$value;
 		@java.lang.SuppressWarnings("all")
 		BuilderDefaultsGenericsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsGenericsBuilder<N, T, R> callable(final java.util.concurrent.Callable<N> callable) {
-			this.callable = callable;
+			this.callable$value = callable;
 			callable$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsGenericsBuilder<N, T, R> tee(final T tee) {
-			this.tee = tee;
+			this.tee$value = tee;
 			tee$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsGenericsBuilder<N, T, R> arrr(final R arrr) {
-			this.arrr = arrr;
+			this.arrr$value = arrr;
 			arrr$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsGenerics<N, T, R> build() {
-			java.util.concurrent.Callable<N> callable = this.callable;
-			if (!callable$set) callable = BuilderDefaultsGenerics.<N, T, R>$default$callable();
-			T tee = this.tee;
-			if (!tee$set) tee = BuilderDefaultsGenerics.<N, T, R>$default$tee();
-			R arrr = this.arrr;
-			if (!arrr$set) arrr = BuilderDefaultsGenerics.<N, T, R>$default$arrr();
-			return new BuilderDefaultsGenerics<N, T, R>(callable, tee, arrr);
+			java.util.concurrent.Callable<N> callable$value = this.callable$value;
+			if (!callable$set) callable$value = BuilderDefaultsGenerics.<N, T, R>$default$callable();
+			T tee$value = this.tee$value;
+			if (!tee$set) tee$value = BuilderDefaultsGenerics.<N, T, R>$default$tee();
+			R arrr$value = this.arrr$value;
+			if (!arrr$set) arrr$value = BuilderDefaultsGenerics.<N, T, R>$default$arrr();
+			return new BuilderDefaultsGenerics<N, T, R>(callable$value, tee$value, arrr$value);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder(callable=" + this.callable + ", tee=" + this.tee + ", arrr=" + this.arrr + ")";
+			return "BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder(callable$value=" + this.callable$value + ", tee$value=" + this.tee$value + ", arrr$value=" + this.arrr$value + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")

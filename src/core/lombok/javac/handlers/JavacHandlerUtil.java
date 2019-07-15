@@ -1516,9 +1516,30 @@ public class JavacHandlerUtil {
 	 * variable name as message.
 	 */
 	public static JCStatement generateNullCheck(JavacTreeMaker maker, JavacNode variable, JavacNode source) {
-		return generateNullCheck(maker, variable, (JCVariableDecl) variable.get(), source);
+		return generateNullCheck(maker, (JCVariableDecl) variable.get(), source);
 	}
-
+	
+	/**
+	 * Generates a new statement that checks if the given local is null, and if so, throws a configured exception with the
+	 * local variable name as message. 
+	 */
+	public static JCStatement generateNullCheck(JavacTreeMaker maker, JCExpression typeNode, Name varName, JavacNode source) {
+		NullCheckExceptionType exceptionType = source.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
+		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
+		
+		if (isPrimitive(typeNode)) return null;
+		JCLiteral message = maker.Literal(exceptionType.toExceptionMessage(varName.toString()));
+		if (exceptionType == NullCheckExceptionType.ASSERTION) {
+			return maker.Assert(maker.Binary(CTC_NOT_EQUAL, maker.Ident(varName), maker.Literal(CTC_BOT, null)), message);
+		}
+		
+		JCExpression exType = genTypeRef(source, exceptionType.getExceptionType());
+		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), exType, List.<JCExpression>of(message), null);
+		JCStatement throwStatement = maker.Throw(exception);
+		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));
+		return maker.If(maker.Binary(CTC_EQUAL, maker.Ident(varName), maker.Literal(CTC_BOT, null)), throwBlock, null);
+	}
+	
 	/**
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a configured exception with the
 	 * variable name as message. 
@@ -1527,23 +1548,8 @@ public class JavacHandlerUtil {
 	 * variable's declaration, i.e. in a constructor or setter where the local parameter is named the same but with the prefix
 	 * stripped as a result of @Accessors.prefix.
 	 */
-	public static JCStatement generateNullCheck(JavacTreeMaker maker, JavacNode variable, JCVariableDecl varDecl, JavacNode source) {
-		NullCheckExceptionType exceptionType = source.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
-		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
-		
-		if (isPrimitive(varDecl.vartype)) return null;
-		Name fieldName = varDecl.name;
-		
-		JCLiteral message = maker.Literal(exceptionType.toExceptionMessage(fieldName.toString()));
-		if (exceptionType == NullCheckExceptionType.ASSERTION) {
-			return maker.Assert(maker.Binary(CTC_NOT_EQUAL, maker.Ident(fieldName), maker.Literal(CTC_BOT, null)), message);
-		}
-		
-		JCExpression exType = genTypeRef(variable, exceptionType.getExceptionType());
-		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), exType, List.<JCExpression>of(message), null);
-		JCStatement throwStatement = maker.Throw(exception);
-		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));
-		return maker.If(maker.Binary(CTC_EQUAL, maker.Ident(fieldName), maker.Literal(CTC_BOT, null)), throwBlock, null);
+	public static JCStatement generateNullCheck(JavacTreeMaker maker, JCVariableDecl varDecl, JavacNode source) {
+		return generateNullCheck(maker, varDecl.vartype, varDecl.name, source);
 	}
 	
 	/**

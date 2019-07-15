@@ -11,8 +11,7 @@ Lombok Changelog
 * BUGFIX: Javac would generate the wrong equals and hashCode if a type-use annotation was put on an array type field [Issue #2165](https://github.com/rzwitserloot/lombok/issues/2165)
 * BUGFIX: Eclipse 2019-06 + JDK-12 compatibility + an `@Singular` builder entry would produce a cascade of error dialogs. [Issue #2169](https://github.com/rzwitserloot/lombok/issues/2169)
 * IMPROBABLE BREAKING CHANGE: Stricter validation of configuration keys dealing with identifiers and types (`lombok.log.fieldName`, `lombok.fieldNameConstants.innerTypeName`, `lombok.copyableAnnotations`).
->>>>>>> customlog
-
+* IMPROBABLE BREAKING CHANGE: The fields generated inside builders for fields with defaults (with `@Builder` on a class with fields marked `@Default`) now have `$value` as the name; direct manipulation of these fields is not advised because there is an associated `$set` variable that also needs to be taken into account. [Issue #2115](https://github.com/rzwitserloot/lombok/issues/2115)
 ### v1.18.8 (May 7th, 2019)
 * FEATURE: You can now configure `@FieldNameConstants` to `CONSTANT_CASE` the generated constants, using a `lombok.config` option. See the [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants). [Issue #2092](https://github.com/rzwitserloot/lombok/issues/2092).
 * FEATURE: You can now suppress generation of the `builder` method when using `@Builder`; usually because you're only interested in the `toBuilder` method. As a convenience we won't emit warnings about missing `@Builder.Default` annotations when you do this. [Issue #2046](https://github.com/rzwitserloot/lombok/issues/2046)

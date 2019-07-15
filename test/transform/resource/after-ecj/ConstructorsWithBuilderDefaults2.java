@@ -3,21 +3,21 @@ import lombok.Value;
 import lombok.Builder;
 final @Builder @Value class ConstructorsWithBuilderDefaults<T> {
   public static @java.lang.SuppressWarnings("all") class ConstructorsWithBuilderDefaultsBuilder<T> {
-    private @java.lang.SuppressWarnings("all") java.util.List<T> z;
+    private @java.lang.SuppressWarnings("all") java.util.List<T> z$value;
     private @java.lang.SuppressWarnings("all") boolean z$set;
-    private @java.lang.SuppressWarnings("all") T x;
+    private @java.lang.SuppressWarnings("all") T x$value;
     private @java.lang.SuppressWarnings("all") boolean x$set;
     private @java.lang.SuppressWarnings("all") T q;
     @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaultsBuilder() {
       super();
     }
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaultsBuilder<T> z(final java.util.List<T> z) {
-      this.z = z;
+      this.z$value = z;
       z$set = true;
       return this;
     }
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaultsBuilder<T> x(final T x) {
-      this.x = x;
+      this.x$value = x;
       x$set = true;
       return this;
     }
@@ -26,10 +26,10 @@ final @Builder @Value class ConstructorsWithBuilderDefaults<T> {
       return this;
     }
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults<T> build() {
-      return new ConstructorsWithBuilderDefaults<T>((z$set ? z : ConstructorsWithBuilderDefaults.<T>$default$z()), (x$set ? x : ConstructorsWithBuilderDefaults.<T>$default$x()), q);
+      return new ConstructorsWithBuilderDefaults<T>((z$set ? z$value : ConstructorsWithBuilderDefaults.<T>$default$z()), (x$set ? x$value : ConstructorsWithBuilderDefaults.<T>$default$x()), q);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((((("ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(z=" + this.z) + ", x=") + this.x) + ", q=") + this.q) + ")");
+      return (((((("ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(z$value=" + this.z$value) + ", x$value=") + this.x$value) + ", q=") + this.q) + ")");
     }
   }
   private final @Builder.Default java.util.List<T> z;
