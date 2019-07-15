@@ -34,7 +34,6 @@ import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.BreakStatement;
-import org.eclipse.jdt.internal.compiler.ast.CaseStatement;
 import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
@@ -58,6 +57,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 import lombok.ConfigurationKeys;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
@@ -95,7 +95,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 		char[] keyName = mapMode ? (new String(data.getPluralName()) + "$key").toCharArray() : data.getPluralName();
 		
 		if (emptyCollectionMethod != null) { // case 0: (empty); break;
-			switchContents.add(new CaseStatement(makeIntLiteral(new char[] {'0'}, null), 0, 0));
+			switchContents.add(Eclipse.createCaseStatement(makeIntLiteral(new char[] {'0'}, null)));
 			
 			/* pluralName = java.util.Collections.emptyCollectionMethod(); */ {
 				MessageSend invoke = new MessageSend();
@@ -108,7 +108,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 		}
 		
 		if (singletonCollectionMethod != null) { // case 1: (singleton); break;
-			switchContents.add(new CaseStatement(makeIntLiteral(new char[] {'1'}, null), 0, 0));
+			switchContents.add(Eclipse.createCaseStatement(makeIntLiteral(new char[] {'1'}, null)));
 			/* !mapMode: pluralName = java.util.Collections.singletonCollectionMethod(this.pluralName.get(0));
 			   mapMode: pluralName = java.util.Collections.singletonCollectionMethod(this.pluralName$key.get(0), this.pluralName$value.get(0)); */ {
 				FieldReference thisDotKey = new FieldReference(keyName, 0L);
@@ -142,7 +142,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 		}
 		
 		{ // default:
-			switchContents.add(new CaseStatement(null, 0, 0));
+			switchContents.add(Eclipse.createCaseStatement(null));
 			switchContents.addAll(createJavaUtilSimpleCreationAndFillStatements(data, builderType, mapMode, false, true, emptyCollectionMethod == null, targetType, builderVariable));
 		}
 		

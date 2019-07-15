@@ -9,6 +9,7 @@ Lombok Changelog
 * ENHANCEMENT: If you mix up eclipse's non-null support, such as `@NonNullByDefault`, with lombok's `@NonNull`, you get a bunch of warnings about dead code that are inappropriate. These warnings are now suppressed, thanks to a contribution from Till Brychcy! [Pull Request #2155](https://github.com/rzwitserloot/lombok/pull/2155)
 * BUGFIX: Delombok would turn something like `List<byte[]>...` in a method parameter to `List<byte...>...` [Issue #2140](https://github.com/rzwitserloot/lombok/issues/2140)
 * BUGFIX: Javac would generate the wrong equals and hashCode if a type-use annotation was put on an array type field [Issue #2165](https://github.com/rzwitserloot/lombok/issues/2165)
+* BUGFIX: Eclipse 2019-06 + JDK-12 compatibility + an `@Singular` builder entry would produce a cascade of error dialogs. [Issue #2169](https://github.com/rzwitserloot/lombok/issues/2169)
 * IMPROBABLE BREAKING CHANGE: Stricter validation of configuration keys dealing with identifiers and types (`lombok.log.fieldName`, `lombok.fieldNameConstants.innerTypeName`, `lombok.copyableAnnotations`).
 >>>>>>> customlog
 
