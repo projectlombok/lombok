@@ -16,31 +16,31 @@ public class SuperBuilderWithDefaults {
 			@java.lang.SuppressWarnings("all")
 			private boolean millis$set;
 			@java.lang.SuppressWarnings("all")
-			private long millis;
+			private long millis$value;
 			@java.lang.SuppressWarnings("all")
 			private boolean numberField$set;
 			@java.lang.SuppressWarnings("all")
-			private N numberField;
+			private N numberField$value;
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
 			@java.lang.SuppressWarnings("all")
 			public B millis(final long millis) {
-				this.millis = millis;
+				this.millis$value = millis;
 				millis$set = true;
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
 			public B numberField(final N numberField) {
-				this.numberField = numberField;
+				this.numberField$value = numberField;
 				numberField$set = true;
 				return self();
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "SuperBuilderWithDefaults.Parent.ParentBuilder(millis=" + this.millis + ", numberField=" + this.numberField + ")";
+				return "SuperBuilderWithDefaults.Parent.ParentBuilder(millis$value=" + this.millis$value + ", numberField$value=" + this.numberField$value + ")";
 			}
 		}
 		@java.lang.SuppressWarnings("all")
@@ -61,9 +61,9 @@ public class SuperBuilderWithDefaults {
 		}
 		@java.lang.SuppressWarnings("all")
 		protected Parent(final ParentBuilder<N, ?, ?> b) {
-			if (b.millis$set) this.millis = b.millis;
+			if (b.millis$set) this.millis = b.millis$value;
 			 else this.millis = Parent.<N>$default$millis();
-			if (b.numberField$set) this.numberField = b.numberField; 
+			if (b.numberField$set) this.numberField = b.numberField$value;
 			 else this.numberField = Parent.<N>$default$numberField();
 		}
 		@java.lang.SuppressWarnings("all")
@@ -82,7 +82,7 @@ public class SuperBuilderWithDefaults {
 			@java.lang.SuppressWarnings("all")
 			private boolean doubleField$set;
 			@java.lang.SuppressWarnings("all")
-			private double doubleField;
+			private double doubleField$value;
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();
@@ -91,14 +91,14 @@ public class SuperBuilderWithDefaults {
 			public abstract C build();
 			@java.lang.SuppressWarnings("all")
 			public B doubleField(final double doubleField) {
-				this.doubleField = doubleField;
+				this.doubleField$value = doubleField;
 				doubleField$set = true;
 				return self();
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "SuperBuilderWithDefaults.Child.ChildBuilder(super=" + super.toString() + ", doubleField=" + this.doubleField + ")";
+				return "SuperBuilderWithDefaults.Child.ChildBuilder(super=" + super.toString() + ", doubleField$value=" + this.doubleField$value + ")";
 			}
 		}
 		@java.lang.SuppressWarnings("all")
@@ -120,7 +120,7 @@ public class SuperBuilderWithDefaults {
 		@java.lang.SuppressWarnings("all")
 		protected Child(final ChildBuilder<?, ?> b) {
 			super(b);
-			if (b.doubleField$set) this.doubleField = b.doubleField;
+			if (b.doubleField$set) this.doubleField = b.doubleField$value;
 			 else this.doubleField = Child.$default$doubleField();
 		}
 		@java.lang.SuppressWarnings("all")

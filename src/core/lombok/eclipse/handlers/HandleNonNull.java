@@ -33,10 +33,12 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.AssertStatement;
+import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -61,6 +63,9 @@ import lombok.eclipse.EclipseNode;
 @ProviderFor(EclipseAnnotationHandler.class)
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
+	private static final char[] REQUIRE_NON_NULL = "requireNonNull".toCharArray();
+	private static final char[] CHECK_NOT_NULL = "checkNotNull".toCharArray();
+	
 	public static final HandleNonNull INSTANCE = new HandleNonNull();
 	
 	public void fix(EclipseNode method) {
@@ -193,7 +198,22 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	
 	public char[] returnVarNameIfNullCheck(Statement stat) {
 		boolean isIf = stat instanceof IfStatement;
-		if (!isIf && !(stat instanceof AssertStatement)) return null;
+		boolean isExpression = stat instanceof Expression;
+		if (!isIf && !(stat instanceof AssertStatement) && !isExpression) return null;
+		
+		if (isExpression) {
+			/* Check if the statements contains a call to checkNotNull or requireNonNull */
+			Expression expression = (Expression) stat;
+			if (expression instanceof Assignment) expression = ((Assignment) expression).expression;
+			if (!(expression instanceof MessageSend)) return null;
+			
+			MessageSend invocation = (MessageSend) expression;
+			if (!Arrays.equals(invocation.selector, CHECK_NOT_NULL) && !Arrays.equals(invocation.selector, REQUIRE_NON_NULL)) return null;
+			if (invocation.arguments == null || invocation.arguments.length == 0) return null;
+			Expression firstArgument = invocation.arguments[0];
+			if (!(firstArgument instanceof SingleNameReference)) return null;
+			return ((SingleNameReference) firstArgument).token;
+		}
 		
 		if (isIf) {
 			/* Check that the if's statement is a throw statement, possibly in a block. */

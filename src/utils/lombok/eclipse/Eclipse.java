@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,13 @@ import java.util.regex.Pattern;
 
 import lombok.core.ClassLiteral;
 import lombok.core.FieldSelect;
+import lombok.permit.Permit;
+
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.CaseStatement;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
@@ -261,5 +264,24 @@ public class Eclipse {
 		} catch (NoSuchFieldException e) {
 			return false;
 		}
+	}
+	
+	private static boolean caseStatementInit = false;
+	private static Field caseStatementConstantExpressions = null;
+	public static CaseStatement createCaseStatement(Expression expr) {
+		CaseStatement stat = new CaseStatement(expr, 0, 0);
+		if (expr == null) return stat;
+		if (!caseStatementInit) {
+			try {
+				caseStatementConstantExpressions = Permit.getField(CaseStatement.class, "constantExpressions");
+				caseStatementConstantExpressions.setAccessible(true);
+			} catch (NoSuchFieldException ignore) {}
+			caseStatementInit = true;
+		}
+		if (caseStatementConstantExpressions != null) try {
+			caseStatementConstantExpressions.set(stat, new Expression[] {expr});
+		} catch (IllegalArgumentException ignore) {
+		} catch (IllegalAccessException ignore) {}
+		return stat;
 	}
 }

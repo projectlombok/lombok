@@ -2,16 +2,16 @@ import lombok.Builder;
 import lombok.Value;
 public final @Value @Builder class BuilderDefaults {
   public static @java.lang.SuppressWarnings("all") class BuilderDefaultsBuilder {
-    private @java.lang.SuppressWarnings("all") int x;
+    private @java.lang.SuppressWarnings("all") int x$value;
     private @java.lang.SuppressWarnings("all") boolean x$set;
     private @java.lang.SuppressWarnings("all") String name;
-    private @java.lang.SuppressWarnings("all") long z;
+    private @java.lang.SuppressWarnings("all") long z$value;
     private @java.lang.SuppressWarnings("all") boolean z$set;
     @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder() {
       super();
     }
     public @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder x(final int x) {
-      this.x = x;
+      this.x$value = x;
       x$set = true;
       return this;
     }
@@ -20,15 +20,15 @@ public final @Value @Builder class BuilderDefaults {
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder z(final long z) {
-      this.z = z;
+      this.z$value = z;
       z$set = true;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderDefaults build() {
-      return new BuilderDefaults((x$set ? x : BuilderDefaults.$default$x()), name, (z$set ? z : BuilderDefaults.$default$z()));
+      return new BuilderDefaults((x$set ? x$value : BuilderDefaults.$default$x()), name, (z$set ? z$value : BuilderDefaults.$default$z()));
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((((("BuilderDefaults.BuilderDefaultsBuilder(x=" + this.x) + ", name=") + this.name) + ", z=") + this.z) + ")");
+      return (((((("BuilderDefaults.BuilderDefaultsBuilder(x$value=" + this.x$value) + ", name=") + this.name) + ", z$value=") + this.z$value) + ")");
     }
   }
   private final @Builder.Default int x;

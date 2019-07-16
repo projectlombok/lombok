@@ -203,10 +203,10 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
-		return createSetter(access, false, field, treeMaker, setterName, null, returnThis, source, onMethod, onParam);
+		return createSetter(access, false, field, treeMaker, setterName, null, null, returnThis, source, onMethod, onParam);
 	}
 	
-	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		JCExpression returnType = null;
 		JCReturn returnStatement = null;
 		if (shouldReturnThis) {
@@ -214,16 +214,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
 		}
 		
-		return createSetter(access, deprecate, field, treeMaker, setterName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam);
+		return createSetter(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam);
 	}
 	
-	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
+		if (paramName == null) paramName = fieldDecl.name;
 		
 		JCExpression fieldRef = createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD);
-		JCAssign assign = treeMaker.Assign(fieldRef, treeMaker.Ident(fieldDecl.name));
+		JCAssign assign = treeMaker.Assign(fieldRef, treeMaker.Ident(paramName));
 		
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(field);
@@ -232,12 +233,12 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(copyableAnnotations);
 		
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
-		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
+		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), paramName, fieldDecl.vartype, null);
 		
 		if (!hasNonNullAnnotations(field) && !hasNonNullAnnotations(field, onParam)) {
 			statements.append(treeMaker.Exec(assign));
 		} else {
-			JCStatement nullCheck = generateNullCheck(treeMaker, field, source);
+			JCStatement nullCheck = generateNullCheck(treeMaker, fieldDecl.vartype, paramName, source);
 			if (nullCheck != null) statements.append(nullCheck);
 			statements.append(treeMaker.Exec(assign));
 		}
@@ -267,7 +268,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
-				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
+			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
 		copyJavadoc(field, decl, CopyJavadoc.SETTER);
 		return decl;
 	}

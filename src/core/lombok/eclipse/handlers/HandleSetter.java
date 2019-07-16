@@ -184,11 +184,11 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			}
 		}
 		
-		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), false, fieldNode, setterName, null, shouldReturnThis, modifier, sourceNode, onMethod, onParam);
+		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), false, fieldNode, setterName, null, null, shouldReturnThis, modifier, sourceNode, onMethod, onParam);
 		injectMethod(fieldNode.up(), method);
 	}
 
-	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] booleanFieldToSet, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
 		ASTNode source = sourceNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
@@ -200,14 +200,15 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			returnThis = new ReturnStatement(thisRef, pS, pE);
 		}
 		
-		return createSetter(parent, deprecate, fieldNode, name, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam);
+		return createSetter(parent, deprecate, fieldNode, name, paramName, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam);
 	}
 	
-	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] booleanFieldToSet, TypeReference returnType, Statement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, TypeReference returnType, Statement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+		if (paramName == null) paramName = field.name;
 		ASTNode source = sourceNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
 		method.modifiers = modifier;
 		if (returnType != null) {
@@ -221,7 +222,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
 		method.annotations = mergeAnnotations(copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated), findCopyableToSetterAnnotations(fieldNode));
-		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
+		Argument param = new Argument(paramName, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
@@ -230,8 +231,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		Expression fieldRef = createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);
-		NameReference fieldNameRef = new SingleNameReference(field.name, p);
-		Assignment assignment = new Assignment(fieldRef, fieldNameRef, (int)p);
+		NameReference fieldNameRef = new SingleNameReference(paramName, p);
+		Assignment assignment = new Assignment(fieldRef, fieldNameRef, (int) p);
 		assignment.sourceStart = pS; assignment.sourceEnd = assignment.statementEnd = pE;
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
@@ -241,7 +242,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		if (!hasNonNullAnnotations(fieldNode) && !hasNonNullAnnotations(fieldNode, onParam)) {
 			statements.add(assignment);
 		} else {
-			Statement nullCheck = generateNullCheck(field, sourceNode);
+			Statement nullCheck = generateNullCheck(field.type, paramName, sourceNode);
 			if (nullCheck != null) statements.add(nullCheck);
 			statements.add(assignment);
 		}
