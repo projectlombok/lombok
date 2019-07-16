@@ -1529,6 +1529,12 @@ public class JavacHandlerUtil {
 		
 		if (isPrimitive(typeNode)) return null;
 		JCLiteral message = maker.Literal(exceptionType.toExceptionMessage(varName.toString()));
+		
+		LombokImmutableList<String> method = exceptionType.getMethod();
+		if (method != null) {
+			return maker.Exec(maker.Apply(List.<JCExpression>nil(), chainDots(source, method), List.of(maker.Ident(varName), message)));
+		}
+		
 		if (exceptionType == NullCheckExceptionType.ASSERTION) {
 			return maker.Assert(maker.Binary(CTC_NOT_EQUAL, maker.Ident(varName), maker.Literal(CTC_BOT, null)), message);
 		}

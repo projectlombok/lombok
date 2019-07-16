@@ -31,13 +31,17 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssert;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCParens;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCSynchronized;
@@ -45,6 +49,7 @@ import com.sun.tools.javac.tree.JCTree.JCThrow;
 import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 
 import lombok.ConfigurationKeys;
 import lombok.NonNull;
@@ -167,8 +172,31 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 	 * If it is not of this form, returns null.
 	 */
 	public String returnVarNameIfNullCheck(JCStatement stat) {
-		boolean isIf = stat instanceof JCIf; 
-		if (!isIf && !(stat instanceof JCAssert)) return null;
+		boolean isIf = stat instanceof JCIf;
+		boolean isExpression = stat instanceof JCExpressionStatement;
+		if (!isIf && !(stat instanceof JCAssert) && !isExpression) return null;
+		
+		if (isExpression) {
+			/* Check if the statements contains a call to checkNotNull or requireNonNull */
+			JCExpression expression = ((JCExpressionStatement) stat).expr;
+			if (expression instanceof JCAssign) expression = ((JCAssign) expression).rhs;
+			if (!(expression instanceof JCMethodInvocation)) return null;
+			
+			JCMethodInvocation invocation = (JCMethodInvocation) expression;
+			JCExpression method = invocation.meth;
+			Name name = null;
+			if (method instanceof JCFieldAccess) {
+				name = ((JCFieldAccess) method).name;
+			} else if (method instanceof JCIdent) {
+				name = ((JCIdent) method).name;
+			}
+			if (name == null || (!name.contentEquals("checkNotNull") && !name.contentEquals("requireNonNull"))) return null;
+			
+			if (invocation.args.isEmpty()) return null;
+			JCExpression firstArgument = invocation.args.head;
+			if (!(firstArgument instanceof JCIdent)) return null;
+			return ((JCIdent) firstArgument).toString();
+		}
 		
 		if (isIf) {
 			/* Check that the if's statement is a throw statement, possibly in a block. */

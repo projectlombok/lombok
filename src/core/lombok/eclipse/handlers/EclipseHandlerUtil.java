@@ -38,26 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Lombok;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.TypeResolver;
-import lombok.core.configuration.NullCheckExceptionType;
-import lombok.core.configuration.TypeName;
-import lombok.core.debug.ProblemReporter;
-import lombok.core.handlers.HandlerUtil;
-import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseAST;
-import lombok.eclipse.EclipseNode;
-import lombok.experimental.Accessors;
-import lombok.experimental.Tolerate;
-import lombok.permit.Permit;
-
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -120,6 +100,28 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Lombok;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.core.LombokImmutableList;
+import lombok.core.TypeResolver;
+import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.configuration.TypeName;
+import lombok.core.debug.ProblemReporter;
+import lombok.core.handlers.HandlerUtil;
+import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAST;
+import lombok.eclipse.EclipseNode;
+import lombok.experimental.Accessors;
+import lombok.experimental.Tolerate;
+import lombok.permit.Permit;
 
 /**
  * Container for static utility methods useful to handlers written for eclipse.
@@ -1818,8 +1820,6 @@ public class EclipseHandlerUtil {
 	/**
 	 * Generates a new statement that checks if the given local variable is null, and if so, throws a specified exception with the
 	 * variable name as message.
-	 * 
-	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
 	public static Statement generateNullCheck(TypeReference type, char[] variable, EclipseNode sourceNode) {
 		NullCheckExceptionType exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
@@ -1828,24 +1828,44 @@ public class EclipseHandlerUtil {
 		ASTNode source = sourceNode.get();
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
 		if (isPrimitive(type)) return null;
+		SingleNameReference varName = new SingleNameReference(variable, p);
+		setGeneratedBy(varName, source);
+		
+		StringLiteral message = new StringLiteral(exceptionType.toExceptionMessage(new String(variable)).toCharArray(), pS, pE, 0);
+		setGeneratedBy(message, source);
+		
+		LombokImmutableList<String> method = exceptionType.getMethod();
+		if (method != null) {
+			
+			MessageSend invocation = new MessageSend();
+			invocation.sourceStart = pS; invocation.sourceEnd = pE;
+			setGeneratedBy(invocation, source);
+			
+			char[][] utilityTypeName = new char[method.size() - 1][];
+			for (int i = 0; i < method.size() - 1; i++) {
+				utilityTypeName[i] = method.get(i).toCharArray();
+			}
+			
+			invocation.receiver = new QualifiedNameReference(utilityTypeName, new long[method.size()], pS, pE);
+			setGeneratedBy(invocation.receiver, source);
+			invocation.selector = method.get(method.size() - 1).toCharArray();
+			invocation.arguments = new Expression[] {varName, message};
+			return invocation;
+		}
+		
 		AllocationExpression exception = new AllocationExpression();
 		setGeneratedBy(exception, source);
 		
-		SingleNameReference varName = new SingleNameReference(variable, p);
-		setGeneratedBy(varName, source);
 		NullLiteral nullLiteral = new NullLiteral(pS, pE);
 		setGeneratedBy(nullLiteral, source);
-
+		
 		int equalOperator = exceptionType == NullCheckExceptionType.ASSERTION ? OperatorIds.NOT_EQUAL : OperatorIds.EQUAL_EQUAL; 
 		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, equalOperator);
 		equalExpression.sourceStart = pS; equalExpression.statementEnd = equalExpression.sourceEnd = pE;
 		setGeneratedBy(equalExpression, source);
-
-		StringLiteral message = new StringLiteral(exceptionType.toExceptionMessage(new String(variable)).toCharArray(), pS, pE, 0);
-		setGeneratedBy(message, source);
 		
 		if (exceptionType == NullCheckExceptionType.ASSERTION) {
 			Statement assertStatement = new AssertStatement(message, equalExpression, pS);
@@ -1864,7 +1884,6 @@ public class EclipseHandlerUtil {
 		
 		ThrowStatement throwStatement = new ThrowStatement(exception, pS, pE);
 		setGeneratedBy(throwStatement, source);
-		
 		
 		Block throwBlock = new Block(0);
 		throwBlock.statements = new Statement[] {throwStatement};
