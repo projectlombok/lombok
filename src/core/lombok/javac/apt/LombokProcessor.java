@@ -389,7 +389,12 @@ public class LombokProcessor extends AbstractProcessor {
 	}
 	
 	private JCCompilationUnit toUnit(Element element) {
-		TreePath path = trees == null ? null : trees.getPath(element);
+		TreePath path = null;
+		if (trees != null) {
+			try {
+				path = trees.getPath(element);
+			} catch (NullPointerException ignore) {}
+		}
 		if (path == null) return null;
 		
 		return (JCCompilationUnit) path.getCompilationUnit();
