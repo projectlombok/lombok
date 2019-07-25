@@ -393,7 +393,11 @@ public class LombokProcessor extends AbstractProcessor {
 		if (trees != null) {
 			try {
 				path = trees.getPath(element);
-			} catch (NullPointerException ignore) {}
+			} catch (NullPointerException ignore) {
+				// Happens if a package-info.java dowsn't conatin a package declaration.
+				// https://github.com/rzwitserloot/lombok/issues/2184
+				// We can safely ignore those, since they do not need any processing
+			}
 		}
 		if (path == null) return null;
 		
