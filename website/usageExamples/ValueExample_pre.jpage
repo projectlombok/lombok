@@ -1,6 +1,6 @@
 import lombok.AccessLevel;
 import lombok.experimental.NonFinal;
-import lombok.experimental.Value;
+import lombok.Value;
 import lombok.experimental.Wither;
 import lombok.ToString;
 
