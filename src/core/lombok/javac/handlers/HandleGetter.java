@@ -223,7 +223,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
-		JCExpression methodType = copyType(treeMaker, fieldNode);
+		JCExpression methodType = cloneType(treeMaker, copyType(treeMaker, fieldNode), source, field.getContext());
 		// Generate the methodName; lazy will change the field type
 		Name methodName = field.toName(toGetterName(field));
 		
