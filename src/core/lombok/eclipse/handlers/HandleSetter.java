@@ -36,6 +36,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.Setter;
 import lombok.core.AST.Kind;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -200,7 +201,11 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			returnThis = new ReturnStatement(thisRef, pS, pE);
 		}
 		
-		return createSetter(parent, deprecate, fieldNode, name, paramName, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam);
+		MethodDeclaration d = createSetter(parent, deprecate, fieldNode, name, paramName, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam);
+		if (shouldReturnThis && getCheckerFrameworkVersion(sourceNode).generateReturnsReceiver()) {
+			d.annotations = copyAnnotations(source, d.annotations, new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER) });
+		}
+		return d;
 	}
 	
 	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, TypeReference returnType, Statement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {

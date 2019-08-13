@@ -36,7 +36,8 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
 public class DirectoryRunner extends Runner {
-	private static final String DEBUG_FOCUS_ON_FILE = null;
+	/** Fill in a file name (or multiple, space separated) to reduce the testset to just the named file(s). */
+	private static final String DEBUG_FOCUS_ON_FILE = "";
 	
 	public enum Compiler {
 		DELOMBOK {
@@ -79,7 +80,7 @@ public class DirectoryRunner extends Runner {
 	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {
 		@Override public boolean accept(File file) {
 			return file.isFile() && file.getName().endsWith(".java") &&
-				(DEBUG_FOCUS_ON_FILE == null || file.getName().equals(DEBUG_FOCUS_ON_FILE));
+				(DEBUG_FOCUS_ON_FILE.isEmpty() || (" " + DEBUG_FOCUS_ON_FILE + " ").contains(" " + file.getName() + " "));
 		}
 	};
 	

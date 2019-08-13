@@ -93,6 +93,7 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.CleanupTask;
 import lombok.core.LombokImmutableList;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
 import lombok.core.handlers.HandlerUtil;
@@ -328,6 +329,11 @@ public class JavacHandlerUtil {
 			}
 		}
 		return false;
+	}
+	
+	public static CheckerFrameworkVersion getCheckerFrameworkVersion(JavacNode node) {
+		CheckerFrameworkVersion cfv = node.getAst().readConfiguration(ConfigurationKeys.CHECKER_FRAMEWORK);
+		return cfv == null ? CheckerFrameworkVersion.NONE : cfv;
 	}
 	
 	/**
@@ -1266,7 +1272,7 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	private static void addAnnotation(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn, JCExpression arg) {
+	public static void addAnnotation(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn, JCExpression arg) {
 		boolean isJavaLangBased;
 		String simpleName; {
 			int idx = annotationTypeFqn.lastIndexOf('.');

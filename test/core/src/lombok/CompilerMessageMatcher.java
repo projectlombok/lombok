@@ -88,7 +88,7 @@ public class CompilerMessageMatcher {
 		return out;
 	}
 	
-	private static final Pattern PATTERN = Pattern.compile("^(\\d+) (.*)$");
+	private static final Pattern PATTERN = Pattern.compile("^(-?\\d+) (.*)$");
 	
 	private static CompilerMessageMatcher read(String line) {
 		line = line.trim();

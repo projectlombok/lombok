@@ -31,6 +31,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.core.GuavaTypeMap;
 import lombok.core.LombokImmutableList;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.HandleNonNull;
@@ -111,13 +112,13 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
-		generateSingularMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent, access);
-		generatePluralMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent, access);
-		generateClearMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data,  builderType, access);
+	@Override public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
+		generateSingularMethod(cfv, deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent, access);
+		generatePluralMethod(cfv, deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent, access);
+		generateClearMethod(cfv, deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data,  builderType, access);
 	}
 	
-	void generateClearMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, AccessLevel access) {
+	void generateClearMethod(CheckerFrameworkVersion cfv, boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, AccessLevel access) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = toEclipseModifier(access);
@@ -128,13 +129,13 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		md.selector = HandlerUtil.buildAccessorName("clear", new String(data.getPluralName())).toCharArray();
 		md.statements = returnStatement != null ? new Statement[] {a, returnStatement} : new Statement[] {a};
 		md.returnType = returnType;
-		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
+		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
-	void generateSingularMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, AccessLevel access) {
+	void generateSingularMethod(CheckerFrameworkVersion cfv, boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, AccessLevel access) {
 		LombokImmutableList<String> suffixes = getArgumentSuffixes();
 		char[][] names = new char[suffixes.size()][];
 		for (int i = 0; i < suffixes.size(); i++) {
@@ -172,13 +173,13 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		}
 		md.returnType = returnType;
 		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName(getAddMethodName(), new String(data.getSingularName())).toCharArray();
-		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
+		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
 		data.setGeneratedByRecursive(md);
 		HandleNonNull.INSTANCE.fix(injectMethod(builderType, md));
 	}
 	
-	void generatePluralMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, AccessLevel access) {
+	void generatePluralMethod(CheckerFrameworkVersion cfv, boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, AccessLevel access) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = toEclipseModifier(access);
@@ -204,7 +205,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
 		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName(getAddMethodName() + "All", new String(data.getPluralName())).toCharArray();
-		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
+		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
