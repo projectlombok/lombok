@@ -89,6 +89,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCExpression type;
 		Name rawName;
 		Name name;
+		Name builderFieldName;
 		Name nameOfDefaultProvider;
 		Name nameOfSetFlag;
 		SingularData singularData;
@@ -174,6 +175,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fd.name;
 				bfd.name = removePrefixFromField(fieldNode);
+				bfd.builderFieldName = bfd.name;
 				bfd.annotations = findCopyableAnnotations(fieldNode);
 				bfd.type = fd.vartype;
 				bfd.singularData = getSingularData(fieldNode);
@@ -200,6 +202,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				if (isDefault != null) {
 					bfd.nameOfDefaultProvider = parent.toName("$default$" + bfd.name);
 					bfd.nameOfSetFlag = parent.toName(bfd.name + "$set");
+					bfd.builderFieldName = parent.toName(bfd.name + "$value");
 					JCMethodDecl md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, td.typarams);
 					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 					if (md != null) injectMethod(tdParent, md);
@@ -360,6 +363,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				
 				JCVariableDecl raw = (JCVariableDecl) param.get();
 				bfd.name = raw.name;
+				bfd.builderFieldName = bfd.name;
 				bfd.rawName = raw.name;
 				bfd.annotations = findCopyableAnnotations(param);
 				bfd.type = raw.vartype;
@@ -628,17 +632,17 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name, "this");
+				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.builderFieldName, "this");
 			}
 		}
 		
 		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.nameOfSetFlag != null) {
-				statements.append(maker.VarDef(maker.Modifiers(0L), bfd.name, cloneType(maker, bfd.type, source, tdParent.getContext()), maker.Select(maker.Ident(type.toName("this")), bfd.name)));
-				statements.append(maker.If(maker.Unary(CTC_NOT, maker.Ident(bfd.nameOfSetFlag)), maker.Exec(maker.Assign(maker.Ident(bfd.name),maker.Apply(typeParameterNames(maker, ((JCClassDecl) tdParent.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) tdParent.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil()))), null));
+				statements.append(maker.VarDef(maker.Modifiers(0L), bfd.builderFieldName, cloneType(maker, bfd.type, source, tdParent.getContext()), maker.Select(maker.Ident(type.toName("this")), bfd.builderFieldName)));
+				statements.append(maker.If(maker.Unary(CTC_NOT, maker.Ident(bfd.nameOfSetFlag)), maker.Exec(maker.Assign(maker.Ident(bfd.builderFieldName), maker.Apply(typeParameterNames(maker, ((JCClassDecl) tdParent.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) tdParent.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil()))), null));
 			}
-			args.append(maker.Ident(bfd.name));
+			args.append(maker.Ident(bfd.builderFieldName));
 		}
 		
 		if (addCleaning) {
@@ -715,13 +719,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				JavacNode field = null, setFlag = null;
 				for (JavacNode exists : existing) {
 					Name n = ((JCVariableDecl) exists.get()).name;
-					if (n.equals(bfd.name)) field = exists;
+					if (n.equals(bfd.builderFieldName)) field = exists;
 					if (n.equals(bfd.nameOfSetFlag)) setFlag = exists;
 				}
 				JavacTreeMaker maker = builderType.getTreeMaker();
 				if (field == null) {
 					JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
-					JCVariableDecl newField = maker.VarDef(mods, bfd.name, cloneType(maker, bfd.type, source, builderType.getContext()), null);
+					JCVariableDecl newField = maker.VarDef(mods, bfd.builderFieldName, cloneType(maker, bfd.type, source, builderType.getContext()), null);
 					field = injectFieldAndMarkGenerated(builderType, newField);
 					generated.add(newField);
 				}
@@ -740,13 +744,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	public void makeSetterMethodsForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain, AccessLevel access) {
 		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, fluent, chain, fieldNode.annotations, fieldNode.originalFieldNode, access);
+			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.name, fieldNode.nameOfSetFlag, source, fluent, chain, fieldNode.annotations, fieldNode.originalFieldNode, access);
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), fluent, chain, access);
 		}
 	}
 	
-	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, AccessLevel access) {
+	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, AccessLevel access) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -756,12 +760,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (existingName.equals(fieldName) && !isTolerate(fieldNode, methodDecl)) return;
 		}
 		
-		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
+		String setterName = fluent ? paramName.toString() : HandlerUtil.buildAccessorName("set", paramName.toString());
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
-		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(access), deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, methodAnns, annosOnParam);
+		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(access), deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, chain, source, methodAnns, annosOnParam);
 		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
 		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER);
 		

@@ -4,14 +4,14 @@ import lombok.Value;
 import lombok.Builder;
 final @NoArgsConstructor(force = true) @AllArgsConstructor @Builder @Value class ConstructorsWithBuilderDefaults {
   public static @java.lang.SuppressWarnings("all") class ConstructorsWithBuilderDefaultsBuilder {
-    private @java.lang.SuppressWarnings("all") int x;
+    private @java.lang.SuppressWarnings("all") int x$value;
     private @java.lang.SuppressWarnings("all") boolean x$set;
     private @java.lang.SuppressWarnings("all") int y;
     @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaultsBuilder() {
       super();
     }
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaultsBuilder x(final int x) {
-      this.x = x;
+      this.x$value = x;
       x$set = true;
       return this;
     }
@@ -20,10 +20,10 @@ final @NoArgsConstructor(force = true) @AllArgsConstructor @Builder @Value class
       return this;
     }
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults build() {
-      return new ConstructorsWithBuilderDefaults((x$set ? x : ConstructorsWithBuilderDefaults.$default$x()), y);
+      return new ConstructorsWithBuilderDefaults((x$set ? x$value : ConstructorsWithBuilderDefaults.$default$x()), y);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((("ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(x=" + this.x) + ", y=") + this.y) + ")");
+      return (((("ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(x$value=" + this.x$value) + ", y=") + this.y) + ")");
     }
   }
   private final @Builder.Default int x;

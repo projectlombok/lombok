@@ -12,7 +12,7 @@ public class SuperBuilderWithNonNull {
 			@java.lang.SuppressWarnings("all")
 			private boolean nonNullParentField$set;
 			@java.lang.SuppressWarnings("all")
-			private String nonNullParentField;
+			private String nonNullParentField$value;
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();
 			@java.lang.SuppressWarnings("all")
@@ -22,14 +22,14 @@ public class SuperBuilderWithNonNull {
 				if (nonNullParentField == null) {
 					throw new java.lang.NullPointerException("nonNullParentField is marked non-null but is null");
 				}
-				this.nonNullParentField = nonNullParentField;
+				this.nonNullParentField$value = nonNullParentField;
 				nonNullParentField$set = true;
 				return self();
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "SuperBuilderWithNonNull.Parent.ParentBuilder(nonNullParentField=" + this.nonNullParentField + ")";
+				return "SuperBuilderWithNonNull.Parent.ParentBuilder(nonNullParentField$value=" + this.nonNullParentField$value + ")";
 			}
 		}
 		@java.lang.SuppressWarnings("all")
@@ -50,7 +50,7 @@ public class SuperBuilderWithNonNull {
 		}
 		@java.lang.SuppressWarnings("all")
 		protected Parent(final ParentBuilder<?, ?> b) {
-			if (b.nonNullParentField$set) this.nonNullParentField = b.nonNullParentField;
+			if (b.nonNullParentField$set) this.nonNullParentField = b.nonNullParentField$value;
 			 else this.nonNullParentField = Parent.$default$nonNullParentField();
 			if (nonNullParentField == null) {
 				throw new java.lang.NullPointerException("nonNullParentField is marked non-null but is null");

@@ -302,6 +302,7 @@ public class HandlerUtil {
 		}));
 		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 				"com.fasterxml.jackson.annotation.JsonProperty",
+				"com.fasterxml.jackson.annotation.JsonSetter",
 			}));
 	}
 	

@@ -21,28 +21,64 @@
  */
 package lombok.core.configuration;
 
+import lombok.core.LombokImmutableList;
 
-@ExampleValueString("[NullPointerException | IllegalArgumentException | Assertion]")
+@ExampleValueString("[NullPointerException | IllegalArgumentException | Assertion | JDK | GUAVA]")
 public enum NullCheckExceptionType {
 	ILLEGAL_ARGUMENT_EXCEPTION {
 		@Override public String getExceptionType() {
 			return "java.lang.IllegalArgumentException";
+		}
+
+		@Override public LombokImmutableList<String> getMethod() {
+			return null;
 		}
 	},
 	NULL_POINTER_EXCEPTION {
 		@Override public String getExceptionType() {
 			return "java.lang.NullPointerException";
 		}
+
+		@Override public LombokImmutableList<String> getMethod() {
+			return null;
+		}
 	},
 	ASSERTION {
 		@Override public String getExceptionType() {
 			return null;
 		}
+
+		@Override public LombokImmutableList<String> getMethod() {
+			return null;
+		}
+	},
+	JDK {
+		@Override public String getExceptionType() {
+			return null;
+		}
+
+		@Override public LombokImmutableList<String> getMethod() {
+			return METHOD_JDK;
+		}
+	},
+	GUAVA {
+		@Override public String getExceptionType() {
+			return null;
+		}
+
+		@Override public LombokImmutableList<String> getMethod() {
+			return METHOD_GUAVA;
+		}
 	};
+	
+	private static final LombokImmutableList<String> METHOD_JDK = LombokImmutableList.of("java", "util", "Objects", "requireNonNull");
+	private static final LombokImmutableList<String> METHOD_GUAVA = LombokImmutableList.of("com", "google", "common", "base", "Preconditions", "checkNotNull");
 	
 	public String toExceptionMessage(String fieldName) {
 		return fieldName + " is marked non-null but is null";
 	}
 	
 	public abstract String getExceptionType();
+	
+	public abstract LombokImmutableList<String> getMethod();
 }

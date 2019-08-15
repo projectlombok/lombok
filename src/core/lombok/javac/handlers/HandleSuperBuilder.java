@@ -142,6 +142,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			BuilderFieldData bfd = new BuilderFieldData();
 			bfd.rawName = fd.name;
 			bfd.name = removePrefixFromField(fieldNode);
+			bfd.builderFieldName = bfd.name;
 			bfd.annotations = findCopyableAnnotations(fieldNode);
 			bfd.type = fd.vartype;
 			bfd.singularData = getSingularData(fieldNode);
@@ -166,7 +167,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			if (isDefault != null) {
 				bfd.nameOfDefaultProvider = tdParent.toName("$default$" + bfd.name);
 				bfd.nameOfSetFlag = tdParent.toName(bfd.name + "$set");
-				bfd.nameOfSetFlag = tdParent.toName(bfd.name + "$set");
+				bfd.builderFieldName = tdParent.toName(bfd.name + "$value");
 				JCMethodDecl md = HandleBuilder.generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, td.typarams);
 				recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 				if (md != null) injectMethod(tdParent, md);
@@ -493,10 +494,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		for (BuilderFieldData bfd : builderFields) {
 			JCExpression rhs;
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, bfd.originalFieldNode, bfd.type, statements, bfd.name, "b");
+				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, bfd.originalFieldNode, bfd.type, statements, bfd.builderFieldName, "b");
 				rhs = maker.Ident(bfd.singularData.getPluralName());
 			} else {
-				rhs = maker.Select(maker.Ident(builderVariableName), bfd.name);
+				rhs = maker.Select(maker.Ident(builderVariableName), bfd.builderFieldName);
 			}
 			JCFieldAccess fieldInThis = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
 			
@@ -829,13 +830,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				JavacNode field = null, setFlag = null;
 				for (JavacNode exists : existing) {
 					Name n = ((JCVariableDecl) exists.get()).name;
-					if (n.equals(bfd.name)) field = exists;
+					if (n.equals(bfd.builderFieldName)) field = exists;
 					if (n.equals(bfd.nameOfSetFlag)) setFlag = exists;
 				}
 				JavacTreeMaker maker = builderType.getTreeMaker();
 				if (field == null) {
 					JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
-					JCVariableDecl newField = maker.VarDef(mods, bfd.name, cloneType(maker, bfd.type, source, builderType.getContext()), null);
+					JCVariableDecl newField = maker.VarDef(mods, bfd.builderFieldName, cloneType(maker, bfd.type, source, builderType.getContext()), null);
 					field = injectFieldAndMarkGenerated(builderType, newField);
 					generated.add(newField);
 				}
@@ -863,13 +864,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}};
 		
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations, fieldNode.originalFieldNode);
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.name, fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations, fieldNode.originalFieldNode);
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
 		}
 	}
 	
-	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode) {
+	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -879,12 +880,12 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			if (existingName.equals(fieldName) && !isTolerate(fieldNode, methodDecl)) return;
 		}
 		
-		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
+		String setterName = fluent ? paramName.toString() : HandlerUtil.buildAccessorName("set", paramName.toString());
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
-		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, returnType, returnStatement, source, methodAnns, annosOnParam);
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, source, methodAnns, annosOnParam);
 		
 		injectMethod(builderType, newMethod);
 	}

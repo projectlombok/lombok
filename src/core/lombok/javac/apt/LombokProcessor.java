@@ -389,7 +389,16 @@ public class LombokProcessor extends AbstractProcessor {
 	}
 	
 	private JCCompilationUnit toUnit(Element element) {
-		TreePath path = trees == null ? null : trees.getPath(element);
+		TreePath path = null;
+		if (trees != null) {
+			try {
+				path = trees.getPath(element);
+			} catch (NullPointerException ignore) {
+				// Happens if a package-info.java dowsn't conatin a package declaration.
+				// https://github.com/rzwitserloot/lombok/issues/2184
+				// We can safely ignore those, since they do not need any processing
+			}
+		}
 		if (path == null) return null;
 		
 		return (JCCompilationUnit) path.getCompilationUnit();

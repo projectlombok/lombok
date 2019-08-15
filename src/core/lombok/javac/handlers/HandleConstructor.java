@@ -342,7 +342,7 @@ public class HandleConstructor {
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, field.vartype, null);
 			params.append(param);
 			if (hasNonNullAnnotations(fieldNode)) {
-				JCStatement nullCheck = generateNullCheck(maker, fieldNode, param, source);
+				JCStatement nullCheck = generateNullCheck(maker, param, source);
 				if (nullCheck != null) nullChecks.append(nullCheck);
 			}
 			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);

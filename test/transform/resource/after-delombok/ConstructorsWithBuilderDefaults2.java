@@ -23,11 +23,11 @@ final class ConstructorsWithBuilderDefaults<T> {
 		@java.lang.SuppressWarnings("all")
 		private boolean z$set;
 		@java.lang.SuppressWarnings("all")
-		private java.util.List<T> z;
+		private java.util.List<T> z$value;
 		@java.lang.SuppressWarnings("all")
 		private boolean x$set;
 		@java.lang.SuppressWarnings("all")
-		private T x;
+		private T x$value;
 		@java.lang.SuppressWarnings("all")
 		private T q;
 		@java.lang.SuppressWarnings("all")
@@ -35,13 +35,13 @@ final class ConstructorsWithBuilderDefaults<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public ConstructorsWithBuilderDefaultsBuilder<T> z(final java.util.List<T> z) {
-			this.z = z;
+			this.z$value = z;
 			z$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		public ConstructorsWithBuilderDefaultsBuilder<T> x(final T x) {
-			this.x = x;
+			this.x$value = x;
 			x$set = true;
 			return this;
 		}
@@ -53,16 +53,16 @@ final class ConstructorsWithBuilderDefaults<T> {
 
 		@java.lang.SuppressWarnings("all")
 		public ConstructorsWithBuilderDefaults<T> build() {
-			java.util.List<T> z = this.z;
-			if (!z$set) z = ConstructorsWithBuilderDefaults.<T>$default$z();
-			T x = this.x;
-			if (!x$set) x = ConstructorsWithBuilderDefaults.<T>$default$x();
-			return new ConstructorsWithBuilderDefaults<T>(z, x, q);
+			java.util.List<T> z$value = this.z$value;
+			if (!z$set) z$value = ConstructorsWithBuilderDefaults.<T>$default$z();
+			T x$value = this.x$value;
+			if (!x$set) x$value = ConstructorsWithBuilderDefaults.<T>$default$x();
+			return new ConstructorsWithBuilderDefaults<T>(z$value, x$value, q);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(z=" + this.z + ", x=" + this.x + ", q=" + this.q + ")";
+			return "ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(z$value=" + this.z$value + ", x$value=" + this.x$value + ", q=" + this.q + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
