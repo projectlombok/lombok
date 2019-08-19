@@ -120,10 +120,16 @@ public @interface Builder {
 	@Retention(SOURCE)
 	public @interface Default {}
 
-	/** @return Name of the method that creates a new builder instance. Default: {@code builder}. If the empty string, suppress generating the {@code builder} method. */
+	/**
+	 * @return Name of the method that creates a new builder instance.
+	 *         Default: {@code builder}. If the empty string, suppress generating the {@code builder} method.
+     */
 	String builderMethodName() default "builder";
-	
-	/** @return Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
+
+	/**
+	 * @return Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class.
+	 *         Default: {@code build}. If the empty string, suppress generating the {@code build} method.
+	 */
 	String buildMethodName() default "build";
 	
 	/**

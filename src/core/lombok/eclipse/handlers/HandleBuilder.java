@@ -182,20 +182,20 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (buildMethodName == null) buildMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
 		
-		boolean generateBuilderMethod;
-		if (builderMethodName.isEmpty()) {
-			generateBuilderMethod = false;
-		} else if (!checkName("builderMethodName", builderMethodName, annotationNode)) {
+		boolean generateBuilderMethod = !builderMethodName.isEmpty();
+		if (generateBuilderMethod && !checkName("builderMethodName", builderMethodName, annotationNode)) {
 			return;
-		} else {
-			generateBuilderMethod = true;
 		}
-		
-		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
-		if (!builderClassName.isEmpty()) {
-			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
+
+		boolean generateBuildMethod = !buildMethodName.isEmpty();
+		if (generateBuildMethod && !checkName("++buildMethodName", buildMethodName, annotationNode)) {
+			return;
 		}
-		
+
+		if (!builderClassName.isEmpty() && !checkName("builderClassName", builderClassName, annotationNode)) {
+			return;
+		}
+
 		EclipseNode parent = annotationNode.up();
 		
 		List<BuilderFieldData> builderFields = new ArrayList<BuilderFieldData>();
@@ -489,8 +489,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		for (BuilderFieldData bfd : builderFields) {
 			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain, accessForInners, bfd.originalFieldNode);
 		}
-		
-		{
+
+		if (generateBuildMethod) {
 			MemberExistsResult methodExists = methodExists(buildMethodName, builderType, -1);
 			if (methodExists == MemberExistsResult.EXISTS_BY_LOMBOK) methodExists = methodExists(buildMethodName, builderType, 0);
 			if (methodExists == MemberExistsResult.NOT_EXISTS) {
