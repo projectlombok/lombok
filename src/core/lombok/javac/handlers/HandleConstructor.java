@@ -339,7 +339,8 @@ public class HandleConstructor {
 			Name rawName = field.name;
 			List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(fieldNode);
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, field.vartype, null);
+			JCExpression pType = cloneType(fieldNode.getTreeMaker(), field.vartype, source.get(), source.getContext());
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, pType, null);
 			params.append(param);
 			if (hasNonNullAnnotations(fieldNode)) {
 				JCStatement nullCheck = generateNullCheck(maker, param, source);
