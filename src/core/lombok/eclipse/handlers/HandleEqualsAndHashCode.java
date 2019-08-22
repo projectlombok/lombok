@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@ import lombok.core.handlers.InclusionExclusionUtils;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CallSuperType;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -235,7 +236,12 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		method.modifiers = toEclipseModifier(AccessLevel.PUBLIC);
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 		setGeneratedBy(method.returnType, source);
-		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source)};
+		Annotation overrideAnnotation = makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source);
+		if (getCheckerFrameworkVersion(type).generateSideEffectFree()) {
+			method.annotations = new Annotation[] { overrideAnnotation, generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+		} else {
+			method.annotations = new Annotation[] { overrideAnnotation };
+		}
 		method.selector = "hashCode".toCharArray();
 		method.thrownExceptions = null;
 		method.typeParameters = null;
@@ -508,7 +514,12 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
 		method.returnType.sourceStart = pS; method.returnType.sourceEnd = pE;
 		setGeneratedBy(method.returnType, source);
-		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source)};
+		Annotation overrideAnnotation = makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source);
+		if (getCheckerFrameworkVersion(type).generateSideEffectFree()) {
+			method.annotations = new Annotation[] { overrideAnnotation, generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+		} else {
+			method.annotations = new Annotation[] { overrideAnnotation };
+		}
 		method.selector = "equals".toCharArray();
 		method.thrownExceptions = null;
 		method.typeParameters = null;
@@ -785,6 +796,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		setGeneratedBy(returnStatement, source);
 		
 		method.statements = new Statement[] {returnStatement};
+		if (getCheckerFrameworkVersion(type).generateSideEffectFree()) method.annotations = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
 		return method;
 	}
 

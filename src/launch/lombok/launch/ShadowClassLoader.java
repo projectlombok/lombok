@@ -436,14 +436,14 @@ class ShadowClassLoader extends ClassLoader {
 		Enumeration<URL> sec = super.getResources(name);
 		while (sec.hasMoreElements()) {
 			URL item = sec.nextElement();
-			if (!partOfShadow(item.toString(), name)) vector.add(item);
+			if (isPartOfShadowSuffix(item.toString(), name, sclSuffix)) vector.add(item);
 		}
 		
 		if (altName != null) {
 			Enumeration<URL> tern = super.getResources(altName);
 			while (tern.hasMoreElements()) {
 				URL item = tern.nextElement();
-				if (!partOfShadow(item.toString(), altName)) vector.add(item);
+				if (isPartOfShadowSuffix(item.toString(), altName, sclSuffix)) vector.add(item);
 			}
 		}
 		

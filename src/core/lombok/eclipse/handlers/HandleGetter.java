@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2016 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import lombok.experimental.Delegate;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.agent.PatchDelegate;
@@ -262,16 +263,16 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		
 		EclipseHandlerUtil.registerCreatedLazyGetter((FieldDeclaration) fieldNode.get(), method.selector, returnType);
 		
-		/* Generate annotations that must  be put on the generated method, and attach them. */ {
-			Annotation[] deprecated = null;
-			if (isFieldDeprecated(fieldNode)) {
-				deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
-			}
+		/* Generate annotations that must be put on the generated method, and attach them. */ {
+			Annotation[] deprecated = null, checkerFramework = null;
+			if (isFieldDeprecated(fieldNode)) deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
+			if (getCheckerFrameworkVersion(fieldNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
 			
 			method.annotations = copyAnnotations(source,
 				onMethod.toArray(new Annotation[0]),
 				findCopyableAnnotations(fieldNode),
 				findDelegatesAndMarkAsHandled(fieldNode),
+				checkerFramework,
 				deprecated);
 		}
 		

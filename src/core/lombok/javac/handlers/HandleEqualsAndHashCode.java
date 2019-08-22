@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,7 @@ import lombok.EqualsAndHashCode;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CallSuperType;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.HandlerUtil.FieldAccess;
 import lombok.core.handlers.InclusionExclusionUtils;
@@ -203,7 +204,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
-		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
+		List<JCAnnotation> annsOnMethod = List.of(overrideAnnotation);
+		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(typeNode);
+		if (checkerFramework.generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
+		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
 		JCExpression returnType = maker.TypeIdent(CTC_INT);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
@@ -378,7 +382,12 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Name thisName = typeNode.toName("this");
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
-		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
+		List<JCAnnotation> annsOnMethod = List.of(overrideAnnotation);
+		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(typeNode);
+		if (checkerFramework.generateSideEffectFree()) {
+			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
+		}
+		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
 		JCExpression objectType = genJavaLangTypeRef(typeNode, "Object");
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);
 		
@@ -497,7 +506,12 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		 */
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
-		JCModifiers mods = maker.Modifiers(Flags.PROTECTED, List.<JCAnnotation>nil());
+		List<JCAnnotation> annsOnMethod = List.nil();
+		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(typeNode);
+		if (checkerFramework.generateSideEffectFree()) {
+			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
+		}
+		JCModifiers mods = maker.Modifiers(Flags.PROTECTED, annsOnMethod);
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);
 		Name canEqualName = typeNode.toName("canEqual");
 		JCExpression objectType = genJavaLangTypeRef(typeNode, "Object");

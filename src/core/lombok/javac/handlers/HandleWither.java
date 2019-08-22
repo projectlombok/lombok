@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2012-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.experimental.Wither;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -279,10 +280,11 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		JCExpression annotationMethodDefaultValue = null;
 		
 		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod);
+		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(source);
+		if (checkerFramework.generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		
-		if (isFieldDeprecated(field)) {
-			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
-		}
+		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
+		
 		if (makeAbstract) access = access | Flags.ABSTRACT;
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());

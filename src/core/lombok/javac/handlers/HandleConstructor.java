@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.LombokNode;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.javac.Javac;
 import lombok.javac.JavacAST;
@@ -222,7 +223,6 @@ public class HandleConstructor {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
-
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
 					boolean skipGeneration = annotationTypeMatches(NoArgsConstructor.class, child) ||
@@ -247,7 +247,7 @@ public class HandleConstructor {
 		}
 		
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
-
+		
 		ListBuffer<Type> argTypes = new ListBuffer<Type>();
 		for (JavacNode fieldNode : fields) {
 			Type mirror = getMirrorForFieldType(fieldNode);
@@ -374,7 +374,7 @@ public class HandleConstructor {
 			addConstructorProperties(mods, typeNode, fieldsToParam);
 		}
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
-		
+		if (getCheckerFrameworkVersion(source).generateUnique()) mods.annotations = mods.annotations.prepend(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
 			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
@@ -453,6 +453,7 @@ public class HandleConstructor {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | toJavacModifier(level));
+		if (getCheckerFrameworkVersion(typeNode).generateUnique()) mods.annotations = mods.annotations.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
 		
 		JCExpression returnType, constructorType;
 		

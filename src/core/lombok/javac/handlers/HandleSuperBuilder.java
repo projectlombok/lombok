@@ -62,6 +62,7 @@ import lombok.ConfigurationKeys;
 import lombok.Singular;
 import lombok.ToString;
 import lombok.core.AST.Kind;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.HandlerUtil;
@@ -93,7 +94,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	@Override
 	public void handle(AnnotationValues<SuperBuilder> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
-		
+		CheckerFrameworkVersion cfv = getCheckerFrameworkVersion(annotationNode);
 		SuperBuilder superbuilderAnnotation = annotation.getInstance();
 		deleteAnnotationIfNeccessary(annotationNode, SuperBuilder.class);
 		
@@ -284,16 +285,16 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		
 		// Generate abstract self() and build() methods in the abstract builder.
-		JCMethodDecl asm = generateAbstractSelfMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName);
+		JCMethodDecl asm = generateAbstractSelfMethod(cfv, tdParent, superclassBuilderClassExpression != null, builderGenericName);
 		recursiveSetGeneratedBy(asm, ast, annotationNode.getContext());
 		injectMethod(builderType, asm);
-		JCMethodDecl abm = generateAbstractBuildMethod(tdParent, buildMethodName, superclassBuilderClassExpression != null, classGenericName);
+		JCMethodDecl abm = generateAbstractBuildMethod(cfv, tdParent, buildMethodName, builderFields, superclassBuilderClassExpression != null, classGenericName);
 		recursiveSetGeneratedBy(abm, ast, annotationNode.getContext());
 		injectMethod(builderType, abm);
 		
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : builderFields) {
-			generateSetterMethodsForBuilder(builderType, bfd, annotationNode, builderGenericName);
+			generateSetterMethodsForBuilder(cfv, builderType, bfd, annotationNode, builderGenericName);
 		}
 		
 		// Create the toString() method for the abstract builder.
@@ -339,18 +340,18 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			if (cd != null) injectMethod(builderImplType, cd);
 			
 			// Create the self() and build() methods in the BuilderImpl.
-			JCMethodDecl selfMethod = generateSelfMethod(builderImplType, typeParams);
+			JCMethodDecl selfMethod = generateSelfMethod(cfv, builderImplType, typeParams);
 			recursiveSetGeneratedBy(selfMethod, ast, annotationNode.getContext());
 			injectMethod(builderImplType, selfMethod);
 			if (methodExists(buildMethodName, builderImplType, -1) == MemberExistsResult.NOT_EXISTS) {
-				JCMethodDecl buildMethod = generateBuildMethod(buildMethodName, tdParent, builderImplType, thrownExceptions);
+				JCMethodDecl buildMethod = generateBuildMethod(cfv, buildMethodName, tdParent, builderImplType, builderFields, thrownExceptions);
 				recursiveSetGeneratedBy(buildMethod, ast, annotationNode.getContext());
 				injectMethod(builderImplType, buildMethod);
 			}
 		}
 		
 		// Generate a constructor in the annotated class that takes a builder as argument.
-		generateBuilderBasedConstructor(tdParent, typeParams, builderFields, annotationNode, builderClassName,
+		generateBuilderBasedConstructor(cfv, tdParent, typeParams, builderFields, annotationNode, builderClassName,
 			superclassBuilderClassExpression != null);
 		
 		if (isAbstract) {
@@ -362,7 +363,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Allow users to specify their own builder() methods, e.g., to provide default values.
 		if (generateBuilderMethod && methodExists(builderMethodName, tdParent, -1) != MemberExistsResult.NOT_EXISTS) generateBuilderMethod = false;
 		if (generateBuilderMethod) {
-			JCMethodDecl builderMethod = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
+			JCMethodDecl builderMethod = generateBuilderMethod(cfv, builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
 			recursiveSetGeneratedBy(builderMethod, ast, annotationNode.getContext());
 			if (builderMethod != null) injectMethod(tdParent, builderMethod);
 		}
@@ -374,7 +375,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				annotationNode.addWarning("Not generating toBuilder() as it already exists.");
 				return;
 			case NOT_EXISTS:
-				JCMethodDecl md = generateToBuilderMethod(builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
+				JCMethodDecl md = generateToBuilderMethod(cfv, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
 				if (md != null) {
 					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 					injectMethod(tdParent, md);
@@ -483,7 +484,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 *            constructor with the builder as argument. Requires
 	 *            {@code builderClassAsParameter != null}.
 	 */
-	private void generateBuilderBasedConstructor(JavacNode typeNode, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, JavacNode source, String builderClassName, boolean callBuilderBasedSuperConstructor) {
+	private void generateBuilderBasedConstructor(CheckerFrameworkVersion cfv, JavacNode typeNode, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, JavacNode source, String builderClassName, boolean callBuilderBasedSuperConstructor) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		AccessLevel level = AccessLevel.PROTECTED;
@@ -519,7 +520,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			}
 		}
 		
-		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
+		List<JCAnnotation> annsOnMethod = cfv.generateUnique() ? List.of(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
+		JCModifiers mods = maker.Modifiers(toJavacModifier(level), annsOnMethod);
 		
 		// Create a constructor that has just the builder as parameter.
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
@@ -551,7 +553,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		injectMethod(typeNode, constr, null, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 	}
 	
-	private JCMethodDecl generateBuilderMethod(String builderMethodName, String builderClassName, String builderImplClassName, JavacNode source, JavacNode type, List<JCTypeParameter> typeParams) {
+	private JCMethodDecl generateBuilderMethod(CheckerFrameworkVersion cfv, String builderMethodName, String builderClassName, String builderImplClassName, JavacNode source, JavacNode type, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
 		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
@@ -573,7 +575,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		typeParameterNames.add(wildcard);
 		JCTypeApply returnType = maker.TypeApply(maker.Ident(type.toName(builderClassName)), typeParameterNames.toList());
 		
-		return maker.MethodDef(maker.Modifiers(modifiers), type.toName(builderMethodName), returnType, copyTypeParams(source, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		List<JCAnnotation> annsOnMethod = cfv.generateUnique() ? List.of(maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
+		return maker.MethodDef(maker.Modifiers(modifiers, annsOnMethod), type.toName(builderMethodName), returnType, copyTypeParams(source, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
 	/**
@@ -584,7 +587,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 * }
 	 * </pre>
 	 */
-	private JCMethodDecl generateToBuilderMethod(String builderClassName, String builderImplClassName, JavacNode source, JavacNode type, List<JCTypeParameter> typeParams) {
+	private JCMethodDecl generateToBuilderMethod(CheckerFrameworkVersion cfv, String builderClassName, String builderImplClassName, JavacNode source, JavacNode type, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
 		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
@@ -607,7 +610,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		typeParameterNames.add(wildcard);
 		JCTypeApply returnType = maker.TypeApply(maker.Ident(type.toName(builderClassName)), typeParameterNames.toList());
 		
-		return maker.MethodDef(maker.Modifiers(modifiers), type.toName(TO_BUILDER_METHOD_NAME), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		List<JCAnnotation> annsOnMethod = cfv.generateUnique() ? List.of(maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
+		return maker.MethodDef(maker.Modifiers(modifiers, annsOnMethod), type.toName(TO_BUILDER_METHOD_NAME), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 
 	/**
@@ -737,25 +741,34 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return exec;
 	}
 	
-	private JCMethodDecl generateAbstractSelfMethod(JavacNode type, boolean override, String builderGenericName) {
+	private JCMethodDecl generateAbstractSelfMethod(CheckerFrameworkVersion cfv, JavacNode type, boolean override, String builderGenericName) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		List<JCAnnotation> annotations = List.nil();
-		if (override) {
-			JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(type, "Override"), List.<JCExpression>nil());
-			annotations = List.of(overrideAnnotation);
-		}
+		JCAnnotation overrideAnnotation = override ? maker.Annotation(genJavaLangTypeRef(type, "Override"), List.<JCExpression>nil()) : null;
+		JCAnnotation rrAnnotation = cfv.generateReturnsReceiver() ? maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil()) : null;
+		JCAnnotation sefAnnotation = cfv.generateSideEffectFree() ? maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()) : null;
+		if (sefAnnotation != null) annotations = annotations.prepend(sefAnnotation);
+		if (rrAnnotation != null) annotations = annotations.prepend(rrAnnotation);
+		if (overrideAnnotation != null) annotations = annotations.prepend(overrideAnnotation);
 		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED | Flags.ABSTRACT, annotations);
 		Name name = type.toName(SELF_METHOD);
 		JCExpression returnType = maker.Ident(type.toName(builderGenericName));
-
+		
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 	}
 	
-	private JCMethodDecl generateSelfMethod(JavacNode builderImplType, List<JCTypeParameter> typeParams) {
+	private JCMethodDecl generateSelfMethod(CheckerFrameworkVersion cfv, JavacNode builderImplType, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = builderImplType.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(builderImplType, "Override"), List.<JCExpression>nil());
-		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED, List.of(overrideAnnotation));
+		JCAnnotation rrAnnotation = cfv.generateReturnsReceiver() ? maker.Annotation(genTypeRef(builderImplType, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil()) : null;
+		JCAnnotation sefAnnotation = cfv.generateSideEffectFree() ? maker.Annotation(genTypeRef(builderImplType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()) : null;
+		List<JCAnnotation> annsOnMethod = List.nil();
+		if (sefAnnotation != null) annsOnMethod = annsOnMethod.prepend(sefAnnotation);
+		if (rrAnnotation != null) annsOnMethod = annsOnMethod.prepend(rrAnnotation);
+		annsOnMethod = annsOnMethod.prepend(overrideAnnotation);
+		
+		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED, annsOnMethod);
 		Name name = builderImplType.toName(SELF_METHOD);
 		
 		JCExpression returnType = namePlusTypeParamsToTypeReference(maker, builderImplType.toName(builderImplType.getName()), typeParams);
@@ -765,21 +778,23 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
-	private JCMethodDecl generateAbstractBuildMethod(JavacNode type, String methodName, boolean override, String classGenericName) {
+	private JCMethodDecl generateAbstractBuildMethod(CheckerFrameworkVersion cfv, JavacNode type, String methodName, java.util.List<BuilderFieldData> builderFields, boolean override, String classGenericName) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		List<JCAnnotation> annotations = List.nil();
 		if (override) {
 			JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(type, "Override"), List.<JCExpression>nil());
 			annotations = List.of(overrideAnnotation);
 		}
+		if (cfv.generateSideEffectFree()) annotations = annotations.prepend(maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		JCModifiers modifiers = maker.Modifiers(Flags.PUBLIC | Flags.ABSTRACT, annotations);
 		Name name = type.toName(methodName);
 		JCExpression returnType = maker.Ident(type.toName(classGenericName));
 		
-		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
+		List<JCVariableDecl> params = HandleBuilder.generateBuildArgs(cfv, type, builderFields);
+		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), null, null);
 	}
 
-	private JCMethodDecl generateBuildMethod(String buildName, JavacNode returnType, JavacNode type, List<JCExpression> thrownExceptions) {
+	private JCMethodDecl generateBuildMethod(CheckerFrameworkVersion cfv, String buildName, JavacNode returnType, JavacNode type, java.util.List<BuilderFieldData> builderFields, List<JCExpression> thrownExceptions) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
 		JCExpression call;
@@ -793,9 +808,12 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCBlock body = maker.Block(0, statements.toList());
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(type, "Override"), List.<JCExpression>nil());
-		JCModifiers modifiers = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
+		List<JCAnnotation> annsOnMethod = List.of(overrideAnnotation);
+		if (cfv.generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
+		JCModifiers modifiers = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
 		
-		return maker.MethodDef(modifiers, type.toName(buildName), cloneSelfType(returnType), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
+		List<JCVariableDecl> params = HandleBuilder.generateBuildArgs(cfv, type, builderFields);
+		return maker.MethodDef(modifiers, type.toName(buildName), cloneSelfType(returnType), List.<JCTypeParameter>nil(), params, thrownExceptions, body, null);
 	}
 	
 	private JCMethodDecl generateCleanMethod(java.util.List<BuilderFieldData> builderFields, JavacNode type, JCTree source) {
@@ -852,7 +870,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		for (JCVariableDecl gen : generated)  recursiveSetGeneratedBy(gen, source, builderType.getContext());
 	}
 	
-	private void generateSetterMethodsForBuilder(final JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, final String builderGenericName) {
+	private void generateSetterMethodsForBuilder(CheckerFrameworkVersion cfv, final JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, final String builderGenericName) {
 		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
 		final JavacTreeMaker maker = builderType.getTreeMaker();
 		ExpressionMaker returnTypeMaker = new ExpressionMaker() { @Override public JCExpression make() {
@@ -864,13 +882,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}};
 		
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.name, fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations, fieldNode.originalFieldNode);
+			generateSimpleSetterMethodForBuilder(cfv, builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.name, fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations, fieldNode.originalFieldNode);
 		} else {
-			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
+			fieldNode.singularData.getSingularizer().generateMethods(cfv, fieldNode.singularData, deprecate, builderType, source.get(), true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
 		}
 	}
 	
-	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode) {
+	private void generateSimpleSetterMethodForBuilder(CheckerFrameworkVersion cfv, JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -886,6 +904,19 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
 		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, source, methodAnns, annosOnParam);
+		if (cfv.generateCalledMethods()) {
+			JCAnnotation ncAnno = maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__NOT_CALLED), List.<JCExpression>of(maker.Literal(newMethod.getName().toString())));
+			JCClassDecl builderTypeNode = (JCClassDecl) builderType.get();
+			JCVariableDecl recv = maker.VarDef(maker.Modifiers(0L, List.<JCAnnotation>of(ncAnno)), builderType.toName("this"), maker.Ident(builderTypeNode.name), null);
+			newMethod.params = List.of(recv, newMethod.params.get(0));
+		}
+		if (cfv.generateReturnsReceiver()) {
+			List<JCAnnotation> annotations = newMethod.mods.annotations;
+			if (annotations == null) annotations = List.nil();
+			JCAnnotation anno = maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil());
+			recursiveSetGeneratedBy(anno, source.get(), builderType.getContext());
+			newMethod.mods.annotations = annotations.prepend(anno);
+		}
 		
 		injectMethod(builderType, newMethod);
 	}

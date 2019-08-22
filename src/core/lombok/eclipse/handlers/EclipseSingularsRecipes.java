@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
@@ -62,6 +63,7 @@ import lombok.AccessLevel;
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.eclipse.EclipseNode;
 
 public class EclipseSingularsRecipes {
@@ -235,7 +237,7 @@ public class EclipseSingularsRecipes {
 		 * If you need more control over the return type and value, use
 		 * {@link #generateMethods(SingularData, boolean, EclipseNode, boolean, TypeReferenceMaker, StatementMaker)}.
 		 */
-		public void generateMethods(SingularData data, boolean deprecate, final EclipseNode builderType, boolean fluent, final boolean chain, AccessLevel access) {
+		public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, final EclipseNode builderType, boolean fluent, final boolean chain, AccessLevel access) {
 			TypeReferenceMaker returnTypeMaker = new TypeReferenceMaker() {
 				@Override public TypeReference make() {
 					return chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
@@ -248,14 +250,14 @@ public class EclipseSingularsRecipes {
 				}
 			};
 			
-			generateMethods(data, deprecate, builderType, fluent, returnTypeMaker, returnStatementMaker, access);
+			generateMethods(cfv, data, deprecate, builderType, fluent, returnTypeMaker, returnStatementMaker, access);
 		}
 		
 		/**
 		 * Generates the singular, plural, and clear methods for the given {@link SingularData}.
 		 * Uses the given {@code returnTypeMaker} and {@code returnStatementMaker} for the generated methods.
 		 */
-		public abstract void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access);
+		public abstract void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access);
 		
 		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable);
 		
@@ -271,6 +273,15 @@ public class EclipseSingularsRecipes {
 		}
 		
 		// -- Utility methods --
+		
+		protected Annotation[] generateSelfReturnAnnotations(boolean deprecate, CheckerFrameworkVersion cfv, ASTNode source) {
+			Annotation deprecated = deprecate ? generateDeprecatedAnnotation(source) : null;
+			Annotation returnsReceiver = cfv.generateReturnsReceiver() ? generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER) : null;
+			if (deprecated == null && returnsReceiver == null) return null;
+			if (deprecated == null) return new Annotation[] {returnsReceiver};
+			if (returnsReceiver == null) return new Annotation[] {deprecated};
+			return new Annotation[] {deprecated, returnsReceiver};
+		}
 		
 		/**
 		 * Adds the requested number of type arguments to the provided type, copying each argument in {@code typeArgs}. If typeArgs is too long, the extra elements are ignored.

@@ -47,6 +47,7 @@ import lombok.core.configuration.ConfigurationKeysLoader;
 import lombok.core.configuration.ConfigurationResolver;
 import lombok.core.configuration.ConfigurationResolverFactory;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
+import lombok.transform.TestLombokFilesIdempotent;
 
 public abstract class AbstractRunTests {
 	private final File dumpActualFilesHere;
@@ -74,6 +75,7 @@ public abstract class AbstractRunTests {
 		if (expected.isIgnore()) return null;
 		if (!expected.versionWithinLimit(params.getVersion())) return null;
 		if (!expected.versionWithinLimit(version)) return null;
+		if (expected.isSkipIdempotent() && params instanceof TestLombokFilesIdempotent) return null;
 		
 		final LombokTestSource sourceDirectives_ = sourceDirectives;
 		final AssertionError directiveFailure_ = directiveFailure;

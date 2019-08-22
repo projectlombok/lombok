@@ -37,6 +37,7 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
@@ -57,9 +58,11 @@ import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedThisReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
+import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -84,6 +87,7 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -155,7 +159,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	@Override public void handle(AnnotationValues<Builder> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
-
+		CheckerFrameworkVersion cfv = getCheckerFrameworkVersion(annotationNode);
+		
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
 		
 		Builder builderInstance = annotation.getInstance();
@@ -487,14 +492,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : builderFields) {
-			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain, accessForInners, bfd.originalFieldNode);
+			makeSetterMethodsForBuilder(cfv, builderType, bfd, annotationNode, fluent, chain, accessForInners, bfd.originalFieldNode);
 		}
 		
 		{
 			MemberExistsResult methodExists = methodExists(buildMethodName, builderType, -1);
 			if (methodExists == MemberExistsResult.EXISTS_BY_LOMBOK) methodExists = methodExists(buildMethodName, builderType, 0);
 			if (methodExists == MemberExistsResult.NOT_EXISTS) {
-				MethodDeclaration md = generateBuildMethod(tdParent, isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast, accessForInners);
+				MethodDeclaration md = generateBuildMethod(cfv, tdParent, isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast, accessForInners);
 				if (md != null) injectMethod(builderType, md);
 			}
 		}
@@ -517,7 +522,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		if (generateBuilderMethod && methodExists(builderMethodName, tdParent, -1) != MemberExistsResult.NOT_EXISTS) generateBuilderMethod = false;
 		if (generateBuilderMethod) {
-			MethodDeclaration md = generateBuilderMethod(isStatic, builderMethodName, builderClassName, tdParent, typeParams, ast, accessForOuters);
+			MethodDeclaration md = generateBuilderMethod(cfv, isStatic, builderMethodName, builderClassName, tdParent, typeParams, ast, accessForOuters);
 			if (md != null) injectMethod(tdParent, md);
 		}
 		
@@ -534,7 +539,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					tps[i].name = typeArgsForToBuilder.get(i);
 				}
 			}
-			MethodDeclaration md = generateToBuilderMethod(toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters);
+			MethodDeclaration md = generateToBuilderMethod(cfv, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters);
 			
 			if (md != null) injectMethod(tdParent, md);
 		}
@@ -547,7 +552,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	private static final char[] BUILDER_TEMP_VAR = {'b', 'u', 'i', 'l', 'd', 'e', 'r'};
-	private MethodDeclaration generateToBuilderMethod(String methodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, List<BuilderFieldData> builderFields, boolean fluent, ASTNode source, AccessLevel access) {
+	private MethodDeclaration generateToBuilderMethod(CheckerFrameworkVersion cfv, String methodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, List<BuilderFieldData> builderFields, boolean fluent, ASTNode source, AccessLevel access) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
@@ -623,6 +628,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			out.statements = new Statement[] {new ReturnStatement(receiver, pS, pE)};
 		}
 		
+		if (cfv.generateUnique()) {
+			out.annotations = new Annotation[] {generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__UNIQUE)};
+		}
+		
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
 
@@ -650,7 +659,35 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return decl;
 	}
 	
-	public MethodDeclaration generateBuildMethod(EclipseNode tdParent, boolean isStatic, String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source, AccessLevel access) {
+	static Argument[] generateBuildArgs(CheckerFrameworkVersion cfv, EclipseNode type, List<BuilderFieldData> builderFields, ASTNode source) {
+		if (!cfv.generateCalledMethods()) return null;
+		
+		List<char[]> mandatories = new ArrayList<char[]>();
+		for (BuilderFieldData bfd : builderFields) {
+			if (bfd.singularData == null && bfd.nameOfSetFlag == null) mandatories.add(bfd.name);
+		}
+		
+		if (mandatories.size() == 0) return null;
+		char[][] nameCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__CALLED);
+		SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameCalled, poss(source, nameCalled.length)), source.sourceStart);
+		if (mandatories.size() == 1) {
+			ann.memberValue = new StringLiteral(mandatories.get(0), 0, 0, 0);
+		} else {
+			ArrayInitializer arr = new ArrayInitializer();
+			arr.sourceStart = source.sourceStart;
+			arr.sourceEnd = source.sourceEnd;
+			arr.expressions = new Expression[mandatories.size()];
+			for (int i = 0; i < arr.expressions.length; i++) {
+				arr.expressions[i] = new StringLiteral(mandatories.get(i), source.sourceStart, source.sourceEnd, 0);
+			}
+			ann.memberValue = arr;
+		}
+		Argument arg = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, new SingleTypeReference(type.getName().toCharArray(), source.sourceStart), Modifier.FINAL);
+		arg.annotations = new Annotation[] {ann};
+		return new Argument[] {arg};
+	}
+	
+	public MethodDeclaration generateBuildMethod(CheckerFrameworkVersion cfv, EclipseNode tdParent, boolean isStatic, String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source, AccessLevel access) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		List<Statement> statements = new ArrayList<Statement>();
@@ -723,6 +760,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 		}
 		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
+		if (cfv.generateSideEffectFree()) {
+			out.annotations = new Annotation[] {generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
+		}
+		out.arguments = generateBuildArgs(cfv, type, builderFields, source);
 		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
 	}
@@ -754,7 +795,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return out;
 	}
 	
-	public MethodDeclaration generateBuilderMethod(boolean isStatic, String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source, AccessLevel access) {
+	public MethodDeclaration generateBuilderMethod(CheckerFrameworkVersion cfv, boolean isStatic, String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source, AccessLevel access) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
@@ -768,7 +809,15 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		AllocationExpression invoke = new AllocationExpression();
 		invoke.type = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
 		out.statements = new Statement[] {new ReturnStatement(invoke, pS, pE)};
-		
+		Annotation uniqueAnn = cfv.generateUnique() ? generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__UNIQUE) : null;
+		Annotation sefAnn = cfv.generateSideEffectFree() ? generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) : null;
+		if (uniqueAnn != null && sefAnn != null) {
+			out.annotations = new Annotation[] {uniqueAnn, sefAnn};
+		} else if (uniqueAnn != null) {
+			out.annotations = new Annotation[] {uniqueAnn};
+		} else if (sefAnn != null) {
+			out.annotations = new Annotation[] {sefAnn};
+		}
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
 	}
@@ -813,18 +862,19 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	private static final AbstractMethodDeclaration[] EMPTY = {};
 	
-	public void makeSetterMethodsForBuilder(EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain, AccessLevel access, EclipseNode originalFieldNode) {
+	public void makeSetterMethodsForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain, AccessLevel access, EclipseNode originalFieldNode) {
 		boolean deprecate = isFieldDeprecated(bfd.originalFieldNode);
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.name, bfd.nameOfSetFlag, sourceNode, fluent, chain, bfd.annotations, access, originalFieldNode);
+			makeSimpleSetterMethodForBuilder(cfv, builderType, deprecate, bfd.createdFields.get(0), bfd.name, bfd.nameOfSetFlag, sourceNode, fluent, chain, bfd.annotations, access, originalFieldNode);
 		} else {
-			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, deprecate, builderType, fluent, chain, access);
+			bfd.singularData.getSingularizer().generateMethods(cfv, bfd.singularData, deprecate, builderType, fluent, chain, access);
 		}
 	}
 	
-	private void makeSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] paramName, char[] nameOfSetFlag, EclipseNode sourceNode, boolean fluent, boolean chain, Annotation[] annotations, AccessLevel access, EclipseNode originalFieldNode) {
+	private void makeSimpleSetterMethodForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] paramName, char[] nameOfSetFlag, EclipseNode sourceNode, boolean fluent, boolean chain, Annotation[] annotations, AccessLevel access, EclipseNode originalFieldNode) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
+		ASTNode source = sourceNode.get();
 		if (existing == null) existing = EMPTY;
 		int len = existing.length;
 		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
@@ -838,11 +888,20 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		String setterName = fluent ? new String(paramName) : HandlerUtil.buildAccessorName("set", new String(paramName));
 		
-		List<Annotation> methodAnnsList = Collections.<Annotation>emptyList();
-		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
-		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
+		List<Annotation> methodAnnsList = Arrays.asList(EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode));
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, paramName, nameOfSetFlag, chain, toEclipseModifier(access),
-			sourceNode, methodAnnsList, annotations != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annotations)) : Collections.<Annotation>emptyList());
+			sourceNode, methodAnnsList, annotations != null ? Arrays.asList(copyAnnotations(source, annotations)) : Collections.<Annotation>emptyList());
+		if (cfv.generateCalledMethods()) {
+			Argument[] arr = setter.arguments == null ? new Argument[0] : setter.arguments;
+			Argument[] newArr = new Argument[arr.length + 1];
+			System.arraycopy(arr, 0, newArr, 1, arr.length);
+			newArr[0] = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, new SingleTypeReference(builderType.getName().toCharArray(), 0), Modifier.FINAL);
+			char[][] nameNotCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__NOT_CALLED);
+			SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameNotCalled, poss(source, nameNotCalled.length)), source.sourceStart);
+			ann.memberValue = new StringLiteral(setterName.toCharArray(), 0, 0, 0);
+			newArr[0].annotations = new Annotation[] {ann};
+			setter.arguments = newArr;
+		}
 		injectMethod(builderType, setter);
 	}
 	

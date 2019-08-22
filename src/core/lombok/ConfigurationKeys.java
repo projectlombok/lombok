@@ -24,6 +24,7 @@ package lombok;
 import java.util.List;
 
 import lombok.core.configuration.CallSuperType;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.LogDeclaration;
 import lombok.core.configuration.FlagUsageType;
@@ -627,5 +628,14 @@ public class ConfigurationKeys {
 	 * Copy these annotations to getters, setters, withers, builder-setters, etc.
 	 */
 	public static final ConfigurationKey<List<TypeName>> COPYABLE_ANNOTATIONS = new ConfigurationKey<List<TypeName>>("lombok.copyableAnnotations", "Copy these annotations to getters, setters, withers, builder-setters, etc.") {};
+	
+	/**
+	 * lombok configuration: {@code checkerframework} = {@code true} | {@code false} | &lt;String: MajorVer.MinorVer&gt; (Default: false).
+	 * 
+	 * If set, lombok will generate appropriate annotations from checkerframework.org on generated code. If set to {@code true}, all relevant annotations from the most recent version of
+	 * checkerframework.org that lombok supports will be generated. If set to a specific major/minor version number, only checkerframework annotations introduced on or before the stated
+	 * checkerframework.org version will be generated.
+	 */
+	public static final ConfigurationKey<CheckerFrameworkVersion> CHECKER_FRAMEWORK = new ConfigurationKey<CheckerFrameworkVersion>("checkerframework", "If set with the version of checkerframework.org (in major.minor, or just 'true' for the latest supported version), create relevant checkerframework.org annotations for code lombok generates (default: false).") {};
 
 }

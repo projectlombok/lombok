@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2012-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -226,11 +227,11 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		method.returnType = cloneSelfType(fieldNode, source);
 		if (method.returnType == null) return null;
 		
-		Annotation[] deprecated = null;
-		if (isFieldDeprecated(fieldNode)) {
-			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
-		}
-		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated);
+		Annotation[] deprecated = null, checkerFramework = null;
+		if (isFieldDeprecated(fieldNode)) deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
+		if (getCheckerFrameworkVersion(fieldNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+		
+		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), checkerFramework, deprecated);
 		Argument param = new Argument(field.name, p, copyType(field.type, source), ClassFileConstants.AccFinal);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		method.arguments = new Argument[] { param };
