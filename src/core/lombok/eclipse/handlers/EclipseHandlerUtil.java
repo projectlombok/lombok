@@ -675,15 +675,6 @@ public class EclipseHandlerUtil {
 		return result == null ? null : result.toArray(new Annotation[0]);
 	}
 	
-	public static Annotation[] mergeAnnotations(Annotation[] a, Annotation[] b) {
-		if (a == null || a.length == 0) return (b == null || b.length == 0) ? null : b;
-		if (b == null || b.length == 0) return a.length == 0 ? null : a;
-		Annotation[] c = new Annotation[a.length + b.length];
-		System.arraycopy(a, 0, c, 0, a.length);
-		System.arraycopy(b, 0, c, a.length, b.length);
-		return c;
-	}
-	
 	public static boolean hasAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
 		if (node == null) return false;
 		if (type == null) return false;
