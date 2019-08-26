@@ -1,8 +1,8 @@
 import lombok.Data;
 import lombok.experimental.Accessors;
-import lombok.experimental.Wither;
+import lombok.With;
 @Data @Accessors(chain = true) class CheckerFrameworkBasic {
-  private final @Wither int x;
+  private final @With int x;
   private final int y;
   private int z;
   public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkBasic withX(final int x) {

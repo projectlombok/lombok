@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.experimental;
+package lombok;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -29,15 +29,13 @@ import java.lang.annotation.Target;
 import lombok.AccessLevel;
 
 /**
- * Put on any field to make lombok build a 'wither' - a withX method which produces a clone of this object (except for 1 field which gets a new value).
+ * Put on any field to make lombok build a 'with' - a withX method which produces a clone of this object (except for 1 field which gets a new value).
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Wither">the project lombok features page for &#64;Wither</a>.
- * <p>
- * Even though it is not listed, this annotation also has the {@code onParam} and {@code onMethod} parameter. See the full documentation for more details.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/With">the project lombok features page for &#64;With</a>.
  * <p>
  * Example:
  * <pre>
- *     private &#64;Wither final int foo;
+ *     private &#64;With final int foo;
  * </pre>
  * 
  * will generate:
@@ -49,15 +47,13 @@ import lombok.AccessLevel;
  * </pre>
  * <p>
  * This annotation can also be applied to a class, in which case it'll be as if all non-static fields that don't already have
- * a {@code Wither} annotation have the annotation.
- * 
- * @deprecated {@link lombok.With} has been promoted to the main package, so use that one instead.
+ * a {@code With} annotation have the annotation.
  */
 @Target({ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
-public @interface Wither {
+public @interface With {
 	/**
-	 * If you want your wither to be non-public, you can specify an alternate access level here.
+	 * If you want your with method to be non-public, you can specify an alternate access level here.
 	 * 
 	 * @return The method will be generated with this access modifier.
 	 */
@@ -67,9 +63,9 @@ public @interface Wither {
 	 * Any annotations listed here are put on the generated method.
 	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
 	 * up to JDK7:<br>
-	 *  {@code @Wither(onMethod=@__({@AnnotationsGoHere}))}<br>
+	 *  {@code @With(onMethod=@__({@AnnotationsGoHere}))}<br>
 	 * from JDK8:<br>
-	 *  {@code @Wither(onMethod_={@AnnotationsGohere})} // note the underscore after {@code onMethod}.
+	 *  {@code @With(onMethod_={@AnnotationsGohere})} // note the underscore after {@code onMethod}.
 	 * 
 	 * @return List of annotations to apply to the generated method.
 	 */
@@ -79,9 +75,9 @@ public @interface Wither {
 	 * Any annotations listed here are put on the generated method's parameter.
 	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
 	 * up to JDK7:<br>
-	 *  {@code @Wither(onParam=@__({@AnnotationsGoHere}))}<br>
+	 *  {@code @With(onParam=@__({@AnnotationsGoHere}))}<br>
 	 * from JDK8:<br>
-	 *  {@code @Wither(onParam_={@AnnotationsGohere})} // note the underscore after {@code onParam}.
+	 *  {@code @With(onParam_={@AnnotationsGohere})} // note the underscore after {@code onParam}.
 	 * 
 	 * @return List of annotations to apply to the generated parameter in the method.
 	 */

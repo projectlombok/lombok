@@ -590,20 +590,20 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
-	 * Translates the given field into all possible wither names.
-	 * Convenient wrapper around {@link TransformationsUtil#toAllWitherNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 * Translates the given field into all possible with names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllWithNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
-	public static java.util.List<String> toAllWitherNames(JavacNode field) {
-		return HandlerUtil.toAllWitherNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
+	public static java.util.List<String> toAllWithNames(JavacNode field) {
+		return HandlerUtil.toAllWithNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
-	 * @return the likely wither name for the stated field. (e.g. private boolean foo; to withFoo).
+	 * @return the likely with name for the stated field. (e.g. private boolean foo; to withFoo).
 	 * 
-	 * Convenient wrapper around {@link TransformationsUtil#toWitherName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 * Convenient wrapper around {@link TransformationsUtil#toWithName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
-	public static String toWitherName(JavacNode field) {
-		return HandlerUtil.toWitherName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
+	public static String toWithName(JavacNode field) {
+		return HandlerUtil.toWithName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -1883,7 +1883,7 @@ public class JavacHandlerUtil {
 		return (JCExpression) in;
 	}
 	
-	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER|WITHER)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER|WITH(?:ER)?)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 	
 	public static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
 		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
@@ -1898,12 +1898,18 @@ public class JavacHandlerUtil {
 		return javadoc.substring(0, m.start());
 	}
 	
-	public static String getJavadocSection(String javadoc, String sectionName) {
+	public static String getJavadocSection(String javadoc, String sectionNameSpec) {
+		String[] sectionNames = sectionNameSpec.split("\\|");
 		Matcher m = SECTION_FINDER.matcher(javadoc);
 		int sectionStart = -1;
 		int sectionEnd = -1;
 		while (m.find()) {
-			if (m.group(1).equalsIgnoreCase(sectionName)) {
+			boolean found = false;
+			for (String sectionName : sectionNames) if (m.group(1).equalsIgnoreCase(sectionName)) {
+				found = true;
+				break;
+			}
+			if (found) {
 				sectionStart = m.end() + 1;
 			} else if (sectionStart != -1) {
 				sectionEnd = m.start();
@@ -1953,9 +1959,9 @@ public class JavacHandlerUtil {
 				return applySetter(cu, node, "SETTER");
 			}
 		},
-		WITHER {
+		WITH {
 			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
-				return applySetter(cu, node, "WITHER");
+				return applySetter(cu, node, "WITH|WITHER");
 			}
 		};
 		
