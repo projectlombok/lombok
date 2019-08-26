@@ -530,6 +530,20 @@ public class HandlerUtil {
 		return toAccessorName(ast, accessors, fieldName, isBoolean, "with", "with", false);
 	}
 	
+	/**
+	 * Generates a withBy name from a given field name.
+	 * 
+	 * Strategy: The same as the {@code toWithName} strategy, but then append {@code "By"} at the end.
+	 * 
+	 * @param accessors Accessors configuration.
+	 * @param fieldName the name of the field.
+	 * @param isBoolean if the field is of type 'boolean'. For fields of type {@code java.lang.Boolean}, you should provide {@code false}.
+	 * @return The with name for this field, or {@code null} if this field does not fit expected patterns and therefore cannot be turned into a getter name.
+	 */
+	public static String toWithByName(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
+		return toAccessorName(ast, accessors, fieldName, isBoolean, "with", "with", false) + "By";
+	}
+	
 	private static String toAccessorName(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean,
 			String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
 		
@@ -601,6 +615,23 @@ public class HandlerUtil {
 		return toAllAccessorNames(ast, accessors, fieldName, isBoolean, "with", "with", false);
 	}
 	
+	/**
+	 * Returns all names of methods that would represent the withBy for a field with the provided name.
+	 * 
+	 * For example if {@code isBoolean} is true, then a field named {@code isRunning} would produce:<br />
+	 * {@code [withRunningBy, withIsRunningBy]}
+	 * 
+	 * @param accessors Accessors configuration.
+	 * @param fieldName the name of the field.
+	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
+	 */
+	public static List<String> toAllWithByNames(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
+		List<String> in = toAllAccessorNames(ast, accessors, fieldName, isBoolean, "with", "with", false);
+		if (!(in instanceof ArrayList)) in = new ArrayList<String>(in);
+		for (int i = 0; i < in.size(); i++) in.set(i, in.get(i) + "By");
+		return in;
+	}
+	
 	private static List<String> toAllAccessorNames(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean,
 			String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
 		
@@ -634,7 +665,6 @@ public class HandlerUtil {
 		}
 		
 		return new ArrayList<String>(names);
-		
 	}
 	
 	private static List<String> toBaseNames(CharSequence fieldName, boolean isBoolean, boolean fluent) {
