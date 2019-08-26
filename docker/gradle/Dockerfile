@@ -1,14 +1,14 @@
-FROM ubuntu:16.04 as downloader
+FROM ubuntu:18.04 as downloader
 
-ARG jdk=11
+ARG jdk=12
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
-ARG gradle=5.1.1
+ARG gradle=5.6
 ADD provision/gradle/gradle-${gradle}.sh provision/gradle/gradle-${gradle}.sh
 RUN provision/gradle/gradle-${gradle}.sh
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 COPY --from=downloader /opt/gradle/ /opt/gradle/
 COPY --from=downloader /opt/jdk/ /opt/jdk/
@@ -22,7 +22,7 @@ ADD gradle/files/ ./
 ARG lombokjar=lombok.jar
 ADD https://projectlombok.org/downloads/${lombokjar} lombok.jar
 
-ARG jdk=11
+ARG jdk=12
 ENV JDK_VERSION=${jdk}
 ENV JAVA_HOME=/opt/jdk
 ENV GRADLE_HOME=/opt/gradle/gradle
