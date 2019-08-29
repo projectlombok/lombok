@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ public class TypeResolver {
 	
 	public String typeRefToFullyQualifiedName(LombokNode<?, ?, ?> context, TypeLibrary library, String typeRef) {
 		typeRef = LombokInternalAliasing.processAliases(typeRef);
-		// When asking if 'Foo' could possibly  be referring to 'bar.Baz', the answer is obviously no.
+		// When asking if 'Foo' could possibly be referring to 'bar.Baz', the answer is obviously no.
 		String qualified = library.toQualified(typeRef);
 		if (qualified == null) return null;
 		

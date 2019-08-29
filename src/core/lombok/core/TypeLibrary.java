@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.core;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,6 +76,14 @@ public class TypeLibrary {
 	}
 	
 	public static TypeLibrary createLibraryForSingleType(String fqnSingleton) {
+		if (LombokInternalAliasing.REVERSE_ALIASES.containsKey(fqnSingleton)) {
+			// Internal aliasing is a little too complex to handle with the map-less 'efficient' implementation.
+			TypeLibrary tl = new TypeLibrary();
+			tl.addType(fqnSingleton);
+			tl.lock();
+			return tl;
+		}
+		
 		return new TypeLibrary(fqnSingleton);
 	}
 	
@@ -89,7 +98,7 @@ public class TypeLibrary {
 		if (locked) throw new IllegalStateException("locked");
 		int idx = fullyQualifiedTypeName.lastIndexOf('.');
 		if (idx == -1) throw new IllegalArgumentException(
-				"Only fully qualified types are allowed (and stuff in the default package is not palatable to us either!)");
+			"Only fully qualified types are allowed (types in the default package cannot be added here either)");
 		String unqualified = fullyQualifiedTypeName.substring(idx + 1);
 		if (unqualifiedToQualifiedMap == null) throw new IllegalStateException("SingleType library");
 		
@@ -97,8 +106,11 @@ public class TypeLibrary {
 		unqualifiedToQualifiedMap.put(unqualified, dotBased);
 		unqualifiedToQualifiedMap.put(fullyQualifiedTypeName, dotBased);
 		unqualifiedToQualifiedMap.put(dotBased, dotBased);
-		for (Map.Entry<String, String> e : LombokInternalAliasing.ALIASES.entrySet()) {
-			if (fullyQualifiedTypeName.equals(e.getValue())) unqualifiedToQualifiedMap.put(e.getKey(), dotBased);
+		Collection<String> oldNames = LombokInternalAliasing.REVERSE_ALIASES.get(fullyQualifiedTypeName);
+		if (oldNames != null) for (String oldName : oldNames) {
+			unqualifiedToQualifiedMap.put(oldName, dotBased);
+			int li = oldName.lastIndexOf('.');
+			if (li != -1) unqualifiedToQualifiedMap.put(oldName.substring(li + 1), dotBased);
 		}
 		
 		int idx2 = fullyQualifiedTypeName.indexOf('$', idx + 1);
@@ -119,9 +131,6 @@ public class TypeLibrary {
 	public String toQualified(String typeReference) {
 		if (unqualifiedToQualifiedMap == null) {
 			if (typeReference.equals(unqualified) || typeReference.equals(qualified)) return qualified;
-			for (Map.Entry<String, String> e : LombokInternalAliasing.ALIASES.entrySet()) {
-				if (e.getKey().equals(typeReference)) return e.getValue();
-			}
 			return null;
 		}
 		return unqualifiedToQualifiedMap.get(typeReference);
