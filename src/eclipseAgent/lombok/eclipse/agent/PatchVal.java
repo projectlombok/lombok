@@ -366,10 +366,6 @@ public class PatchVal {
 	}
 	
 	private static TypeBinding resolveForExpression(Expression collection, BlockScope scope) {
-		CompilationUnitDeclaration referenceContext = scope.compilationUnitScope().referenceContext;
-		ProblemReporter oldProblemReporter = referenceContext.problemReporter;
-		referenceContext.problemReporter = new ProblemReporter(DefaultErrorHandlingPolicies.exitOnFirstError(),
-				oldProblemReporter.options, oldProblemReporter.problemFactory);
 		try {
 			return collection.resolveType(scope);
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -413,8 +409,6 @@ public class PatchVal {
 				}
 			}
 			throw e;
-		} finally {
-			referenceContext.problemReporter = oldProblemReporter;
 		}
 	}
 	
