@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.9 "Edgy Guinea Pig"
+### v1.18.10 (September 10th, 2019)
 * PROMOTION: `@Wither` has been promoted to the main package, renamed to `@With`. Otherwise, no changes have been made to the annotation. The old experimental annotation will remain for a few versions as a deprecated annotation. If you had `lombok.config` configuration for this annotation, the configuration keys for this feature have been renamed.
 * FEATURE: You can now configure a custom logger framework using the new `@CustomLog` annotation in combination with the `lombok.log.custom.declaration` configuration key. See the [log documentation](https://projectlombok.org/features/Log) for more information. [Pullrequest #2086](https://github.com/rzwitserloot/lombok/pull/2086) with thanks to Adam Juraszek.
 * ENHANCEMENT: Thanks to Mark Haynes, the `staticConstructor` will now also be generated if a (private) constructor already exists. [Issue #2100](https://github.com/rzwitserloot/lombok/issues/2100)
