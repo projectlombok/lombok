@@ -2,15 +2,23 @@ Lombok Changelog
 ----------------
 
 ### v1.18.9 "Edgy Guinea Pig"
+* No changes yet.
+
+### v1.18.10 (September 10th, 2019)
+* PROMOTION: `@Wither` has been promoted to the main package, renamed to `@With`. Otherwise, no changes have been made to the annotation. The old experimental annotation will remain for a few versions as a deprecated annotation. If you had `lombok.config` configuration for this annotation, the configuration keys for this feature have been renamed.
 * FEATURE: You can now configure a custom logger framework using the new `@CustomLog` annotation in combination with the `lombok.log.custom.declaration` configuration key. See the [log documentation](https://projectlombok.org/features/Log) for more information. [Pullrequest #2086](https://github.com/rzwitserloot/lombok/pull/2086) with thanks to Adam Juraszek.
 * ENHANCEMENT: Thanks to Mark Haynes, the `staticConstructor` will now also be generated if a (private) constructor already exists. [Issue #2100](https://github.com/rzwitserloot/lombok/issues/2100)
-* ENHANCEMENT: `val` is now capable of decoding the type of convoluted expressions (particularly if the right hand side involves lambdas and conditional (ternary) expressions). [Pull Request #2109](https://github.com/rzwitserloot/lombok/pull/2109) and [Pull Request #2138](https://github.com/rzwitserloot/lombok/pull/2138) with thanks to Alexander Bulgakov.
+* ENHANCEMENT: `val` is now capable of decoding the type of convoluted expressions (particularly if the right hand side involves lambdas and conditional (ternary) expressions). [Pull Request #2109](https://github.com/rzwitserloot/lombok/pull/2109) with thanks to Alexander Bulgakov.
 * ENHANCEMENT: You can now configure the generated builder class name via the config system, using key `lombok.builder.className`. See the [Builder documentation](https://projectlombok.org/features/Builder) and [SuperBuilder documentation](https://projectlombok.org/features/experimental/SuperBuilder)
 * ENHANCEMENT: If you mix up eclipse's non-null support, such as `@NonNullByDefault`, with lombok's `@NonNull`, you get a bunch of warnings about dead code that are inappropriate. These warnings are now suppressed, thanks to a contribution from Till Brychcy! [Pull Request #2155](https://github.com/rzwitserloot/lombok/pull/2155)
 * ENHANCEMENT: `@NonNull` can now also generate checks using jdk's `Objects.requireNonNull` or Guava's `Preconditions.checkNotNull`. [Issue #1197](https://github.com/rzwitserloot/lombok/issues/1197)
+* EXPERIMENT: Lombok is working together with [checkerframework](https://checkerframework.org/) to enable detection of improper builder use (such as forgetting to set a mandatory property prior to calling `build()`). This experiment can be turned on by adding `checkerframework = true` to your `lombok.config` file.
+* BUGFIX: Using `@JsonProperty` or `@JsonValue` on a field in combination with `@Setter` or `@Data` would sometimes throw a ClassCastException during compilation. [Issue #2156](https://github.com/rzwitserloot/lombok/issues/2156)
 * BUGFIX: Delombok would turn something like `List<byte[]>...` in a method parameter to `List<byte...>...` [Issue #2140](https://github.com/rzwitserloot/lombok/issues/2140)
 * BUGFIX: Javac would generate the wrong equals and hashCode if a type-use annotation was put on an array type field [Issue #2165](https://github.com/rzwitserloot/lombok/issues/2165)
 * BUGFIX: Eclipse 2019-06 + JDK-12 compatibility + an `@Singular` builder entry would produce a cascade of error dialogs. [Issue #2169](https://github.com/rzwitserloot/lombok/issues/2169)
+* BUGFIX: Javac would throw a NullPointerException if the package-info.java did not contain a package declaration. [Issue #2184](https://github.com/rzwitserloot/lombok/issues/2184)
+* BUGFIX: Javac sets incorrect annotated type on constructor, getter and setter. [Issue #2189](https://github.com/rzwitserloot/lombok/issues/2189)
 * IMPROBABLE BREAKING CHANGE: Stricter validation of configuration keys dealing with identifiers and types (`lombok.log.fieldName`, `lombok.fieldNameConstants.innerTypeName`, `lombok.copyableAnnotations`).
 * IMPROBABLE BREAKING CHANGE: The fields generated inside builders for fields with defaults (with `@Builder` on a class with fields marked `@Default`) now have `$value` as the name; direct manipulation of these fields is not advised because there is an associated `$set` variable that also needs to be taken into account. [Issue #2115](https://github.com/rzwitserloot/lombok/issues/2115)
 

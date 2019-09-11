@@ -38,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.Value;
+import lombok.With;
 import lombok.core.AST;
 import lombok.core.AnnotationValues;
 import lombok.core.JavaIdentifiers;
@@ -47,7 +48,6 @@ import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.Wither;
 
 /**
  * Container for static utility methods useful for some of the standard lombok handlers, regardless of
@@ -406,7 +406,7 @@ public class HandlerUtil {
 	@SuppressWarnings({"all", "unchecked", "deprecation"})
 	public static final List<String> INVALID_ON_BUILDERS = Collections.unmodifiableList(
 			Arrays.<String>asList(
-			Getter.class.getName(), Setter.class.getName(), Wither.class.getName(),
+			Getter.class.getName(), Setter.class.getName(), With.class.getName(), "lombok.experimental.Wither",
 			ToString.class.getName(), EqualsAndHashCode.class.getName(), 
 			RequiredArgsConstructor.class.getName(), AllArgsConstructor.class.getName(), NoArgsConstructor.class.getName(), 
 			Data.class.getName(), Value.class.getName(), "lombok.experimental.Value", FieldDefaults.class.getName()));
@@ -502,7 +502,7 @@ public class HandlerUtil {
 	}
 	
 	/**
-	 * Generates a wither name from a given field name.
+	 * Generates a with name from a given field name.
 	 * 
 	 * Strategy:
 	 * <ul>
@@ -518,9 +518,9 @@ public class HandlerUtil {
 	 * @param accessors Accessors configuration.
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type {@code java.lang.Boolean}, you should provide {@code false}.
-	 * @return The wither name for this field, or {@code null} if this field does not fit expected patterns and therefore cannot be turned into a getter name.
+	 * @return The with name for this field, or {@code null} if this field does not fit expected patterns and therefore cannot be turned into a getter name.
 	 */
-	public static String toWitherName(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
+	public static String toWithName(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
 		return toAccessorName(ast, accessors, fieldName, isBoolean, "with", "with", false);
 	}
 	
@@ -582,7 +582,7 @@ public class HandlerUtil {
 	}
 	
 	/**
-	 * Returns all names of methods that would represent the wither for a field with the provided name.
+	 * Returns all names of methods that would represent the with for a field with the provided name.
 	 * 
 	 * For example if {@code isBoolean} is true, then a field named {@code isRunning} would produce:<br />
 	 * {@code [withRunning, withIsRunning]}
@@ -591,7 +591,7 @@ public class HandlerUtil {
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
 	 */
-	public static List<String> toAllWitherNames(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
+	public static List<String> toAllWithNames(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
 		return toAllAccessorNames(ast, accessors, fieldName, isBoolean, "with", "with", false);
 	}
 	

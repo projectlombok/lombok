@@ -171,6 +171,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="compile" depends="version, ensureBuildDeps, -unpackLibs, -ensureJdk9" description="Compiles the code.">
+        <fail>
+For compiling with Java9 'modulepath' an Ant version 1.9.7+ or 1.10.0+ is required. 
+Your current version is:
+    ${ant.version}
+            <condition>
+                <not><antversion atleast="1.9.8"/></not>
+            </condition>
+        </fail>
+
 		<!-- ant includes the destination dir on the classpath (and there are good reasons to do this), but that also means
 		 the bleeding edge lombok from the previous build is run, which means if there are bugs in it, you can't compile
 		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
@@ -764,12 +773,15 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 	</target>
 	
 	<target name="utils-javadoc" depends="compile">
+		<tstamp>
+			<format property="javadoc.year" pattern="yyyy"/>
+		</tstamp>
 		<mkdir dir="build/utils-api" />
 		<javadoc sourcepath="src/utils" defaultexcludes="yes" destdir="build/utils-api" windowtitle="Lombok Utils">
 			<classpath refid="build.path" />
 			<link href="http://download.oracle.com/javase/6/docs/api/" />
 			<header><![CDATA[<a href='https://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
-			<bottom><![CDATA[<i>Copyright &copy; 2011-2015 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
+			<bottom><![CDATA[<i>Copyright &copy; 2011-${javadoc.year} The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<!-- bugfix for boneheaded javadoc bug where ?is-external=true is inserted before an anchor ref, breaking the anchor ref.
 		is-external=true doesn't actually do anything, so, we'll just get rid of it. -->

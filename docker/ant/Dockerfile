@@ -1,14 +1,14 @@
-FROM ubuntu:16.04 as downloader
+FROM ubuntu:18.04 as downloader
 
-ARG jdk=11
+ARG jdk=12
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
-ARG ant=1.10.1
+ARG ant=1.10.6
 ADD provision/ant/ant-${ant}.sh provision/ant/ant-${ant}.sh
 RUN provision/ant/ant-${ant}.sh
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 COPY --from=downloader /usr/local/apache-ant/ /usr/local/apache-ant/
 COPY --from=downloader /opt/jdk/ /opt/jdk/
@@ -19,7 +19,7 @@ WORKDIR workspace
 
 ADD shared/ ./
 
-ARG jdk=11
+ARG jdk=12
 ADD ant/files/jdk-${jdk} ./
 
 ARG lombokjar=lombok.jar

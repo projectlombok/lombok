@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class LombokInternalAliasing {
 	/** Maps a package name to a space separated list of packages. If the key package is star-imported, assume all packages in the 'value' part of the MapEntry are too. */
 	public static final Map<String, Collection<String>> IMPLIED_EXTRA_STAR_IMPORTS;
 	public static final Map<String, String> ALIASES;
+	public static final Map<String, Collection<String>> REVERSE_ALIASES;
 	
 	/**
 	 * Provide a fully qualified name (FQN), and the canonical version of this is returned.
@@ -51,6 +53,26 @@ public class LombokInternalAliasing {
 		m2.put("lombok.experimental.Builder", "lombok.Builder");
 		m2.put("lombok.experimental.var", "lombok.var");
 		m2.put("lombok.Delegate", "lombok.experimental.Delegate");
+		m2.put("lombok.experimental.Wither", "lombok.With");
 		ALIASES = Collections.unmodifiableMap(m2);
+		
+		Map<String, Collection<String>> m3 = new HashMap<String, Collection<String>>();
+		for (Map.Entry<String, String> e : m2.entrySet()) {
+			Collection<String> c = m3.get(e.getValue());
+			if (c == null) {
+				m3.put(e.getValue(), Collections.singleton(e.getKey()));
+			} else if (c.size() == 1) {
+				Collection<String> newC = new ArrayList<String>(2);
+				newC.addAll(c);
+				m3.put(e.getValue(), c);
+			} else {
+				c.add(e.getKey());
+			}
+		}
+		for (Map.Entry<String, Collection<String>> e : m3.entrySet()) {
+			Collection<String> c = e.getValue();
+			if (c.size() > 1) e.setValue(Collections.unmodifiableList((ArrayList<String>) c));
+		}
+		REVERSE_ALIASES = Collections.unmodifiableMap(m3);
 	}
 }

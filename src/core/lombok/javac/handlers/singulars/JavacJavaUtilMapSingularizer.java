@@ -28,6 +28,7 @@ import java.util.Arrays;
 
 import lombok.AccessLevel;
 import lombok.core.LombokImmutableList;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil;
@@ -97,8 +98,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		return Arrays.asList(keyFieldNode, valueFieldNode);
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
-		doGenerateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker, access);
+	@Override public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
+		doGenerateMethods(cfv, data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker, access);
 	}
 	
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@ import lombok.experimental.Delegate;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -167,6 +168,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	
 	public void createGetterForField(AccessLevel level,
 			JavacNode fieldNode, JavacNode source, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
+		
 		if (fieldNode.getKind() != Kind.FIELD) {
 			source.addError("@Getter is only supported on a class or a field.");
 			return;
@@ -223,7 +225,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
-		JCExpression methodType = copyType(treeMaker, fieldNode);
+		JCExpression methodType = cloneType(treeMaker, copyType(treeMaker, fieldNode), source, field.getContext());
 		// Generate the methodName; lazy will change the field type
 		Name methodName = field.toName(toGetterName(field));
 		
@@ -246,9 +248,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(field);
 		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
 		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod).appendList(copyableAnnotations);
-		if (isFieldDeprecated(field)) {
-			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
-		}
+		if (getCheckerFrameworkVersion(field).generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genTypeRef(field, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
+		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source, field.getContext());

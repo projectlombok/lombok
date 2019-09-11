@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 The Project Lombok Authors.
+ * Copyright (C) 2012-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,8 @@ import lombok.AccessLevel;
  * <p>
  * This annotation can also be applied to a class, in which case it'll be as if all non-static fields that don't already have
  * a {@code Wither} annotation have the annotation.
+ * 
+ * @deprecated {@link lombok.With} has been promoted to the main package, so use that one instead.
  */
 @Target({ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)

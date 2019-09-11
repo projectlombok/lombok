@@ -1,3 +1,0 @@
-class WitherWithDollar {
-	int $i;
-}

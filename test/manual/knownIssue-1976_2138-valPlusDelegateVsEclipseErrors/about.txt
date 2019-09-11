@@ -1,0 +1,35 @@
+PullRequest https://github.com/rzwitserloot/lombok/pull/2114 tries to fix issue https://github.com/rzwitserloot/lombok/issues/1976 but causes problems.
+
+The problem is that the fail-fast resolver applied by PR 2114 causes the following issue:
+
+Given:
+
+A.java:
+
+	public class A {
+		interface Inner {
+			default void example() {
+				lombok.val v = doesNotExist();
+			}
+		}
+	B b = new B();
+	}
+
+B.java:
+
+	import com.foo.pkg.A.Inner;
+
+	public class B implements Inner {
+		void foo() {
+			lombok.val v = doesNotExist();
+		}
+	}
+
+will cause A.java to be parsed such that nothing in it exists, in turn causing B to consider A.Inner to not exist at all,
+even though the error on the 'implements Inner' line offers 'import Inner' as a quickfix. This quickfix won't, obviously, fix it.
+
+In addition, enough 'A refers to B refers to A' loops with errors like this and eclipse 2019-06 will eventually run out of heap and crash.
+
+The key commit that attempts to fix 1976 but causes the above issue is commit 089f2ec5f45567c8c12e9d13bf9be8fa5c107c18.
+
+The commit that undoes this, re-introducing 1976 but avoiding the problem above, is commit 877a169727a4c8078c43a4465929247c3390c897.

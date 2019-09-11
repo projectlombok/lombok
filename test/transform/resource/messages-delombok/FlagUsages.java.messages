@@ -1,2 +1,2 @@
-5 Use of @Getter is flagged according to lombok configuration.
-7 Use of any lombok.experimental feature is flagged according to lombok configuration.
+4 Use of any lombok.experimental feature is flagged according to lombok configuration.
+6 Use of @Getter is flagged according to lombok configuration.

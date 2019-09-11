@@ -4,6 +4,7 @@ RewriteRule ^$ /main.html [L,END]
 RewriteRule ^(index|home)(\.html)?$ / [NC,R=301]
 
 RewriteRule ^setup/overview$ /setup/main.html [L,END]
+RewriteRule ^setup/overview(\.html)?/?$ /setup/overview [NC,R=301]
 RewriteRule ^setup/main(\.html)?/?$ /setup/overview [NC,R=301]
 RewriteRule ^setup/index(\.html)?/?$ /setup/overview [NC,R=301]
 RewriteRule ^setup(/(overview/?)?)?$ /setup/overview [NC,R=301]
@@ -58,6 +59,7 @@ RewriteRule ^features/${pg?no_esc}(\.html)?/?$ /features/${pg?no_esc} [NC,R=301]
 RewriteRule ^features/experimental/Builder(\.html)?/?$ /features/Builder [NC,R=301]
 RewriteRule ^features/experimental/Value(\.html)?/?$ /features/Value [NC,R=301]
 RewriteRule ^features/experimental/var(\.html)?/?$ /features/var [NC,R=301]
+RewriteRule ^features/experimental/Wither(\.html)?/?$ /features/With [NC,R=301]
 
 RewriteRule ^features/experimental/all$ /features/experimental/index.html [L,END]
 RewriteRule ^features/experimental(/all)?/?$ /features/experimental/all [NC,R=301]
@@ -71,3 +73,6 @@ RewriteRule ^features/experimental/${pg?no_esc}(\.html)?/?$ /features/experiment
 RewriteRule ^presentations/7lessons$ /presentations/7lessons.html [L,END]
 RewriteRule ^presentations/7lessons(\.html)?/?$ /presentations/7lessons [NC,R=301]
 RewriteRule ^presentations/7mistakes(\.html)?/?$ /presentations/7lessons [NC,R=301]
+
+RewriteRule ^tidelift$ /tidelift.html [L,END]
+RewriteRule ^tidelift(\.html)?/?$ /tidelift [NC,R=301]

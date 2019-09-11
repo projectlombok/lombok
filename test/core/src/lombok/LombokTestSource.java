@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 The Project Lombok Authors.
+ * Copyright (C) 2014-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,7 @@ public class LombokTestSource {
 	private final Map<String, String> formatPreferences;
 	private final boolean ignore;
 	private final boolean skipCompareContent;
+	private final boolean skipIdempotent;
 	private final boolean unchanged;
 	private final int versionLowerLimit, versionUpperLimit;
 	private final ConfigurationResolver configuration;
@@ -90,6 +91,10 @@ public class LombokTestSource {
 	
 	public boolean isSkipCompareContent() {
 		return skipCompareContent;
+	}
+	
+	public boolean isSkipIdempotent() {
+		return skipIdempotent;
 	}
 	
 	public String getSpecifiedEncoding() {
@@ -139,6 +144,7 @@ public class LombokTestSource {
 	private static final Pattern IGNORE_PATTERN = Pattern.compile("^\\s*ignore\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern UNCHANGED_PATTERN = Pattern.compile("^\\s*unchanged\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern SKIP_COMPARE_CONTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?compare[- ]?contents?\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern SKIP_IDEMPOTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?idempotent\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	
 	private LombokTestSource(File file, String content, List<CompilerMessageMatcher> messages, List<String> directives) {
 		this.file = file;
@@ -150,6 +156,7 @@ public class LombokTestSource {
 		int versionUpper = Integer.MAX_VALUE;
 		boolean ignore = false;
 		boolean skipCompareContent = false;
+		boolean skipIdempotent = false;
 		boolean unchanged = false;
 		String encoding = null;
 		Map<String, String> formats = new HashMap<String, String>();
@@ -170,6 +177,11 @@ public class LombokTestSource {
 			
 			if (SKIP_COMPARE_CONTENT_PATTERN.matcher(directive).matches()) {
 				skipCompareContent = true;
+				continue;
+			}
+			
+			if (SKIP_IDEMPOTENT_PATTERN.matcher(directive).matches()) {
+				skipIdempotent = true;
 				continue;
 			}
 			
@@ -223,6 +235,7 @@ public class LombokTestSource {
 		this.versionUpperLimit = versionUpper;
 		this.ignore = ignore;
 		this.skipCompareContent = skipCompareContent;
+		this.skipIdempotent = skipIdempotent;
 		this.unchanged = unchanged;
 		this.platforms = platformLimit == null ? null : Arrays.asList(platformLimit);
 		ConfigurationProblemReporter reporter = new ConfigurationProblemReporter() {

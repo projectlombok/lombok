@@ -1,0 +1,2 @@
+2 Not generating withFoo for this field: With methods cannot be generated for static fields.
+3 Not generating withBar for this field: With methods cannot be generated for static fields.
