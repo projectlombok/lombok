@@ -160,6 +160,9 @@ public @interface Builder {
 	 *
 	 * For example, a method normally generated as {@code someField(String someField)} would instead be generated as {@code withSomeField(String someField)}
 	 *
+	 * Note that using "with" to prefix builder setter methods is strongly discouraged as as "with" normally
+	 * suggests immutable data structures, and builders by definition are mutable objects.
+	 *
 	 * @return The prefix to prepend to generated method names.
 	 */
 	String setterPrefix() default "";
