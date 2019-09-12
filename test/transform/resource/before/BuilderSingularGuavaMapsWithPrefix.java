@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import lombok.Singular;
 
 @lombok.Builder(setterPrefix = "with")
-class BuilderSingularGuavaMaps<K, V> {
+class BuilderSingularGuavaMapsWithSetterPrefix<K, V> {
 	@Singular private ImmutableMap<K, V> battleaxes;
 	@Singular private ImmutableSortedMap<Integer, ? extends V> vertices;
 	@SuppressWarnings("all") @Singular("rawMap") private ImmutableBiMap rawMap;

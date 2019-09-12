@@ -3,7 +3,7 @@ import lombok.Builder;
 import lombok.Singular;
 
 @Builder(setterPrefix = "with")
-public class BuilderWithDeprecated {
+public class BuilderWithDeprecatedWithSetterPrefix {
 	/** @deprecated since always */ String dep1;
 	@Deprecated int dep2;
 	@Singular @Deprecated java.util.List<String> strings;

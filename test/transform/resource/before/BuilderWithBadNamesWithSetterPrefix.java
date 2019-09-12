@@ -1,5 +1,5 @@
 @lombok.Builder(setterPrefix = "with")
-public class BuilderWithBadNames {
+public class BuilderWithBadNamesWithSetterPrefix {
 	String build;
 	String toString;
 }

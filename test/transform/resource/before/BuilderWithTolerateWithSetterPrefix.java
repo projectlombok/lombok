@@ -2,16 +2,16 @@ import lombok.Builder;
 import lombok.experimental.Tolerate;
 		
 @Builder(setterPrefix = "with")
-public class BuilderWithTolerate {
+public class BuilderWithTolerateWithSetterPrefix {
 	private final int value;
 	
 	public static void main(String[] args) {
-		BuilderWithTolerate.builder().value("42").build();
+		BuilderWithTolerateWithSetterPrefix.builder().withValue("42").build();
 	}
 	
-	public static class BuilderWithTolerateBuilder {
+	public static class BuilderWithTolerateWithSetterPrefixBuilder {
 		@Tolerate
-		public BuilderWithTolerateBuilder value(String s) {
+		public BuilderWithTolerateWithSetterPrefixBuilder withValue(String s) {
 			return this.value(Integer.parseInt(s));
 		}
 	}

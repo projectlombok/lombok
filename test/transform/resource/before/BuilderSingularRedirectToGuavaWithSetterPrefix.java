@@ -6,7 +6,7 @@ import java.util.Collection;
 import lombok.Singular;
 
 @lombok.Builder(setterPrefix = "with")
-class BuilderSingularRedirectToGuava {
+class BuilderSingularRedirectToGuavaWithSetterPrefix {
 	@Singular private Set<String> dangerMice;
 	@Singular private NavigableMap<Integer, Number> things;
 	@Singular private Collection<Class<?>> doohickeys;

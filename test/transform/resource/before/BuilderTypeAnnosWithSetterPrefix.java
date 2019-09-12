@@ -9,6 +9,6 @@ import java.util.List;
 @interface TB {
 }
 @lombok.Builder(setterPrefix = "with")
-class BuilderTypeAnnos {
+class BuilderTypeAnnosWithSetterPrefix {
 	private @TA @TB List<String> foo;
 }

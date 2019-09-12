@@ -1,5 +1,5 @@
 @lombok.Builder(setterPrefix = "with")
-class BuilderWithNonNull {
+class BuilderWithNonNullWithSetterPrefix {
 	@lombok.NonNull
 	private final String id;
 }

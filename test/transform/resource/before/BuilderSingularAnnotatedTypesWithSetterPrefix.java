@@ -8,7 +8,7 @@ import lombok.Singular;
 @Target(ElementType.TYPE_USE)
 @interface MyAnnotation {}
 @lombok.Builder(setterPrefix = "with")
-class BuilderSingularAnnotatedTypes {
+class BuilderSingularAnnotatedTypesWithSetterPrefix {
 	@Singular private Set<@MyAnnotation @NonNull String> foos;
 	@Singular private Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars;
 }
