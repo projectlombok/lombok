@@ -488,6 +488,19 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	@Override public void visitImport(JCImport tree) {
+		if (tree.qualid instanceof JCFieldAccess) {
+			JCFieldAccess fa = ((JCFieldAccess) tree.qualid);
+			if (fa.name.length() == 1 && fa.name.contentEquals("*")) {
+				if (fa.selected instanceof JCFieldAccess) {
+					JCFieldAccess lombokExperimental = (JCFieldAccess) fa.selected;
+					if (lombokExperimental.name.contentEquals("experimental") && lombokExperimental.selected instanceof JCIdent && ((JCIdent) lombokExperimental.selected).name.contentEquals("lombok")) {
+						// do not ever print lombok.experimental.*.
+						return;
+					}
+				}
+			}
+		}
+		
 		aPrint("import ");
 		if (tree.staticImport) print("static ");
 		print(tree.qualid);

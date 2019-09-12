@@ -101,7 +101,9 @@ public class JavacSingularsRecipes {
 	}
 	
 	public String toQualified(String typeReference) {
-		return singularizableTypes.toQualified(typeReference);
+		java.util.List<String> q = singularizableTypes.toQualifieds(typeReference);
+		if (q.isEmpty()) return null;
+		return q.get(0);
 	}
 	
 	public JavacSingularizer getSingularizer(String fqn, JavacNode node) {

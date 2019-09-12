@@ -60,11 +60,6 @@ public class JavacImportList implements ImportList {
 		if (pkgStr != null && pkgStr.equals(packageName)) return true;
 		if ("java.lang".equals(packageName)) return true;
 		
-		if (pkgStr != null) {
-			Collection<String> extra = LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.get(pkgStr);
-			if (extra != null && extra.contains(packageName)) return true;
-		}
-		
 		for (JCTree def : defs) {
 			if (!(def instanceof JCImport)) continue;
 			if (((JCImport) def).staticImport) continue;
@@ -74,8 +69,6 @@ public class JavacImportList implements ImportList {
 			if (!"*".equals(simpleName)) continue;
 			String starImport = ((JCFieldAccess) qual).selected.toString();
 			if (packageName.equals(starImport)) return true;
-			Collection<String> extra = LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.get(starImport);
-			if (extra != null && extra.contains(packageName)) return true;
 		}
 		
 		return false;

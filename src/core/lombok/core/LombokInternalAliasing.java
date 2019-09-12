@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LombokInternalAliasing {
-	/** Maps a package name to a space separated list of packages. If the key package is star-imported, assume all packages in the 'value' part of the MapEntry are too. */
-	public static final Map<String, Collection<String>> IMPLIED_EXTRA_STAR_IMPORTS;
 	public static final Map<String, String> ALIASES;
 	public static final Map<String, Collection<String>> REVERSE_ALIASES;
 	
@@ -43,36 +41,31 @@ public class LombokInternalAliasing {
 	}
 	
 	static {
-		Map<String, Collection<String>> m1 = new HashMap<String, Collection<String>>();
-		m1.put("lombok.experimental", Collections.singleton("lombok"));
-		m1.put("lombok", Collections.singleton("lombok.experimental"));
-		IMPLIED_EXTRA_STAR_IMPORTS = Collections.unmodifiableMap(m1);
+		Map<String, String> m1 = new HashMap<String, String>();
+		m1.put("lombok.experimental.Value", "lombok.Value");
+		m1.put("lombok.experimental.Builder", "lombok.Builder");
+		m1.put("lombok.experimental.var", "lombok.var");
+		m1.put("lombok.Delegate", "lombok.experimental.Delegate");
+		m1.put("lombok.experimental.Wither", "lombok.With");
+		ALIASES = Collections.unmodifiableMap(m1);
 		
-		Map<String, String> m2 = new HashMap<String, String>();
-		m2.put("lombok.experimental.Value", "lombok.Value");
-		m2.put("lombok.experimental.Builder", "lombok.Builder");
-		m2.put("lombok.experimental.var", "lombok.var");
-		m2.put("lombok.Delegate", "lombok.experimental.Delegate");
-		m2.put("lombok.experimental.Wither", "lombok.With");
-		ALIASES = Collections.unmodifiableMap(m2);
-		
-		Map<String, Collection<String>> m3 = new HashMap<String, Collection<String>>();
-		for (Map.Entry<String, String> e : m2.entrySet()) {
-			Collection<String> c = m3.get(e.getValue());
+		Map<String, Collection<String>> m2 = new HashMap<String, Collection<String>>();
+		for (Map.Entry<String, String> e : m1.entrySet()) {
+			Collection<String> c = m2.get(e.getValue());
 			if (c == null) {
-				m3.put(e.getValue(), Collections.singleton(e.getKey()));
+				m2.put(e.getValue(), Collections.singleton(e.getKey()));
 			} else if (c.size() == 1) {
 				Collection<String> newC = new ArrayList<String>(2);
 				newC.addAll(c);
-				m3.put(e.getValue(), c);
+				m2.put(e.getValue(), c);
 			} else {
 				c.add(e.getKey());
 			}
 		}
-		for (Map.Entry<String, Collection<String>> e : m3.entrySet()) {
+		for (Map.Entry<String, Collection<String>> e : m2.entrySet()) {
 			Collection<String> c = e.getValue();
 			if (c.size() > 1) e.setValue(Collections.unmodifiableList((ArrayList<String>) c));
 		}
-		REVERSE_ALIASES = Collections.unmodifiableMap(m3);
+		REVERSE_ALIASES = Collections.unmodifiableMap(m2);
 	}
 }

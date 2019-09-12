@@ -109,7 +109,9 @@ public class EclipseSingularsRecipes {
 	}
 	
 	public String toQualified(String typeReference) {
-		return singularizableTypes.toQualified(typeReference);
+		List<String> q = singularizableTypes.toQualifieds(typeReference);
+		if (q.isEmpty()) return null;
+		return q.get(0);
 	}
 	
 	public EclipseSingularizer getSingularizer(String fqn) {

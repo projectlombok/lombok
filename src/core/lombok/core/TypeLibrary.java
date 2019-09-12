@@ -21,8 +21,11 @@
  */
 package lombok.core;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,18 +39,18 @@ import java.util.Map;
  * <ul><li>foo.Spork</li><li>Spork</li><li>foo.*</li></ul>
  */
 public class TypeLibrary {
-	private final Map<String, String> unqualifiedToQualifiedMap;
+	private final Map<String, Object> unqualifiedToQualifiedMap; // maps to usually a string, but could be a string array in aliasing cases.
 	private final String unqualified, qualified;
 	private boolean locked;
 	
 	public TypeLibrary() {
-		unqualifiedToQualifiedMap = new HashMap<String, String>();
+		unqualifiedToQualifiedMap = new HashMap<String, Object>();
 		unqualified = null;
 		qualified = null;
 	}
 	
 	public TypeLibrary(TypeLibrary parent) {
-		unqualifiedToQualifiedMap = new HashMap<String, String>();
+		unqualifiedToQualifiedMap = new HashMap<String, Object>();
 		unqualified = null;
 		qualified = null;
 	}
@@ -58,7 +61,7 @@ public class TypeLibrary {
 	
 	private TypeLibrary(String fqnSingleton) {
 		if (fqnSingleton.indexOf("$") != -1) {
-			unqualifiedToQualifiedMap = new HashMap<String, String>();
+			unqualifiedToQualifiedMap = new HashMap<String, Object>();
 			unqualified = null;
 			qualified = null;
 			addType(fqnSingleton);
@@ -93,6 +96,9 @@ public class TypeLibrary {
 	 * @param fullyQualifiedTypeName the FQN type name, such as 'java.lang.String'.
 	 */
 	public void addType(String fullyQualifiedTypeName) {
+		Collection<String> oldNames = LombokInternalAliasing.REVERSE_ALIASES.get(fullyQualifiedTypeName);
+		if (oldNames != null) for (String oldName : oldNames) addType(oldName);
+		
 		String dotBased = fullyQualifiedTypeName.replace("$", ".");
 		
 		if (locked) throw new IllegalStateException("locked");
@@ -102,22 +108,16 @@ public class TypeLibrary {
 		String unqualified = fullyQualifiedTypeName.substring(idx + 1);
 		if (unqualifiedToQualifiedMap == null) throw new IllegalStateException("SingleType library");
 		
-		unqualifiedToQualifiedMap.put(unqualified.replace("$", "."), dotBased);
-		unqualifiedToQualifiedMap.put(unqualified, dotBased);
-		unqualifiedToQualifiedMap.put(fullyQualifiedTypeName, dotBased);
-		unqualifiedToQualifiedMap.put(dotBased, dotBased);
-		Collection<String> oldNames = LombokInternalAliasing.REVERSE_ALIASES.get(fullyQualifiedTypeName);
-		if (oldNames != null) for (String oldName : oldNames) {
-			unqualifiedToQualifiedMap.put(oldName, dotBased);
-			int li = oldName.lastIndexOf('.');
-			if (li != -1) unqualifiedToQualifiedMap.put(oldName.substring(li + 1), dotBased);
-		}
+		put(unqualified.replace("$", "."), dotBased);
+		put(unqualified, dotBased);
+		put(fullyQualifiedTypeName, dotBased);
+		put(dotBased, dotBased);
 		
 		int idx2 = fullyQualifiedTypeName.indexOf('$', idx + 1);
 		while (idx2 != -1) {
 			String unq = fullyQualifiedTypeName.substring(idx2 + 1);
-			unqualifiedToQualifiedMap.put(unq.replace("$", "."), dotBased);
-			unqualifiedToQualifiedMap.put(unq, dotBased);
+			put(unq.replace("$", "."), dotBased);
+			put(unq, dotBased);
 			idx2 = fullyQualifiedTypeName.indexOf('$', idx2 + 1);
 		}
 	}
@@ -126,13 +126,33 @@ public class TypeLibrary {
 	 * Translates an unqualified name such as 'String' to 'java.lang.String', _if_ you added 'java.lang.String' to the library via the {@code addType} method.
 	 * Also returns the input if it is equal to a fully qualified name added to this type library.
 	 * 
-	 * Returns null if it does not match any type in this type library.
+	 * Returns an empty collection if it does not match any type in this type library.
 	 */
-	public String toQualified(String typeReference) {
+	public List<String> toQualifieds(String typeReference) {
 		if (unqualifiedToQualifiedMap == null) {
-			if (typeReference.equals(unqualified) || typeReference.equals(qualified)) return qualified;
+			if (typeReference.equals(unqualified) || typeReference.equals(qualified)) return Collections.singletonList(qualified);
 			return null;
 		}
-		return unqualifiedToQualifiedMap.get(typeReference);
+		
+		Object v = unqualifiedToQualifiedMap.get(typeReference);
+		if (v == null) return Collections.emptyList();
+		if (v instanceof String) return Collections.singletonList((String) v);
+		return Arrays.asList((String[]) v);
+	}
+	
+	private void put(String k, String v) {
+		Object old = unqualifiedToQualifiedMap.put(k, v);
+		if (old == null) return;
+		String[] nv;
+		if (old instanceof String) {
+			if (old.equals(v)) return;
+			nv = new String[] {(String) old, v};
+		} else {
+			String[] s = (String[]) old;
+			nv = new String[s.length + 1];
+			System.arraycopy(s, 0, nv, 0, s.length);
+			nv[s.length] = v;
+		}
+		unqualifiedToQualifiedMap.put(k, nv);
 	}
 }
