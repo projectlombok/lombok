@@ -24,7 +24,6 @@ package lombok.eclipse.agent;
 import lombok.permit.Permit;
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
-import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -54,7 +53,6 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
-import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 
 import java.lang.reflect.Field;
 
@@ -455,7 +453,7 @@ public class PatchVal {
 		}
 	}
 	
-	private static Field getField(Class clazz, String name) {
+	private static Field getField(Class<?> clazz, String name) {
 		try {
 			return Permit.getField(clazz, name);
 		} catch (NoSuchFieldException e) {
