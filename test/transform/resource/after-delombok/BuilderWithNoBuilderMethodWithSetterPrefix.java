@@ -1,33 +1,33 @@
-class BuilderWithNoBuilderMethod {
+class BuilderWithNoBuilderMethodWithSetterPrefix {
 	private String a = "";
 	@java.lang.SuppressWarnings("all")
-	BuilderWithNoBuilderMethod(final String a) {
+	BuilderWithNoBuilderMethodWithSetterPrefix(final String a) {
 		this.a = a;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderWithNoBuilderMethodBuilder {
+	public static class BuilderWithNoBuilderMethodWithSetterPrefixBuilder {
 		@java.lang.SuppressWarnings("all")
 		private String a;
 		@java.lang.SuppressWarnings("all")
-		BuilderWithNoBuilderMethodBuilder() {
+		BuilderWithNoBuilderMethodWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithNoBuilderMethodBuilder withA(final String a) {
+		public BuilderWithNoBuilderMethodWithSetterPrefixBuilder withA(final String a) {
 			this.a = a;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithNoBuilderMethod build() {
-			return new BuilderWithNoBuilderMethod(a);
+		public BuilderWithNoBuilderMethodWithSetterPrefix build() {
+			return new BuilderWithNoBuilderMethodWithSetterPrefix(a);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderWithNoBuilderMethod.BuilderWithNoBuilderMethodBuilder(a=" + this.a + ")";
+			return "BuilderWithNoBuilderMethodWithSetterPrefix.BuilderWithNoBuilderMethodWithSetterPrefixBuilder(a=" + this.a + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public BuilderWithNoBuilderMethodBuilder toBuilder() {
-		return new BuilderWithNoBuilderMethodBuilder().withA(this.a);
+	public BuilderWithNoBuilderMethodWithSetterPrefixBuilder toBuilder() {
+		return new BuilderWithNoBuilderMethodWithSetterPrefixBuilder().withA(this.a);
 	}
 }

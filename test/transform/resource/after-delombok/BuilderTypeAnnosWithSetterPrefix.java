@@ -7,39 +7,39 @@ import java.util.List;
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
 @interface TB {
 }
-class BuilderTypeAnnos {
+class BuilderTypeAnnosWithSetterPrefix {
 	@TA
 	@TB
 	private List<String> foo;
 	@java.lang.SuppressWarnings("all")
-	BuilderTypeAnnos(@TA final List<String> foo) {
+	BuilderTypeAnnosWithSetterPrefix(@TA final List<String> foo) {
 		this.foo = foo;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderTypeAnnosBuilder {
+	public static class BuilderTypeAnnosWithSetterPrefixBuilder {
 		@java.lang.SuppressWarnings("all")
 		private List<String> foo;
 		@java.lang.SuppressWarnings("all")
-		BuilderTypeAnnosBuilder() {
+		BuilderTypeAnnosWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderTypeAnnosBuilder withFoo(@TA final List<String> foo) {
+		public BuilderTypeAnnosWithSetterPrefixBuilder withFoo(@TA final List<String> foo) {
 			this.foo = foo;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderTypeAnnos build() {
-			return new BuilderTypeAnnos(foo);
+		public BuilderTypeAnnosWithSetterPrefix build() {
+			return new BuilderTypeAnnosWithSetterPrefix(foo);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderTypeAnnos.BuilderTypeAnnosBuilder(foo=" + this.foo + ")";
+			return "BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder(foo=" + this.foo + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderTypeAnnosBuilder builder() {
-		return new BuilderTypeAnnosBuilder();
+	public static BuilderTypeAnnosWithSetterPrefixBuilder builder() {
+		return new BuilderTypeAnnosWithSetterPrefixBuilder();
 	}
 }
 

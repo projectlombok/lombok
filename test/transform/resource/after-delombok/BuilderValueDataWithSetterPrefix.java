@@ -1,27 +1,27 @@
 import java.util.List;
-final class BuilderAndValue {
+final class BuilderAndValueWithSetterPrefix {
 	private final int zero = 0;
 	@java.lang.SuppressWarnings("all")
-	BuilderAndValue() {
+	BuilderAndValueWithSetterPrefix() {
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderAndValueBuilder {
+	public static class BuilderAndValueWithSetterPrefixBuilder {
 		@java.lang.SuppressWarnings("all")
-		BuilderAndValueBuilder() {
+		BuilderAndValueWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderAndValue build() {
-			return new BuilderAndValue();
+		public BuilderAndValueWithSetterPrefix build() {
+			return new BuilderAndValueWithSetterPrefix();
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderAndValue.BuilderAndValueBuilder()";
+			return "BuilderAndValueWithSetterPrefix.BuilderAndValueWithSetterPrefixBuilder()";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderAndValueBuilder builder() {
-		return new BuilderAndValueBuilder();
+	public static BuilderAndValueWithSetterPrefixBuilder builder() {
+		return new BuilderAndValueWithSetterPrefixBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getZero() {
@@ -31,8 +31,8 @@ final class BuilderAndValue {
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
-		if (!(o instanceof BuilderAndValue)) return false;
-		final BuilderAndValue other = (BuilderAndValue) o;
+		if (!(o instanceof BuilderAndValueWithSetterPrefix)) return false;
+		final BuilderAndValueWithSetterPrefix other = (BuilderAndValueWithSetterPrefix) o;
 		if (this.getZero() != other.getZero()) return false;
 		return true;
 	}
@@ -47,33 +47,33 @@ final class BuilderAndValue {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public java.lang.String toString() {
-		return "BuilderAndValue(zero=" + this.getZero() + ")";
+		return "BuilderAndValueWithSetterPrefix(zero=" + this.getZero() + ")";
 	}
 }
 
-class BuilderAndData {
+class BuilderAndDataWithSetterPrefix {
 	private final int zero = 0;
 	@java.lang.SuppressWarnings("all")
-	BuilderAndData() {
+	BuilderAndDataWithSetterPrefix() {
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderAndDataBuilder {
+	public static class BuilderAndDataWithSetterPrefixBuilder {
 		@java.lang.SuppressWarnings("all")
-		BuilderAndDataBuilder() {
+		BuilderAndDataWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderAndData build() {
-			return new BuilderAndData();
+		public BuilderAndDataWithSetterPrefix build() {
+			return new BuilderAndDataWithSetterPrefix();
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderAndData.BuilderAndDataBuilder()";
+			return "BuilderAndDataWithSetterPrefix.BuilderAndDataWithSetterPrefixBuilder()";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderAndDataBuilder builder() {
-		return new BuilderAndDataBuilder();
+	public static BuilderAndDataWithSetterPrefixBuilder builder() {
+		return new BuilderAndDataWithSetterPrefixBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getZero() {
@@ -83,15 +83,15 @@ class BuilderAndData {
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
-		if (!(o instanceof BuilderAndData)) return false;
-		final BuilderAndData other = (BuilderAndData) o;
+		if (!(o instanceof BuilderAndDataWithSetterPrefix)) return false;
+		final BuilderAndDataWithSetterPrefix other = (BuilderAndDataWithSetterPrefix) o;
 		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.getZero() != other.getZero()) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
 	protected boolean canEqual(final java.lang.Object other) {
-		return other instanceof BuilderAndData;
+		return other instanceof BuilderAndDataWithSetterPrefix;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
@@ -104,6 +104,6 @@ class BuilderAndData {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public java.lang.String toString() {
-		return "BuilderAndData(zero=" + this.getZero() + ")";
+		return "BuilderAndDataWithSetterPrefix(zero=" + this.getZero() + ")";
 	}
 }

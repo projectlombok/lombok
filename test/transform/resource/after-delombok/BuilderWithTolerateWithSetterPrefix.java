@@ -1,40 +1,40 @@
 import lombok.experimental.Tolerate;
-public class BuilderWithTolerate {
+public class BuilderWithTolerateWithSetterPrefix {
 	private final int value;
 	public static void main(String[] args) {
-		BuilderWithTolerate.builder().withValue("42").build();
+		BuilderWithTolerateWithSetterPrefix.builder().withValue("42").build();
 	}
-	public static class BuilderWithTolerateBuilder {
+	public static class BuilderWithTolerateWithSetterPrefixBuilder {
 		@java.lang.SuppressWarnings("all")
 		private int value;
 		@Tolerate
-		public BuilderWithTolerateBuilder withValue(String s) {
+		public BuilderWithTolerateWithSetterPrefixBuilder withValue(String s) {
 			return this.withValue(Integer.parseInt(s));
 		}
 		@java.lang.SuppressWarnings("all")
-		BuilderWithTolerateBuilder() {
+		BuilderWithTolerateWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithTolerateBuilder withValue(final int value) {
+		public BuilderWithTolerateWithSetterPrefixBuilder withValue(final int value) {
 			this.value = value;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithTolerate build() {
-			return new BuilderWithTolerate(value);
+		public BuilderWithTolerateWithSetterPrefix build() {
+			return new BuilderWithTolerateWithSetterPrefix(value);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderWithTolerate.BuilderWithTolerateBuilder(value=" + this.value + ")";
+			return "BuilderWithTolerateWithSetterPrefix.BuilderWithTolerateWithSetterPrefixBuilder(value=" + this.value + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	BuilderWithTolerate(final int value) {
+	BuilderWithTolerateWithSetterPrefix(final int value) {
 		this.value = value;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderWithTolerateBuilder builder() {
-		return new BuilderWithTolerateBuilder();
+	public static BuilderWithTolerateWithSetterPrefixBuilder builder() {
+		return new BuilderWithTolerateWithSetterPrefixBuilder();
 	}
 }

@@ -1,16 +1,16 @@
 import java.util.List;
-class BuilderSingularNoAuto {
+class BuilderSingularNoAutoWithSetterPrefix {
 	private List<String> things;
 	private List<String> widgets;
 	private List<String> items;
 	@java.lang.SuppressWarnings("all")
-	BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
+	BuilderSingularNoAutoWithSetterPrefix(final List<String> things, final List<String> widgets, final List<String> items) {
 		this.things = things;
 		this.widgets = widgets;
 		this.items = items;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderSingularNoAutoBuilder {
+	public static class BuilderSingularNoAutoWithSetterPrefixBuilder {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<String> things;
 		@java.lang.SuppressWarnings("all")
@@ -21,58 +21,58 @@ class BuilderSingularNoAuto {
 		BuilderSingularNoAutoBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder withThings(final String things) {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final String things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.add(things);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder withThings(final java.util.Collection<? extends String> things) {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final java.util.Collection<? extends String> things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.addAll(things);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder clearThings() {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder clearThings() {
 			if (this.things != null) this.things.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder withWidget(final String widget) {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder withWidget(final String widget) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.add(widget);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder withWidgets(final java.util.Collection<? extends String> widgets) {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder withWidgets(final java.util.Collection<? extends String> widgets) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.addAll(widgets);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder clearWidgets() {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder clearWidgets() {
 			if (this.widgets != null) this.widgets.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder withItems(final String items) {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder withItems(final String items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.add(items);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder withItems(final java.util.Collection<? extends String> items) {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder withItems(final java.util.Collection<? extends String> items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.addAll(items);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder clearItems() {
+		public BuilderSingularNoAutoWithSetterPrefixBuilder clearItems() {
 			if (this.items != null) this.items.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAuto build() {
+		public BuilderSingularNoAutoWithSetterPrefix build() {
 			java.util.List<String> things;
 			switch (this.things == null ? 0 : this.things.size()) {
 			case 0: 
@@ -106,16 +106,16 @@ class BuilderSingularNoAuto {
 			default: 
 				items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.items));
 			}
-			return new BuilderSingularNoAuto(things, widgets, items);
+			return new BuilderSingularNoAutoWithSetterPrefix(things, widgets, items);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderSingularNoAuto.BuilderSingularNoAutoBuilder(things=" + this.things + ", widgets=" + this.widgets + ", items=" + this.items + ")";
+			return "BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder(things=" + this.things + ", widgets=" + this.widgets + ", items=" + this.items + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularNoAutoBuilder builder() {
-		return new BuilderSingularNoAutoBuilder();
+	public static BuilderSingularNoAutoWithSetterPrefixBuilder builder() {
+		return new BuilderSingularNoAutoWithSetterPrefixBuilder();
 	}
 }

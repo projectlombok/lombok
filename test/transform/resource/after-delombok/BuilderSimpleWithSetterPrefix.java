@@ -1,34 +1,34 @@
 import java.util.List;
-class BuilderWithPrefix<T> {
+class BuilderSimpleWithSetterPrefix<T> {
 	private int unprefixed;
 	@java.lang.SuppressWarnings("all")
-	BuilderWithPrefix(final int unprefixed) {
+	BuilderSimpleWithSetterPrefix(final int unprefixed) {
 		this.unprefixed = unprefixed;
 	}
 	@java.lang.SuppressWarnings("all")
-	protected static class BuilderWithPrefixBuilder<T> {
+	protected static class BuilderSimpleWithSetterPrefixBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		private int unprefixed;
 		@java.lang.SuppressWarnings("all")
-		BuilderWithPrefixBuilder() {
+		BuilderSimpelWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithPrefixBuilder<T> withUnprefixed(final int unprefixed) {
+		public BuilderSimpleWithSetterPrefixBuilder<T> withUnprefixed(final int unprefixed) {
 			this.unprefixed = unprefixed;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithPrefix<T> build() {
-			return new BuilderWithPrefix<T>(unprefixed);
+		public BuilderSimpleWithSetterPrefix<T> build() {
+			return new BuilderSimpleWithSetterPrefix<T>(unprefixed);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderWithPrefix.BuilderWithPrefixBuilder(unprefixed=" + this.unprefixed + ")";
+			return "BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder(unprefixed=" + this.unprefixed + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	protected static <T> BuilderWithPrefixBuilder<T> builder() {
-		return new BuilderWithPrefixBuilder<T>();
+	protected static <T> BuilderSimpleWithSetterPrefixBuilder<T> builder() {
+		return new BuilderSimpleWithSetterPrefixBuilder<T>();
 	}
 }

@@ -1,22 +1,22 @@
-class BuilderWithNonNull {
+class BuilderWithNonNullWithSetterPrefix {
 	@lombok.NonNull
 	private final String id;
 	@java.lang.SuppressWarnings("all")
-	BuilderWithNonNull(@lombok.NonNull final String id) {
+	BuilderWithNonNullWithSetterPrefix(@lombok.NonNull final String id) {
 		if (id == null) {
 			throw new java.lang.NullPointerException("id is marked non-null but is null");
 		}
 		this.id = id;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderWithNonNullBuilder {
+	public static class BuilderWithNonNullWithSetterPrefixBuilder {
 		@java.lang.SuppressWarnings("all")
 		private String id;
 		@java.lang.SuppressWarnings("all")
-		BuilderWithNonNullBuilder() {
+		BuilderWithNonNullWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithNonNullBuilder withId(@lombok.NonNull final String id) {
+		public BuilderWithNonNullWithSetterPrefixBuilder withId(@lombok.NonNull final String id) {
 			if (id == null) {
 				throw new java.lang.NullPointerException("id is marked non-null but is null");
 			}
@@ -24,17 +24,17 @@ class BuilderWithNonNull {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithNonNull build() {
-			return new BuilderWithNonNull(id);
+		public BuilderWithNonNullWithSetterPrefix build() {
+			return new BuilderWithNonNullWithSetterPrefix(id);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderWithNonNull.BuilderWithNonNullBuilder(id=" + this.id + ")";
+			return "BuilderWithNonNullWithSetterPrefix.BuilderWithNonNullWithSetterPrefixBuilder(id=" + this.id + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderWithNonNullBuilder builder() {
-		return new BuilderWithNonNullBuilder();
+	public static BuilderWithNonNullWithSetterPrefixBuilder builder() {
+		return new BuilderWithNonNullWithSetterPrefixBuilder();
 	}
 }

@@ -6,16 +6,16 @@ import lombok.NonNull;
 @Target(ElementType.TYPE_USE)
 @interface MyAnnotation {
 }
-class BuilderSingularAnnotatedTypes {
+class BuilderSingularAnnotatedTypesWithSetterPrefix {
 	private Set<@MyAnnotation @NonNull String> foos;
 	private Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars;
 	@java.lang.SuppressWarnings("all")
-	BuilderSingularAnnotatedTypes(final Set<@MyAnnotation @NonNull String> foos, final Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars) {
+	BuilderSingularAnnotatedTypesWithSetterPrefix(final Set<@MyAnnotation @NonNull String> foos, final Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars) {
 		this.foos = foos;
 		this.bars = bars;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderSingularAnnotatedTypesBuilder {
+	public static class BuilderSingularAnnotatedTypesWithSetterPrefixBuilder {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<@MyAnnotation @NonNull String> foos;
 		@java.lang.SuppressWarnings("all")
@@ -23,10 +23,10 @@ class BuilderSingularAnnotatedTypes {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<@MyAnnotation @NonNull Integer> bars$value;
 		@java.lang.SuppressWarnings("all")
-		BuilderSingularAnnotatedTypesBuilder() {
+		BuilderSingularAnnotatedTypesWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder withFoo(@MyAnnotation @NonNull final String foo) {
+		public BuilderSingularAnnotatedTypesWithSetterPrefixBuilder withFoo(@MyAnnotation @NonNull final String foo) {
 			if (foo == null) {
 				throw new java.lang.NullPointerException("foo is marked non-null but is null");
 			}
@@ -35,18 +35,18 @@ class BuilderSingularAnnotatedTypes {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder withFoos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
+		public BuilderSingularAnnotatedTypesWithSetterPrefixBuilder withFoos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
 			if (this.foos == null) this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
 			this.foos.addAll(foos);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder clearFoos() {
+		public BuilderSingularAnnotatedTypesWithSetterPrefixBuilder clearFoos() {
 			if (this.foos != null) this.foos.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder withBar(@MyAnnotation @NonNull final String barKey, @MyAnnotation @NonNull final Integer barValue) {
+		public BuilderSingularAnnotatedTypesWithSetterPrefixBuilder withBar(@MyAnnotation @NonNull final String barKey, @MyAnnotation @NonNull final Integer barValue) {
 			if (barKey == null) {
 				throw new java.lang.NullPointerException("barKey is marked non-null but is null");
 			}
@@ -62,7 +62,7 @@ class BuilderSingularAnnotatedTypes {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder withBars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
+		public BuilderSingularAnnotatedTypesWithSetterPrefixBuilder withBars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
 			if (this.bars$key == null) {
 				this.bars$key = new java.util.ArrayList<@MyAnnotation @NonNull String>();
 				this.bars$value = new java.util.ArrayList<@MyAnnotation @NonNull Integer>();
@@ -74,7 +74,7 @@ class BuilderSingularAnnotatedTypes {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder clearBars() {
+		public BuilderSingularAnnotatedTypesWithSetterPrefixBuilder clearBars() {
 			if (this.bars$key != null) {
 				this.bars$key.clear();
 				this.bars$value.clear();
@@ -82,7 +82,7 @@ class BuilderSingularAnnotatedTypes {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypes build() {
+		public BuilderSingularAnnotatedTypesWithSetterPrefix build() {
 			java.util.Set<@MyAnnotation @NonNull String> foos;
 			switch (this.foos == null ? 0 : this.foos.size()) {
 			case 0: 
@@ -109,16 +109,16 @@ class BuilderSingularAnnotatedTypes {
 				for (int $i = 0; $i < this.bars$key.size(); $i++) bars.put(this.bars$key.get($i), (@MyAnnotation @NonNull Integer) this.bars$value.get($i));
 				bars = java.util.Collections.unmodifiableMap(bars);
 			}
-			return new BuilderSingularAnnotatedTypes(foos, bars);
+			return new BuilderSingularAnnotatedTypesWithSetterPrefix(foos, bars);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder(foos=" + this.foos + ", bars$key=" + this.bars$key + ", bars$value=" + this.bars$value + ")";
+			return "BuilderSingularAnnotatedTypesWithSetterPrefix.BuilderSingularAnnotatedTypesWithSetterPrefixBuilder(foos=" + this.foos + ", bars$key=" + this.bars$key + ", bars$value=" + this.bars$value + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularAnnotatedTypesBuilder builder() {
+	public static BuilderSingularAnnotatedTypesWithSetterPrefixBuilder builder() {
 		return new BuilderSingularAnnotatedTypesBuilder();
 	}
 }

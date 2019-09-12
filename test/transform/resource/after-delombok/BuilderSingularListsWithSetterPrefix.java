@@ -1,18 +1,18 @@
 import java.util.List;
 import java.util.Collection;
-class BuilderSingularLists<T> {
+class BuilderSingularListsWithSetterPrefix<T> {
 	private List<T> children;
 	private Collection<? extends Number> scarves;
 	@SuppressWarnings("all")
 	private List rawList;
 	@java.lang.SuppressWarnings("all")
-	BuilderSingularLists(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {
+	BuilderSingularListsWithSetterPrefix(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {
 		this.children = children;
 		this.scarves = scarves;
 		this.rawList = rawList;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderSingularListsBuilder<T> {
+	public static class BuilderSingularListsWithSetterPrefixBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<T> children;
 		@java.lang.SuppressWarnings("all")
@@ -23,58 +23,58 @@ class BuilderSingularLists<T> {
 		BuilderSingularListsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> withChild(final T child) {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> withChild(final T child) {
 			if (this.children == null) this.children = new java.util.ArrayList<T>();
 			this.children.add(child);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> withChildren(final java.util.Collection<? extends T> children) {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> withChildren(final java.util.Collection<? extends T> children) {
 			if (this.children == null) this.children = new java.util.ArrayList<T>();
 			this.children.addAll(children);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> clearChildren() {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> clearChildren() {
 			if (this.children != null) this.children.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> withScarf(final Number scarf) {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> withScarf(final Number scarf) {
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.add(scarf);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> withScarves(final java.util.Collection<? extends Number> scarves) {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> withScarves(final java.util.Collection<? extends Number> scarves) {
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.addAll(scarves);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> clearScarves() {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> clearScarves() {
 			if (this.scarves != null) this.scarves.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> withRawList(final java.lang.Object rawList) {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> withRawList(final java.lang.Object rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.add(rawList);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> withRawList(final java.util.Collection<?> rawList) {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> withRawList(final java.util.Collection<?> rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.addAll(rawList);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularListsBuilder<T> clearRawList() {
+		public BuilderSingularListsWithSetterPrefixBuilder<T> clearRawList() {
 			if (this.rawList != null) this.rawList.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularLists<T> build() {
+		public BuilderSingularListsWithSetterPrefix<T> build() {
 			java.util.List<T> children;
 			switch (this.children == null ? 0 : this.children.size()) {
 			case 0: 
@@ -108,16 +108,16 @@ class BuilderSingularLists<T> {
 			default: 
 				rawList = java.util.Collections.unmodifiableList(new java.util.ArrayList<java.lang.Object>(this.rawList));
 			}
-			return new BuilderSingularLists<T>(children, scarves, rawList);
+			return new BuilderSingularListsWithSetterPrefix<T>(children, scarves, rawList);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderSingularLists.BuilderSingularListsBuilder(children=" + this.children + ", scarves=" + this.scarves + ", rawList=" + this.rawList + ")";
+			return "BuilderSingularListsWithSetterPrefix.BuilderSingularListsWithSetterPrefixBuilder(children=" + this.children + ", scarves=" + this.scarves + ", rawList=" + this.rawList + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> BuilderSingularListsBuilder<T> builder() {
-		return new BuilderSingularListsBuilder<T>();
+	public static <T> BuilderSingularListsWithSetterPrefixBuilder<T> builder() {
+		return new BuilderSingularListsWithSetterPrefixBuilder<T>();
 	}
 }

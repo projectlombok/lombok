@@ -1,21 +1,21 @@
 import java.util.List;
-class BuilderWithToBuilder<T> {
+class BuilderWithToBuilderWithSetterPrefix<T> {
 	private String mOne;
 	private String mTwo;
 	private T foo;
 	private List<T> bars;
-	public static <K> K rrr(BuilderWithToBuilder<K> x) {
+	public static <K> K rrr(BuilderWithToBuilderWithSetterPrefix<K> x) {
 		return x.foo;
 	}
 	@java.lang.SuppressWarnings("all")
-	BuilderWithToBuilder(final String one, final String two, final T foo, final List<T> bars) {
+	BuilderWithToBuilderWithSetterPrefix(final String one, final String two, final T foo, final List<T> bars) {
 		this.mOne = one;
 		this.mTwo = two;
 		this.foo = foo;
 		this.bars = bars;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderWithToBuilderBuilder<T> {
+	public static class BuilderWithToBuilderWithSetterPrefixBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		private String one;
 		@java.lang.SuppressWarnings("all")
@@ -25,42 +25,42 @@ class BuilderWithToBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<T> bars;
 		@java.lang.SuppressWarnings("all")
-		BuilderWithToBuilderBuilder() {
+		BuilderWithToBuilderWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> withOne(final String one) {
+		public BuilderWithToBuilderWithSetterPrefixBuilder<T> withOne(final String one) {
 			this.one = one;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> withTwo(final String two) {
+		public BuilderWithToBuilderWithSetterPrefixBuilder<T> withTwo(final String two) {
 			this.two = two;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> withFoo(final T foo) {
+		public BuilderWithToBuilderWithSetterPrefixBuilder<T> withFoo(final T foo) {
 			this.foo = foo;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> withBar(final T bar) {
+		public BuilderWithToBuilderWithSetterPrefixBuilder<T> withBar(final T bar) {
 			if (this.bars == null) this.bars = new java.util.ArrayList<T>();
 			this.bars.add(bar);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> withBars(final java.util.Collection<? extends T> bars) {
+		public BuilderWithToBuilderWithSetterPrefixBuilder<T> withBars(final java.util.Collection<? extends T> bars) {
 			if (this.bars == null) this.bars = new java.util.ArrayList<T>();
 			this.bars.addAll(bars);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> clearBars() {
+		public BuilderWithToBuilderWithSetterPrefixBuilder<T> clearBars() {
 			if (this.bars != null) this.bars.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilder<T> build() {
+		public BuilderWithToBuilderWithSetterPrefix<T> build() {
 			java.util.List<T> bars;
 			switch (this.bars == null ? 0 : this.bars.size()) {
 			case 0: 
@@ -72,35 +72,35 @@ class BuilderWithToBuilder<T> {
 			default: 
 				bars = java.util.Collections.unmodifiableList(new java.util.ArrayList<T>(this.bars));
 			}
-			return new BuilderWithToBuilder<T>(one, two, foo, bars);
+			return new BuilderWithToBuilderWithSetterPrefix<T>(one, two, foo, bars);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderWithToBuilder.BuilderWithToBuilderBuilder(one=" + this.one + ", two=" + this.two + ", foo=" + this.foo + ", bars=" + this.bars + ")";
+			return "BuilderWithToBuilderWithSetterPrefix.BuilderWithToBuilderWithSetterPrefixBuilder(one=" + this.one + ", two=" + this.two + ", foo=" + this.foo + ", bars=" + this.bars + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> BuilderWithToBuilderBuilder<T> builder() {
-		return new BuilderWithToBuilderBuilder<T>();
+	public static <T> BuilderWithToBuilderWithSetterPrefixBuilder<T> builder() {
+		return new BuilderWithToBuilderWithSetterPrefixBuilder<T>();
 	}
 	@java.lang.SuppressWarnings("all")
-	public BuilderWithToBuilderBuilder<T> toBuilder() {
-		final BuilderWithToBuilderBuilder<T> builder = new BuilderWithToBuilderBuilder<T>().withOne(this.mOne).withTwo(this.mTwo).withFoo(BuilderWithToBuilder.<T>rrr(this));
+	public BuilderWithToBuilderWithSetterPrefixBuilder<T> toBuilder() {
+		final BuilderWithToBuilderWithSetterPrefixBuilder<T> builder = new BuilderWithToBuilderWithSetterPrefixBuilder<T>().withOne(this.mOne).withTwo(this.mTwo).withFoo(BuilderWithToBuilderWithSetterPrefix.<T>rrr(this));
 		if (this.bars != null) builder.withBars(this.bars);
 		return builder;
 	}
 }
-class ConstructorWithToBuilder<T> {
+class ConstructorWithToBuilderWithSetterPrefix<T> {
 	private String mOne;
 	private String mTwo;
 	private T foo;
 	@lombok.Singular
 	private com.google.common.collect.ImmutableList<T> bars;
-	public ConstructorWithToBuilder(String mOne, T baz, com.google.common.collect.ImmutableList<T> bars) {
+	public ConstructorWithToBuilderWithSetterPrefix(String mOne, T baz, com.google.common.collect.ImmutableList<T> bars) {
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class ConstructorWithToBuilderBuilder<T> {
+	public static class ConstructorWithToBuilderWithSetterPrefixBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		private String mOne;
 		@java.lang.SuppressWarnings("all")
@@ -108,39 +108,39 @@ class ConstructorWithToBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		private com.google.common.collect.ImmutableList<T> bars;
 		@java.lang.SuppressWarnings("all")
-		ConstructorWithToBuilderBuilder() {
+		ConstructorWithToBuilderWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorWithToBuilderBuilder<T> withMOne(final String mOne) {
+		public ConstructorWithToBuilderWithSetterPrefixBuilder<T> withMOne(final String mOne) {
 			this.mOne = mOne;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorWithToBuilderBuilder<T> withBaz(final T baz) {
+		public ConstructorWithToBuilderWithSetterPrefixBuilder<T> withBaz(final T baz) {
 			this.baz = baz;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorWithToBuilderBuilder<T> withBars(final com.google.common.collect.ImmutableList<T> bars) {
+		public ConstructorWithToBuilderWithSetterPrefixBuilder<T> withBars(final com.google.common.collect.ImmutableList<T> bars) {
 			this.bars = bars;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorWithToBuilder<T> build() {
-			return new ConstructorWithToBuilder<T>(mOne, baz, bars);
+		public ConstructorWithToBuilderWithSetterPrefix<T> build() {
+			return new ConstructorWithToBuilderWithSetterPrefix<T>(mOne, baz, bars);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "ConstructorWithToBuilder.ConstructorWithToBuilderBuilder(mOne=" + this.mOne + ", baz=" + this.baz + ", bars=" + this.bars + ")";
+			return "ConstructorWithToBuilderWithSetterPrefix.ConstructorWithToBuilderWithSetterPrefixBuilder(mOne=" + this.mOne + ", baz=" + this.baz + ", bars=" + this.bars + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> ConstructorWithToBuilderBuilder<T> builder() {
-		return new ConstructorWithToBuilderBuilder<T>();
+	public static <T> ConstructorWithToBuilderWithSetterPrefixBuilder<T> builder() {
+		return new ConstructorWithToBuilderWithSetterPrefixBuilder<T>();
 	}
 	@java.lang.SuppressWarnings("all")
-	public ConstructorWithToBuilderBuilder<T> toBuilder() {
-		return new ConstructorWithToBuilderBuilder<T>().withMOne(this.mOne).withBaz(this.foo).withBars(this.bars);
+	public ConstructorWithToBuilderWithSetterPrefixBuilder<T> toBuilder() {
+		return new ConstructorWithToBuilderWithSetterPrefixBuilder<T>().withMOne(this.mOne).withBaz(this.foo).withBars(this.bars);
 	}
 }

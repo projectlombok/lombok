@@ -1,5 +1,5 @@
 import java.util.Set;
-public class BuilderWithRecursiveGenerics {
+public class BuilderWithRecursiveGenericsWithSetterPrefix {
 	interface Inter<T, U extends Inter<T, U>> {
 	}
 	public static final class Test<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
@@ -36,7 +36,7 @@ public class BuilderWithRecursiveGenerics {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "BuilderWithRecursiveGenerics.Test.TestBuilder(foo=" + this.foo + ", bar=" + this.bar + ")";
+				return "BuilderWithRecursiveGenericsWithSetterPrefix.Test.TestBuilder(foo=" + this.foo + ", bar=" + this.bar + ")";
 			}
 		}
 		@java.lang.SuppressWarnings("all")
@@ -55,8 +55,8 @@ public class BuilderWithRecursiveGenerics {
 		@java.lang.SuppressWarnings("all")
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
-			if (!(o instanceof BuilderWithRecursiveGenerics.Test)) return false;
-			final BuilderWithRecursiveGenerics.Test<?, ?, ?> other = (BuilderWithRecursiveGenerics.Test<?, ?, ?>) o;
+			if (!(o instanceof BuilderWithRecursiveGenericsWithSetterPrefix.Test)) return false;
+			final BuilderWithRecursiveGenericsWithSetterPrefix.Test<?, ?, ?> other = (BuilderWithRecursiveGenericsWithSetterPrefix.Test<?, ?, ?>) o;
 			final java.lang.Object this$foo = this.getFoo();
 			final java.lang.Object other$foo = other.getFoo();
 			if (this$foo == null ? other$foo != null : !this$foo.equals(other$foo)) return false;
@@ -79,7 +79,7 @@ public class BuilderWithRecursiveGenerics {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderWithRecursiveGenerics.Test(foo=" + this.getFoo() + ", bar=" + this.getBar() + ")";
+			return "BuilderWithRecursiveGenericsWithSetterPrefix.Test(foo=" + this.getFoo() + ", bar=" + this.getBar() + ")";
 		}
 	}
 }
