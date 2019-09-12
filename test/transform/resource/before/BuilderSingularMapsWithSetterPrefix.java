@@ -7,7 +7,7 @@ import java.util.SortedMap;
 import lombok.Singular;
 
 @lombok.Builder(setterPrefix = "with")
-class BuilderSingularMaps<K, V> {
+class BuilderSingularMapsWithSetterPrefix<K, V> {
 	@Singular private Map<K, V> women;
 	@Singular private SortedMap<K, ? extends Number> men;
 	@SuppressWarnings("all") @Singular("rawMap") private Map rawMap;

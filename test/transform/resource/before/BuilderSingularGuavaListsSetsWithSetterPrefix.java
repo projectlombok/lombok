@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableTable;
 import lombok.Singular;
 
 @lombok.Builder(setterPrefix = "with")
-class BuilderSingularGuavaListsSets<T> {
+class BuilderSingularGuavaListsSetsWithSetterPrefix<T> {
 	@Singular private ImmutableList<T> cards;
 	@Singular private ImmutableCollection<? extends Number> frogs;
 	@SuppressWarnings("all") @Singular("rawSet") private ImmutableSet rawSet;

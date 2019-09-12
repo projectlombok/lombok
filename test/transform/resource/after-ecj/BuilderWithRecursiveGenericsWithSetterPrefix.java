@@ -1,7 +1,7 @@
 import java.util.Set;
 import lombok.Builder;
 import lombok.Value;
-public class BuilderWithRecursiveGenerics {
+public class BuilderWithRecursiveGenericsWithSetterPrefix {
   interface Inter<T, U extends Inter<T, U>> {
   }
   public static final @Builder(setterPrefix = "with(setterPrefix = "with")") @Value class Test<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
@@ -23,7 +23,7 @@ public class BuilderWithRecursiveGenerics {
         return new Test<Foo, Bar, Quz>(foo, bar);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return (((("BuilderWithRecursiveGenerics.Test.TestBuilder(foo=" + this.foo) + ", bar=") + this.bar) + ")");
+        return (((("BuilderWithRecursiveGenericsWithSetterPrefix.Test.TestBuilder(foo=" + this.foo) + ", bar=") + this.bar) + ")");
       }
     }
     private final Foo foo;
@@ -45,9 +45,9 @@ public class BuilderWithRecursiveGenerics {
     public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
       if ((o == this))
           return true;
-      if ((! (o instanceof BuilderWithRecursiveGenerics.Test)))
+      if ((! (o instanceof BuilderWithRecursiveGenericsWithSetterPrefix.Test)))
           return false;
-      final BuilderWithRecursiveGenerics.Test<?, ?, ?> other = (BuilderWithRecursiveGenerics.Test<?, ?, ?>) o;
+      final BuilderWithRecursiveGenericsWithSetterPrefix.Test<?, ?, ?> other = (BuilderWithRecursiveGenericsWithSetterPrefix.Test<?, ?, ?>) o;
       final java.lang.Object this$foo = this.getFoo();
       final java.lang.Object other$foo = other.getFoo();
       if (((this$foo == null) ? (other$foo != null) : (! this$foo.equals(other$foo))))
@@ -68,10 +68,10 @@ public class BuilderWithRecursiveGenerics {
       return result;
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((("BuilderWithRecursiveGenerics.Test(foo=" + this.getFoo()) + ", bar=") + this.getBar()) + ")");
+      return (((("BuilderWithRecursiveGenericsWithSetterPrefix.Test(foo=" + this.getFoo()) + ", bar=") + this.getBar()) + ")");
     }
   }
-  public BuilderWithRecursiveGenerics() {
+  public BuilderWithRecursiveGenericsWithSetterPrefix() {
     super();
   }
 }

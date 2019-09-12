@@ -150,7 +150,8 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		param.annotations = typeUseAnns;
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
-		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName("add", new String(data.getSingularName())).toCharArray();
+		char[] prefixedSingularName = data.getSetterPrefix().length == 0 ? data.getSingularName() : HandlerUtil.buildAccessorName(new String(data.getSetterPrefix()), new String(data.getSingularName())).toCharArray();
+		md.selector = fluent ? prefixedSingularName : HandlerUtil.buildAccessorName("add", new String(data.getSingularName())).toCharArray();
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
 		data.setGeneratedByRecursive(md);
@@ -181,7 +182,8 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
-		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName("addAll", new String(data.getPluralName())).toCharArray();
+		char[] prefixedSelector = data.getSetterPrefix().length == 0 ? data.getPluralName() : HandlerUtil.buildAccessorName(new String(data.getSetterPrefix()), new String(data.getPluralName())).toCharArray();
+		md.selector = fluent ? prefixedSelector : HandlerUtil.buildAccessorName("addAll", new String(data.getPluralName())).toCharArray();
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
 		data.setGeneratedByRecursive(md);

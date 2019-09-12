@@ -1,65 +1,65 @@
 import java.util.List;
 import lombok.Singular;
-@lombok.Builder(setterPrefix = "with") class BuilderSingularNoAuto {
-  public static @java.lang.SuppressWarnings("all") class BuilderSingularNoAutoBuilder {
+@lombok.Builder(setterPrefix = "with") class BuilderSingularNoAutoWithSetterPrefix {
+  public static @java.lang.SuppressWarnings("all") class BuilderSingularNoAutoWithSetterPrefixBuilder {
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> things;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> widgets;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items;
-    @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder() {
+    @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder withThings(final String things) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final String things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.add(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder withThings(final java.util.Collection<? extends String> things) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final java.util.Collection<? extends String> things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.addAll(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder clearThings() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder clearThings() {
       if ((this.things != null))
           this.things.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder withWidget(final String widget) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder withWidget(final String widget) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.add(widget);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder withWidgets(final java.util.Collection<? extends String> widgets) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder withWidgets(final java.util.Collection<? extends String> widgets) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.addAll(widgets);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder clearWidgets() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder clearWidgets() {
       if ((this.widgets != null))
           this.widgets.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder withItems(final String items) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder withItems(final String items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.add(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder withItems(final java.util.Collection<? extends String> items) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder withItems(final java.util.Collection<? extends String> items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder clearItems() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder clearItems() {
       if ((this.items != null))
           this.items.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto build() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefix build() {
       java.util.List<String> things;
       switch (((this.things == null) ? 0 : this.things.size())) {
       case 0 :
@@ -93,22 +93,22 @@ import lombok.Singular;
       default :
           items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.items));
       }
-      return new BuilderSingularNoAuto(things, widgets, items);
+      return new BuilderSingularNoAutoWithSetterPrefix(things, widgets, items);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((((("BuilderSingularNoAuto.BuilderSingularNoAutoBuilder(things=" + this.things) + ", widgets=") + this.widgets) + ", items=") + this.items) + ")");
+      return (((((("BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder(things=" + this.things) + ", widgets=") + this.widgets) + ", items=") + this.items) + ")");
     }
   }
   private @Singular List<String> things;
   private @Singular("widget") List<String> widgets;
   private @Singular List<String> items;
-  @java.lang.SuppressWarnings("all") BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
+  @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefix(final List<String> things, final List<String> widgets, final List<String> items) {
     super();
     this.things = things;
     this.widgets = widgets;
     this.items = items;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder builder() {
-    return new BuilderSingularNoAutoBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderSingularNoAutoWithSetterPrefixBuilder builder() {
+    return new BuilderSingularNoAutoWithSetterPrefixBuilder();
   }
 }

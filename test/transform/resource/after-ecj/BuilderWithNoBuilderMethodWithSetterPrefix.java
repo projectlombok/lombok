@@ -1,27 +1,27 @@
 import lombok.Builder;
-@Builder(toBuilder = true,builderMethodName = "",setterPrefix = "with") class BuilderWithNoBuilderMethod {
-  public static @java.lang.SuppressWarnings("all") class BuilderWithNoBuilderMethodBuilder {
+@Builder(toBuilder = true,builderMethodName = "",setterPrefix = "with") class BuilderWithNoBuilderMethodWithSetterPrefix {
+  public static @java.lang.SuppressWarnings("all") class BuilderWithNoBuilderMethodWithSetterPrefixBuilder {
     private @java.lang.SuppressWarnings("all") String a;
-    @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodBuilder() {
+    @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodBuilder withA(final String a) {
+    public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodWithSetterPrefixBuilder withA(final String a) {
       this.a = a;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethod build() {
-      return new BuilderWithNoBuilderMethod(a);
+    public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodWithSetterPrefix build() {
+      return new BuilderWithNoBuilderMethodWithSetterPrefix(a);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (("BuilderWithNoBuilderMethod.BuilderWithNoBuilderMethodBuilder(a=" + this.a) + ")");
+      return (("BuilderWithNoBuilderMethodWithSetterPrefix.BuilderWithNoBuilderMethodWithSetterPrefixBuilder(a=" + this.a) + ")");
     }
   }
   private String a = "";
-  @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethod(final String a) {
+  @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodWithSetterPrefix(final String a) {
     super();
     this.a = a;
   }
-  public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodBuilder toBuilder() {
-    return new BuilderWithNoBuilderMethodBuilder().withA(this.a);
+  public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodWithSetterPrefixBuilder toBuilder() {
+    return new BuilderWithNoBuilderMethodWithSetterPrefixBuilder().withA(this.a);
   }
 }

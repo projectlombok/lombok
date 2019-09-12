@@ -1,8 +1,8 @@
 import java.util.Map;
 import java.util.SortedMap;
 import lombok.Singular;
-@lombok.Builder(setterPrefix = "with") class BuilderSingularMaps<K, V> {
-  public static @java.lang.SuppressWarnings("all") class BuilderSingularMapsBuilder<K, V> {
+@lombok.Builder(setterPrefix = "with") class BuilderSingularMapsWithSetterPrefix<K, V> {
+  public static @java.lang.SuppressWarnings("all") class BuilderSingularMapsWithSetterPrefixBuilder<K, V> {
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<K> women$key;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<V> women$value;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<K> men$key;
@@ -11,10 +11,10 @@ import lombok.Singular;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<java.lang.Object> rawMap$value;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> stringMap$key;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<V> stringMap$value;
-    @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder() {
+    @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> withWoman(final K womanKey, final V womanValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> withWoman(final K womanKey, final V womanValue) {
       if ((this.women$key == null))
           {
             this.women$key = new java.util.ArrayList<K>();
@@ -24,7 +24,7 @@ import lombok.Singular;
       this.women$value.add(womanValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> withWomen(final java.util.Map<? extends K, ? extends V> women) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> withWomen(final java.util.Map<? extends K, ? extends V> women) {
       if ((this.women$key == null))
           {
             this.women$key = new java.util.ArrayList<K>();
@@ -37,7 +37,7 @@ import lombok.Singular;
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> clearWomen() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearWomen() {
       if ((this.women$key != null))
           {
             this.women$key.clear();
@@ -45,7 +45,7 @@ import lombok.Singular;
           }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> withMan(final K manKey, final Number manValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> withMan(final K manKey, final Number manValue) {
       if ((this.men$key == null))
           {
             this.men$key = new java.util.ArrayList<K>();
@@ -55,7 +55,7 @@ import lombok.Singular;
       this.men$value.add(manValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> withMen(final java.util.Map<? extends K, ? extends Number> men) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> withMen(final java.util.Map<? extends K, ? extends Number> men) {
       if ((this.men$key == null))
           {
             this.men$key = new java.util.ArrayList<K>();
@@ -68,7 +68,7 @@ import lombok.Singular;
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> clearMen() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearMen() {
       if ((this.men$key != null))
           {
             this.men$key.clear();
@@ -76,7 +76,7 @@ import lombok.Singular;
           }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> withRawMap(final java.lang.Object rawMapKey, final java.lang.Object rawMapValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> withRawMap(final java.lang.Object rawMapKey, final java.lang.Object rawMapValue) {
       if ((this.rawMap$key == null))
           {
             this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
@@ -86,7 +86,7 @@ import lombok.Singular;
       this.rawMap$value.add(rawMapValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> withRawMap(final java.util.Map<?, ?> rawMap) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> withRawMap(final java.util.Map<?, ?> rawMap) {
       if ((this.rawMap$key == null))
           {
             this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
@@ -99,7 +99,7 @@ import lombok.Singular;
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> clearRawMap() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearRawMap() {
       if ((this.rawMap$key != null))
           {
             this.rawMap$key.clear();
@@ -107,7 +107,7 @@ import lombok.Singular;
           }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> withStringMap(final String stringMapKey, final V stringMapValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> withStringMap(final String stringMapKey, final V stringMapValue) {
       if ((this.stringMap$key == null))
           {
             this.stringMap$key = new java.util.ArrayList<String>();
@@ -117,7 +117,7 @@ import lombok.Singular;
       this.stringMap$value.add(stringMapValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> withStringMap(final java.util.Map<? extends String, ? extends V> stringMap) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> withStringMap(final java.util.Map<? extends String, ? extends V> stringMap) {
       if ((this.stringMap$key == null))
           {
             this.stringMap$key = new java.util.ArrayList<String>();
@@ -130,7 +130,7 @@ import lombok.Singular;
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> clearStringMap() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearStringMap() {
       if ((this.stringMap$key != null))
           {
             this.stringMap$key.clear();
@@ -138,7 +138,7 @@ import lombok.Singular;
           }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularMaps<K, V> build() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix<K, V> build() {
       java.util.Map<K, V> women;
       switch (((this.women$key == null) ? 0 : this.women$key.size())) {
       case 0 :
@@ -186,24 +186,24 @@ import lombok.Singular;
             stringMap.put(this.stringMap$key.get($i), this.stringMap$value.get($i));
           stringMap = java.util.Collections.unmodifiableMap(stringMap);
       }
-      return new BuilderSingularMaps<K, V>(women, men, rawMap, stringMap);
+      return new BuilderSingularMapsWithSetterPrefix<K, V>(women, men, rawMap, stringMap);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((((((((((((((("BuilderSingularMaps.BuilderSingularMapsBuilder(women$key=" + this.women$key) + ", women$value=") + this.women$value) + ", men$key=") + this.men$key) + ", men$value=") + this.men$value) + ", rawMap$key=") + this.rawMap$key) + ", rawMap$value=") + this.rawMap$value) + ", stringMap$key=") + this.stringMap$key) + ", stringMap$value=") + this.stringMap$value) + ")");
+      return (((((((((((((((("BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder(women$key=" + this.women$key) + ", women$value=") + this.women$value) + ", men$key=") + this.men$key) + ", men$value=") + this.men$value) + ", rawMap$key=") + this.rawMap$key) + ", rawMap$value=") + this.rawMap$value) + ", stringMap$key=") + this.stringMap$key) + ", stringMap$value=") + this.stringMap$value) + ")");
     }
   }
   private @Singular Map<K, V> women;
   private @Singular SortedMap<K, ? extends Number> men;
   private @SuppressWarnings("all") @Singular("rawMap") Map rawMap;
   private @Singular("stringMap") Map<String, V> stringMap;
-  @java.lang.SuppressWarnings("all") BuilderSingularMaps(final Map<K, V> women, final SortedMap<K, ? extends Number> men, final Map rawMap, final Map<String, V> stringMap) {
+  @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix(final Map<K, V> women, final SortedMap<K, ? extends Number> men, final Map rawMap, final Map<String, V> stringMap) {
     super();
     this.women = women;
     this.men = men;
     this.rawMap = rawMap;
     this.stringMap = stringMap;
   }
-  public static @java.lang.SuppressWarnings("all") <K, V>BuilderSingularMapsBuilder<K, V> builder() {
-    return new BuilderSingularMapsBuilder<K, V>();
+  public static @java.lang.SuppressWarnings("all") <K, V>BuilderSingularMapsWithSetterPrefixBuilder<K, V> builder() {
+    return new BuilderSingularMapsWithSetterPrefixBuilder<K, V>();
   }
 }
