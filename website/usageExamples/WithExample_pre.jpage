@@ -3,8 +3,8 @@ import lombok.NonNull;
 import lombok.With;
 
 public class WithExample {
-	@With private final int age;
 	@With(AccessLevel.PROTECTED) @NonNull private final String name;
+	@With private final int age;
 	
 	public WithExample(String name, int age) {
 		if (name == null) throw new NullPointerException();
