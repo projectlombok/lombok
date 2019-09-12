@@ -1,22 +1,22 @@
 import java.util.List;
-final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue {
-  public static @java.lang.SuppressWarnings("all") class BuilderAndValueBuilder {
-    @java.lang.SuppressWarnings("all") BuilderAndValueBuilder() {
+final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValueWithSetterPrefix {
+  public static @java.lang.SuppressWarnings("all") class BuilderAndValueWithSetterPrefixBuilder {
+    @java.lang.SuppressWarnings("all") BuilderAndValueWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderAndValue build() {
-      return new BuilderAndValue();
+    public @java.lang.SuppressWarnings("all") BuilderAndValueWithSetterPrefix build() {
+      return new BuilderAndValueWithSetterPrefix();
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return "BuilderAndValue.BuilderAndValueBuilder()";
+      return "BuilderAndValueWithSetterPrefix.BuilderAndValueWithSetterPrefixBuilder()";
     }
   }
   private final int zero = 0;
-  @java.lang.SuppressWarnings("all") BuilderAndValue() {
+  @java.lang.SuppressWarnings("all") BuilderAndValueWithSetterPrefix() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") BuilderAndValueBuilder builder() {
-    return new BuilderAndValueBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderAndValueWithSetterPrefixBuilder builder() {
+    return new BuilderAndValueWithSetterPrefixBuilder();
   }
   public @java.lang.SuppressWarnings("all") int getZero() {
     return this.zero;
@@ -24,9 +24,9 @@ final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((! (o instanceof BuilderAndValue)))
+    if ((! (o instanceof BuilderAndValueWithSetterPrefix)))
         return false;
-    final BuilderAndValue other = (BuilderAndValue) o;
+    final BuilderAndValueWithSetterPrefix other = (BuilderAndValueWithSetterPrefix) o;
     if ((this.getZero() != other.getZero()))
         return false;
     return true;
@@ -38,27 +38,27 @@ final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-    return (("BuilderAndValue(zero=" + this.getZero()) + ")");
+    return (("BuilderAndValueWithSetterPrefix(zero=" + this.getZero()) + ")");
   }
 }
-@lombok.Builder @lombok.Data class BuilderAndData {
-  public static @java.lang.SuppressWarnings("all") class BuilderAndDataBuilder {
-    @java.lang.SuppressWarnings("all") BuilderAndDataBuilder() {
+@lombok.Builder @lombok.Data class BuilderAndDataWithSetterPrefix {
+  public static @java.lang.SuppressWarnings("all") class BuilderAndDataWithSetterPrefixBuilder {
+    @java.lang.SuppressWarnings("all") BuilderAndDataWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderAndData build() {
-      return new BuilderAndData();
+    public @java.lang.SuppressWarnings("all") BuilderAndDataWithSetterPrefix build() {
+      return new BuilderAndDataWithSetterPrefix();
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return "BuilderAndData.BuilderAndDataBuilder()";
+      return "BuilderAndDataWithSetterPrefix.BuilderAndDataWithSetterPrefixBuilder()";
     }
   }
   private final int zero = 0;
-  @java.lang.SuppressWarnings("all") BuilderAndData() {
+  @java.lang.SuppressWarnings("all") BuilderAndDataWithSetterPrefix() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") BuilderAndDataBuilder builder() {
-    return new BuilderAndDataBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderAndDataWithSetterPrefixBuilder builder() {
+    return new BuilderAndDataWithSetterPrefixBuilder();
   }
   public @java.lang.SuppressWarnings("all") int getZero() {
     return this.zero;
@@ -66,9 +66,9 @@ final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((! (o instanceof BuilderAndData)))
+    if ((! (o instanceof BuilderAndDataWithSetterPrefix)))
         return false;
-    final BuilderAndData other = (BuilderAndData) o;
+    final BuilderAndDataWithSetterPrefix other = (BuilderAndDataWithSetterPrefix) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getZero() != other.getZero()))
@@ -76,7 +76,7 @@ final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue
     return true;
   }
   protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
-    return (other instanceof BuilderAndData);
+    return (other instanceof BuilderAndDataWithSetterPrefix);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 59;
@@ -85,6 +85,6 @@ final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-    return (("BuilderAndData(zero=" + this.getZero()) + ")");
+    return (("BuilderAndDataWithSetterPrefix(zero=" + this.getZero()) + ")");
   }
 }

@@ -1,48 +1,48 @@
 import java.util.List;
 import java.util.Collection;
 import lombok.Singular;
-@lombok.Builder(toBuilder = true, setterPrefix = "with") class BuilderSingularWildcardListsWithToBuilder {
-  public static @java.lang.SuppressWarnings("all") class BuilderSingularWildcardListsWithToBuilderBuilder {
+@lombok.Builder(toBuilder = true, setterPrefix = "with") class BuilderSingularWildcardListsWithToBuilderWithSetterPrefix {
+  public static @java.lang.SuppressWarnings("all") class BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder {
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<java.lang.Object> objects;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<Number> numbers;
-    @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder() {
+    @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder withObject(final java.lang.Object object) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder withObject(final java.lang.Object object) {
       if ((this.objects == null))
           this.objects = new java.util.ArrayList<java.lang.Object>();
       this.objects.add(object);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder withObjects(final java.util.Collection<?> objects) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder withObjects(final java.util.Collection<?> objects) {
       if ((this.objects == null))
           this.objects = new java.util.ArrayList<java.lang.Object>();
       this.objects.addAll(objects);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder clearObjects() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder clearObjects() {
       if ((this.objects != null))
           this.objects.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder withNumber(final Number number) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder withNumber(final Number number) {
       if ((this.numbers == null))
           this.numbers = new java.util.ArrayList<Number>();
       this.numbers.add(number);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder withNumbers(final java.util.Collection<? extends Number> numbers) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder withNumbers(final java.util.Collection<? extends Number> numbers) {
       if ((this.numbers == null))
           this.numbers = new java.util.ArrayList<Number>();
       this.numbers.addAll(numbers);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder clearNumbers() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder clearNumbers() {
       if ((this.numbers != null))
           this.numbers.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder build() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefix build() {
       java.util.List<java.lang.Object> objects;
       switch (((this.objects == null) ? 0 : this.objects.size())) {
       case 0 :
@@ -65,24 +65,24 @@ import lombok.Singular;
       default :
           numbers = java.util.Collections.unmodifiableList(new java.util.ArrayList<Number>(this.numbers));
       }
-      return new BuilderSingularWildcardListsWithToBuilder(objects, numbers);
+      return new BuilderSingularWildcardListsWithToBuilderWithSetterPrefix(objects, numbers);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((("BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder(objects=" + this.objects) + ", numbers=") + this.numbers) + ")");
+      return (((("BuilderSingularWildcardListsWithToBuilderWithSetterPrefix.BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder(objects=" + this.objects) + ", numbers=") + this.numbers) + ")");
     }
   }
   private @Singular List<?> objects;
   private @Singular Collection<? extends Number> numbers;
-  @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder(final List<?> objects, final Collection<? extends Number> numbers) {
+  @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefix(final List<?> objects, final Collection<? extends Number> numbers) {
     super();
     this.objects = objects;
     this.numbers = numbers;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder builder() {
-    return new BuilderSingularWildcardListsWithToBuilderBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder builder() {
+    return new BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder();
   }
-  public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder toBuilder() {
-    final BuilderSingularWildcardListsWithToBuilderBuilder builder = new BuilderSingularWildcardListsWithToBuilderBuilder();
+  public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder toBuilder() {
+    final BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder builder = new BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder();
     if ((this.objects != null))
         builder.objects(this.objects);
     if ((this.numbers != null))
