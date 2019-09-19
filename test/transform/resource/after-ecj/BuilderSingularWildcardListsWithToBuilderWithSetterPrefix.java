@@ -84,9 +84,9 @@ import lombok.Singular;
   public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder toBuilder() {
     final BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder builder = new BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder();
     if ((this.objects != null))
-        builder.objects(this.objects);
+        builder.withObjects(this.objects);
     if ((this.numbers != null))
-        builder.numbers(this.numbers);
+        builder.withNumbers(this.numbers);
     return builder;
   }
 }

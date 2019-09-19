@@ -18,7 +18,7 @@ class BuilderSingularNoAutoWithSetterPrefix {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<String> items;
 		@java.lang.SuppressWarnings("all")
-		BuilderSingularNoAutoBuilder() {
+		BuilderSingularNoAutoWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final String things) {

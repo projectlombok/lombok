@@ -119,6 +119,6 @@ class BuilderSingularAnnotatedTypesWithSetterPrefix {
 	}
 	@java.lang.SuppressWarnings("all")
 	public static BuilderSingularAnnotatedTypesWithSetterPrefixBuilder builder() {
-		return new BuilderSingularAnnotatedTypesBuilder();
+		return new BuilderSingularAnnotatedTypesWithSetterPrefixBuilder();
 	}
 }

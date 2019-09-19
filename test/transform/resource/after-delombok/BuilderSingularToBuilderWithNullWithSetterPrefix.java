@@ -59,7 +59,7 @@ class BuilderSingularToBuilderWithNullWithSetterPrefix {
 	@java.lang.SuppressWarnings("all")
 	public BuilderSingularToBuilderWithNullWithSetterPrefixBuilder toBuilder() {
 		final BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder = new BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
-		if (this.elems != null) builder.elems(this.elems);
+		if (this.elems != null) builder.withElems(this.elems);
 		return builder;
 	}
 }

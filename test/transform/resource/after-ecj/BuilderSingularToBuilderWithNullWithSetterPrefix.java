@@ -54,7 +54,7 @@ import lombok.Singular;
   public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder toBuilder() {
     final BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder = new BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
     if ((this.elems != null))
-        builder.elems(this.elems);
+        builder.withElems(this.elems);
     return builder;
   }
 }

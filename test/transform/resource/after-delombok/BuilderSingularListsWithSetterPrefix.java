@@ -20,7 +20,7 @@ class BuilderSingularListsWithSetterPrefix<T> {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<java.lang.Object> rawList;
 		@java.lang.SuppressWarnings("all")
-		BuilderSingularListsBuilder() {
+		BuilderSingularListsWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularListsWithSetterPrefixBuilder<T> withChild(final T child) {

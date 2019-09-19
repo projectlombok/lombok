@@ -90,8 +90,8 @@ class BuilderSingularWildcardListsWithToBuilderWithSetterPrefix {
 	@java.lang.SuppressWarnings("all")
 	public BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder toBuilder() {
 		final BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder builder = new BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder();
-		if (this.objects != null) builder.objects(this.objects);
-		if (this.numbers != null) builder.numbers(this.numbers);
+		if (this.objects != null) builder.withObjects(this.objects);
+		if (this.numbers != null) builder.withNumbers(this.numbers);
 		return builder;
 	}
 }

@@ -31,7 +31,7 @@ class BuilderSingularGuavaListsSetsWithSetterPrefix<T> {
 		@java.lang.SuppressWarnings("all")
 		private com.google.common.collect.ImmutableTable.Builder<Number, Number, String> users;
 		@java.lang.SuppressWarnings("all")
-		BuilderSingularGuavaListsSetsBuilder() {
+		BuilderSingularGuavaListsSetsWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularGuavaListsSetsWithSetterPrefixBuilder<T> withCard(final T card) {

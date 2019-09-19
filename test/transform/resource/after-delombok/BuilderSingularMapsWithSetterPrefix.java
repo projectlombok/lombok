@@ -7,7 +7,7 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 	private Map rawMap;
 	private Map<String, V> stringMap;
 	@SuppressWarnings("all")
-	BuilderSingularMaps(Map<K, V> women, SortedMap<K, ? extends Number> men, Map rawMap, Map<String, V> stringMap) {
+	BuilderSingularMapsWithSetterPrefix(Map<K, V> women, SortedMap<K, ? extends Number> men, Map rawMap, Map<String, V> stringMap) {
 		this.women = women;
 		this.men = men;
 		this.rawMap = rawMap;
@@ -32,7 +32,7 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		@SuppressWarnings("all")
 		private java.util.ArrayList<V> stringMap$value;
 		@SuppressWarnings("all")
-		BuilderSingularMapsBuilder() {
+		BuilderSingularMapsWithSetterPrefixBuilder() {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefixBuilder<K, V> withWoman(K womanKey, V womanValue) {
