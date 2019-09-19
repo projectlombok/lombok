@@ -1,5 +1,5 @@
 import lombok.Singular;
-@lombok.Builder(toBuilder = true, setterPrefix = "with") class BuilderSingularToBuilderWithNullWithSetterPrefix {
+@lombok.Builder(toBuilder = true,setterPrefix = "with") class BuilderSingularToBuilderWithNullWithSetterPrefix {
   public static @java.lang.SuppressWarnings("all") class BuilderSingularToBuilderWithNullWithSetterPrefixBuilder {
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> elems;
     @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder() {

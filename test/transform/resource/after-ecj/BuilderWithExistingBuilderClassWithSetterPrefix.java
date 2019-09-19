@@ -1,6 +1,6 @@
 import lombok.Builder;
 class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
-  public static class BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z extends Number> {
+  public static class BuilderWithExistingBuilderClassBuilderWithSetterPrefixBuilder<Z extends Number> {
     private @java.lang.SuppressWarnings("all") boolean arg2;
     private @java.lang.SuppressWarnings("all") String arg3;
     private Z arg1;

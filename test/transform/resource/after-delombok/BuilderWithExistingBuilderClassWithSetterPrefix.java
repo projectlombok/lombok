@@ -2,7 +2,7 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
 	public static <Z extends Number> BuilderWithExistingBuilderClassWithSetterPrefix<String, Z> staticMethod(Z arg1, boolean arg2, String arg3) {
 		return null;
 	}
-	public static class BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z extends Number> {
+	public static class BuilderWithExistingBuilderClassBuilderWithSetterPrefixBuilder<Z extends Number> {
 		@java.lang.SuppressWarnings("all")
 		private boolean arg2;
 		@java.lang.SuppressWarnings("all")
@@ -11,7 +11,7 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
 		public void withArg2(boolean arg) {
 		}
 		@java.lang.SuppressWarnings("all")
-		BuilderWithExistingBuilderClassWithSetterPrefixBuilder() {
+		BuilderWithExistingBuilderClassBuilderWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg1(final Z arg1) {

@@ -39,7 +39,7 @@ class BuilderWithAccessorsWithSetterPrefix {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithAccessorsWithSetterPrefixBuilder with_Bar(final int _bar) {
+		public BuilderWithAccessorsWithSetterPrefixBuilder with_bar(final int _bar) {
 			this._bar = _bar;
 			return this;
 		}

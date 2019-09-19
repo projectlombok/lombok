@@ -41,7 +41,7 @@ final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue
     return (("BuilderAndValueWithSetterPrefix(zero=" + this.getZero()) + ")");
   }
 }
-@lombok.Builder @lombok.Data class BuilderAndDataWithSetterPrefix {
+@lombok.Builder(setterPrefix = "with") @lombok.Data class BuilderAndDataWithSetterPrefix {
   public static @java.lang.SuppressWarnings("all") class BuilderAndDataWithSetterPrefixBuilder {
     @java.lang.SuppressWarnings("all") BuilderAndDataWithSetterPrefixBuilder() {
       super();

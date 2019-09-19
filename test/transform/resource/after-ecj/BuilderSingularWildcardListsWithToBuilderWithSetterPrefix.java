@@ -1,7 +1,7 @@
 import java.util.List;
 import java.util.Collection;
 import lombok.Singular;
-@lombok.Builder(toBuilder = true, setterPrefix = "with") class BuilderSingularWildcardListsWithToBuilderWithSetterPrefix {
+@lombok.Builder(toBuilder = true,setterPrefix = "with") class BuilderSingularWildcardListsWithToBuilderWithSetterPrefix {
   public static @java.lang.SuppressWarnings("all") class BuilderSingularWildcardListsWithToBuilderWithSetterPrefixBuilder {
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<java.lang.Object> objects;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<Number> numbers;

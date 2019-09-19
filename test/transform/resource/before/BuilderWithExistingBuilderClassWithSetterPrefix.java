@@ -6,7 +6,7 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
 		return null;
 	}
 	
-	public static class BuilderWithExistingBuilderClassBuilderWithSetterPrefix<Z extends Number> {
+	public static class BuilderWithExistingBuilderClassBuilderWithSetterPrefixBuilder<Z extends Number> {
 		private Z arg1;
 		
 		public void withArg2(boolean arg) {

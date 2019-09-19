@@ -95,7 +95,7 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 			return this;
 		}
 		@SuppressWarnings("all")
-		public BuilderSingularMapsWithSetterPrefixBuilder<K, V> withRawMan(Object rawMapKey, Object rawMapValue) {
+		public BuilderSingularMapsWithSetterPrefixBuilder<K, V> withRawMap(Object rawMapKey, Object rawMapValue) {
 			if (this.rawMap$key == null) {
 				this.rawMap$key = new java.util.ArrayList<Object>();
 				this.rawMap$value = new java.util.ArrayList<Object>();
@@ -125,7 +125,7 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 			return this;
 		}
 		@SuppressWarnings("all")
-		public BuilderSingularMapsWithSetterPrefixBuilder<K, V> stringMap(String stringMapKey, V stringMapValue) {
+		public BuilderSingularMapsWithSetterPrefixBuilder<K, V> withStringMap(String stringMapKey, V stringMapValue) {
 			if (this.stringMap$key == null) {
 				this.stringMap$key = new java.util.ArrayList<String>();
 				this.stringMap$value = new java.util.ArrayList<V>();
@@ -135,7 +135,7 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 			return this;
 		}
 		@SuppressWarnings("all")
-		public BuilderSingularMapsWithSetterPrefixBuilder<K, V> stringMap(java.util.Map<? extends String, ? extends V> stringMap) {
+		public BuilderSingularMapsWithSetterPrefixBuilder<K, V> withStringMap(java.util.Map<? extends String, ? extends V> stringMap) {
 			if (this.stringMap$key == null) {
 				this.stringMap$key = new java.util.ArrayList<String>();
 				this.stringMap$value = new java.util.ArrayList<V>();

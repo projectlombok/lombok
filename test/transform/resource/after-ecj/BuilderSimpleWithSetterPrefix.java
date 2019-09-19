@@ -1,8 +1,8 @@
 import java.util.List;
 @lombok.Builder(access = lombok.AccessLevel.PROTECTED,setterPrefix = "with") class BuilderSimpleWithSetterPrefix<T> {
-  protected static @java.lang.SuppressWarnings("all") class BuilderSimpleWithSetterPrefix<T> {
+  protected static @java.lang.SuppressWarnings("all") class BuilderSimpleWithSetterPrefixBuilder<T> {
     private @java.lang.SuppressWarnings("all") int unprefixed;
-    @java.lang.SuppressWarnings("all") BuilderWithPrefixBuilder() {
+    @java.lang.SuppressWarnings("all") BuilderSimpleWithSetterPrefixBuilder() {
       super();
     }
     public @java.lang.SuppressWarnings("all") BuilderWithPrefixBuilder<T> withUnprefixed(final int unprefixed) {

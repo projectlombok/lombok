@@ -19,7 +19,7 @@
       this.foo = foo;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithAccessorsWithSetterPrefixBuilder with_Bar(final int _bar) {
+    public @java.lang.SuppressWarnings("all") BuilderWithAccessorsWithSetterPrefixBuilder with_bar(final int _bar) {
       this._bar = _bar;
       return this;
     }
