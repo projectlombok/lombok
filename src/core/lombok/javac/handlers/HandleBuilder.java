@@ -180,7 +180,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.builderFieldName = bfd.name;
 				bfd.annotations = findCopyableAnnotations(fieldNode);
 				bfd.type = fd.vartype;
-				bfd.singularData = getSingularData(fieldNode);
+				bfd.singularData = getSingularData(fieldNode, builderInstance.setterPrefix());
 				bfd.originalFieldNode = fieldNode;
 				
 				if (bfd.singularData != null && isDefault != null) {
@@ -369,7 +369,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.rawName = raw.name;
 				bfd.annotations = findCopyableAnnotations(param);
 				bfd.type = raw.vartype;
-				bfd.singularData = getSingularData(param);
+				bfd.singularData = getSingularData(param, builderInstance.setterPrefix());
 				bfd.originalFieldNode = param;
 				addObtainVia(bfd, param);
 				builderFields.add(bfd);
@@ -876,8 +876,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	 * or parameter), or null if there's no {@code @Singular} annotation on it.
 	 * 
 	 * @param node The node (field or method param) to inspect for its name and potential {@code @Singular} annotation.
+	 * @param setterPrefix
 	 */
-	private SingularData getSingularData(JavacNode node) {
+	private SingularData getSingularData(JavacNode node, final String setterPrefix) {
 		for (JavacNode child : node.down()) {
 			if (!annotationTypeMatches(Singular.class, child)) continue;
 			Name pluralName = node.getKind() == Kind.FIELD ? removePrefixFromField(node) : ((JCVariableDecl) node.get()).name;
@@ -919,7 +920,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				return null;
 			}
 			
-			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer);
+			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, setterPrefix);
 		}
 		
 		return null;

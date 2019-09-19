@@ -117,6 +117,7 @@ public class JavacSingularsRecipes {
 		private final List<JCExpression> typeArgs;
 		private final String targetFqn;
 		private final JavacSingularizer singularizer;
+		private final String setterPrefix;
 		
 		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer) {
 			this.annotation = annotation;
@@ -125,6 +126,17 @@ public class JavacSingularsRecipes {
 			this.typeArgs = typeArgs;
 			this.targetFqn = targetFqn;
 			this.singularizer = singularizer;
+			this.setterPrefix = null;
+		}
+
+		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, String setterPrefix) {
+			this.annotation = annotation;
+			this.singularName = singularName;
+			this.pluralName = pluralName;
+			this.typeArgs = typeArgs;
+			this.targetFqn = targetFqn;
+			this.singularizer = singularizer;
+			this.setterPrefix = setterPrefix;
 		}
 		
 		public JavacNode getAnnotation() {
@@ -138,6 +150,8 @@ public class JavacSingularsRecipes {
 		public Name getPluralName() {
 			return pluralName;
 		}
+
+		public String getSetterPrefix() { return setterPrefix; }
 		
 		public List<JCExpression> getTypeArgs() {
 			return typeArgs;
@@ -279,8 +293,12 @@ public class JavacSingularsRecipes {
 			ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
 			List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
 			Name name = data.getSingularName();
-			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), name.toString()));
-			
+			Name prefixedSingularName = data.getSetterPrefix().length() == 0 ? name :
+				builderType.toName(HandlerUtil.buildAccessorName(data.getSetterPrefix(), name.toString()));
+
+			name = fluent ? prefixedSingularName : builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(),
+				name.toString()));
+
 			statements.prepend(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, params, access);
 		}
@@ -307,7 +325,9 @@ public class JavacSingularsRecipes {
 		private void generatePluralMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent, AccessLevel access) {
 			ListBuffer<JCStatement> statements = generatePluralMethodStatements(maker, data, builderType, source);
 			Name name = data.getPluralName();
-			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", name.toString()));
+			Name prefixedSingularName = builderType.toName(data.getSetterPrefix());
+			name = fluent ? prefixedSingularName : builderType.toName(HandlerUtil.buildAccessorName(
+				getAddMethodName() + "All", name.toString()));
 			JCExpression paramType = getPluralMethodParamType(builderType);
 			paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
