@@ -326,9 +326,10 @@ public class JavacSingularsRecipes {
 		private void generatePluralMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent, AccessLevel access) {
 			ListBuffer<JCStatement> statements = generatePluralMethodStatements(maker, data, builderType, source);
 			Name name = data.getPluralName();
-			Name prefixedSingularName = builderType.toName(data.getSetterPrefix());
-			name = fluent ? prefixedSingularName : builderType.toName(HandlerUtil.buildAccessorName(
-				getAddMethodName() + "All", name.toString()));
+
+			Name prefixedSingularName = data.getSetterPrefix().isEmpty() ? name : builderType.toName(HandlerUtil.buildAccessorName(data.getSetterPrefix(), data.getPluralName().toString()));
+			name = fluent ? prefixedSingularName
+					: builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", name.toString()));
 			JCExpression paramType = getPluralMethodParamType(builderType);
 			paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());

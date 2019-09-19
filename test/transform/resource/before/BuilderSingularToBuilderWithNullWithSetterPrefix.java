@@ -5,6 +5,6 @@ class BuilderSingularToBuilderWithNullWithSetterPrefix {
 	@Singular private java.util.List<String> elems;
 	
 	public static void test() {
-		new BuilderSingularToBuilderWithNull(null).toBuilder();
+		new BuilderSingularToBuilderWithNullWithSetterPrefix(null).toBuilder();
 	}
 }

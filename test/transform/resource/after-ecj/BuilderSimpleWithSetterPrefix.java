@@ -1,5 +1,5 @@
 import java.util.List;
-@lombok.Builder(access = lombok.AccessLevel.PROTECTED,setterPrefix = "with") class BulderSimpleWithSetterPrefix<T> {
+@lombok.Builder(access = lombok.AccessLevel.PROTECTED,setterPrefix = "with") class BuilderSimpleWithSetterPrefix<T> {
   protected static @java.lang.SuppressWarnings("all") class BuilderSimpleWithSetterPrefix<T> {
     private @java.lang.SuppressWarnings("all") int unprefixed;
     @java.lang.SuppressWarnings("all") BuilderWithPrefixBuilder() {
