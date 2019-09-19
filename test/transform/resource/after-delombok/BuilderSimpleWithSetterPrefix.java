@@ -10,7 +10,7 @@ class BuilderSimpleWithSetterPrefix<T> {
 		@java.lang.SuppressWarnings("all")
 		private int unprefixed;
 		@java.lang.SuppressWarnings("all")
-		BuilderSimpelWithSetterPrefixBuilder() {
+		BuilderSimpleWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSimpleWithSetterPrefixBuilder<T> withUnprefixed(final int unprefixed) {

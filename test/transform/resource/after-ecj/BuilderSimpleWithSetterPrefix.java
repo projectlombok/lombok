@@ -1,6 +1,6 @@
 import java.util.List;
-@lombok.Builder(access = lombok.AccessLevel.PROTECTED,setterPrefix = "with") class BuilderWithPrefix<T> {
-  protected static @java.lang.SuppressWarnings("all") class BuilderWithPrefixBuilder<T> {
+@lombok.Builder(access = lombok.AccessLevel.PROTECTED,setterPrefix = "with") class BulderSimpleWithSetterPrefix<T> {
+  protected static @java.lang.SuppressWarnings("all") class BuilderSimpleWithSetterPrefix<T> {
     private @java.lang.SuppressWarnings("all") int unprefixed;
     @java.lang.SuppressWarnings("all") BuilderWithPrefixBuilder() {
       super();
@@ -17,11 +17,11 @@ import java.util.List;
     }
   }
   private int unprefixed;
-  @java.lang.SuppressWarnings("all") BuilderWithPrefix(final int unprefixed) {
+  @java.lang.SuppressWarnings("all") BuilderSimpleWithSetterPrefixBuilder(final int unprefixed) {
     super();
     this.unprefixed = unprefixed;
   }
-  protected static @java.lang.SuppressWarnings("all") <T>BuilderWithPrefixBuilder<T> builder() {
-    return new BuilderWithPrefixBuilder<T>();
+  protected static @java.lang.SuppressWarnings("all") <T>BuilderSimpleWithSetterPrefixBuilder<T> builder() {
+    return new BuilderSimpleWithSetterPrefixBuilder<T>();
   }
 }

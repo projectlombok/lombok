@@ -126,7 +126,7 @@ public class JavacSingularsRecipes {
 			this.typeArgs = typeArgs;
 			this.targetFqn = targetFqn;
 			this.singularizer = singularizer;
-			this.setterPrefix = null;
+			this.setterPrefix = "";
 		}
 
 		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, String setterPrefix) {
@@ -293,8 +293,9 @@ public class JavacSingularsRecipes {
 			ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
 			List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
 			Name name = data.getSingularName();
-			Name prefixedSingularName = data.getSetterPrefix().length() == 0 ? name :
-				builderType.toName(HandlerUtil.buildAccessorName(data.getSetterPrefix(), name.toString()));
+			String setterPrefix = data.getSetterPrefix();
+			Name prefixedSingularName = setterPrefix.isEmpty() ? name :
+				builderType.toName(HandlerUtil.buildAccessorName(setterPrefix, name.toString()));
 
 			name = fluent ? prefixedSingularName : builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(),
 				name.toString()));
