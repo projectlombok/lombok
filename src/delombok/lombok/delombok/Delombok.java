@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -700,11 +700,12 @@ public class Delombok {
 			String[] argv = argsList.toArray(new String[0]);
 			args.init("javac", argv);
 			options.put("diags.legacy", "TRUE");
+			options.put("allowStringFolding", "FALSE");
 		} else {
 			if (modulepath != null && !modulepath.isEmpty()) throw new IllegalStateException("DELOMBOK: Option --module-path requires usage of JDK9 or higher.");
 		}
 		
-		CommentCatcher catcher = CommentCatcher.create(context);
+		CommentCatcher catcher = CommentCatcher.create(context, Javac.getJavaCompilerVersion() >= 13);
 		JavaCompiler compiler = catcher.getCompiler();
 		
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
@@ -769,7 +770,7 @@ public class Delombok {
 		
 		FormatPreferences fps = new FormatPreferences(formatPrefs);
 		for (JCCompilationUnit unit : roots) {
-			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit), fps);
+			DelombokResult result = new DelombokResult(catcher.getComments(unit), catcher.getTextBlockStarts(unit), unit, force || options.isChanged(unit), fps);
 			if (onlyChanged && !result.isChanged() && !options.isChanged(unit)) {
 				if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), "unchanged (skipped)");
 				continue;

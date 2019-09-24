@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -153,6 +154,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 	private final Writer out;
 	private final JCCompilationUnit compilationUnit;
 	private List<CommentInfo> comments;
+	private final int[] textBlockStarts;
 	private final FormatPreferences formatPreferences;
 	
 	private final Map<JCTree, String> docComments;
@@ -160,9 +162,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 	private int indent = 0;
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	public PrettyPrinter(Writer out, JCCompilationUnit cu, List<CommentInfo> comments, FormatPreferences preferences) {
+	public PrettyPrinter(Writer out, JCCompilationUnit cu, List<CommentInfo> comments, int[] textBlockStarts, FormatPreferences preferences) {
 		this.out = out;
 		this.comments = comments;
+		this.textBlockStarts = textBlockStarts;
 		this.compilationUnit = cu;
 		this.formatPreferences = preferences;
 		
@@ -740,7 +743,37 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 		else if (CTC_BOOLEAN.equals(typeTag)) print(((Number)tree.value).intValue() == 1 ? "true" : "false");
 		else if (CTC_BOT.equals(typeTag)) print("null");
-		else print("\"" + quoteChars(tree.value.toString()) + "\"");
+		else {
+			if (Arrays.binarySearch(textBlockStarts, tree.pos) < 0) {
+				print("\"" + quoteChars(tree.value.toString()) + "\"");
+			} else {
+				printTextBlock(tree.value.toString());
+			}
+		}
+	}
+	
+	private void printTextBlock(String s) {
+		println("\"\"\"");
+		needsAlign = true;
+		indent++;
+		StringBuilder sb = new StringBuilder();
+		boolean lineStart = true;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c != ' ' && c != '\t') lineStart = false;
+			if (c == '\n') {
+				println(sb);
+				sb.setLength(0);
+				needsAlign = true;
+				lineStart = true;
+				continue;
+			}
+			if (c == '\t' && lineStart) sb.append("\t");
+			else sb.append(quoteChar(s.charAt(i)));
+		}
+		print(sb);
+		print("\"\"\"");
+		indent--;
 	}
 	
 	@Override public void visitMethodDef(JCMethodDecl tree) {

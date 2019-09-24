@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,19 +39,30 @@ import com.sun.tools.javac.util.ListBuffer;
 class CommentCollectingTokenizer extends JavaTokenizer {
 	private int prevEndPosition = 0;
 	private final ListBuffer<CommentInfo> comments = new ListBuffer<CommentInfo>();
+	private final ListBuffer<Integer> textBlockStarts;
 	private int endComment = 0;
-
-	CommentCollectingTokenizer(ScannerFactory fac, char[] buf, int inputLength) {
+	
+	CommentCollectingTokenizer(ScannerFactory fac, char[] buf, int inputLength, boolean findTextBlocks) {
 		super(fac, new PositionUnicodeReader(fac, buf, inputLength));
+		textBlockStarts = findTextBlocks ? new ListBuffer<Integer>() : null;
 	}
 
-	CommentCollectingTokenizer(ScannerFactory fac, CharBuffer buf) {
+	CommentCollectingTokenizer(ScannerFactory fac, CharBuffer buf, boolean findTextBlocks) {
 		super(fac, new PositionUnicodeReader(fac, buf));
+		textBlockStarts = findTextBlocks ? new ListBuffer<Integer>() : null;
+	}
+	
+	int pos() {
+		return ((PositionUnicodeReader) reader).pos();
 	}
 	
 	@Override public Token readToken() {
 		Token token = super.readToken();
-		prevEndPosition = ((PositionUnicodeReader)reader).pos();
+		prevEndPosition = pos();
+		if (textBlockStarts != null && (prevEndPosition - token.pos > 5) && token.getClass().getSimpleName().equals("StringToken")) {
+			char[] start = reader.getRawCharacters(token.pos, token.pos + 3);
+			if (start[0] == '"' && start[1] == '"' && start[2] == '"') textBlockStarts.add(token.pos);
+		}
 		return token;
 	}
 	
@@ -112,6 +123,10 @@ class CommentCollectingTokenizer extends JavaTokenizer {
 	public List<CommentInfo> getComments() {
 		return comments.toList();
 	}	
+	
+	public List<Integer> getTextBlockStarts() {
+		return textBlockStarts == null ? List.<Integer>nil() : textBlockStarts.toList();
+	}
 	
 	static class PositionUnicodeReader extends UnicodeReader {
 		protected PositionUnicodeReader(ScannerFactory sf, char[] input, int inputLength) {

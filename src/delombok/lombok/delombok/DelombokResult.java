@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,14 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 public class DelombokResult {
 	private final List<CommentInfo> comments;
+	private final List<Integer> textBlockStarts;
 	private final JCCompilationUnit compilationUnit;
 	private final boolean changed;
 	private final FormatPreferences formatPreferences;
 	
-	public DelombokResult(List<CommentInfo> comments, JCCompilationUnit compilationUnit, boolean changed, FormatPreferences formatPreferences) {
+	public DelombokResult(List<CommentInfo> comments, List<Integer> textBlockStarts, JCCompilationUnit compilationUnit, boolean changed, FormatPreferences formatPreferences) {
 		this.comments = comments;
+		this.textBlockStarts = textBlockStarts;
 		this.compilationUnit = compilationUnit;
 		this.changed = changed;
 		this.formatPreferences = formatPreferences;
@@ -61,12 +63,15 @@ public class DelombokResult {
 		}
 		
 		com.sun.tools.javac.util.List<CommentInfo> comments_;
+		int[] textBlockStarts_;
 		if (comments instanceof com.sun.tools.javac.util.List) comments_ = (com.sun.tools.javac.util.List<CommentInfo>) comments;
 		else comments_ = com.sun.tools.javac.util.List.from(comments.toArray(new CommentInfo[0]));
-		
+		textBlockStarts_ = new int[textBlockStarts.size()];
+		int idx = 0;
+		for (int tbs : textBlockStarts) textBlockStarts_[idx++] = tbs;
 		FormatPreferences preferences = new FormatPreferenceScanner().scan(formatPreferences, getContent());
 		//compilationUnit.accept(new PrettyCommentsPrinter(out, compilationUnit, comments_, preferences));
-		compilationUnit.accept(new PrettyPrinter(out, compilationUnit, comments_, preferences));
+		compilationUnit.accept(new PrettyPrinter(out, compilationUnit, comments_, textBlockStarts_, preferences));
 	}
 
 	private CharSequence getContent() throws IOException {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2013 The Project Lombok Authors.
+ * Copyright (C) 2011-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.util.Context;
 
 public class CommentCollectingScannerFactory extends ScannerFactory {
-	
+	public static boolean findTextBlocks;
 	@SuppressWarnings("all")
 	public static void preRegister(final Context context) {
 		if (context.get(scannerFactoryKey) == null) {
@@ -76,7 +76,7 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 	public Scanner newScanner(CharSequence input, boolean keepDocComments) {
 		if (input instanceof CharBuffer) {
 			CharBuffer buf = (CharBuffer) input;
-			return new CommentCollectingScanner(this, new CommentCollectingTokenizer(this, buf));
+			return new CommentCollectingScanner(this, new CommentCollectingTokenizer(this, buf, findTextBlocks));
 		}
 		char[] array = input.toString().toCharArray();
 		return newScanner(array, array.length, keepDocComments);
@@ -84,6 +84,6 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 	
 	@Override
 	public Scanner newScanner(char[] input, int inputLength, boolean keepDocComments) {
-		return new CommentCollectingScanner(this, new CommentCollectingTokenizer(this, input, inputLength));
+		return new CommentCollectingScanner(this, new CommentCollectingTokenizer(this, input, inputLength, findTextBlocks));
 	}
 }

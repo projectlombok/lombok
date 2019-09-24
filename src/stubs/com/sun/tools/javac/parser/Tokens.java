@@ -2,7 +2,7 @@ package com.sun.tools.javac.parser;
 
 public class Tokens {
 	public static class Token {
-		
+		public int pos;
 	}
 	
 	public interface Comment {
