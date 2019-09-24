@@ -1312,6 +1312,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 				print(";");
 				needsNewLine = true;
 				needsAlign = true;
+			} else if (tree.stats.head.getClass().getSimpleName().equals("JCYield")) {
+				print((JCExpression) readObject(tree.stats.head, "value", null));
+				print(";");
+				needsNewLine = true;
+				needsAlign = true;
 			} else {
 				print(tree.stats.head);
 				if (tree.stats.head instanceof JCBlock) needsNewLine = false;
@@ -1341,7 +1346,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(")");
 		}
 		println(" {");
+		boolean ruleStyle = isCaseRuleStyle(tree.cases.head);
+		if (ruleStyle) indent++;
 		print(tree.cases, "");
+		if (ruleStyle) indent--;
 		aPrintln("}", tree);
 	}
 	
@@ -1357,8 +1365,18 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 		println(" {");
 		List<JCCase> cases = readObject(tree, "cases", null);
+		boolean ruleStyle = isCaseRuleStyle(cases.head);
+		if (ruleStyle) indent++;
 		print(cases, "");
+		if (ruleStyle) indent--;
 		aPrint("}");
+	}
+	
+	void printYieldExpression(JCTree tree) {
+		aPrint("yield ");
+		JCExpression value = readObject(tree, "value", null);
+		print(value);
+		println(";", tree);
 	}
 	
 	@Override public void visitTry(JCTry tree) {
@@ -1581,9 +1599,17 @@ public class PrettyPrinter extends JCTree.Visitor {
 			// Starting with JDK9, this is inside the import list, but we've already printed it. Just ignore it.
 		} else if ("JCSwitchExpression".equals(simpleName)) { // Introduced as preview feature in JDK12
 			printSwitchExpression(tree);
+		} else if ("JCYield".equals(simpleName)) { // Introduced as preview feature in JDK13, part of switch expressions.
+			printYieldExpression(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
+	}
+	
+	private boolean isCaseRuleStyle(JCCase tree) {
+		if (tree == null) return false;
+		Enum<?> caseKind = readObject(tree, "caseKind", null); // JDK 12+
+		return caseKind != null && caseKind.name().equalsIgnoreCase("RULE");
 	}
 	
 	private boolean jcAnnotatedTypeInit = false;

@@ -1,4 +1,4 @@
-// version 12:
+// version 12:12
 public class Switch12 {
 	public void basic() {
 		switch (5) {
