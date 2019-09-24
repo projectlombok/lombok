@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.9 "Edgy Guinea Pig"
+### v1.18.11 "Edgy Guinea Pig"
 * PLATFORM: Support for JDK13 (including `yield` in switch expressions, as well as delombok having a nicer style for arrow-style switch blocks, and text blocks).
 
 
