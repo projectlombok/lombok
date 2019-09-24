@@ -2,7 +2,8 @@ Lombok Changelog
 ----------------
 
 ### v1.18.9 "Edgy Guinea Pig"
-* No changes yet.
+* PLATFORM: Support for JDK13 (including `yield` in switch expressions, as well as delombok having a nicer style for arrow-style switch blocks, and text blocks).
+
 
 ### v1.18.10 (September 10th, 2019)
 * PROMOTION: `@Wither` has been promoted to the main package, renamed to `@With`. Otherwise, no changes have been made to the annotation. The old experimental annotation will remain for a few versions as a deprecated annotation. If you had `lombok.config` configuration for this annotation, the configuration keys for this feature have been renamed.
