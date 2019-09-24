@@ -48,7 +48,7 @@ public class TypeResolver {
 	public String typeRefToFullyQualifiedName(LombokNode<?, ?, ?> context, TypeLibrary library, String typeRef) {
 		// When asking if 'Foo' could possibly be referring to 'bar.Baz', the answer is obviously no.
 		List<String> qualifieds = library.toQualifieds(typeRef);
-		if (qualifieds.isEmpty()) return null;
+		if (qualifieds == null || qualifieds.isEmpty()) return null;
 		
 		// When asking if 'lombok.Getter' could possibly be referring to 'lombok.Getter', the answer is obviously yes.
 		if (qualifieds.contains(typeRef)) return LombokInternalAliasing.processAliases(typeRef);
