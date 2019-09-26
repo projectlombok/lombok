@@ -294,10 +294,12 @@ public final class EclipseProductLocation extends IdeLocation {
 				try {
 					lombokJar.delete();
 				} catch (Throwable ignore) { /* Nothing we can do about that. */ }
-				if (!readSucceeded) throw new InstallException(
-						"I can't read my own jar file. I think you've found a bug in this installer!\nI suggest you restart it " +
+				if (!readSucceeded) {
+					throw new InstallException(
+						"I can't read my own jar file (trying: " + ourJar.toString() + "). I think you've found a bug in this installer!\nI suggest you restart it " +
 						"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
-						"http://groups.google.com/group/project-lombok - Thanks!", e);
+						"http://groups.google.com/group/project-lombok - Thanks!\n\n[DEBUG INFO] " + e.getClass() + ": " + e.getMessage() + "\nBase: " + OsUtils.class.getResource("OsUtils.class"), e);
+				}
 				throw new InstallException("I can't write to your " + descriptor.getProductName() + " directory at " + name + generateWriteErrorMessage(), e);
 			}
 		}
