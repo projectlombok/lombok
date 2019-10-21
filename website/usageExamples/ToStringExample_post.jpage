@@ -8,7 +8,7 @@ public class ToStringExample {
 	private int id;
 	
 	public String getName() {
-		return this.getName();
+		return this.name;
 	}
 	
 	public static class Square extends Shape {
