@@ -10,13 +10,13 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> dangerMouse(final T dangerMouse) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> withDangerMouse(final T dangerMouse) {
       if ((this.dangerMice == null))
           this.dangerMice = new java.util.ArrayList<T>();
       this.dangerMice.add(dangerMouse);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> dangerMice(final java.util.Collection<? extends T> dangerMice) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> withDangerMice(final java.util.Collection<? extends T> dangerMice) {
       if ((this.dangerMice == null))
           this.dangerMice = new java.util.ArrayList<T>();
       this.dangerMice.addAll(dangerMice);
@@ -27,13 +27,13 @@ import lombok.Singular;
           this.dangerMice.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> octopus(final Number octopus) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> withOctopus(final Number octopus) {
       if ((this.octopodes == null))
           this.octopodes = new java.util.ArrayList<Number>();
       this.octopodes.add(octopus);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> octopodes(final java.util.Collection<? extends Number> octopodes) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> withOctopodes(final java.util.Collection<? extends Number> octopodes) {
       if ((this.octopodes == null))
           this.octopodes = new java.util.ArrayList<Number>();
       this.octopodes.addAll(octopodes);
@@ -44,13 +44,13 @@ import lombok.Singular;
           this.octopodes.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> rawSet(final java.lang.Object rawSet) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> withRawSet(final java.lang.Object rawSet) {
       if ((this.rawSet == null))
           this.rawSet = new java.util.ArrayList<java.lang.Object>();
       this.rawSet.add(rawSet);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> rawSet(final java.util.Collection<?> rawSet) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> withRawSet(final java.util.Collection<?> rawSet) {
       if ((this.rawSet == null))
           this.rawSet = new java.util.ArrayList<java.lang.Object>();
       this.rawSet.addAll(rawSet);
@@ -61,13 +61,13 @@ import lombok.Singular;
           this.rawSet.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> stringSet(final String stringSet) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> withStringSet(final String stringSet) {
       if ((this.stringSet == null))
           this.stringSet = new java.util.ArrayList<String>();
       this.stringSet.add(stringSet);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> stringSet(final java.util.Collection<? extends String> stringSet) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularSetsWithSetterPrefixBuilder<T> withStringSet(final java.util.Collection<? extends String> stringSet) {
       if ((this.stringSet == null))
           this.stringSet = new java.util.ArrayList<String>();
       this.stringSet.addAll(stringSet);

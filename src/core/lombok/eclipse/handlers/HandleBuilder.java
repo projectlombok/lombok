@@ -539,7 +539,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					tps[i].name = typeArgsForToBuilder.get(i);
 				}
 			}
-			MethodDeclaration md = generateToBuilderMethod(cfv, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters);
+			MethodDeclaration md = generateToBuilderMethod(cfv, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters, builderInstance.setterPrefix());
 
 			if (md != null) injectMethod(tdParent, md);
 		}
@@ -552,7 +552,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 
 	private static final char[] BUILDER_TEMP_VAR = {'b', 'u', 'i', 'l', 'd', 'e', 'r'};
-	private MethodDeclaration generateToBuilderMethod(CheckerFrameworkVersion cfv, String methodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, List<BuilderFieldData> builderFields, boolean fluent, ASTNode source, AccessLevel access) {
+	private MethodDeclaration generateToBuilderMethod(CheckerFrameworkVersion cfv, String methodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, List<BuilderFieldData> builderFields, boolean fluent, ASTNode source, AccessLevel access, String prefix) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 
@@ -567,7 +567,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		Expression receiver = invoke;
 		List<Statement> statements = null;
 		for (BuilderFieldData bfd : builderFields) {
-			char[] setterName = fluent ? bfd.name : HandlerUtil.buildAccessorName("set", new String(bfd.name)).toCharArray();
+			String setterPrefix = prefix.isEmpty() ? "set" : prefix;
+			//char[] setterName = fluent ? bfd.name : HandlerUtil.buildAccessorName("set", new String(bfd.name)).toCharArray();
+			String setterName;
+			if(fluent) {
+				setterName = prefix.isEmpty() ? new String(bfd.name) : HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));
+			} else {
+				setterName = HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));
+			}
 			MessageSend ms = new MessageSend();
 			Expression[] tgt = new Expression[bfd.singularData == null ? 1 : 2];
 
@@ -600,7 +607,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				}
 			}
 
-			ms.selector = setterName;
+			ms.selector = setterName.toCharArray();
 			if (bfd.singularData == null) {
 				ms.arguments = tgt;
 				ms.receiver = receiver;

@@ -1,6 +1,5 @@
 import java.util.List;
 import java.util.Collection;
-@Builder(toBuilder = true, setterPrefix = "with")
 class BuilderSingularWildcardListsWithToBuilderWithSetterPrefix {
 	private List<?> objects;
 	private Collection<? extends Number> numbers;

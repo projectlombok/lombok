@@ -1,4 +1,3 @@
-import lombok.Builder
 class BuilderWithNoBuilderMethodWithSetterPrefix {
 	private String a = "";
 	@java.lang.SuppressWarnings("all")

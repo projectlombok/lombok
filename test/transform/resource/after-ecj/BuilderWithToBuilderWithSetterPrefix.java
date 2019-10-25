@@ -80,44 +80,45 @@ import lombok.Builder;
     return builder;
   }
 }
-@lombok.experimental.Accessors(prefix = "m") class ConstructorWithToBuilder<T> {
-  public static @java.lang.SuppressWarnings("all") class ConstructorWithToBuilderBuilder<T> {
+
+@lombok.experimental.Accessors(prefix = "m") class ConstructorWithToBuilderWithSetterPrefix<T> {
+  public static @java.lang.SuppressWarnings("all") class ConstructorWithToBuilderWithSetterPrefixBuilder<T> {
     private @java.lang.SuppressWarnings("all") String mOne;
     private @java.lang.SuppressWarnings("all") T baz;
     private @java.lang.SuppressWarnings("all") com.google.common.collect.ImmutableList<T> bars;
-    @java.lang.SuppressWarnings("all") ConstructorWithToBuilderBuilder() {
+    @java.lang.SuppressWarnings("all") ConstructorWithToBuilderWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderBuilder<T> withMOne(final String mOne) {
+    public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderWithSetterPrefixBuilder<T> withMOne(final String mOne) {
       this.mOne = mOne;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderBuilder<T> withBaz(final T baz) {
+    public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderWithSetterPrefixBuilder<T> withBaz(final T baz) {
       this.baz = baz;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderBuilder<T> withBars(final com.google.common.collect.ImmutableList<T> bars) {
+    public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderWithSetterPrefixBuilder<T> withBars(final com.google.common.collect.ImmutableList<T> bars) {
       this.bars = bars;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") ConstructorWithToBuilder<T> build() {
-      return new ConstructorWithToBuilder<T>(mOne, baz, bars);
+    public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderWithSetterPrefix<T> build() {
+      return new ConstructorWithToBuilderWithSetterPrefix<T>(mOne, baz, bars);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((((("ConstructorWithToBuilder.ConstructorWithToBuilderBuilder(mOne=" + this.mOne) + ", baz=") + this.baz) + ", bars=") + this.bars) + ")");
+      return (((((("ConstructorWithToBuilderWithSetterPrefix.ConstructorWithToBuilderWithSetterPrefixBuilder(mOne=" + this.mOne) + ", baz=") + this.baz) + ", bars=") + this.bars) + ")");
     }
   }
   private String mOne;
   private String mTwo;
   private T foo;
   private @lombok.Singular com.google.common.collect.ImmutableList<T> bars;
-  public @Builder(toBuilder = true) ConstructorWithToBuilder(String mOne, @Builder.ObtainVia(field = "foo") T baz, com.google.common.collect.ImmutableList<T> bars) {
+  public @Builder(toBuilder = true,setterPrefix = "with") ConstructorWithToBuilderWithSetterPrefix(String mOne, @Builder.ObtainVia(field = "foo") T baz, com.google.common.collect.ImmutableList<T> bars) {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") <T>ConstructorWithToBuilderBuilder<T> builder() {
-    return new ConstructorWithToBuilderBuilder<T>();
+  public static @java.lang.SuppressWarnings("all") <T>ConstructorWithToBuilderWithSetterPrefixBuilder<T> builder() {
+    return new ConstructorWithToBuilderWithSetterPrefixBuilder<T>();
   }
-  public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderBuilder<T> toBuilder() {
-    return new ConstructorWithToBuilderBuilder<T>().withMOne(this.mOne).withBaz(this.foo).withBars(this.bars);
+  public @java.lang.SuppressWarnings("all") ConstructorWithToBuilderWithSetterPrefixBuilder<T> toBuilder() {
+    return new ConstructorWithToBuilderWithSetterPrefixBuilder<T>().withMOne(this.mOne).withBaz(this.foo).withBars(this.bars);
   }
 }

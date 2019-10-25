@@ -4,7 +4,7 @@ import lombok.Value;
 public class BuilderWithRecursiveGenericsWithSetterPrefix {
   interface Inter<T, U extends Inter<T, U>> {
   }
-  public static final @Builder(setterPrefix = "with(setterPrefix = "with")") @Value class Test<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
+  public static final @Builder(setterPrefix = "with") @Value class Test<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
     public static @java.lang.SuppressWarnings("all") class TestBuilder<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
       private @java.lang.SuppressWarnings("all") Foo foo;
       private @java.lang.SuppressWarnings("all") Bar bar;

@@ -1,5 +1,4 @@
 import java.util.List;
-import lombok.Builder;
 class BuilderWithToBuilderWithSetterPrefix<T> {
 	private String mOne;
 	private String mTwo;

@@ -12,7 +12,7 @@ public class BuilderWithTolerateWithSetterPrefix {
 	public static class BuilderWithTolerateWithSetterPrefixBuilder {
 		@Tolerate
 		public BuilderWithTolerateWithSetterPrefixBuilder withValue(String s) {
-			return this.value(Integer.parseInt(s));
+			return this.withValue(Integer.parseInt(s));
 		}
 	}
 }

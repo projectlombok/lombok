@@ -22,7 +22,7 @@ import lombok.Singular;
           this.elems.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesWithSetterPrefixes build() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesWithSetterPrefix build() {
       java.util.List<String> elems;
       switch (((this.elems == null) ? 0 : this.elems.size())) {
       case 0 :
@@ -34,14 +34,14 @@ import lombok.Singular;
       default :
           elems = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.elems));
       }
-      return new BuilderSingularWithPrefixesWithSetterPrefixes(elems);
+      return new BuilderSingularWithPrefixesWithSetterPrefix(elems);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (("BuilderSingularWithPrefixesWithSetterPrefixes.BuilderSingularWithPrefixesWithSetterPrefixBuilder(elems=" + this.elems) + ")");
+      return (("BuilderSingularWithPrefixesWithSetterPrefix.BuilderSingularWithPrefixesWithSetterPrefixBuilder(elems=" + this.elems) + ")");
     }
   }
   private @Singular java.util.List<String> _elems;
-  @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesWithSetterPrefixes(final java.util.List<String> elems) {
+  @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesWithSetterPrefix(final java.util.List<String> elems) {
     super();
     this._elems = elems;
   }
