@@ -622,20 +622,36 @@ public class JavacHandlerUtil {
 		JavacNode typeNode = childOfType;
 		JavacTreeMaker maker = childOfType.getTreeMaker();
 		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
+		
 		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
 			JCClassDecl type = (JCClassDecl) typeNode.get();
-			ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
-			if (!type.typarams.isEmpty()) {
+			JCExpression typeIdent = makeQualifiedTypeIdent(typeNode, maker);
+			
+			if(!type.typarams.isEmpty()) {
+				ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
 				for (JCTypeParameter tp : type.typarams) {
 					typeArgs.append(maker.Ident(tp.name));
 				}
-				return maker.TypeApply(maker.Ident(type.name), typeArgs.toList());
-			} else {
-				return maker.Ident(type.name);
+				typeIdent = maker.TypeApply(typeIdent, typeArgs.toList());				
 			}
+			
+			return typeIdent;
+
 		} else {
 			return null;
 		}
+	}
+	
+	private static JCExpression makeQualifiedTypeIdent(JavacNode typeNode, JavacTreeMaker maker) {
+		if(typeNode.getKind() != Kind.TYPE)
+			return null;
+		JCExpression parentType = makeQualifiedTypeIdent(typeNode.up(), maker);
+		JCClassDecl thisType = (JCClassDecl) typeNode.get();
+		if(parentType == null)
+			return maker.Ident(thisType.name);
+		else
+			return maker.Select(parentType, thisType.name);
+		
 	}
 	
 	public static boolean isBoolean(JavacNode field) {

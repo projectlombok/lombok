@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -841,19 +842,33 @@ public class EclipseHandlerUtil {
 		EclipseNode type = context;
 		TypeReference result = null;
 		while (type != null && type.getKind() != Kind.TYPE) type = type.up();
+		
 		if (type != null && type.get() instanceof TypeDeclaration) {
+			
+			LinkedList<char[]> qualifiedTypeNameList = new LinkedList<char[]>();
+			EclipseNode parentType = type;
+			while(parentType.getKind() == Kind.TYPE && parentType.get() instanceof TypeDeclaration) {
+				qualifiedTypeNameList.add(0, ((TypeDeclaration)parentType.get()).name);
+				parentType = parentType.up();
+			}
+			char[][] qualifiedTypeNames = qualifiedTypeNameList.toArray(new char[qualifiedTypeNameList.size()][]);
+			long[] typePositions = new long[qualifiedTypeNames.length];
+			for(int i=0; i<typePositions.length; i++) typePositions[i]=p;
+			
 			TypeDeclaration typeDecl = (TypeDeclaration) type.get();
 			if (typeDecl.typeParameters != null && typeDecl.typeParameters.length > 0) {
-				TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];
+				TypeReference[] paramRefs = new TypeReference[typeDecl.typeParameters.length];
 				int idx = 0;
 				for (TypeParameter param : typeDecl.typeParameters) {
 					TypeReference typeRef = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
 					if (source != null) setGeneratedBy(typeRef, source);
-					refs[idx++] = typeRef;
+					paramRefs[idx++] = typeRef;
 				}
-				result = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
+				TypeReference[][] paramRefArrays = new TypeReference[qualifiedTypeNames.length][];
+				paramRefArrays[paramRefArrays.length-1] = paramRefs;
+				result = new ParameterizedQualifiedTypeReference(qualifiedTypeNames, paramRefArrays, 0, typePositions);
 			} else {
-				result = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
+				result = new QualifiedTypeReference(qualifiedTypeNames, typePositions);
 			}
 		}
 		if (result != null && source != null) setGeneratedBy(result, source);
