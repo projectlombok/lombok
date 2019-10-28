@@ -568,7 +568,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		List<Statement> statements = null;
 		for (BuilderFieldData bfd : builderFields) {
 			String setterPrefix = prefix.isEmpty() ? "set" : prefix;
-			//char[] setterName = fluent ? bfd.name : HandlerUtil.buildAccessorName("set", new String(bfd.name)).toCharArray();
 			String setterName;
 			if(fluent) {
 				setterName = prefix.isEmpty() ? new String(bfd.name) : HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));

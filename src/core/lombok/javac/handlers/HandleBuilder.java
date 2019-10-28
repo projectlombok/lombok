@@ -487,7 +487,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					}
 					tps = lb.toList();
 				}
-				JCMethodDecl md = generateToBuilderMethod(cfv, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters);
+				JCMethodDecl md = generateToBuilderMethod(cfv, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters, builderInstance.setterPrefix());
 				if (md != null) {
 					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 					injectMethod(tdParent, md);
@@ -536,7 +536,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private static final String BUILDER_TEMP_VAR = "builder";
-	private JCMethodDecl generateToBuilderMethod(CheckerFrameworkVersion cfv, String toBuilderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, boolean fluent, JCAnnotation ast, AccessLevel access) {
+	private JCMethodDecl generateToBuilderMethod(CheckerFrameworkVersion cfv, String toBuilderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, boolean fluent, JCAnnotation ast, AccessLevel access, String prefix) {
 		// return new ThingieBuilder<A, B>().setA(this.a).setB(this.b);
 		JavacTreeMaker maker = type.getTreeMaker();
 		
@@ -549,7 +549,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCExpression invoke = call;
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		for (BuilderFieldData bfd : builderFields) {
-			Name setterName = fluent ? bfd.name : type.toName(HandlerUtil.buildAccessorName("set", bfd.name.toString()));
+			String prefixedSetterName;
+			if(fluent) {
+				prefixedSetterName = prefix.isEmpty() ? bfd.name.toString() : HandlerUtil.buildAccessorName(prefix, bfd.name.toString());
+			} else {
+				prefixedSetterName = HandlerUtil.buildAccessorName(prefix, bfd.name.toString());
+			}
+			Name setterName = type.toName(prefixedSetterName);
 			JCExpression[] tgt = new JCExpression[bfd.singularData == null ? 1 : 2];
 			if (bfd.obtainVia == null || !bfd.obtainVia.field().isEmpty()) {
 				for (int i = 0; i < tgt.length; i++) {
