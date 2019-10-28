@@ -826,19 +826,19 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	private void makePrefixedSetterMethodForBuilder(CheckerFrameworkVersion cfv, JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, AccessLevel access, String prefix) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 
-		for (JavacNode child : builderType.down()) {
-			if (child.getKind() != Kind.METHOD) continue;
-			JCMethodDecl methodDecl = (JCMethodDecl) child.get();
-			Name existingName = methodDecl.name;
-			if (existingName.equals(fieldName) && !isTolerate(fieldNode, methodDecl)) return;
-		}
-
 		String setterPrefix = prefix.isEmpty() ? "set" : prefix;
 		String setterName;
 		if(fluent) {
 			setterName = prefix.isEmpty() ? paramName.toString() : HandlerUtil.buildAccessorName(setterPrefix, paramName.toString());
 		} else {
 			setterName = HandlerUtil.buildAccessorName(setterPrefix, paramName.toString());
+		}
+
+		for (JavacNode child : builderType.down()) {
+			if (child.getKind() != Kind.METHOD) continue;
+			JCMethodDecl methodDecl = (JCMethodDecl) child.get();
+			Name existingName = methodDecl.name;
+			if (existingName.equals(builderType.toName(setterName)) && !isTolerate(fieldNode, methodDecl)) return;
 		}
 
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
