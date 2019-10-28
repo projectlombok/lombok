@@ -931,18 +931,18 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 		char[] name = fd.name;
 
-		for (int i = 0; i < len; i++) {
-			if (!(existing[i] instanceof MethodDeclaration)) continue;
-			char[] existingName = existing[i].selector;
-			if (Arrays.equals(name, existingName) && !isTolerate(fieldNode, existing[i])) return;
-		}
-
 		String setterPrefix = prefix.isEmpty() ? "set" : prefix;
 		String setterName;
 		if(fluent) {
 			setterName = prefix.isEmpty() ? new String(paramName) : HandlerUtil.buildAccessorName(setterPrefix, new String(paramName));
 		} else {
 			setterName = HandlerUtil.buildAccessorName(setterPrefix, new String(paramName));
+		}
+
+		for (int i = 0; i < len; i++) {
+			if (!(existing[i] instanceof MethodDeclaration)) continue;
+			char[] existingName = existing[i].selector;
+			if (Arrays.equals(setterName.toCharArray(), existingName) && !isTolerate(fieldNode, existing[i])) return;
 		}
 
 		List<Annotation> methodAnnsList = Collections.<Annotation>emptyList();
