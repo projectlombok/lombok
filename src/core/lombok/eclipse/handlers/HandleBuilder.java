@@ -928,8 +928,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY;
 		int len = existing.length;
-		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
-		char[] name = fd.name;
 
 		String setterPrefix = prefix.isEmpty() ? "set" : prefix;
 		String setterName;
