@@ -104,7 +104,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	@Override public void handle(AnnotationValues<Builder> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
 		CheckerFrameworkVersion cfv = getCheckerFrameworkVersion(annotationNode);
-		
+
 		Builder builderInstance = annotation.getInstance();
 		AccessLevel accessForOuters = builderInstance.access();
 		if (accessForOuters == null) accessForOuters = AccessLevel.PUBLIC;
@@ -180,7 +180,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.builderFieldName = bfd.name;
 				bfd.annotations = findCopyableAnnotations(fieldNode);
 				bfd.type = fd.vartype;
-				bfd.singularData = getSingularData(fieldNode);
+				bfd.singularData = getSingularData(fieldNode, builderInstance.setterPrefix());
 				bfd.originalFieldNode = fieldNode;
 				
 				if (bfd.singularData != null && isDefault != null) {
@@ -369,7 +369,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.rawName = raw.name;
 				bfd.annotations = findCopyableAnnotations(param);
 				bfd.type = raw.vartype;
-				bfd.singularData = getSingularData(param);
+				bfd.singularData = getSingularData(param, builderInstance.setterPrefix());
 				bfd.originalFieldNode = param;
 				addObtainVia(bfd, param);
 				builderFields.add(bfd);
@@ -436,7 +436,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : builderFields) {
-			makeSetterMethodsForBuilder(cfv, builderType, bfd, annotationNode, fluent, chain, accessForInners);
+			makePrefixedSetterMethodsForBuilder(cfv, builderType, bfd, annotationNode, fluent, chain, accessForInners, builderInstance.setterPrefix());
 		}
 		
 		{
@@ -487,7 +487,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					}
 					tps = lb.toList();
 				}
-				JCMethodDecl md = generateToBuilderMethod(cfv, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters);
+				JCMethodDecl md = generateToBuilderMethod(cfv, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters, builderInstance.setterPrefix());
 				if (md != null) {
 					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 					injectMethod(tdParent, md);
@@ -536,7 +536,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private static final String BUILDER_TEMP_VAR = "builder";
-	private JCMethodDecl generateToBuilderMethod(CheckerFrameworkVersion cfv, String toBuilderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, boolean fluent, JCAnnotation ast, AccessLevel access) {
+	private JCMethodDecl generateToBuilderMethod(CheckerFrameworkVersion cfv, String toBuilderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, boolean fluent, JCAnnotation ast, AccessLevel access, String prefix) {
 		// return new ThingieBuilder<A, B>().setA(this.a).setB(this.b);
 		JavacTreeMaker maker = type.getTreeMaker();
 		
@@ -549,7 +549,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCExpression invoke = call;
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		for (BuilderFieldData bfd : builderFields) {
-			Name setterName = fluent ? bfd.name : type.toName(HandlerUtil.buildAccessorName("set", bfd.name.toString()));
+			String prefixedSetterName;
+			if(fluent) {
+				prefixedSetterName = prefix.isEmpty() ? bfd.name.toString() : HandlerUtil.buildAccessorName(prefix, bfd.name.toString());
+			} else {
+				prefixedSetterName = HandlerUtil.buildAccessorName(prefix, bfd.name.toString());
+			}
+			Name setterName = type.toName(prefixedSetterName);
 			JCExpression[] tgt = new JCExpression[bfd.singularData == null ? 1 : 2];
 			if (bfd.obtainVia == null || !bfd.obtainVia.field().isEmpty()) {
 				for (int i = 0; i < tgt.length; i++) {
@@ -622,12 +628,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	
 	static List<JCVariableDecl> generateBuildArgs(CheckerFrameworkVersion cfv, JavacNode type, java.util.List<BuilderFieldData> builderFields) {
 		if (!cfv.generateCalledMethods()) return List.<JCVariableDecl>nil();
-		
+
 		ArrayList<String> mandatories = new ArrayList<String>();
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData == null && bfd.nameOfSetFlag == null) mandatories.add(bfd.name.toString());
 		}
-		
+
 		JCExpression arg;
 		JavacTreeMaker maker = type.getTreeMaker();
 		if (mandatories.size() == 0) return List.<JCVariableDecl>nil();
@@ -642,7 +648,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCVariableDecl recv = maker.VarDef(maker.Modifiers(0L, List.<JCAnnotation>of(recvAnno)), type.toName("this"), maker.Ident(builderTypeNode.name), null);
 		return List.of(recv);
 	}
-	
+
 	private JCMethodDecl generateBuildMethod(CheckerFrameworkVersion cfv, JavacNode tdParent, boolean isStatic, String buildName, Name builderName, JCExpression returnType, java.util.List<BuilderFieldData> builderFields, JavacNode type, List<JCExpression> thrownExceptions, JCTree source, boolean addCleaning, AccessLevel access) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
@@ -787,18 +793,56 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	
 	private void makeSimpleSetterMethodForBuilder(CheckerFrameworkVersion cfv, JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, AccessLevel access) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
-		
+
 		for (JavacNode child : builderType.down()) {
 			if (child.getKind() != Kind.METHOD) continue;
 			JCMethodDecl methodDecl = (JCMethodDecl) child.get();
 			Name existingName = methodDecl.name;
 			if (existingName.equals(fieldName) && !isTolerate(fieldNode, methodDecl)) return;
 		}
-		
+
 		String setterName = fluent ? paramName.toString() : HandlerUtil.buildAccessorName("set", paramName.toString());
-		
+
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
-		
+
+		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(access), deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, chain, source, methodAnns, annosOnParam);
+		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
+		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER);
+
+		injectMethod(builderType, newMethod);
+	}
+
+	public void makePrefixedSetterMethodsForBuilder(CheckerFrameworkVersion cfv, JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain, AccessLevel access, String prefix) {
+		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
+		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
+			makePrefixedSetterMethodForBuilder(cfv, builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.name, fieldNode.nameOfSetFlag, source, fluent, chain, fieldNode.annotations, fieldNode.originalFieldNode, access, prefix);
+		} else {
+			// TODO prefixed version
+			fieldNode.singularData.getSingularizer().generateMethods(cfv, fieldNode.singularData, deprecate, builderType, source.get(), fluent, chain, access);
+		}
+	}
+
+	private void makePrefixedSetterMethodForBuilder(CheckerFrameworkVersion cfv, JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, AccessLevel access, String prefix) {
+		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
+
+		String setterPrefix = prefix.isEmpty() ? "set" : prefix;
+		String setterName;
+		if(fluent) {
+			setterName = prefix.isEmpty() ? paramName.toString() : HandlerUtil.buildAccessorName(setterPrefix, paramName.toString());
+		} else {
+			setterName = HandlerUtil.buildAccessorName(setterPrefix, paramName.toString());
+		}
+
+		for (JavacNode child : builderType.down()) {
+			if (child.getKind() != Kind.METHOD) continue;
+			JCMethodDecl methodDecl = (JCMethodDecl) child.get();
+			Name existingName = methodDecl.name;
+			if (existingName.equals(builderType.toName(setterName)) && !isTolerate(fieldNode, methodDecl)) return;
+		}
+
+		JavacTreeMaker maker = fieldNode.getTreeMaker();
+
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
 		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(access), deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, chain, source, methodAnns, annosOnParam);
 		if (cfv.generateCalledMethods()) {
@@ -809,10 +853,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
 		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER);
-		
+
 		injectMethod(builderType, newMethod);
 	}
-	
+
 	public JavacNode makeBuilderClass(boolean isStatic, JavacNode source, JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast, AccessLevel access) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		int modifiers = toJavacModifier(access);
@@ -838,8 +882,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	 * or parameter), or null if there's no {@code @Singular} annotation on it.
 	 * 
 	 * @param node The node (field or method param) to inspect for its name and potential {@code @Singular} annotation.
+	 * @param setterPrefix
 	 */
-	private SingularData getSingularData(JavacNode node) {
+	private SingularData getSingularData(JavacNode node, final String setterPrefix) {
 		for (JavacNode child : node.down()) {
 			if (!annotationTypeMatches(Singular.class, child)) continue;
 			Name pluralName = node.getKind() == Kind.FIELD ? removePrefixFromField(node) : ((JCVariableDecl) node.get()).name;
@@ -881,7 +926,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				return null;
 			}
 			
-			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer);
+			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, setterPrefix);
 		}
 		
 		return null;
