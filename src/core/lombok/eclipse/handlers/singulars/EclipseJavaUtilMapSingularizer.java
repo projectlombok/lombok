@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Handler;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
@@ -63,7 +62,6 @@ import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.StatementMaker;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.TypeReferenceMaker;
 import lombok.eclipse.handlers.HandleNonNull;
-import org.objectweb.asm.Handle;
 
 @ProviderFor(EclipseSingularizer.class)
 public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer {
@@ -247,12 +245,11 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		valueParam.annotations = typeUseAnnsValue;
 		md.arguments = new Argument[] {keyParam, valueParam};
 		md.returnType = returnType;
-
+		
 		String name = new String(data.getSingularName());
-		String setterPrefix = new String(data.getSetterPrefix());
-		String prefixedSingularName = setterPrefix.isEmpty() ? name : HandlerUtil.buildAccessorName(setterPrefix, name);
-		String setterName = fluent ? prefixedSingularName : HandlerUtil.buildAccessorName("put", name);
-
+		String setterPrefix = data.getSetterPrefix().length > 0 ? new String(data.getSetterPrefix()) : fluent ? "" : "put";
+		String setterName = HandlerUtil.buildAccessorName(setterPrefix, name);
+		
 		md.selector = setterName.toCharArray();
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
@@ -317,12 +314,11 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
-
+		
 		String name = new String(data.getPluralName());
-		String setterPrefix = new String(data.getSetterPrefix());
-		String prefixedSingularName = setterPrefix.isEmpty() ? name : HandlerUtil.buildAccessorName(setterPrefix, name);
-		String setterName = fluent ? prefixedSingularName : HandlerUtil.buildAccessorName("put", name);
-
+		String setterPrefix = data.getSetterPrefix().length > 0 ? new String(data.getSetterPrefix()) : fluent ? "" : "put";
+		String setterName = HandlerUtil.buildAccessorName(setterPrefix, name);
+		
 		md.selector = setterName.toCharArray();
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		

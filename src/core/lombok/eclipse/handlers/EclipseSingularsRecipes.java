@@ -129,16 +129,9 @@ public class EclipseSingularsRecipes {
 		private final ASTNode source;
 		
 		public SingularData(EclipseNode annotation, char[] singularName, char[] pluralName, List<TypeReference> typeArgs, String targetFqn, EclipseSingularizer singularizer, ASTNode source) {
-			this.annotation = annotation;
-			this.singularName = singularName;
-			this.pluralName = pluralName;
-			this.typeArgs = typeArgs;
-			this.targetFqn = targetFqn;
-			this.singularizer = singularizer;
-			this.source = source;
-			this.setterPrefix = new char[0];
+			this(annotation, singularName, pluralName, typeArgs, targetFqn, singularizer, source, new char[0]);
 		}
-
+		
 		public SingularData(EclipseNode annotation, char[] singularName, char[] pluralName, List<TypeReference> typeArgs, String targetFqn, EclipseSingularizer singularizer, ASTNode source, char[] setterPrefix) {
 			this.annotation = annotation;
 			this.singularName = singularName;
@@ -149,7 +142,7 @@ public class EclipseSingularsRecipes {
 			this.source = source;
 			this.setterPrefix = setterPrefix;
 		}
-
+		
 		public void setGeneratedByRecursive(ASTNode target) {
 			SetGeneratedByVisitor visitor = new SetGeneratedByVisitor(source);
 			
@@ -177,11 +170,11 @@ public class EclipseSingularsRecipes {
 		public char[] getPluralName() {
 			return pluralName;
 		}
-
+		
 		public char[] getSetterPrefix() {
 			return setterPrefix;
 		}
-
+		
 		public List<TypeReference> getTypeArgs() {
 			return typeArgs;
 		}

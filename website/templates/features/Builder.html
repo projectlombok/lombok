@@ -68,10 +68,12 @@
 					If you want <code>toBuilder()</code> (default: no)
 				</li><li>
 					The access level of all generated elements (default: <code>public</code>).
+				</li><li>
+					(discouraged) If you want your builder's 'set' methods to have a prefix, i.e. <code>Person.builder().setName("Jane").build()</code> instead of <code>Person.builder().name("Jane").build()</code> and what it should be.
 				</li>
 			</ul>
 			Example usage where all options are changed from their defaults:<br />
-			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true, access = AccessLevel.PRIVATE)</code><br />
+			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true, access = AccessLevel.PRIVATE, setterPrefix = "set")</code><br />
 		</p>
 	</@f.overview>
 	
@@ -132,6 +134,8 @@
 			If lombok cannot singularize your identifier, or it is ambiguous, lombok will generate an error and force you to explicitly specify the singular name.
 		</p><p>
 				The snippet below does not show what lombok generates for a <code>@Singular</code> field/parameter because it is rather complicated. You can view a snippet <a href="builderSingular">here</a>.
+		</p><p>
+			If also using <code>setterPrefix = "with"</code>, the generated names are, for example, <code>withName</code> (add 1 name), <code>withNames</code> (add many names), and <code>clearNames</code> (reset all names).
 		</p>
 	</@f.featureSection>
 

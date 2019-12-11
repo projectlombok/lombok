@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2013-2019 The Project Lombok Authors.
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -567,13 +567,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		Expression receiver = invoke;
 		List<Statement> statements = null;
 		for (BuilderFieldData bfd : builderFields) {
-			String setterPrefix = prefix.isEmpty() ? "set" : prefix;
-			String setterName;
-			if(fluent) {
-				setterName = prefix.isEmpty() ? new String(bfd.name) : HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));
-			} else {
-				setterName = HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));
-			}
+			String setterName = new String(bfd.name);
+			String setterPrefix = !prefix.isEmpty() ? prefix : fluent ? "" : "set";
+			if (!setterPrefix.isEmpty()) setterName = HandlerUtil.buildAccessorName(setterPrefix, setterName);
+			
 			MessageSend ms = new MessageSend();
 			Expression[] tgt = new Expression[bfd.singularData == null ? 1 : 2];
 			
@@ -868,51 +865,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	private static final AbstractMethodDeclaration[] EMPTY = {};
 	
-	public void makeSetterMethodsForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain, AccessLevel access, EclipseNode originalFieldNode) {
-		boolean deprecate = isFieldDeprecated(bfd.originalFieldNode);
-		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(cfv, builderType, deprecate, bfd.createdFields.get(0), bfd.name, bfd.nameOfSetFlag, sourceNode, fluent, chain, bfd.annotations, access, originalFieldNode);
-		} else {
-			bfd.singularData.getSingularizer().generateMethods(cfv, bfd.singularData, deprecate, builderType, fluent, chain, access);
-		}
-	}
-	
-	private void makeSimpleSetterMethodForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] paramName, char[] nameOfSetFlag, EclipseNode sourceNode, boolean fluent, boolean chain, Annotation[] annotations, AccessLevel access, EclipseNode originalFieldNode) {
-		TypeDeclaration td = (TypeDeclaration) builderType.get();
-		AbstractMethodDeclaration[] existing = td.methods;
-		ASTNode source = sourceNode.get();
-		if (existing == null) existing = EMPTY;
-		int len = existing.length;
-		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
-		char[] name = fd.name;
-		
-		for (int i = 0; i < len; i++) {
-			if (!(existing[i] instanceof MethodDeclaration)) continue;
-			char[] existingName = existing[i].selector;
-			if (Arrays.equals(name, existingName) && !isTolerate(fieldNode, existing[i])) return;
-		}
-		
-		String setterName = fluent ? new String(paramName) : HandlerUtil.buildAccessorName("set", new String(paramName));
-		
-		List<Annotation> methodAnnsList = Arrays.asList(EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode));
-		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
-		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
-		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, paramName, nameOfSetFlag, chain, toEclipseModifier(access),
-			sourceNode, methodAnnsList, annotations != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annotations)) : Collections.<Annotation>emptyList());
-		if (cfv.generateCalledMethods()) {
-			Argument[] arr = setter.arguments == null ? new Argument[0] : setter.arguments;
-			Argument[] newArr = new Argument[arr.length + 1];
-			System.arraycopy(arr, 0, newArr, 1, arr.length);
-			newArr[0] = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, new SingleTypeReference(builderType.getName().toCharArray(), 0), Modifier.FINAL);
-			char[][] nameNotCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__NOT_CALLED);
-			SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameNotCalled, poss(source, nameNotCalled.length)), source.sourceStart);
-			ann.memberValue = new StringLiteral(setterName.toCharArray(), 0, 0, 0);
-			newArr[0].annotations = new Annotation[] {ann};
-			setter.arguments = newArr;
-		}
-		injectMethod(builderType, setter);
-	}
-	
 	public void makePrefixedSetterMethodsForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain, AccessLevel access, EclipseNode originalFieldNode, String prefix) {
 		boolean deprecate = isFieldDeprecated(bfd.originalFieldNode);
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
@@ -988,9 +940,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	/**
 	 * Returns the explicitly requested singular annotation on this node (field
 	 * or parameter), or null if there's no {@code @Singular} annotation on it.
-	 *
+	 * 
 	 * @param node The node (field or method param) to inspect for its name and potential {@code @Singular} annotation.
-	 * @param setterPrefix
+	 * @param setterPrefix Explicitly requested setter prefix.
 	 */
 	private SingularData getSingularData(EclipseNode node, ASTNode source, final String setterPrefix) {
 		for (EclipseNode child : node.down()) {

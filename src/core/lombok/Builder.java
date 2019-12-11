@@ -155,14 +155,17 @@ public @interface Builder {
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
 
 	/**
-	 * Prefix to prepend to set methods in the generated builder class.  By default, generated methods to not include a
-	 * prefix.  If this value populated, the first letter of the generated method name will be capitalized.
+	 * Prefix to prepend to 'set' methods in the generated builder class.  By default, generated methods do not include a prefix.
 	 *
-	 * For example, a method normally generated as {@code someField(String someField)} would instead be generated as {@code withSomeField(String someField)}
+	 * For example, a method normally generated as {@code someField(String someField)} would instead be
+	 * generated as {@code withSomeField(String someField)} if using {@code @Builder(setterPrefix = "with")}.
 	 *
 	 * Note that using "with" to prefix builder setter methods is strongly discouraged as as "with" normally
 	 * suggests immutable data structures, and builders by definition are mutable objects.
-	 *
+	 * 
+	 * For {@code @Singular} fields, the generated methods are called {@code withName}, {@code withNames}, and {@code clearNames}, instead of
+	 * the default {@code name}, {@code names}, and {@code clearNames}.
+	 * 
 	 * @return The prefix to prepend to generated method names.
 	 */
 	String setterPrefix() default "";
