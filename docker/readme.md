@@ -14,6 +14,7 @@ can download a specific version by adding `--build-arg lombokjar=lombok-<major.m
 
 The jdk version to be used. Supported values:
 
+- `13` (experimental)
 - `12` (default)
 - `11`
 - `10`
@@ -30,5 +31,7 @@ you can mount your recently built lombok.jar by providing `-v /<lombokhome>/dist
 
 ## Examples
 
+- [ant](ant/readme.md)
+- [bazel](bazel/readme.md)
 - [gradle](gradle/readme.md)
 - [maven](maven/readme.md)
