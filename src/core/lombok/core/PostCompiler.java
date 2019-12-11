@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,9 @@ public final class PostCompiler {
 					previous = next;
 				}
 			} catch (Exception e) {
-				diagnostics.addWarning(String.format("Error during the transformation of '%s'; post-compiler '%s' caused an exception: %s", fileName, transformation.getClass().getName(), e));
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw, true));
+				diagnostics.addError(String.format("Error during the transformation of '%s'; post-compiler '%s' caused an exception: %s", fileName, transformation.getClass().getName(), sw));
 			}
 		}
 		return previous;
@@ -59,7 +61,7 @@ public final class PostCompiler {
 			transformations = Collections.emptyList();
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw, true));
-			diagnostics.addWarning("Could not load post-compile transformers: " + e.getMessage() + "\n" + sw.toString());
+			diagnostics.addError("Could not load post-compile transformers: " + e.getMessage() + "\n" + sw.toString());
 		}
 	}
 	
