@@ -1,0 +1,11 @@
+import lombok.experimental.Tolerate;
+
+public class TolerateExample {
+    @Setter
+    private Date date;
+
+    @Tolerate
+    public void setDate(String date) {
+        this.date = Date.valueOf(date);
+    }
+}

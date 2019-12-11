@@ -1,0 +1,34 @@
+<#import "../_features.html" as f>
+
+    <@f.scaffold title="@Tolerate" logline="Skip, jump, and forget! Skip a method or constructor.">
+        <@f.history>
+            <p>
+                <code>@Tolerate</code> was introduced as feature in lombok v1.14.2<br />
+            </p>
+        </@f.history>
+
+        <@f.experimental>
+            <ul>
+                <li>
+                    Not used that much.
+                </li>
+                <li>
+                    Difficult to support for edge cases, such as recursive delegation.
+                </li>
+            </ul>
+        </@f.experimental>
+
+        <@f.overview>
+            <p>
+                Any method or constructor can be annotated with <code>@Tolerate</code> and lombok will skip it when
+                considering whether or not to generate a method or constructor. This is useful if the types of the
+                parameters of your method do not clash with what lombok would generate.
+            </p>
+            <p>
+                Put on any method or constructor to make lombok pretend it doesn't exist,i.e., to generate a method
+                which would otherwise be skipped due to possible conflicts.
+            </p>
+        </@f.overview>
+
+        <@f.snippets name="experimental/Tolerate" />
+    </@f.scaffold>
