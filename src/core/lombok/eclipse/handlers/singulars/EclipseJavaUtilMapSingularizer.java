@@ -245,7 +245,12 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		valueParam.annotations = typeUseAnnsValue;
 		md.arguments = new Argument[] {keyParam, valueParam};
 		md.returnType = returnType;
-		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName("put", new String(data.getSingularName())).toCharArray();
+		
+		String name = new String(data.getSingularName());
+		String setterPrefix = data.getSetterPrefix().length > 0 ? new String(data.getSetterPrefix()) : fluent ? "" : "put";
+		String setterName = HandlerUtil.buildAccessorName(setterPrefix, name);
+		
+		md.selector = setterName.toCharArray();
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
 		data.setGeneratedByRecursive(md);
@@ -309,7 +314,12 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
-		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName("putAll", new String(data.getPluralName())).toCharArray();
+		
+		String name = new String(data.getPluralName());
+		String setterPrefix = data.getSetterPrefix().length > 0 ? new String(data.getSetterPrefix()) : fluent ? "" : "put";
+		String setterName = HandlerUtil.buildAccessorName(setterPrefix, name);
+		
+		md.selector = setterName.toCharArray();
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
 		data.setGeneratedByRecursive(md);
