@@ -1,34 +1,36 @@
 <#import "../_features.html" as f>
 
-    <@f.scaffold title="@Tolerate" logline="Skip, jump, and forget! Skip a method or constructor.">
-        <@f.history>
-            <p>
-                <code>@Tolerate</code> was introduced as feature in lombok v1.14.2<br />
-            </p>
-        </@f.history>
+<@f.scaffold title="@Tolerate" logline="Skip, jump, and forget! Make lombok disregard an existing method or constructor.">
+	<@f.history>
+		<p>
+			<code>@Tolerate</code> was introduced as feature in lombok v1.14.2<br />
+		</p>
+	</@f.history>
 
-        <@f.experimental>
-            <ul>
-                <li>
-                    Not used that much.
-                </li>
-                <li>
-                    Difficult to support for edge cases, such as recursive delegation.
-                </li>
-            </ul>
-        </@f.experimental>
+	<@f.experimental>
+		<ul>
+			<li>
+				Not used that much.
+			</li>
+			<li>
+				Difficult to support for edge cases, such as recursive delegation.
+			</li>
+		</ul>
+	</@f.experimental>
 
-        <@f.overview>
-            <p>
-                Any method or constructor can be annotated with <code>@Tolerate</code> and lombok will skip it when
-                considering whether or not to generate a method or constructor. This is useful if the types of the
-                parameters of your method do not clash with what lombok would generate.
-            </p>
-            <p>
-                Put on any method or constructor to make lombok pretend it doesn't exist,i.e., to generate a method
-                which would otherwise be skipped due to possible conflicts.
-            </p>
-        </@f.overview>
+	<@f.overview>
+		<p>
+			Any method or constructor can be annotated with <code>@Tolerate</code> and lombok will act as if it
+			does not exist. For example, normally lombok would not generate a <code>setDate</code> method for field
+			named <code>date</code> if you already have a method named <code>setDate</code> in your code already. By
+			annotating that method with <code>@Tolerate</code>, lombok will generate it anyway. This can be useful if the
+			type of the parameter of your existing method is different and doesn't clash.
+		</p>
+		<p>
+			Put on any method or constructor to make lombok pretend it doesn't exist, i.e., to generate a method
+			which would otherwise be skipped due to possible conflicts.
+		</p>
+	</@f.overview>
 
-        <@f.snippets name="experimental/Tolerate" />
-    </@f.scaffold>
+	<@f.snippets name="experimental/Tolerate" />
+</@f.scaffold>
