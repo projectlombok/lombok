@@ -106,6 +106,7 @@ public class HandlerUtil {
 			"lombok.NonNull",
 			// To update Checker Framework annotations, run:
 			// grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' $CHECKERFRAMEWORK/checker/src/main/java  $CHECKERFRAMEWORK/framework/src/main/java | grep '\.java$' | sed 's/.*\/java\//\t\t\t"/' | sed 's/\.java$/",/' | sed 's/\//./g' | sort
+			// Only add new annotations, do not remove annotations that have been removed from the lastest version of the Checker Framework.
 			"org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey",
 			"org.checkerframework.checker.compilermsgs.qual.CompilerMessageKeyBottom",
 			"org.checkerframework.checker.compilermsgs.qual.UnknownCompilerMessageKey",
