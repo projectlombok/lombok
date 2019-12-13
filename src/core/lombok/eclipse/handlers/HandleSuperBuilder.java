@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -222,12 +223,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// <C, B> are the generics for our builder.
 		String classGenericName = "C";
 		String builderGenericName = "B";
-		// If these generics' names collide with any generics on the annotated class, modify them.
+		// We have to make sure that the generics' names do not collide with any generics on the annotated class,
+		// the classname itself, or any member type name of the annotated class.
 		// For instance, if there are generics <B, B2, C> on the annotated class, use "C2" and "B3" for our builder.
-		java.util.List<String> typeParamStrings = new ArrayList<String>();
-		for (TypeParameter typeParam : typeParams) typeParamStrings.add(typeParam.toString());
-		classGenericName = generateNonclashingNameFor(classGenericName, typeParamStrings);
-		builderGenericName = generateNonclashingNameFor(builderGenericName, typeParamStrings);
+		java.util.Set<String> usedNames = gatherUsedTypeNames(typeParams, td);
+		classGenericName = generateNonclashingNameFor(classGenericName, usedNames);
+		builderGenericName = generateNonclashingNameFor(builderGenericName, usedNames);
 		
 		TypeReference extendsClause = td.superclass;
 		TypeReference superclassBuilderClass = null;
@@ -415,7 +416,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 		}
 	}
-	
+
 	private EclipseNode generateBuilderAbstractClass(EclipseNode tdParent, String builderClass,
 			TypeReference superclassBuilderClass, TypeParameter[] typeParams,
 			ASTNode source, String classGenericName, String builderGenericName) {
@@ -1052,7 +1053,29 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return null;
 	}
 	
-	private String generateNonclashingNameFor(String classGenericName, java.util.List<String> typeParamStrings) {
+	private java.util.Set<String> gatherUsedTypeNames(TypeParameter[] typeParams, TypeDeclaration td) {
+		java.util.HashSet<String> usedNames = new HashSet<String>();
+		
+		// 1. Add type parameter names.
+		for (TypeParameter typeParam : typeParams)
+			usedNames.add(typeParam.toString());
+		
+		// 2. Add class name.
+		usedNames.add(String.valueOf(td.name));
+		
+		// 3. Add used type names.
+		if (td.fields != null) {
+			for (FieldDeclaration field : td.fields) {
+				char[][] typeName = field.type.getTypeName();
+				if (typeName.length >= 1) // Add the first token, because only that can collide.
+					usedNames.add(String.valueOf(typeName[0]));
+			}
+		}
+		
+		return usedNames;
+	}
+	
+	private String generateNonclashingNameFor(String classGenericName, java.util.Set<String> typeParamStrings) {
 		if (!typeParamStrings.contains(classGenericName)) return classGenericName;
 		int counter = 2;
 		while (typeParamStrings.contains(classGenericName + counter)) counter++;
