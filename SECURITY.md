@@ -1,4 +1,4 @@
-#Security Policies and Procedures
+# Security Policies and Procedures
 
 Lombok only runs during compilation and is not required on your servers or in your application's distribution. Nevertheless, the _Project Lombok_ team and community take all security bugs seriously.
 
