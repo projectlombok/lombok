@@ -21,53 +21,53 @@ class BuilderSingularNoAutoWithSetterPrefix {
 		BuilderSingularNoAutoWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final String things) {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final String things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.add(things);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final java.util.Collection<? extends String> things) {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder withThings(final java.util.Collection<? extends String> things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.addAll(things);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder clearThings() {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder clearThings() {
 			if (this.things != null) this.things.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder withWidget(final String widget) {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder withWidget(final String widget) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.add(widget);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder withWidgets(final java.util.Collection<? extends String> widgets) {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder withWidgets(final java.util.Collection<? extends String> widgets) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.addAll(widgets);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder clearWidgets() {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder clearWidgets() {
 			if (this.widgets != null) this.widgets.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder withItems(final String items) {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder withItems(final String items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.add(items);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder withItems(final java.util.Collection<? extends String> items) {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder withItems(final java.util.Collection<? extends String> items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.addAll(items);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoWithSetterPrefixBuilder clearItems() {
+		public BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder clearItems() {
 			if (this.items != null) this.items.clear();
 			return this;
 		}
@@ -115,7 +115,7 @@ class BuilderSingularNoAutoWithSetterPrefix {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularNoAutoWithSetterPrefixBuilder builder() {
-		return new BuilderSingularNoAutoWithSetterPrefixBuilder();
+	public static BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder builder() {
+		return new BuilderSingularNoAutoWithSetterPrefix.BuilderSingularNoAutoWithSetterPrefixBuilder();
 	}
 }

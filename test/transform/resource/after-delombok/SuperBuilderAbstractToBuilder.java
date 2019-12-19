@@ -2,16 +2,16 @@ public class SuperBuilderAbstractToBuilder {
 	public static class Parent {
 		int parentField;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
+		public static abstract class ParentBuilder<C extends SuperBuilderAbstractToBuilder.Parent, B extends SuperBuilderAbstractToBuilder.Parent.ParentBuilder<C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private int parentField;
 			@java.lang.SuppressWarnings("all")
 			protected B $fillValuesFrom(final C instance) {
-				ParentBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
+				SuperBuilderAbstractToBuilder.Parent.ParentBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
-			private static void $fillValuesFromInstanceIntoBuilder(final Parent instance, final ParentBuilder<?, ?> b) {
+			private static void $fillValuesFromInstanceIntoBuilder(final SuperBuilderAbstractToBuilder.Parent instance, final SuperBuilderAbstractToBuilder.Parent.ParentBuilder<?, ?> b) {
 				b.parentField(instance.parentField);
 			}
 			@java.lang.SuppressWarnings("all")
@@ -30,49 +30,49 @@ public class SuperBuilderAbstractToBuilder {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
+		private static final class ParentBuilderImpl extends SuperBuilderAbstractToBuilder.Parent.ParentBuilder<SuperBuilderAbstractToBuilder.Parent, SuperBuilderAbstractToBuilder.Parent.ParentBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private ParentBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl self() {
+			protected SuperBuilderAbstractToBuilder.Parent.ParentBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Parent build() {
-				return new Parent(this);
+			public SuperBuilderAbstractToBuilder.Parent build() {
+				return new SuperBuilderAbstractToBuilder.Parent(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Parent(final ParentBuilder<?, ?> b) {
+		protected Parent(final SuperBuilderAbstractToBuilder.Parent.ParentBuilder<?, ?> b) {
 			this.parentField = b.parentField;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static ParentBuilder<?, ?> builder() {
-			return new ParentBuilderImpl();
+		public static SuperBuilderAbstractToBuilder.Parent.ParentBuilder<?, ?> builder() {
+			return new SuperBuilderAbstractToBuilder.Parent.ParentBuilderImpl();
 		}
 		@java.lang.SuppressWarnings("all")
-		public ParentBuilder<?, ?> toBuilder() {
-			return new ParentBuilderImpl().$fillValuesFrom(this);
+		public SuperBuilderAbstractToBuilder.Parent.ParentBuilder<?, ?> toBuilder() {
+			return new SuperBuilderAbstractToBuilder.Parent.ParentBuilderImpl().$fillValuesFrom(this);
 		}
 	}
 	public static abstract class Child extends Parent {
 		double childField;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+		public static abstract class ChildBuilder<C extends SuperBuilderAbstractToBuilder.Child, B extends SuperBuilderAbstractToBuilder.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private double childField;
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			protected B $fillValuesFrom(final C instance) {
 				super.$fillValuesFrom(instance);
-				ChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
+				SuperBuilderAbstractToBuilder.Child.ChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
-			private static void $fillValuesFromInstanceIntoBuilder(final Child instance, final ChildBuilder<?, ?> b) {
+			private static void $fillValuesFromInstanceIntoBuilder(final SuperBuilderAbstractToBuilder.Child instance, final SuperBuilderAbstractToBuilder.Child.ChildBuilder<?, ?> b) {
 				b.childField(instance.childField);
 			}
 			@java.lang.Override
@@ -93,7 +93,7 @@ public class SuperBuilderAbstractToBuilder {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Child(final ChildBuilder<?, ?> b) {
+		protected Child(final SuperBuilderAbstractToBuilder.Child.ChildBuilder<?, ?> b) {
 			super(b);
 			this.childField = b.childField;
 		}
@@ -101,18 +101,18 @@ public class SuperBuilderAbstractToBuilder {
 	public static class GrandChild extends Child {
 		String grandChildField;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class GrandChildBuilder<C extends GrandChild, B extends GrandChildBuilder<C, B>> extends Child.ChildBuilder<C, B> {
+		public static abstract class GrandChildBuilder<C extends SuperBuilderAbstractToBuilder.GrandChild, B extends SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilder<C, B>> extends Child.ChildBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private String grandChildField;
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			protected B $fillValuesFrom(final C instance) {
 				super.$fillValuesFrom(instance);
-				GrandChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
+				SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
-			private static void $fillValuesFromInstanceIntoBuilder(final GrandChild instance, final GrandChildBuilder<?, ?> b) {
+			private static void $fillValuesFromInstanceIntoBuilder(final SuperBuilderAbstractToBuilder.GrandChild instance, final SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilder<?, ?> b) {
 				b.grandChildField(instance.grandChildField);
 			}
 			@java.lang.Override
@@ -133,33 +133,33 @@ public class SuperBuilderAbstractToBuilder {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class GrandChildBuilderImpl extends GrandChildBuilder<GrandChild, GrandChildBuilderImpl> {
+		private static final class GrandChildBuilderImpl extends SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilder<SuperBuilderAbstractToBuilder.GrandChild, SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private GrandChildBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected GrandChildBuilderImpl self() {
+			protected SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public GrandChild build() {
-				return new GrandChild(this);
+			public SuperBuilderAbstractToBuilder.GrandChild build() {
+				return new SuperBuilderAbstractToBuilder.GrandChild(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected GrandChild(final GrandChildBuilder<?, ?> b) {
+		protected GrandChild(final SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilder<?, ?> b) {
 			super(b);
 			this.grandChildField = b.grandChildField;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static GrandChildBuilder<?, ?> builder() {
-			return new GrandChildBuilderImpl();
+		public static SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilder<?, ?> builder() {
+			return new SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilderImpl();
 		}
 		@java.lang.SuppressWarnings("all")
-		public GrandChildBuilder<?, ?> toBuilder() {
-			return new GrandChildBuilderImpl().$fillValuesFrom(this);
+		public SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilder<?, ?> toBuilder() {
+			return new SuperBuilderAbstractToBuilder.GrandChild.GrandChildBuilderImpl().$fillValuesFrom(this);
 		}
 	}
 	public static void test() {

@@ -5,6 +5,7 @@ Lombok Changelog
 * PLATFORM: Support for JDK13 (including `yield` in switch expressions, as well as delombok having a nicer style for arrow-style switch blocks, and text blocks).
 * FEATURE: You can now configure a builder's 'setter' prefixes via `@Builder(setterPrefix = "set")` for example. We discourage doing this, but if some library you use requires them, have at it. [Pull Request #2174](https://github.com/rzwitserloot/lombok/pull/2174], [Issue #1805](https://github.com/rzwitserloot/lombok/issues/1805).
 * BUGFIX: Referring to an inner class inside the generics on a class marked with `@SuperBuilder` would cause the error `wrong number of type arguments; required 3` [Issue #2262](https://github.com/rzwitserloot/lombok/issues/2262); fixed by github user [`@Lekanich`](https://github.com/rzwitserloot/lombok/issues/2262) - thank you!
+* IMPROBABLE BREAKING CHANGE: Lombok now generates qualified types (so, `Outer.Inner` instead of just `Inner`) in most type signatures that it generates; this should avoid exotic scenarios where the types lombok puts in signatures end up referring to unintended other types, which can occur if your class implements an interface that itself defines a type with the same name as one defined in your source file. I told you it was exotic. Thanks to Hunter Anderson for doing some preliminary work on this change. [Issue #2268](https://github.com/rzwitserloot/lombok/issues/2268)
 
 
 ### v1.18.10 (September 10th, 2019)

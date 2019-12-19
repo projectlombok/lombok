@@ -14,12 +14,12 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
 		BuilderWithExistingBuilderClassWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg1(final Z arg1) {
+		public BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg1(final Z arg1) {
 			this.arg1 = arg1;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg3(final String arg3) {
+		public BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg3(final String arg3) {
 			this.arg3 = arg3;
 			return this;
 		}
@@ -34,7 +34,7 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <Z extends Number> BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> builder() {
-		return new BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z>();
+	public static <Z extends Number> BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> builder() {
+		return new BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z>();
 	}
 }

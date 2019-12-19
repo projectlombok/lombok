@@ -505,7 +505,13 @@ public class EclipseHandlerUtil {
 		} catch (Exception ignore) {}
 	}
 	
-	public static TypeReference namePlusTypeParamsToTypeReference(char[] typeName, TypeParameter[] params, long p) {
+	public static TypeReference namePlusTypeParamsToTypeReference(EclipseNode type, TypeParameter[] params, long p) {
+		TypeDeclaration td = (TypeDeclaration) type.get();
+		boolean instance = (td.modifiers & ClassFileConstants.AccStatic) == 0;
+		return namePlusTypeParamsToTypeReference(type.up(), td.name, instance, params, p);
+	}
+	
+	public static TypeReference namePlusTypeParamsToTypeReference(EclipseNode parentType, char[] typeName, boolean instance, TypeParameter[] params, long p) {
 		if (params != null && params.length > 0) {
 			TypeReference[] refs = new TypeReference[params.length];
 			int idx = 0;
@@ -513,10 +519,10 @@ public class EclipseHandlerUtil {
 				TypeReference typeRef = new SingleTypeReference(param.name, p);
 				refs[idx++] = typeRef;
 			}
-			return new ParameterizedSingleTypeReference(typeName, refs, 0, p);
+			return generateParameterizedTypeReference(parentType, typeName, instance, refs, p);
 		}
 		
-		return new SingleTypeReference(typeName, p);
+		return generateTypeReference(parentType, typeName, instance, p);
 	}
 	
 	public static TypeReference[] copyTypes(TypeReference[] refs) {
@@ -851,15 +857,150 @@ public class EclipseHandlerUtil {
 					if (source != null) setGeneratedBy(typeRef, source);
 					refs[idx++] = typeRef;
 				}
-				result = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
+				result = generateParameterizedTypeReference(type, refs, p);
 			} else {
-				result = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
+				result = generateTypeReference(type, p);
 			}
 		}
 		if (result != null && source != null) setGeneratedBy(result, source);
 		return result;
 	}
 	
+	public static TypeReference generateParameterizedTypeReference(EclipseNode type, TypeReference[] typeParams, long p) {
+		TypeDeclaration td = (TypeDeclaration) type.get();
+		char[][] tn = getQualifiedInnerName(type.up(), td.name);
+		if (tn.length == 1) return new ParameterizedSingleTypeReference(tn[0], typeParams, 0, p);
+		int tnLen = tn.length;
+		long[] ps = new long[tnLen];
+		for (int i = 0; i < tnLen; i++) ps[i] = p;
+		TypeReference[][] rr = new TypeReference[tnLen][];
+		rr[tnLen - 1] = typeParams;
+		boolean instance = (td.modifiers & ClassFileConstants.AccStatic) == 0;
+		if (instance) fillOuterTypeParams(rr, tnLen - 2, type.up(), p);
+		return new ParameterizedQualifiedTypeReference(tn, rr, 0, ps);
+	}
+	
+	public static TypeReference generateParameterizedTypeReference(EclipseNode parent, char[] name, boolean instance, TypeReference[] typeParams, long p) {
+		char[][] tn = getQualifiedInnerName(parent, name);
+		if (tn.length == 1) return new ParameterizedSingleTypeReference(tn[0], typeParams, 0, p);
+		int tnLen = tn.length;
+		long[] ps = new long[tnLen];
+		for (int i = 0; i < tnLen; i++) ps[i] = p;
+		TypeReference[][] rr = new TypeReference[tnLen][];
+		rr[tnLen - 1] = typeParams;
+		if (instance) fillOuterTypeParams(rr, tnLen - 2, parent, p);
+		return new ParameterizedQualifiedTypeReference(tn, rr, 0, ps);
+	}
+	
+	/**
+	 * This class will add type params to fully qualified chain of type references for inner types, such as {@code GrandParent.Parent.Child}; this is needed only as long as the chain does not involve static.
+	 * 
+	 * @return {@code true} if at least one parameterization is actually added, {@code false} otherwise.
+	 */
+	private static boolean fillOuterTypeParams(TypeReference[][] rr, int idx, EclipseNode node, long p) {
+		if (idx < 0 || node == null || !(node.get() instanceof TypeDeclaration)) return false;
+		boolean filled = false;
+		TypeDeclaration td = (TypeDeclaration) node.get();
+		TypeParameter[] tps = td.typeParameters;
+		if (tps != null && tps.length > 0) {
+			TypeReference[] trs = new TypeReference[tps.length];
+			for (int i = 0; i < tps.length; i++) {
+				trs[i] = new SingleTypeReference(tps[i].name, p);
+			}
+			rr[idx] = trs;
+			filled = true;
+		}
+		if ((td.modifiers & ClassFileConstants.AccStatic) != 0) return filled; // Once we hit a static class, no further typeparams needed.
+		boolean f2 = fillOuterTypeParams(rr, idx - 1, node.up(), p);
+		return f2 || filled;
+	}
+	
+	public static NameReference generateNameReference(EclipseNode type, long p) {
+		char[][] tn = getQualifiedInnerName(type.up(), ((TypeDeclaration) type.get()).name);
+		if (tn.length == 1) return new SingleNameReference(tn[0], p);
+		int tnLen = tn.length;
+		long[] ps = new long[tnLen];
+		for (int i = 0; i < tnLen; i++) ps[i] = p;
+		int ss = (int) (p >> 32);
+		int se = (int) p;
+		return new QualifiedNameReference(tn, ps, ss, se);
+	}
+	
+	public static NameReference generateNameReference(EclipseNode parent, char[] name, long p) {
+		char[][] tn = getQualifiedInnerName(parent, name);
+		if (tn.length == 1) return new SingleNameReference(tn[0], p);
+		int tnLen = tn.length;
+		long[] ps = new long[tnLen];
+		for (int i = 0; i < tnLen; i++) ps[i] = p;
+		int ss = (int) (p >> 32);
+		int se = (int) p;
+		return new QualifiedNameReference(tn, ps, ss, se);
+	}
+	
+	public static TypeReference generateTypeReference(EclipseNode type, long p) {
+		TypeDeclaration td = (TypeDeclaration) type.get();
+		char[][] tn = getQualifiedInnerName(type.up(), td.name);
+		if (tn.length == 1) return new SingleTypeReference(tn[0], p);
+		int tnLen = tn.length;
+		long[] ps = new long[tnLen];
+		for (int i = 0; i < tnLen; i++) ps[i] = p;
+		
+		boolean instance = (td.modifiers & ClassFileConstants.AccStatic) == 0 && type.up() != null && type.up().get() instanceof TypeDeclaration;
+		if (instance) {
+			TypeReference[][] trs = new TypeReference[tn.length][];
+			boolean filled = fillOuterTypeParams(trs, trs.length - 2, type.up(), p);
+			if (filled) return new ParameterizedQualifiedTypeReference(tn, trs, 0, ps);
+		}
+		
+		return new QualifiedTypeReference(tn, ps);
+	}
+	
+	public static TypeReference generateTypeReference(EclipseNode parent, char[] name, boolean instance, long p) {
+		char[][] tn = getQualifiedInnerName(parent, name);
+		if (tn.length == 1) return new SingleTypeReference(tn[0], p);
+		int tnLen = tn.length;
+		long[] ps = new long[tnLen];
+		for (int i = 0; i < tnLen; i++) ps[i] = p;
+		
+		if (instance && parent != null && parent.get() instanceof TypeDeclaration) {
+			TypeReference[][] trs = new TypeReference[tn.length][];
+			if (fillOuterTypeParams(trs, tn.length - 2, parent, p)) return new ParameterizedQualifiedTypeReference(tn, trs, 0, ps);
+		}
+		
+		return new QualifiedTypeReference(tn, ps);
+	}
+	
+	/**
+	 * Generate a chain of names for the enclosing classes.
+	 * 
+	 * Given for example {@code class Outer { class Inner {} }} this would generate {@code char[][] { "Outer", "Inner" }}.
+	 * For method local and top level types, this generates a size-1 char[][] where the only char[] element is {@code name} itself.
+	 */
+	private static char[][] getQualifiedInnerName(EclipseNode parent, char[] name) {
+		int count = 0;
+		
+		EclipseNode n = parent;
+		while (n != null && n.getKind() == Kind.TYPE && n.get() instanceof TypeDeclaration) {
+			TypeDeclaration td = (TypeDeclaration) n.get();
+			if (td.name == null || td.name.length == 0) break;
+			count++;
+			n = n.up();
+		}
+		
+		if (count == 0) return new char[][] { name };
+		char[][] res = new char[count + 1][];
+		res[count] = name;
+		
+		n = parent;
+		while (n != null && n.getKind() == Kind.TYPE && n.get() instanceof TypeDeclaration) {
+			TypeDeclaration td = (TypeDeclaration) n.get();
+			res[--count] = td.name;
+			n = n.up();
+		}
+		
+		return res;
+	}
+
 	public static TypeReference makeType(TypeBinding binding, ASTNode pos, boolean allowCompound) {
 		if (binding.getClass() == EclipseReflectiveMembers.INTERSECTION_BINDING) {
 			Object[] arr = (Object[]) EclipseReflectiveMembers.reflect(EclipseReflectiveMembers.INTERSECTION_BINDING_TYPES, binding);

@@ -23,7 +23,7 @@ class BuilderTypeAnnosWithSetterPrefix {
 		BuilderTypeAnnosWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderTypeAnnosWithSetterPrefixBuilder withFoo(@TA final List<String> foo) {
+		public BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder withFoo(@TA final List<String> foo) {
 			this.foo = foo;
 			return this;
 		}
@@ -38,8 +38,8 @@ class BuilderTypeAnnosWithSetterPrefix {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderTypeAnnosWithSetterPrefixBuilder builder() {
-		return new BuilderTypeAnnosWithSetterPrefixBuilder();
+	public static BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder builder() {
+		return new BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder();
 	}
 }
 

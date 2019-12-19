@@ -7,7 +7,7 @@ import lombok.Singular;
 @Target(ElementType.TYPE_USE) @interface MyAnnotation {
 }
 @lombok.experimental.SuperBuilder class SuperBuilderSingularAnnotatedTypes {
-  public static abstract @java.lang.SuppressWarnings("all") class SuperBuilderSingularAnnotatedTypesBuilder<C extends SuperBuilderSingularAnnotatedTypes, B extends SuperBuilderSingularAnnotatedTypesBuilder<C, B>> {
+  public static abstract @java.lang.SuppressWarnings("all") class SuperBuilderSingularAnnotatedTypesBuilder<C extends SuperBuilderSingularAnnotatedTypes, B extends SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<C, B>> {
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull String> foos;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull String> bars$key;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull Integer> bars$value;
@@ -80,11 +80,11 @@ import lombok.Singular;
       return (((((("SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder(foos=" + this.foos) + ", bars$key=") + this.bars$key) + ", bars$value=") + this.bars$value) + ")");
     }
   }
-  private static final @java.lang.SuppressWarnings("all") class SuperBuilderSingularAnnotatedTypesBuilderImpl extends SuperBuilderSingularAnnotatedTypesBuilder<SuperBuilderSingularAnnotatedTypes, SuperBuilderSingularAnnotatedTypesBuilderImpl> {
+  private static final @java.lang.SuppressWarnings("all") class SuperBuilderSingularAnnotatedTypesBuilderImpl extends SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<SuperBuilderSingularAnnotatedTypes, SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilderImpl> {
     private SuperBuilderSingularAnnotatedTypesBuilderImpl() {
       super();
     }
-    protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypesBuilderImpl self() {
+    protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilderImpl self() {
       return this;
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes build() {
@@ -93,7 +93,7 @@ import lombok.Singular;
   }
   private @Singular Set<@MyAnnotation @NonNull String> foos;
   private @Singular Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars;
-  protected @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes(final SuperBuilderSingularAnnotatedTypesBuilder<?, ?> b) {
+  protected @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes(final SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<?, ?> b) {
     super();
     java.util.Set<@MyAnnotation @NonNull String> foos;
     switch (((b.foos == null) ? 0 : b.foos.size())) {
@@ -125,7 +125,7 @@ import lombok.Singular;
     }
     this.bars = bars;
   }
-  public static @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypesBuilder<?, ?> builder() {
-    return new SuperBuilderSingularAnnotatedTypesBuilderImpl();
+  public static @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<?, ?> builder() {
+    return new SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilderImpl();
   }
 }

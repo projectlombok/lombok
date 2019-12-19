@@ -6,11 +6,11 @@ import java.util.List;
     @java.lang.SuppressWarnings("all") BuilderSimpleBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSimpleBuilder<T> yes(final int yes) {
+    public @java.lang.SuppressWarnings("all") BuilderSimple.BuilderSimpleBuilder<T> yes(final int yes) {
       this.yes = yes;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSimpleBuilder<T> also(final List<T> also) {
+    public @java.lang.SuppressWarnings("all") BuilderSimple.BuilderSimpleBuilder<T> also(final List<T> also) {
       this.also = also;
       return this;
     }
@@ -30,7 +30,7 @@ import java.util.List;
     this.yes = yes;
     this.also = also;
   }
-  protected static @java.lang.SuppressWarnings("all") <T>BuilderSimpleBuilder<T> builder() {
-    return new BuilderSimpleBuilder<T>();
+  protected static @java.lang.SuppressWarnings("all") <T>BuilderSimple.BuilderSimpleBuilder<T> builder() {
+    return new BuilderSimple.BuilderSimpleBuilder<T>();
   }
 }

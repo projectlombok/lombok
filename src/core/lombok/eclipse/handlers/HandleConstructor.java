@@ -530,7 +530,7 @@ public class HandleConstructor {
 		
 		constructor.modifiers = toEclipseModifier(level) | ClassFileConstants.AccStatic;
 		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
-		constructor.returnType = EclipseHandlerUtil.namePlusTypeParamsToTypeReference(typeDecl.name, typeDecl.typeParameters, p);
+		constructor.returnType = EclipseHandlerUtil.namePlusTypeParamsToTypeReference(type, typeDecl.typeParameters, p);
 		constructor.annotations = null;
 		constructor.selector = name.toCharArray();
 		constructor.thrownExceptions = null;

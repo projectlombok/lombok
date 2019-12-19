@@ -13,7 +13,7 @@ public class SuperBuilderBasicToBuilder {
 			return "staticMethod";
 		}
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
+		public static abstract class ParentBuilder<C extends SuperBuilderBasicToBuilder.Parent, B extends SuperBuilderBasicToBuilder.Parent.ParentBuilder<C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private int field1;
 			@java.lang.SuppressWarnings("all")
@@ -26,15 +26,15 @@ public class SuperBuilderBasicToBuilder {
 			private java.util.ArrayList<String> items;
 			@java.lang.SuppressWarnings("all")
 			protected B $fillValuesFrom(final C instance) {
-				ParentBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
+				SuperBuilderBasicToBuilder.Parent.ParentBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
-			private static void $fillValuesFromInstanceIntoBuilder(final Parent instance, final ParentBuilder<?, ?> b) {
+			private static void $fillValuesFromInstanceIntoBuilder(final SuperBuilderBasicToBuilder.Parent instance, final SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> b) {
 				b.field1(instance.field1);
 				b.obtainViaField(instance.field1);
 				b.obtainViaMethod(instance.method());
-				b.obtainViaStaticMethod(Parent.staticMethod(instance));
+				b.obtainViaStaticMethod(SuperBuilderBasicToBuilder.Parent.staticMethod(instance));
 				b.items(instance.items == null ? java.util.Collections.emptyList() : instance.items);
 			}
 			@java.lang.SuppressWarnings("all")
@@ -85,23 +85,23 @@ public class SuperBuilderBasicToBuilder {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
+		private static final class ParentBuilderImpl extends SuperBuilderBasicToBuilder.Parent.ParentBuilder<SuperBuilderBasicToBuilder.Parent, SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private ParentBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl self() {
+			protected SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Parent build() {
-				return new Parent(this);
+			public SuperBuilderBasicToBuilder.Parent build() {
+				return new SuperBuilderBasicToBuilder.Parent(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Parent(final ParentBuilder<?, ?> b) {
+		protected Parent(final SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> b) {
 			this.field1 = b.field1;
 			this.obtainViaField = b.obtainViaField;
 			this.obtainViaMethod = b.obtainViaMethod;
@@ -120,29 +120,29 @@ public class SuperBuilderBasicToBuilder {
 			this.items = items;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static ParentBuilder<?, ?> builder() {
-			return new ParentBuilderImpl();
+		public static SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> builder() {
+			return new SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl();
 		}
 		@java.lang.SuppressWarnings("all")
-		public ParentBuilder<?, ?> toBuilder() {
-			return new ParentBuilderImpl().$fillValuesFrom(this);
+		public SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> toBuilder() {
+			return new SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl().$fillValuesFrom(this);
 		}
 	}
 	public static class Child extends Parent {
 		private double field3;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+		public static abstract class ChildBuilder<C extends SuperBuilderBasicToBuilder.Child, B extends SuperBuilderBasicToBuilder.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private double field3;
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			protected B $fillValuesFrom(final C instance) {
 				super.$fillValuesFrom(instance);
-				ChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
+				SuperBuilderBasicToBuilder.Child.ChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
-			private static void $fillValuesFromInstanceIntoBuilder(final Child instance, final ChildBuilder<?, ?> b) {
+			private static void $fillValuesFromInstanceIntoBuilder(final SuperBuilderBasicToBuilder.Child instance, final SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> b) {
 				b.field3(instance.field3);
 			}
 			@java.lang.Override
@@ -163,33 +163,33 @@ public class SuperBuilderBasicToBuilder {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
+		private static final class ChildBuilderImpl extends SuperBuilderBasicToBuilder.Child.ChildBuilder<SuperBuilderBasicToBuilder.Child, SuperBuilderBasicToBuilder.Child.ChildBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private ChildBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ChildBuilderImpl self() {
+			protected SuperBuilderBasicToBuilder.Child.ChildBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Child build() {
-				return new Child(this);
+			public SuperBuilderBasicToBuilder.Child build() {
+				return new SuperBuilderBasicToBuilder.Child(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Child(final ChildBuilder<?, ?> b) {
+		protected Child(final SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> b) {
 			super(b);
 			this.field3 = b.field3;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static ChildBuilder<?, ?> builder() {
-			return new ChildBuilderImpl();
+		public static SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> builder() {
+			return new SuperBuilderBasicToBuilder.Child.ChildBuilderImpl();
 		}
 		@java.lang.SuppressWarnings("all")
-		public ChildBuilder<?, ?> toBuilder() {
-			return new ChildBuilderImpl().$fillValuesFrom(this);
+		public SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> toBuilder() {
+			return new SuperBuilderBasicToBuilder.Child.ChildBuilderImpl().$fillValuesFrom(this);
 		}
 	}
 	public static void test() {

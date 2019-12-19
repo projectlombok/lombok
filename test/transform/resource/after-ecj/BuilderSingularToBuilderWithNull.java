@@ -5,19 +5,19 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullBuilder elem(final String elem) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder elem(final String elem) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.add(elem);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullBuilder elems(final java.util.Collection<? extends String> elems) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder elems(final java.util.Collection<? extends String> elems) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.addAll(elems);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullBuilder clearElems() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder clearElems() {
       if ((this.elems != null))
           this.elems.clear();
       return this;
@@ -48,11 +48,11 @@ import lombok.Singular;
     super();
     this.elems = elems;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullBuilder builder() {
-    return new BuilderSingularToBuilderWithNullBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder builder() {
+    return new BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder();
   }
-  public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullBuilder toBuilder() {
-    final BuilderSingularToBuilderWithNullBuilder builder = new BuilderSingularToBuilderWithNullBuilder();
+  public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder toBuilder() {
+    final BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder builder = new BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder();
     if ((this.elems != null))
         builder.elems(this.elems);
     return builder;

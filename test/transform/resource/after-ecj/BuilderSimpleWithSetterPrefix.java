@@ -5,7 +5,7 @@ import java.util.List;
     @java.lang.SuppressWarnings("all") BuilderSimpleWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSimpleWithSetterPrefixBuilder<T> withUnprefixed(final int unprefixed) {
+    public @java.lang.SuppressWarnings("all") BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder<T> withUnprefixed(final int unprefixed) {
       this.unprefixed = unprefixed;
       return this;
     }
@@ -21,7 +21,7 @@ import java.util.List;
     super();
     this.unprefixed = unprefixed;
   }
-  protected static @java.lang.SuppressWarnings("all") <T>BuilderSimpleWithSetterPrefixBuilder<T> builder() {
-    return new BuilderSimpleWithSetterPrefixBuilder<T>();
+  protected static @java.lang.SuppressWarnings("all") <T>BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder<T> builder() {
+    return new BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder<T>();
   }
 }

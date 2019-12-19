@@ -4,7 +4,7 @@ public class SuperBuilderWithCustomBuilderMethod {
 		A field1;
 		List<String> items;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ParentBuilder<A, C extends Parent<A>, B extends ParentBuilder<A, C, B>> {
+		public static abstract class ParentBuilder<A, C extends SuperBuilderWithCustomBuilderMethod.Parent<A>, B extends SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder<A, C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private A field1;
 			@java.lang.SuppressWarnings("all")
@@ -42,23 +42,23 @@ public class SuperBuilderWithCustomBuilderMethod {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ParentBuilderImpl<A> extends ParentBuilder<A, Parent<A>, ParentBuilderImpl<A>> {
+		private static final class ParentBuilderImpl<A> extends SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder<A, SuperBuilderWithCustomBuilderMethod.Parent<A>, SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilderImpl<A>> {
 			@java.lang.SuppressWarnings("all")
 			private ParentBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl<A> self() {
+			protected SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilderImpl<A> self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Parent<A> build() {
-				return new Parent<A>(this);
+			public SuperBuilderWithCustomBuilderMethod.Parent<A> build() {
+				return new SuperBuilderWithCustomBuilderMethod.Parent<A>(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Parent(final ParentBuilder<A, ?, ?> b) {
+		protected Parent(final SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder<A, ?, ?> b) {
 			this.field1 = b.field1;
 			java.util.List<String> items;
 			switch (b.items == null ? 0 : b.items.size()) {
@@ -74,8 +74,8 @@ public class SuperBuilderWithCustomBuilderMethod {
 			this.items = items;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static <A> ParentBuilder<A, ?, ?> builder() {
-			return new ParentBuilderImpl<A>();
+		public static <A> SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder<A, ?, ?> builder() {
+			return new SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilderImpl<A>();
 		}
 	}
 	public static class Child<A> extends Parent<A> {
@@ -84,7 +84,7 @@ public class SuperBuilderWithCustomBuilderMethod {
 			return new ChildBuilderImpl<A>().item("default item");
 		}
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<A, C extends Child<A>, B extends ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
+		public static abstract class ChildBuilder<A, C extends SuperBuilderWithCustomBuilderMethod.Child<A>, B extends SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
 			@java.lang.SuppressWarnings("all")
 			private double field3;
 			@java.lang.Override
@@ -105,23 +105,23 @@ public class SuperBuilderWithCustomBuilderMethod {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ChildBuilderImpl<A> extends ChildBuilder<A, Child<A>, ChildBuilderImpl<A>> {
+		private static final class ChildBuilderImpl<A> extends SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder<A, SuperBuilderWithCustomBuilderMethod.Child<A>, SuperBuilderWithCustomBuilderMethod.Child.ChildBuilderImpl<A>> {
 			@java.lang.SuppressWarnings("all")
 			private ChildBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ChildBuilderImpl<A> self() {
+			protected SuperBuilderWithCustomBuilderMethod.Child.ChildBuilderImpl<A> self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Child<A> build() {
-				return new Child<A>(this);
+			public SuperBuilderWithCustomBuilderMethod.Child<A> build() {
+				return new SuperBuilderWithCustomBuilderMethod.Child<A>(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Child(final ChildBuilder<A, ?, ?> b) {
+		protected Child(final SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder<A, ?, ?> b) {
 			super(b);
 			this.field3 = b.field3;
 		}

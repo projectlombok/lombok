@@ -9,11 +9,11 @@ class BuilderWithExistingBuilderClass<T, K extends Number> {
     @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassBuilder<Z> arg1(final Z arg1) {
+    public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z> arg1(final Z arg1) {
       this.arg1 = arg1;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassBuilder<Z> arg3(final String arg3) {
+    public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z> arg3(final String arg3) {
       this.arg3 = arg3;
       return this;
     }
@@ -30,7 +30,7 @@ class BuilderWithExistingBuilderClass<T, K extends Number> {
   public static @Builder <Z extends Number>BuilderWithExistingBuilderClass<String, Z> staticMethod(Z arg1, boolean arg2, String arg3) {
     return null;
   }
-  public static @java.lang.SuppressWarnings("all") <Z extends Number>BuilderWithExistingBuilderClassBuilder<Z> builder() {
-    return new BuilderWithExistingBuilderClassBuilder<Z>();
+  public static @java.lang.SuppressWarnings("all") <Z extends Number>BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z> builder() {
+    return new BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z>();
   }
 }

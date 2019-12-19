@@ -2,7 +2,7 @@ import java.util.List;
 class BuilderCustomName<T> {
 	private final int field;
 	@java.lang.SuppressWarnings("all")
-	public static abstract class SimpleTestBuilder<T, C extends BuilderCustomName<T>, B extends SimpleTestBuilder<T, C, B>> {
+	public static abstract class SimpleTestBuilder<T, C extends BuilderCustomName<T>, B extends BuilderCustomName.SimpleTestBuilder<T, C, B>> {
 		@java.lang.SuppressWarnings("all")
 		private int field;
 		@java.lang.SuppressWarnings("all")
@@ -21,13 +21,13 @@ class BuilderCustomName<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	private static final class SimpleTestBuilderImpl<T> extends SimpleTestBuilder<T, BuilderCustomName<T>, SimpleTestBuilderImpl<T>> {
+	private static final class SimpleTestBuilderImpl<T> extends BuilderCustomName.SimpleTestBuilder<T, BuilderCustomName<T>, BuilderCustomName.SimpleTestBuilderImpl<T>> {
 		@java.lang.SuppressWarnings("all")
 		private SimpleTestBuilderImpl() {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
-		protected SimpleTestBuilderImpl<T> self() {
+		protected BuilderCustomName.SimpleTestBuilderImpl<T> self() {
 			return this;
 		}
 		@java.lang.Override
@@ -37,11 +37,11 @@ class BuilderCustomName<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	protected BuilderCustomName(final SimpleTestBuilder<T, ?, ?> b) {
+	protected BuilderCustomName(final BuilderCustomName.SimpleTestBuilder<T, ?, ?> b) {
 		this.field = b.field;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> SimpleTestBuilder<T, ?, ?> builder() {
-		return new SimpleTestBuilderImpl<T>();
+	public static <T> BuilderCustomName.SimpleTestBuilder<T, ?, ?> builder() {
+		return new BuilderCustomName.SimpleTestBuilderImpl<T>();
 	}
 }

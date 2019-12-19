@@ -19,7 +19,7 @@ public class JacksonJsonProperty {
 		@JsonProperty("kebab-case-prop")
 		@JsonSetter(nulls = Nulls.SKIP)
 		@java.lang.SuppressWarnings("all")
-		public JacksonJsonPropertyBuilder kebabCaseProp(final String kebabCaseProp) {
+		public JacksonJsonProperty.JacksonJsonPropertyBuilder kebabCaseProp(final String kebabCaseProp) {
 			this.kebabCaseProp = kebabCaseProp;
 			return this;
 		}
@@ -34,8 +34,8 @@ public class JacksonJsonProperty {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static JacksonJsonPropertyBuilder builder() {
-		return new JacksonJsonPropertyBuilder();
+	public static JacksonJsonProperty.JacksonJsonPropertyBuilder builder() {
+		return new JacksonJsonProperty.JacksonJsonPropertyBuilder();
 	}
 	@JsonProperty("kebab-case-prop")
 	@JsonSetter(nulls = Nulls.SKIP)

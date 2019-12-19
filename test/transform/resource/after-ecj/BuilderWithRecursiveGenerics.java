@@ -11,16 +11,16 @@ public class BuilderWithRecursiveGenerics {
       @java.lang.SuppressWarnings("all") TestBuilder() {
         super();
       }
-      public @java.lang.SuppressWarnings("all") TestBuilder<Foo, Bar, Quz> foo(final Foo foo) {
+      public @java.lang.SuppressWarnings("all") BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> foo(final Foo foo) {
         this.foo = foo;
         return this;
       }
-      public @java.lang.SuppressWarnings("all") TestBuilder<Foo, Bar, Quz> bar(final Bar bar) {
+      public @java.lang.SuppressWarnings("all") BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> bar(final Bar bar) {
         this.bar = bar;
         return this;
       }
-      public @java.lang.SuppressWarnings("all") Test<Foo, Bar, Quz> build() {
-        return new Test<Foo, Bar, Quz>(foo, bar);
+      public @java.lang.SuppressWarnings("all") BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz> build() {
+        return new BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz>(foo, bar);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("BuilderWithRecursiveGenerics.Test.TestBuilder(foo=" + this.foo) + ", bar=") + this.bar) + ")");
@@ -33,8 +33,8 @@ public class BuilderWithRecursiveGenerics {
       this.foo = foo;
       this.bar = bar;
     }
-    public static @java.lang.SuppressWarnings("all") <Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>>TestBuilder<Foo, Bar, Quz> builder() {
-      return new TestBuilder<Foo, Bar, Quz>();
+    public static @java.lang.SuppressWarnings("all") <Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>>BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> builder() {
+      return new BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz>();
     }
     public @java.lang.SuppressWarnings("all") Foo getFoo() {
       return this.foo;

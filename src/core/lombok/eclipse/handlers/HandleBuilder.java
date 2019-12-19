@@ -55,6 +55,7 @@ import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedThisReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
@@ -274,7 +275,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
 				Collections.<Annotation>emptyList(), annotationNode);
 			
-			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
+			returnType = namePlusTypeParamsToTypeReference(tdParent, td.typeParameters, p);
 			typeParams = td.typeParameters;
 			thrownExceptions = null;
 			nameOfStaticBuilderMethod = null;
@@ -289,7 +290,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			
 			tdParent = parent.up();
 			TypeDeclaration td = (TypeDeclaration) tdParent.get();
-			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
+			returnType = namePlusTypeParamsToTypeReference(tdParent, td.typeParameters, p);
 			typeParams = td.typeParameters;
 			thrownExceptions = cd.thrownExceptions;
 			nameOfStaticBuilderMethod = null;
@@ -539,7 +540,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					tps[i].name = typeArgsForToBuilder.get(i);
 				}
 			}
-			MethodDeclaration md = generateToBuilderMethod(cfv, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters, builderInstance.setterPrefix());
+			MethodDeclaration md = generateToBuilderMethod(cfv, isStatic, toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast, accessForOuters, builderInstance.setterPrefix());
 			
 			if (md != null) injectMethod(tdParent, md);
 		}
@@ -552,7 +553,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	private static final char[] BUILDER_TEMP_VAR = {'b', 'u', 'i', 'l', 'd', 'e', 'r'};
-	private MethodDeclaration generateToBuilderMethod(CheckerFrameworkVersion cfv, String methodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, List<BuilderFieldData> builderFields, boolean fluent, ASTNode source, AccessLevel access, String prefix) {
+	private MethodDeclaration generateToBuilderMethod(CheckerFrameworkVersion cfv, boolean isStatic, String methodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, List<BuilderFieldData> builderFields, boolean fluent, ASTNode source, AccessLevel access, String prefix) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
@@ -560,9 +561,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		out.selector = methodName.toCharArray();
 		out.modifiers = toEclipseModifier(access);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		out.returnType = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
+		out.returnType = namePlusTypeParamsToTypeReference(type, builderClassName.toCharArray(), !isStatic, typeParams, p);
 		AllocationExpression invoke = new AllocationExpression();
-		invoke.type = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
+		invoke.type = namePlusTypeParamsToTypeReference(type, builderClassName.toCharArray(), !isStatic, typeParams, p);
 		
 		Expression receiver = invoke;
 		List<Statement> statements = null;
@@ -593,7 +594,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 								obtainExpr.typeArguments[j] = new SingleTypeReference(typeParams[j].name, 0);
 							}
 						}
-						obtainExpr.receiver = new SingleNameReference(type.getName().toCharArray(), 0);
+						obtainExpr.receiver = generateNameReference(type, 0);
 					} else {
 						obtainExpr.receiver = new ThisReference(0, 0);
 					}
@@ -623,7 +624,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			LocalDeclaration b = new LocalDeclaration(BUILDER_TEMP_VAR, pS, pE);
 			out.statements[0] = b;
 			b.modifiers |= Modifier.FINAL;
-			b.type = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
+			b.type = namePlusTypeParamsToTypeReference(type, builderClassName.toCharArray(), !isStatic, typeParams, p);
 			b.type.sourceStart = pS; b.type.sourceEnd = pE;
 			b.initialization = receiver;
 			out.statements[out.statements.length - 1] = new ReturnStatement(new SingleNameReference(BUILDER_TEMP_VAR, p), pS, pE);
@@ -684,7 +685,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 			ann.memberValue = arr;
 		}
-		Argument arg = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, new SingleTypeReference(type.getName().toCharArray(), source.sourceStart), Modifier.FINAL);
+		Argument arg = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, generateTypeReference(type, source.sourceStart), Modifier.FINAL);
 		arg.annotations = new Annotation[] {ann};
 		return new Argument[] {arg};
 	}
@@ -751,7 +752,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (isStatic) {
 				invoke.receiver = new SingleNameReference(type.up().getName().toCharArray(), 0);
 			} else {
-				invoke.receiver = new QualifiedThisReference(new SingleTypeReference(type.up().getName().toCharArray(), 0) , 0, 0);
+				invoke.receiver = new QualifiedThisReference(generateTypeReference(type.up(), 0) , 0, 0);
 			}
 			
 			invoke.typeArguments = typeParameterNames(((TypeDeclaration) type.get()).typeParameters);
@@ -801,17 +802,31 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	public MethodDeclaration generateBuilderMethod(CheckerFrameworkVersion cfv, boolean isStatic, String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source, AccessLevel access) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
+		char[] builderClassName_ = builderClassName.toCharArray();
 		
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.selector = builderMethodName.toCharArray();
 		out.modifiers = toEclipseModifier(access);
 		if (isStatic) out.modifiers |= ClassFileConstants.AccStatic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		out.returnType = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
+		out.returnType = namePlusTypeParamsToTypeReference(type, builderClassName_, !isStatic, typeParams, p);
 		out.typeParameters = copyTypeParams(typeParams, source);
 		AllocationExpression invoke = new AllocationExpression();
-		invoke.type = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
-		out.statements = new Statement[] {new ReturnStatement(invoke, pS, pE)};
+		if (isStatic) {
+			invoke.type = namePlusTypeParamsToTypeReference(type, builderClassName_, false, typeParams, p);
+			out.statements = new Statement[] {new ReturnStatement(invoke, pS, pE)};
+		} else {
+			// return this.new Builder();
+			QualifiedAllocationExpression qualifiedInvoke = new QualifiedAllocationExpression();
+			qualifiedInvoke.enclosingInstance = new ThisReference(pS, pE);
+			if (typeParams == null || typeParams.length == 0) {
+				qualifiedInvoke.type = new SingleTypeReference(builderClassName_, p);
+			} else {
+				qualifiedInvoke.type = namePlusTypeParamsToTypeReference(null, builderClassName_, false, typeParams, p);
+			}
+			
+			out.statements = new Statement[] {new ReturnStatement(qualifiedInvoke, pS, pE)};
+		}
 		Annotation uniqueAnn = cfv.generateUnique() ? generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__UNIQUE) : null;
 		Annotation sefAnn = cfv.generateSideEffectFree() ? generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) : null;
 		if (uniqueAnn != null && sefAnn != null) {
@@ -904,7 +919,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			Argument[] arr = setter.arguments == null ? new Argument[0] : setter.arguments;
 			Argument[] newArr = new Argument[arr.length + 1];
 			System.arraycopy(arr, 0, newArr, 1, arr.length);
-			newArr[0] = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, new SingleTypeReference(builderType.getName().toCharArray(), 0), Modifier.FINAL);
+			newArr[0] = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, generateTypeReference(builderType, 0), Modifier.FINAL);
 			char[][] nameNotCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__NOT_CALLED);
 			SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameNotCalled, poss(
 					source, nameNotCalled.length)), source.sourceStart);

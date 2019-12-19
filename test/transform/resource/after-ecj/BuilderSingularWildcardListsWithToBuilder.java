@@ -8,36 +8,36 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder object(final java.lang.Object object) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder object(final java.lang.Object object) {
       if ((this.objects == null))
           this.objects = new java.util.ArrayList<java.lang.Object>();
       this.objects.add(object);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder objects(final java.util.Collection<?> objects) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder objects(final java.util.Collection<?> objects) {
       if ((this.objects == null))
           this.objects = new java.util.ArrayList<java.lang.Object>();
       this.objects.addAll(objects);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder clearObjects() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearObjects() {
       if ((this.objects != null))
           this.objects.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder number(final Number number) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder number(final Number number) {
       if ((this.numbers == null))
           this.numbers = new java.util.ArrayList<Number>();
       this.numbers.add(number);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder numbers(final java.util.Collection<? extends Number> numbers) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder numbers(final java.util.Collection<? extends Number> numbers) {
       if ((this.numbers == null))
           this.numbers = new java.util.ArrayList<Number>();
       this.numbers.addAll(numbers);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder clearNumbers() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearNumbers() {
       if ((this.numbers != null))
           this.numbers.clear();
       return this;
@@ -78,11 +78,11 @@ import lombok.Singular;
     this.objects = objects;
     this.numbers = numbers;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder builder() {
-    return new BuilderSingularWildcardListsWithToBuilderBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder builder() {
+    return new BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder();
   }
-  public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder toBuilder() {
-    final BuilderSingularWildcardListsWithToBuilderBuilder builder = new BuilderSingularWildcardListsWithToBuilderBuilder();
+  public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder toBuilder() {
+    final BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder builder = new BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder();
     if ((this.objects != null))
         builder.objects(this.objects);
     if ((this.numbers != null))

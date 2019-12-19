@@ -34,19 +34,19 @@ final class ConstructorsWithBuilderDefaults<T> {
 		ConstructorsWithBuilderDefaultsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorsWithBuilderDefaultsBuilder<T> z(final java.util.List<T> z) {
+		public ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> z(final java.util.List<T> z) {
 			this.z$value = z;
 			z$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorsWithBuilderDefaultsBuilder<T> x(final T x) {
+		public ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> x(final T x) {
 			this.x$value = x;
 			x$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorsWithBuilderDefaultsBuilder<T> q(final T q) {
+		public ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> q(final T q) {
 			this.q = q;
 			return this;
 		}
@@ -66,8 +66,8 @@ final class ConstructorsWithBuilderDefaults<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> ConstructorsWithBuilderDefaultsBuilder<T> builder() {
-		return new ConstructorsWithBuilderDefaultsBuilder<T>();
+	public static <T> ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> builder() {
+		return new ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T>();
 	}
 	@java.lang.SuppressWarnings("all")
 	private ConstructorsWithBuilderDefaults() {

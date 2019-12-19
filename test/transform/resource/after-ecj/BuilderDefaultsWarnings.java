@@ -8,27 +8,27 @@ public @Builder class BuilderDefaultsWarnings {
     @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder x(final long x) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder x(final long x) {
       this.x = x;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder z(final int z) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder z(final int z) {
       this.z = z;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder item(final String item) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder item(final String item) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.add(item);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder items(final java.util.Collection<? extends String> items) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder items(final java.util.Collection<? extends String> items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder clearItems() {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder clearItems() {
       if ((this.items != null))
           this.items.clear();
       return this;
@@ -61,8 +61,8 @@ public @Builder class BuilderDefaultsWarnings {
     this.z = z;
     this.items = items;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder builder() {
-    return new BuilderDefaultsWarningsBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder builder() {
+    return new BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder();
   }
 }
 class NoBuilderButHasDefaults {
@@ -81,7 +81,7 @@ class NoBuilderButHasDefaults {
   public @Builder NoBuilderButHasDefaults() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") NoBuilderButHasDefaultsBuilder builder() {
-    return new NoBuilderButHasDefaultsBuilder();
+  public static @java.lang.SuppressWarnings("all") NoBuilderButHasDefaults.NoBuilderButHasDefaultsBuilder builder() {
+    return new NoBuilderButHasDefaults.NoBuilderButHasDefaultsBuilder();
   }
 }

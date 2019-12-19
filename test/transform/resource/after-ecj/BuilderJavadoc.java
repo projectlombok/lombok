@@ -16,11 +16,11 @@ import java.util.List;
     @java.lang.SuppressWarnings("all") BuilderJavadocBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderJavadocBuilder<T> basic(final int basic) {
+    public @java.lang.SuppressWarnings("all") BuilderJavadoc.BuilderJavadocBuilder<T> basic(final int basic) {
       this.basic = basic;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderJavadocBuilder<T> getsetwith(final int getsetwith) {
+    public @java.lang.SuppressWarnings("all") BuilderJavadoc.BuilderJavadocBuilder<T> getsetwith(final int getsetwith) {
       this.getsetwith = getsetwith;
       return this;
     }
@@ -42,8 +42,8 @@ import java.util.List;
     this.predef = predef;
     this.predefWithJavadoc = predefWithJavadoc;
   }
-  public static @java.lang.SuppressWarnings("all") <T>BuilderJavadocBuilder<T> builder() {
-    return new BuilderJavadocBuilder<T>();
+  public static @java.lang.SuppressWarnings("all") <T>BuilderJavadoc.BuilderJavadocBuilder<T> builder() {
+    return new BuilderJavadoc.BuilderJavadocBuilder<T>();
   }
   public @java.lang.SuppressWarnings("all") int getGetsetwith() {
     return this.getsetwith;

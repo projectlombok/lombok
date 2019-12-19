@@ -13,7 +13,7 @@ class BuilderSimpleWithSetterPrefix<T> {
 		BuilderSimpleWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSimpleWithSetterPrefixBuilder<T> withUnprefixed(final int unprefixed) {
+		public BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder<T> withUnprefixed(final int unprefixed) {
 			this.unprefixed = unprefixed;
 			return this;
 		}
@@ -28,7 +28,7 @@ class BuilderSimpleWithSetterPrefix<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	protected static <T> BuilderSimpleWithSetterPrefixBuilder<T> builder() {
-		return new BuilderSimpleWithSetterPrefixBuilder<T>();
+	protected static <T> BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder<T> builder() {
+		return new BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder<T>();
 	}
 }

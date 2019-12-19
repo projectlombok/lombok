@@ -15,19 +15,19 @@ class BuilderSingularToBuilderWithNullWithSetterPrefix {
 		BuilderSingularToBuilderWithNullWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElem(final String elem) {
+		public BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElem(final String elem) {
 			if (this.elems == null) this.elems = new java.util.ArrayList<String>();
 			this.elems.add(elem);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElems(final java.util.Collection<? extends String> elems) {
+		public BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElems(final java.util.Collection<? extends String> elems) {
 			if (this.elems == null) this.elems = new java.util.ArrayList<String>();
 			this.elems.addAll(elems);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularToBuilderWithNullWithSetterPrefixBuilder clearElems() {
+		public BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder clearElems() {
 			if (this.elems != null) this.elems.clear();
 			return this;
 		}
@@ -53,12 +53,12 @@ class BuilderSingularToBuilderWithNullWithSetterPrefix {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder() {
-		return new BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
+	public static BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder() {
+		return new BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
-	public BuilderSingularToBuilderWithNullWithSetterPrefixBuilder toBuilder() {
-		final BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder = new BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
+	public BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder toBuilder() {
+		final BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder = new BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
 		if (this.elems != null) builder.withElems(this.elems);
 		return builder;
 	}

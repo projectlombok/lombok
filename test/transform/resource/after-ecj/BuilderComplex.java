@@ -9,19 +9,19 @@ class BuilderComplex {
     @java.lang.SuppressWarnings("all") TestVoidName() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") TestVoidName<T> number(final T number) {
+    public @java.lang.SuppressWarnings("all") BuilderComplex.TestVoidName<T> number(final T number) {
       this.number = number;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") TestVoidName<T> arg2(final int arg2) {
+    public @java.lang.SuppressWarnings("all") BuilderComplex.TestVoidName<T> arg2(final int arg2) {
       this.arg2 = arg2;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") TestVoidName<T> arg3(final String arg3) {
+    public @java.lang.SuppressWarnings("all") BuilderComplex.TestVoidName<T> arg3(final String arg3) {
       this.arg3 = arg3;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") TestVoidName<T> selfRef(final BuilderComplex selfRef) {
+    public @java.lang.SuppressWarnings("all") BuilderComplex.TestVoidName<T> selfRef(final BuilderComplex selfRef) {
       this.selfRef = selfRef;
       return this;
     }
@@ -37,7 +37,7 @@ class BuilderComplex {
   }
   private static @Builder(buildMethodName = "execute") <T extends Number>void testVoidWithGenerics(T number, int arg2, String arg3, BuilderComplex selfRef) {
   }
-  public static @java.lang.SuppressWarnings("all") <T extends Number>TestVoidName<T> builder() {
-    return new TestVoidName<T>();
+  public static @java.lang.SuppressWarnings("all") <T extends Number>BuilderComplex.TestVoidName<T> builder() {
+    return new BuilderComplex.TestVoidName<T>();
   }
 }

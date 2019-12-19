@@ -9,7 +9,7 @@ public @Builder class JacksonJsonProperty {
     @java.lang.SuppressWarnings("all") JacksonJsonPropertyBuilder() {
       super();
     }
-    public @JsonProperty("kebab-case-prop") @JsonSetter(nulls = Nulls.SKIP) @java.lang.SuppressWarnings("all") JacksonJsonPropertyBuilder kebabCaseProp(final String kebabCaseProp) {
+    public @JsonProperty("kebab-case-prop") @JsonSetter(nulls = Nulls.SKIP) @java.lang.SuppressWarnings("all") JacksonJsonProperty.JacksonJsonPropertyBuilder kebabCaseProp(final String kebabCaseProp) {
       this.kebabCaseProp = kebabCaseProp;
       return this;
     }
@@ -25,8 +25,8 @@ public @Builder class JacksonJsonProperty {
     super();
     this.kebabCaseProp = kebabCaseProp;
   }
-  public static @java.lang.SuppressWarnings("all") JacksonJsonPropertyBuilder builder() {
-    return new JacksonJsonPropertyBuilder();
+  public static @java.lang.SuppressWarnings("all") JacksonJsonProperty.JacksonJsonPropertyBuilder builder() {
+    return new JacksonJsonProperty.JacksonJsonPropertyBuilder();
   }
   public @JsonProperty("kebab-case-prop") @JsonSetter(nulls = Nulls.SKIP) @java.lang.SuppressWarnings("all") void setKebabCaseProp(final String kebabCaseProp) {
     this.kebabCaseProp = kebabCaseProp;

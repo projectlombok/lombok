@@ -10,51 +10,51 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder dangerMouse(final String dangerMouse) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder dangerMouse(final String dangerMouse) {
       if ((this.dangerMice == null))
           this.dangerMice = com.google.common.collect.ImmutableSet.builder();
       this.dangerMice.add(dangerMouse);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder dangerMice(final java.lang.Iterable<? extends String> dangerMice) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder dangerMice(final java.lang.Iterable<? extends String> dangerMice) {
       if ((this.dangerMice == null))
           this.dangerMice = com.google.common.collect.ImmutableSet.builder();
       this.dangerMice.addAll(dangerMice);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder clearDangerMice() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearDangerMice() {
       this.dangerMice = null;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder thing(final Integer key, final Number value) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder thing(final Integer key, final Number value) {
       if ((this.things == null))
           this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
       this.things.put(key, value);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder things(final java.util.Map<? extends Integer, ? extends Number> things) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder things(final java.util.Map<? extends Integer, ? extends Number> things) {
       if ((this.things == null))
           this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
       this.things.putAll(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder clearThings() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearThings() {
       this.things = null;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder doohickey(final Class<?> doohickey) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder doohickey(final Class<?> doohickey) {
       if ((this.doohickeys == null))
           this.doohickeys = com.google.common.collect.ImmutableList.builder();
       this.doohickeys.add(doohickey);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder doohickeys(final java.lang.Iterable<? extends Class<?>> doohickeys) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder doohickeys(final java.lang.Iterable<? extends Class<?>> doohickeys) {
       if ((this.doohickeys == null))
           this.doohickeys = com.google.common.collect.ImmutableList.builder();
       this.doohickeys.addAll(doohickeys);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder clearDoohickeys() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearDoohickeys() {
       this.doohickeys = null;
       return this;
     }
@@ -77,7 +77,7 @@ import lombok.Singular;
     this.things = things;
     this.doohickeys = doohickeys;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuavaBuilder builder() {
-    return new BuilderSingularRedirectToGuavaBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder builder() {
+    return new BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder();
   }
 }

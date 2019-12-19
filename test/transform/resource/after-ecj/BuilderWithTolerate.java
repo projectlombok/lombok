@@ -9,7 +9,7 @@ public @Builder class BuilderWithTolerate {
     @java.lang.SuppressWarnings("all") BuilderWithTolerateBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithTolerateBuilder value(final int value) {
+    public @java.lang.SuppressWarnings("all") BuilderWithTolerate.BuilderWithTolerateBuilder value(final int value) {
       this.value = value;
       return this;
     }
@@ -28,7 +28,7 @@ public @Builder class BuilderWithTolerate {
     super();
     this.value = value;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderWithTolerateBuilder builder() {
-    return new BuilderWithTolerateBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderWithTolerate.BuilderWithTolerateBuilder builder() {
+    return new BuilderWithTolerate.BuilderWithTolerateBuilder();
   }
 }

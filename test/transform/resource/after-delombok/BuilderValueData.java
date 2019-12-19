@@ -20,8 +20,8 @@ final class BuilderAndValue {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderAndValueBuilder builder() {
-		return new BuilderAndValueBuilder();
+	public static BuilderAndValue.BuilderAndValueBuilder builder() {
+		return new BuilderAndValue.BuilderAndValueBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getZero() {
@@ -72,8 +72,8 @@ class BuilderAndData {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderAndDataBuilder builder() {
-		return new BuilderAndDataBuilder();
+	public static BuilderAndData.BuilderAndDataBuilder builder() {
+		return new BuilderAndData.BuilderAndDataBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getZero() {

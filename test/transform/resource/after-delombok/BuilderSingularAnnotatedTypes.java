@@ -26,7 +26,7 @@ class BuilderSingularAnnotatedTypes {
 		BuilderSingularAnnotatedTypesBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder foo(@MyAnnotation @NonNull final String foo) {
+		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder foo(@MyAnnotation @NonNull final String foo) {
 			if (foo == null) {
 				throw new java.lang.NullPointerException("foo is marked non-null but is null");
 			}
@@ -35,18 +35,18 @@ class BuilderSingularAnnotatedTypes {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder foos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
+		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder foos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
 			if (this.foos == null) this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
 			this.foos.addAll(foos);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder clearFoos() {
+		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder clearFoos() {
 			if (this.foos != null) this.foos.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder bar(@MyAnnotation @NonNull final String barKey, @MyAnnotation @NonNull final Integer barValue) {
+		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder bar(@MyAnnotation @NonNull final String barKey, @MyAnnotation @NonNull final Integer barValue) {
 			if (barKey == null) {
 				throw new java.lang.NullPointerException("barKey is marked non-null but is null");
 			}
@@ -62,7 +62,7 @@ class BuilderSingularAnnotatedTypes {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder bars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
+		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder bars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
 			if (this.bars$key == null) {
 				this.bars$key = new java.util.ArrayList<@MyAnnotation @NonNull String>();
 				this.bars$value = new java.util.ArrayList<@MyAnnotation @NonNull Integer>();
@@ -74,7 +74,7 @@ class BuilderSingularAnnotatedTypes {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularAnnotatedTypesBuilder clearBars() {
+		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder clearBars() {
 			if (this.bars$key != null) {
 				this.bars$key.clear();
 				this.bars$value.clear();
@@ -118,7 +118,7 @@ class BuilderSingularAnnotatedTypes {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularAnnotatedTypesBuilder builder() {
-		return new BuilderSingularAnnotatedTypesBuilder();
+	public static BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder builder() {
+		return new BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder();
 	}
 }

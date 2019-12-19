@@ -12,19 +12,19 @@ class BuilderSingularWithPrefixes {
 		BuilderSingularWithPrefixesBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWithPrefixesBuilder elem(final String elem) {
+		public BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder elem(final String elem) {
 			if (this.elems == null) this.elems = new java.util.ArrayList<String>();
 			this.elems.add(elem);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWithPrefixesBuilder elems(final java.util.Collection<? extends String> elems) {
+		public BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder elems(final java.util.Collection<? extends String> elems) {
 			if (this.elems == null) this.elems = new java.util.ArrayList<String>();
 			this.elems.addAll(elems);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWithPrefixesBuilder clearElems() {
+		public BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder clearElems() {
 			if (this.elems != null) this.elems.clear();
 			return this;
 		}
@@ -50,7 +50,7 @@ class BuilderSingularWithPrefixes {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularWithPrefixesBuilder builder() {
-		return new BuilderSingularWithPrefixesBuilder();
+	public static BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder builder() {
+		return new BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder();
 	}
 }

@@ -1,6 +1,6 @@
 import java.util.List;
 @lombok.experimental.SuperBuilder class BuilderCustomName<T> {
-  public static abstract @java.lang.SuppressWarnings("all") class SimpleTestBuilder<T, C extends BuilderCustomName<T>, B extends SimpleTestBuilder<T, C, B>> {
+  public static abstract @java.lang.SuppressWarnings("all") class SimpleTestBuilder<T, C extends BuilderCustomName<T>, B extends BuilderCustomName.SimpleTestBuilder<T, C, B>> {
     private @java.lang.SuppressWarnings("all") int field;
     public SimpleTestBuilder() {
       super();
@@ -15,11 +15,11 @@ import java.util.List;
       return (("BuilderCustomName.SimpleTestBuilder(field=" + this.field) + ")");
     }
   }
-  private static final @java.lang.SuppressWarnings("all") class SimpleTestBuilderImpl<T> extends SimpleTestBuilder<T, BuilderCustomName<T>, SimpleTestBuilderImpl<T>> {
+  private static final @java.lang.SuppressWarnings("all") class SimpleTestBuilderImpl<T> extends BuilderCustomName.SimpleTestBuilder<T, BuilderCustomName<T>, BuilderCustomName.SimpleTestBuilderImpl<T>> {
     private SimpleTestBuilderImpl() {
       super();
     }
-    protected @java.lang.Override @java.lang.SuppressWarnings("all") SimpleTestBuilderImpl<T> self() {
+    protected @java.lang.Override @java.lang.SuppressWarnings("all") BuilderCustomName.SimpleTestBuilderImpl<T> self() {
       return this;
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") BuilderCustomName<T> build() {
@@ -27,11 +27,11 @@ import java.util.List;
     }
   }
   private final int field;
-  protected @java.lang.SuppressWarnings("all") BuilderCustomName(final SimpleTestBuilder<T, ?, ?> b) {
+  protected @java.lang.SuppressWarnings("all") BuilderCustomName(final BuilderCustomName.SimpleTestBuilder<T, ?, ?> b) {
     super();
     this.field = b.field;
   }
-  public static @java.lang.SuppressWarnings("all") <T>SimpleTestBuilder<T, ?, ?> builder() {
-    return new SimpleTestBuilderImpl<T>();
+  public static @java.lang.SuppressWarnings("all") <T>BuilderCustomName.SimpleTestBuilder<T, ?, ?> builder() {
+    return new BuilderCustomName.SimpleTestBuilderImpl<T>();
   }
 }

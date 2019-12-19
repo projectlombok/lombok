@@ -11,17 +11,17 @@ public @Builder class BuilderDefaultsGenerics<N extends Number, T, R extends Lis
     @java.lang.SuppressWarnings("all") BuilderDefaultsGenericsBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsGenericsBuilder<N, T, R> callable(final java.util.concurrent.Callable<N> callable) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> callable(final java.util.concurrent.Callable<N> callable) {
       this.callable$value = callable;
       callable$set = true;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsGenericsBuilder<N, T, R> tee(final T tee) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> tee(final T tee) {
       this.tee$value = tee;
       tee$set = true;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsGenericsBuilder<N, T, R> arrr(final R arrr) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> arrr(final R arrr) {
       this.arrr$value = arrr;
       arrr$set = true;
       return this;
@@ -51,7 +51,7 @@ public @Builder class BuilderDefaultsGenerics<N extends Number, T, R extends Lis
     this.tee = tee;
     this.arrr = arrr;
   }
-  public static @java.lang.SuppressWarnings("all") <N extends Number, T, R extends List<T>>BuilderDefaultsGenericsBuilder<N, T, R> builder() {
-    return new BuilderDefaultsGenericsBuilder<N, T, R>();
+  public static @java.lang.SuppressWarnings("all") <N extends Number, T, R extends List<T>>BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> builder() {
+    return new BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R>();
   }
 }

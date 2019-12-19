@@ -20,8 +20,8 @@ final class BuilderAndValueWithSetterPrefix {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderAndValueWithSetterPrefixBuilder builder() {
-		return new BuilderAndValueWithSetterPrefixBuilder();
+	public static BuilderAndValueWithSetterPrefix.BuilderAndValueWithSetterPrefixBuilder builder() {
+		return new BuilderAndValueWithSetterPrefix.BuilderAndValueWithSetterPrefixBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getZero() {
@@ -72,8 +72,8 @@ class BuilderAndDataWithSetterPrefix {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderAndDataWithSetterPrefixBuilder builder() {
-		return new BuilderAndDataWithSetterPrefixBuilder();
+	public static BuilderAndDataWithSetterPrefix.BuilderAndDataWithSetterPrefixBuilder builder() {
+		return new BuilderAndDataWithSetterPrefix.BuilderAndDataWithSetterPrefixBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getZero() {

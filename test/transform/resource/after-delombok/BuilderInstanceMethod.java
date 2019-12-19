@@ -17,22 +17,22 @@ class BuilderInstanceMethod<T> {
 		StringBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public StringBuilder show(final int show) {
+		public BuilderInstanceMethod<T>.StringBuilder show(final int show) {
 			this.show = show;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public StringBuilder yes(final int yes) {
+		public BuilderInstanceMethod<T>.StringBuilder yes(final int yes) {
 			this.yes = yes;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public StringBuilder also(final List<T> also) {
+		public BuilderInstanceMethod<T>.StringBuilder also(final List<T> also) {
 			this.also = also;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public StringBuilder $andMe(final int $andMe) {
+		public BuilderInstanceMethod<T>.StringBuilder $andMe(final int $andMe) {
 			this.$andMe = $andMe;
 			return this;
 		}
@@ -47,7 +47,7 @@ class BuilderInstanceMethod<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public StringBuilder builder() {
-		return new StringBuilder();
+	public BuilderInstanceMethod<T>.StringBuilder builder() {
+		return this.new StringBuilder();
 	}
 }

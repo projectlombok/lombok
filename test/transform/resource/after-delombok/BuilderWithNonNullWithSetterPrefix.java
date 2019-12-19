@@ -16,7 +16,7 @@ class BuilderWithNonNullWithSetterPrefix {
 		BuilderWithNonNullWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithNonNullWithSetterPrefixBuilder withId(@lombok.NonNull final String id) {
+		public BuilderWithNonNullWithSetterPrefix.BuilderWithNonNullWithSetterPrefixBuilder withId(@lombok.NonNull final String id) {
 			if (id == null) {
 				throw new java.lang.NullPointerException("id is marked non-null but is null");
 			}
@@ -34,7 +34,7 @@ class BuilderWithNonNullWithSetterPrefix {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderWithNonNullWithSetterPrefixBuilder builder() {
-		return new BuilderWithNonNullWithSetterPrefixBuilder();
+	public static BuilderWithNonNullWithSetterPrefix.BuilderWithNonNullWithSetterPrefixBuilder builder() {
+		return new BuilderWithNonNullWithSetterPrefix.BuilderWithNonNullWithSetterPrefixBuilder();
 	}
 }

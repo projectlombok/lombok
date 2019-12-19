@@ -19,12 +19,12 @@ class BuilderSimple<T> {
 		BuilderSimpleBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSimpleBuilder<T> yes(final int yes) {
+		public BuilderSimple.BuilderSimpleBuilder<T> yes(final int yes) {
 			this.yes = yes;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSimpleBuilder<T> also(final List<T> also) {
+		public BuilderSimple.BuilderSimpleBuilder<T> also(final List<T> also) {
 			this.also = also;
 			return this;
 		}
@@ -39,7 +39,7 @@ class BuilderSimple<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	protected static <T> BuilderSimpleBuilder<T> builder() {
-		return new BuilderSimpleBuilder<T>();
+	protected static <T> BuilderSimple.BuilderSimpleBuilder<T> builder() {
+		return new BuilderSimple.BuilderSimpleBuilder<T>();
 	}
 }

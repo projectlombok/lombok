@@ -10,53 +10,53 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> child(final T child) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> child(final T child) {
       if ((this.children == null))
           this.children = new java.util.ArrayList<T>();
       this.children.add(child);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> children(final java.util.Collection<? extends T> children) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> children(final java.util.Collection<? extends T> children) {
       if ((this.children == null))
           this.children = new java.util.ArrayList<T>();
       this.children.addAll(children);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> clearChildren() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> clearChildren() {
       if ((this.children != null))
           this.children.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> scarf(final Number scarf) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> scarf(final Number scarf) {
       if ((this.scarves == null))
           this.scarves = new java.util.ArrayList<Number>();
       this.scarves.add(scarf);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> scarves(final java.util.Collection<? extends Number> scarves) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> scarves(final java.util.Collection<? extends Number> scarves) {
       if ((this.scarves == null))
           this.scarves = new java.util.ArrayList<Number>();
       this.scarves.addAll(scarves);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> clearScarves() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> clearScarves() {
       if ((this.scarves != null))
           this.scarves.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> rawList(final java.lang.Object rawList) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> rawList(final java.lang.Object rawList) {
       if ((this.rawList == null))
           this.rawList = new java.util.ArrayList<java.lang.Object>();
       this.rawList.add(rawList);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> rawList(final java.util.Collection<?> rawList) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> rawList(final java.util.Collection<?> rawList) {
       if ((this.rawList == null))
           this.rawList = new java.util.ArrayList<java.lang.Object>();
       this.rawList.addAll(rawList);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularListsBuilder<T> clearRawList() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularLists.BuilderSingularListsBuilder<T> clearRawList() {
       if ((this.rawList != null))
           this.rawList.clear();
       return this;
@@ -110,7 +110,7 @@ import lombok.Singular;
     this.scarves = scarves;
     this.rawList = rawList;
   }
-  public static @java.lang.SuppressWarnings("all") <T>BuilderSingularListsBuilder<T> builder() {
-    return new BuilderSingularListsBuilder<T>();
+  public static @java.lang.SuppressWarnings("all") <T>BuilderSingularLists.BuilderSingularListsBuilder<T> builder() {
+    return new BuilderSingularLists.BuilderSingularListsBuilder<T>();
   }
 }

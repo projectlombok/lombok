@@ -2,7 +2,7 @@ public class SuperBuilderAbstract {
 	public static class Parent {
 		int parentField;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
+		public static abstract class ParentBuilder<C extends SuperBuilderAbstract.Parent, B extends SuperBuilderAbstract.Parent.ParentBuilder<C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private int parentField;
 			@java.lang.SuppressWarnings("all")
@@ -21,34 +21,34 @@ public class SuperBuilderAbstract {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
+		private static final class ParentBuilderImpl extends SuperBuilderAbstract.Parent.ParentBuilder<SuperBuilderAbstract.Parent, SuperBuilderAbstract.Parent.ParentBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private ParentBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl self() {
+			protected SuperBuilderAbstract.Parent.ParentBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Parent build() {
-				return new Parent(this);
+			public SuperBuilderAbstract.Parent build() {
+				return new SuperBuilderAbstract.Parent(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Parent(final ParentBuilder<?, ?> b) {
+		protected Parent(final SuperBuilderAbstract.Parent.ParentBuilder<?, ?> b) {
 			this.parentField = b.parentField;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static ParentBuilder<?, ?> builder() {
-			return new ParentBuilderImpl();
+		public static SuperBuilderAbstract.Parent.ParentBuilder<?, ?> builder() {
+			return new SuperBuilderAbstract.Parent.ParentBuilderImpl();
 		}
 	}
 	public static abstract class Child extends Parent {
 		double childField;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+		public static abstract class ChildBuilder<C extends SuperBuilderAbstract.Child, B extends SuperBuilderAbstract.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private double childField;
 			@java.lang.Override
@@ -69,7 +69,7 @@ public class SuperBuilderAbstract {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Child(final ChildBuilder<?, ?> b) {
+		protected Child(final SuperBuilderAbstract.Child.ChildBuilder<?, ?> b) {
 			super(b);
 			this.childField = b.childField;
 		}
@@ -77,7 +77,7 @@ public class SuperBuilderAbstract {
 	public static class GrandChild extends Child {
 		String grandChildField;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class GrandChildBuilder<C extends GrandChild, B extends GrandChildBuilder<C, B>> extends Child.ChildBuilder<C, B> {
+		public static abstract class GrandChildBuilder<C extends SuperBuilderAbstract.GrandChild, B extends SuperBuilderAbstract.GrandChild.GrandChildBuilder<C, B>> extends Child.ChildBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private String grandChildField;
 			@java.lang.Override
@@ -98,29 +98,29 @@ public class SuperBuilderAbstract {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class GrandChildBuilderImpl extends GrandChildBuilder<GrandChild, GrandChildBuilderImpl> {
+		private static final class GrandChildBuilderImpl extends SuperBuilderAbstract.GrandChild.GrandChildBuilder<SuperBuilderAbstract.GrandChild, SuperBuilderAbstract.GrandChild.GrandChildBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private GrandChildBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected GrandChildBuilderImpl self() {
+			protected SuperBuilderAbstract.GrandChild.GrandChildBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public GrandChild build() {
-				return new GrandChild(this);
+			public SuperBuilderAbstract.GrandChild build() {
+				return new SuperBuilderAbstract.GrandChild(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected GrandChild(final GrandChildBuilder<?, ?> b) {
+		protected GrandChild(final SuperBuilderAbstract.GrandChild.GrandChildBuilder<?, ?> b) {
 			super(b);
 			this.grandChildField = b.grandChildField;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static GrandChildBuilder<?, ?> builder() {
-			return new GrandChildBuilderImpl();
+		public static SuperBuilderAbstract.GrandChild.GrandChildBuilder<?, ?> builder() {
+			return new SuperBuilderAbstract.GrandChild.GrandChildBuilderImpl();
 		}
 	}
 	public static void test() {

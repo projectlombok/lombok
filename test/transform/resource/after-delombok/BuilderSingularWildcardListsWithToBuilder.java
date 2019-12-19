@@ -18,36 +18,36 @@ class BuilderSingularWildcardListsWithToBuilder {
 		BuilderSingularWildcardListsWithToBuilderBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWildcardListsWithToBuilderBuilder object(final java.lang.Object object) {
+		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder object(final java.lang.Object object) {
 			if (this.objects == null) this.objects = new java.util.ArrayList<java.lang.Object>();
 			this.objects.add(object);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWildcardListsWithToBuilderBuilder objects(final java.util.Collection<?> objects) {
+		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder objects(final java.util.Collection<?> objects) {
 			if (this.objects == null) this.objects = new java.util.ArrayList<java.lang.Object>();
 			this.objects.addAll(objects);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWildcardListsWithToBuilderBuilder clearObjects() {
+		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearObjects() {
 			if (this.objects != null) this.objects.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWildcardListsWithToBuilderBuilder number(final Number number) {
+		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder number(final Number number) {
 			if (this.numbers == null) this.numbers = new java.util.ArrayList<Number>();
 			this.numbers.add(number);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWildcardListsWithToBuilderBuilder numbers(final java.util.Collection<? extends Number> numbers) {
+		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder numbers(final java.util.Collection<? extends Number> numbers) {
 			if (this.numbers == null) this.numbers = new java.util.ArrayList<Number>();
 			this.numbers.addAll(numbers);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularWildcardListsWithToBuilderBuilder clearNumbers() {
+		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearNumbers() {
 			if (this.numbers != null) this.numbers.clear();
 			return this;
 		}
@@ -84,12 +84,12 @@ class BuilderSingularWildcardListsWithToBuilder {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularWildcardListsWithToBuilderBuilder builder() {
-		return new BuilderSingularWildcardListsWithToBuilderBuilder();
+	public static BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder builder() {
+		return new BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
-	public BuilderSingularWildcardListsWithToBuilderBuilder toBuilder() {
-		final BuilderSingularWildcardListsWithToBuilderBuilder builder = new BuilderSingularWildcardListsWithToBuilderBuilder();
+	public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder toBuilder() {
+		final BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder builder = new BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder();
 		if (this.objects != null) builder.objects(this.objects);
 		if (this.numbers != null) builder.numbers(this.numbers);
 		return builder;

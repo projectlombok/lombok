@@ -8,7 +8,7 @@ public class SuperBuilderWithNonNull {
 			return "default";
 		}
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
+		public static abstract class ParentBuilder<C extends SuperBuilderWithNonNull.Parent, B extends SuperBuilderWithNonNull.Parent.ParentBuilder<C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private boolean nonNullParentField$set;
 			@java.lang.SuppressWarnings("all")
@@ -33,39 +33,39 @@ public class SuperBuilderWithNonNull {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
+		private static final class ParentBuilderImpl extends SuperBuilderWithNonNull.Parent.ParentBuilder<SuperBuilderWithNonNull.Parent, SuperBuilderWithNonNull.Parent.ParentBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private ParentBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl self() {
+			protected SuperBuilderWithNonNull.Parent.ParentBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Parent build() {
-				return new Parent(this);
+			public SuperBuilderWithNonNull.Parent build() {
+				return new SuperBuilderWithNonNull.Parent(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Parent(final ParentBuilder<?, ?> b) {
+		protected Parent(final SuperBuilderWithNonNull.Parent.ParentBuilder<?, ?> b) {
 			if (b.nonNullParentField$set) this.nonNullParentField = b.nonNullParentField$value;
-			 else this.nonNullParentField = Parent.$default$nonNullParentField();
+			 else this.nonNullParentField = SuperBuilderWithNonNull.Parent.$default$nonNullParentField();
 			if (nonNullParentField == null) {
 				throw new java.lang.NullPointerException("nonNullParentField is marked non-null but is null");
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		public static ParentBuilder<?, ?> builder() {
-			return new ParentBuilderImpl();
+		public static SuperBuilderWithNonNull.Parent.ParentBuilder<?, ?> builder() {
+			return new SuperBuilderWithNonNull.Parent.ParentBuilderImpl();
 		}
 	}
 	public static class Child extends Parent {
 		@lombok.NonNull
 		String nonNullChildField;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+		public static abstract class ChildBuilder<C extends SuperBuilderWithNonNull.Child, B extends SuperBuilderWithNonNull.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private String nonNullChildField;
 			@java.lang.Override
@@ -89,23 +89,23 @@ public class SuperBuilderWithNonNull {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
+		private static final class ChildBuilderImpl extends SuperBuilderWithNonNull.Child.ChildBuilder<SuperBuilderWithNonNull.Child, SuperBuilderWithNonNull.Child.ChildBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private ChildBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ChildBuilderImpl self() {
+			protected SuperBuilderWithNonNull.Child.ChildBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Child build() {
-				return new Child(this);
+			public SuperBuilderWithNonNull.Child build() {
+				return new SuperBuilderWithNonNull.Child(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Child(final ChildBuilder<?, ?> b) {
+		protected Child(final SuperBuilderWithNonNull.Child.ChildBuilder<?, ?> b) {
 			super(b);
 			this.nonNullChildField = b.nonNullChildField;
 			if (nonNullChildField == null) {
@@ -113,8 +113,8 @@ public class SuperBuilderWithNonNull {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		public static ChildBuilder<?, ?> builder() {
-			return new ChildBuilderImpl();
+		public static SuperBuilderWithNonNull.Child.ChildBuilder<?, ?> builder() {
+			return new SuperBuilderWithNonNull.Child.ChildBuilderImpl();
 		}
 	}
 	public static void test() {

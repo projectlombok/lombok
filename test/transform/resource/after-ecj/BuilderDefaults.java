@@ -10,16 +10,16 @@ public final @Value @Builder class BuilderDefaults {
     @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder x(final int x) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder x(final int x) {
       this.x$value = x;
       x$set = true;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder name(final String name) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder name(final String name) {
       this.name = name;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder z(final long z) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder z(final long z) {
       this.z$value = z;
       z$set = true;
       return this;
@@ -46,8 +46,8 @@ public final @Value @Builder class BuilderDefaults {
     this.name = name;
     this.z = z;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder builder() {
-    return new BuilderDefaultsBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder builder() {
+    return new BuilderDefaults.BuilderDefaultsBuilder();
   }
   public @java.lang.SuppressWarnings("all") int getX() {
     return this.x;

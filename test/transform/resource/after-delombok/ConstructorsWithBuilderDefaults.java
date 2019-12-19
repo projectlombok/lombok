@@ -17,13 +17,13 @@ final class ConstructorsWithBuilderDefaults {
 		ConstructorsWithBuilderDefaultsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorsWithBuilderDefaultsBuilder x(final int x) {
+		public ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder x(final int x) {
 			this.x$value = x;
 			x$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorsWithBuilderDefaultsBuilder y(final int y) {
+		public ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder y(final int y) {
 			this.y = y;
 			return this;
 		}
@@ -40,8 +40,8 @@ final class ConstructorsWithBuilderDefaults {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static ConstructorsWithBuilderDefaultsBuilder builder() {
-		return new ConstructorsWithBuilderDefaultsBuilder();
+	public static ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder builder() {
+		return new ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {

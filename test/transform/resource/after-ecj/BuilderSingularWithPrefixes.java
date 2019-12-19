@@ -5,19 +5,19 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder elem(final String elem) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder elem(final String elem) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.add(elem);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder elems(final java.util.Collection<? extends String> elems) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder elems(final java.util.Collection<? extends String> elems) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.addAll(elems);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder clearElems() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder clearElems() {
       if ((this.elems != null))
           this.elems.clear();
       return this;
@@ -45,7 +45,7 @@ import lombok.Singular;
     super();
     this._elems = elems;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder builder() {
-    return new BuilderSingularWithPrefixesBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder builder() {
+    return new BuilderSingularWithPrefixes.BuilderSingularWithPrefixesBuilder();
   }
 }

@@ -8,53 +8,53 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder things(final String things) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final String things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.add(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.addAll(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder clearThings() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearThings() {
       if ((this.things != null))
           this.things.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder widget(final String widget) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widget(final String widget) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.add(widget);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.addAll(widgets);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder clearWidgets() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearWidgets() {
       if ((this.widgets != null))
           this.widgets.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder items(final String items) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final String items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.add(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder clearItems() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearItems() {
       if ((this.items != null))
           this.items.clear();
       return this;
@@ -108,7 +108,7 @@ import lombok.Singular;
     this.widgets = widgets;
     this.items = items;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder builder() {
-    return new BuilderSingularNoAutoBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder builder() {
+    return new BuilderSingularNoAuto.BuilderSingularNoAutoBuilder();
   }
 }

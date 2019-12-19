@@ -8,19 +8,19 @@ class BuilderInstanceMethod<T> {
     @java.lang.SuppressWarnings("all") StringBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") StringBuilder show(final int show) {
+    public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder show(final int show) {
       this.show = show;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") StringBuilder yes(final int yes) {
+    public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder yes(final int yes) {
       this.yes = yes;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") StringBuilder also(final List<T> also) {
+    public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder also(final List<T> also) {
       this.also = also;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") StringBuilder $andMe(final int $andMe) {
+    public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder $andMe(final int $andMe) {
       this.$andMe = $andMe;
       return this;
     }
@@ -37,7 +37,7 @@ class BuilderInstanceMethod<T> {
   public @lombok.Builder String create(int show, final int yes, List<T> also, int $andMe) {
     return (((("" + show) + yes) + also) + $andMe);
   }
-  public @java.lang.SuppressWarnings("all") StringBuilder builder() {
-    return new StringBuilder();
+  public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder builder() {
+    return this.new StringBuilder();
   }
 }

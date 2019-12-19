@@ -21,53 +21,53 @@ class BuilderSingularNoAuto {
 		BuilderSingularNoAutoBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder things(final String things) {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final String things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.add(things);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.addAll(things);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder clearThings() {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearThings() {
 			if (this.things != null) this.things.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder widget(final String widget) {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widget(final String widget) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.add(widget);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.addAll(widgets);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder clearWidgets() {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearWidgets() {
 			if (this.widgets != null) this.widgets.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder items(final String items) {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final String items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.add(items);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.addAll(items);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNoAutoBuilder clearItems() {
+		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearItems() {
 			if (this.items != null) this.items.clear();
 			return this;
 		}
@@ -115,7 +115,7 @@ class BuilderSingularNoAuto {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularNoAutoBuilder builder() {
-		return new BuilderSingularNoAutoBuilder();
+	public static BuilderSingularNoAuto.BuilderSingularNoAutoBuilder builder() {
+		return new BuilderSingularNoAuto.BuilderSingularNoAutoBuilder();
 	}
 }

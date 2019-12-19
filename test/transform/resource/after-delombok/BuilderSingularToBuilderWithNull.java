@@ -15,19 +15,19 @@ class BuilderSingularToBuilderWithNull {
 		BuilderSingularToBuilderWithNullBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularToBuilderWithNullBuilder elem(final String elem) {
+		public BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder elem(final String elem) {
 			if (this.elems == null) this.elems = new java.util.ArrayList<String>();
 			this.elems.add(elem);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularToBuilderWithNullBuilder elems(final java.util.Collection<? extends String> elems) {
+		public BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder elems(final java.util.Collection<? extends String> elems) {
 			if (this.elems == null) this.elems = new java.util.ArrayList<String>();
 			this.elems.addAll(elems);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularToBuilderWithNullBuilder clearElems() {
+		public BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder clearElems() {
 			if (this.elems != null) this.elems.clear();
 			return this;
 		}
@@ -53,12 +53,12 @@ class BuilderSingularToBuilderWithNull {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularToBuilderWithNullBuilder builder() {
-		return new BuilderSingularToBuilderWithNullBuilder();
+	public static BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder builder() {
+		return new BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
-	public BuilderSingularToBuilderWithNullBuilder toBuilder() {
-		final BuilderSingularToBuilderWithNullBuilder builder = new BuilderSingularToBuilderWithNullBuilder();
+	public BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder toBuilder() {
+		final BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder builder = new BuilderSingularToBuilderWithNull.BuilderSingularToBuilderWithNullBuilder();
 		if (this.elems != null) builder.elems(this.elems);
 		return builder;
 	}

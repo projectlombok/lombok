@@ -20,18 +20,18 @@ public class BuilderWithRecursiveGenerics {
 			TestBuilder() {
 			}
 			@java.lang.SuppressWarnings("all")
-			public TestBuilder<Foo, Bar, Quz> foo(final Foo foo) {
+			public BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> foo(final Foo foo) {
 				this.foo = foo;
 				return this;
 			}
 			@java.lang.SuppressWarnings("all")
-			public TestBuilder<Foo, Bar, Quz> bar(final Bar bar) {
+			public BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> bar(final Bar bar) {
 				this.bar = bar;
 				return this;
 			}
 			@java.lang.SuppressWarnings("all")
-			public Test<Foo, Bar, Quz> build() {
-				return new Test<Foo, Bar, Quz>(foo, bar);
+			public BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz> build() {
+				return new BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz>(foo, bar);
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
@@ -40,8 +40,8 @@ public class BuilderWithRecursiveGenerics {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		public static <Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> TestBuilder<Foo, Bar, Quz> builder() {
-			return new TestBuilder<Foo, Bar, Quz>();
+		public static <Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> builder() {
+			return new BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz>();
 		}
 		@java.lang.SuppressWarnings("all")
 		public Foo getFoo() {

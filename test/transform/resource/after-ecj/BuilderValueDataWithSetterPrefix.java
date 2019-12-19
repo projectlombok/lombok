@@ -15,8 +15,8 @@ final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue
   @java.lang.SuppressWarnings("all") BuilderAndValueWithSetterPrefix() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") BuilderAndValueWithSetterPrefixBuilder builder() {
-    return new BuilderAndValueWithSetterPrefixBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderAndValueWithSetterPrefix.BuilderAndValueWithSetterPrefixBuilder builder() {
+    return new BuilderAndValueWithSetterPrefix.BuilderAndValueWithSetterPrefixBuilder();
   }
   public @java.lang.SuppressWarnings("all") int getZero() {
     return this.zero;
@@ -57,8 +57,8 @@ final @lombok.Builder(setterPrefix = "with") @lombok.Value class BuilderAndValue
   @java.lang.SuppressWarnings("all") BuilderAndDataWithSetterPrefix() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") BuilderAndDataWithSetterPrefixBuilder builder() {
-    return new BuilderAndDataWithSetterPrefixBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderAndDataWithSetterPrefix.BuilderAndDataWithSetterPrefixBuilder builder() {
+    return new BuilderAndDataWithSetterPrefix.BuilderAndDataWithSetterPrefixBuilder();
   }
   public @java.lang.SuppressWarnings("all") int getZero() {
     return this.zero;

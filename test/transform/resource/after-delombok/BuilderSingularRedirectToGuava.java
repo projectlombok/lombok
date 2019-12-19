@@ -23,53 +23,53 @@ class BuilderSingularRedirectToGuava {
 		BuilderSingularRedirectToGuavaBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder dangerMouse(final String dangerMouse) {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder dangerMouse(final String dangerMouse) {
 			if (this.dangerMice == null) this.dangerMice = com.google.common.collect.ImmutableSet.builder();
 			this.dangerMice.add(dangerMouse);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder dangerMice(final java.lang.Iterable<? extends String> dangerMice) {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder dangerMice(final java.lang.Iterable<? extends String> dangerMice) {
 			if (this.dangerMice == null) this.dangerMice = com.google.common.collect.ImmutableSet.builder();
 			this.dangerMice.addAll(dangerMice);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder clearDangerMice() {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearDangerMice() {
 			this.dangerMice = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder thing(final Integer key, final Number value) {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder thing(final Integer key, final Number value) {
 			if (this.things == null) this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
 			this.things.put(key, value);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder things(final java.util.Map<? extends Integer, ? extends Number> things) {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder things(final java.util.Map<? extends Integer, ? extends Number> things) {
 			if (this.things == null) this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
 			this.things.putAll(things);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder clearThings() {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearThings() {
 			this.things = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder doohickey(final Class<?> doohickey) {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder doohickey(final Class<?> doohickey) {
 			if (this.doohickeys == null) this.doohickeys = com.google.common.collect.ImmutableList.builder();
 			this.doohickeys.add(doohickey);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder doohickeys(final java.lang.Iterable<? extends Class<?>> doohickeys) {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder doohickeys(final java.lang.Iterable<? extends Class<?>> doohickeys) {
 			if (this.doohickeys == null) this.doohickeys = com.google.common.collect.ImmutableList.builder();
 			this.doohickeys.addAll(doohickeys);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularRedirectToGuavaBuilder clearDoohickeys() {
+		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearDoohickeys() {
 			this.doohickeys = null;
 			return this;
 		}
@@ -87,7 +87,7 @@ class BuilderSingularRedirectToGuava {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularRedirectToGuavaBuilder builder() {
-		return new BuilderSingularRedirectToGuavaBuilder();
+	public static BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder builder() {
+		return new BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder();
 	}
 }

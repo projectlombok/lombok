@@ -14,12 +14,12 @@ class BuilderWithExistingBuilderClass<T, K extends Number> {
 		BuilderWithExistingBuilderClassBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithExistingBuilderClassBuilder<Z> arg1(final Z arg1) {
+		public BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z> arg1(final Z arg1) {
 			this.arg1 = arg1;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithExistingBuilderClassBuilder<Z> arg3(final String arg3) {
+		public BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z> arg3(final String arg3) {
 			this.arg3 = arg3;
 			return this;
 		}
@@ -34,7 +34,7 @@ class BuilderWithExistingBuilderClass<T, K extends Number> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <Z extends Number> BuilderWithExistingBuilderClassBuilder<Z> builder() {
-		return new BuilderWithExistingBuilderClassBuilder<Z>();
+	public static <Z extends Number> BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z> builder() {
+		return new BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z>();
 	}
 }

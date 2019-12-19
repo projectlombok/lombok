@@ -15,8 +15,8 @@ final @lombok.Builder @lombok.Value class BuilderAndValue {
   @java.lang.SuppressWarnings("all") BuilderAndValue() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") BuilderAndValueBuilder builder() {
-    return new BuilderAndValueBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderAndValue.BuilderAndValueBuilder builder() {
+    return new BuilderAndValue.BuilderAndValueBuilder();
   }
   public @java.lang.SuppressWarnings("all") int getZero() {
     return this.zero;
@@ -57,8 +57,8 @@ final @lombok.Builder @lombok.Value class BuilderAndValue {
   @java.lang.SuppressWarnings("all") BuilderAndData() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") BuilderAndDataBuilder builder() {
-    return new BuilderAndDataBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderAndData.BuilderAndDataBuilder builder() {
+    return new BuilderAndData.BuilderAndDataBuilder();
   }
   public @java.lang.SuppressWarnings("all") int getZero() {
     return this.zero;

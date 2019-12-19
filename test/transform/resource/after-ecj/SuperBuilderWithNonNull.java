@@ -1,7 +1,7 @@
 import java.util.List;
 public class SuperBuilderWithNonNull {
   public static @lombok.experimental.SuperBuilder class Parent {
-    public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
+    public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<C extends SuperBuilderWithNonNull.Parent, B extends SuperBuilderWithNonNull.Parent.ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") String nonNullParentField$value;
       private @java.lang.SuppressWarnings("all") boolean nonNullParentField$set;
       public ParentBuilder() {
@@ -22,38 +22,38 @@ public class SuperBuilderWithNonNull {
         return (("SuperBuilderWithNonNull.Parent.ParentBuilder(nonNullParentField$value=" + this.nonNullParentField$value) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
+    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends SuperBuilderWithNonNull.Parent.ParentBuilder<SuperBuilderWithNonNull.Parent, SuperBuilderWithNonNull.Parent.ParentBuilderImpl> {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithNonNull.Parent.ParentBuilderImpl self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") Parent build() {
-        return new Parent(this);
+      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithNonNull.Parent build() {
+        return new SuperBuilderWithNonNull.Parent(this);
       }
     }
     final @lombok.NonNull @lombok.Builder.Default String nonNullParentField;
     private static @java.lang.SuppressWarnings("all") String $default$nonNullParentField() {
       return "default";
     }
-    protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") Parent(final SuperBuilderWithNonNull.Parent.ParentBuilder<?, ?> b) {
       super();
       if (b.nonNullParentField$set)
           this.nonNullParentField = b.nonNullParentField$value;
       else
-          this.nonNullParentField = Parent.$default$nonNullParentField();
+          this.nonNullParentField = SuperBuilderWithNonNull.Parent.$default$nonNullParentField();
       if ((nonNullParentField == null))
           {
             throw new java.lang.NullPointerException("nonNullParentField is marked non-null but is null");
           }
     }
-    public static @java.lang.SuppressWarnings("all") ParentBuilder<?, ?> builder() {
-      return new ParentBuilderImpl();
+    public static @java.lang.SuppressWarnings("all") SuperBuilderWithNonNull.Parent.ParentBuilder<?, ?> builder() {
+      return new SuperBuilderWithNonNull.Parent.ParentBuilderImpl();
     }
   }
   public static @lombok.experimental.SuperBuilder class Child extends Parent {
-    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<C extends SuperBuilderWithNonNull.Child, B extends SuperBuilderWithNonNull.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") String nonNullChildField;
       public ChildBuilder() {
         super();
@@ -72,19 +72,19 @@ public class SuperBuilderWithNonNull {
         return (((("SuperBuilderWithNonNull.Child.ChildBuilder(super=" + super.toString()) + ", nonNullChildField=") + this.nonNullChildField) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
+    private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl extends SuperBuilderWithNonNull.Child.ChildBuilder<SuperBuilderWithNonNull.Child, SuperBuilderWithNonNull.Child.ChildBuilderImpl> {
       private ChildBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithNonNull.Child.ChildBuilderImpl self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") Child build() {
-        return new Child(this);
+      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithNonNull.Child build() {
+        return new SuperBuilderWithNonNull.Child(this);
       }
     }
     @lombok.NonNull String nonNullChildField;
-    protected @java.lang.SuppressWarnings("all") Child(final ChildBuilder<?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") Child(final SuperBuilderWithNonNull.Child.ChildBuilder<?, ?> b) {
       super(b);
       this.nonNullChildField = b.nonNullChildField;
       if ((nonNullChildField == null))
@@ -92,8 +92,8 @@ public class SuperBuilderWithNonNull {
             throw new java.lang.NullPointerException("nonNullChildField is marked non-null but is null");
           }
     }
-    public static @java.lang.SuppressWarnings("all") ChildBuilder<?, ?> builder() {
-      return new ChildBuilderImpl();
+    public static @java.lang.SuppressWarnings("all") SuperBuilderWithNonNull.Child.ChildBuilder<?, ?> builder() {
+      return new SuperBuilderWithNonNull.Child.ChildBuilderImpl();
     }
   }
   public SuperBuilderWithNonNull() {

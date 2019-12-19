@@ -622,20 +622,7 @@ public class JavacHandlerUtil {
 		JavacNode typeNode = childOfType;
 		JavacTreeMaker maker = childOfType.getTreeMaker();
 		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
-		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
-			JCClassDecl type = (JCClassDecl) typeNode.get();
-			ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
-			if (!type.typarams.isEmpty()) {
-				for (JCTypeParameter tp : type.typarams) {
-					typeArgs.append(maker.Ident(tp.name));
-				}
-				return maker.TypeApply(maker.Ident(type.name), typeArgs.toList());
-			} else {
-				return maker.Ident(type.name);
-			}
-		} else {
-			return null;
-		}
+		return JavacHandlerUtil.namePlusTypeParamsToTypeReference(maker, typeNode, ((JCClassDecl) typeNode.get()).typarams);
 	}
 	
 	public static boolean isBoolean(JavacNode field) {
@@ -1722,11 +1709,25 @@ public class JavacHandlerUtil {
 		return JCAnnotatedTypeReflect.getUnderlyingType(from);
 	}
 	
-	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, Name typeName, List<JCTypeParameter> params) {
-		if (params.isEmpty()) {
-			return maker.Ident(typeName);
+	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode type, List<JCTypeParameter> params) {
+		JCClassDecl td = (JCClassDecl) type.get();
+		boolean instance = (td.mods.flags & Flags.STATIC) == 0;
+		return namePlusTypeParamsToTypeReference(maker, type.up(), td.name, instance, params);
+	}
+	
+	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode parentType, Name typeName, boolean instance, List<JCTypeParameter> params) {
+		JCExpression r = null;
+		
+		if (parentType != null && parentType.getKind() == Kind.TYPE) {
+			JCClassDecl td = (JCClassDecl) parentType.get();
+			boolean outerInstance = instance && ((td.mods.flags & Flags.STATIC) == 0);
+			List<JCTypeParameter> outerParams = instance ? td.typarams : List.<JCTypeParameter>nil();
+			r = namePlusTypeParamsToTypeReference(maker, parentType.up(), td.name, outerInstance, outerParams);
 		}
-		return maker.TypeApply(maker.Ident(typeName), typeParameterNames(maker, params));
+		
+		r = r == null ? maker.Ident(typeName) : maker.Select(r, typeName);
+		if (!params.isEmpty()) r = maker.TypeApply(r, typeParameterNames(maker, params));
+		return r;
 	}
 	
 	public static List<JCExpression> typeParameterNames(JavacTreeMaker maker, List<JCTypeParameter> params) {

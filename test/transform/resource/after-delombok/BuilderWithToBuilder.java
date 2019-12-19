@@ -28,34 +28,34 @@ class BuilderWithToBuilder<T> {
 		BuilderWithToBuilderBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> one(final String one) {
+		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> one(final String one) {
 			this.one = one;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> two(final String two) {
+		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> two(final String two) {
 			this.two = two;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> foo(final T foo) {
+		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> foo(final T foo) {
 			this.foo = foo;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> bar(final T bar) {
+		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> bar(final T bar) {
 			if (this.bars == null) this.bars = new java.util.ArrayList<T>();
 			this.bars.add(bar);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> bars(final java.util.Collection<? extends T> bars) {
+		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> bars(final java.util.Collection<? extends T> bars) {
 			if (this.bars == null) this.bars = new java.util.ArrayList<T>();
 			this.bars.addAll(bars);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithToBuilderBuilder<T> clearBars() {
+		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> clearBars() {
 			if (this.bars != null) this.bars.clear();
 			return this;
 		}
@@ -81,12 +81,12 @@ class BuilderWithToBuilder<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> BuilderWithToBuilderBuilder<T> builder() {
-		return new BuilderWithToBuilderBuilder<T>();
+	public static <T> BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> builder() {
+		return new BuilderWithToBuilder.BuilderWithToBuilderBuilder<T>();
 	}
 	@java.lang.SuppressWarnings("all")
-	public BuilderWithToBuilderBuilder<T> toBuilder() {
-		final BuilderWithToBuilderBuilder<T> builder = new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.<T>rrr(this));
+	public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> toBuilder() {
+		final BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> builder = new BuilderWithToBuilder.BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.<T>rrr(this));
 		if (this.bars != null) builder.bars(this.bars);
 		return builder;
 	}
@@ -111,17 +111,17 @@ class ConstructorWithToBuilder<T> {
 		ConstructorWithToBuilderBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorWithToBuilderBuilder<T> mOne(final String mOne) {
+		public ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T> mOne(final String mOne) {
 			this.mOne = mOne;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorWithToBuilderBuilder<T> baz(final T baz) {
+		public ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T> baz(final T baz) {
 			this.baz = baz;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public ConstructorWithToBuilderBuilder<T> bars(final com.google.common.collect.ImmutableList<T> bars) {
+		public ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T> bars(final com.google.common.collect.ImmutableList<T> bars) {
 			this.bars = bars;
 			return this;
 		}
@@ -136,11 +136,11 @@ class ConstructorWithToBuilder<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> ConstructorWithToBuilderBuilder<T> builder() {
-		return new ConstructorWithToBuilderBuilder<T>();
+	public static <T> ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T> builder() {
+		return new ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T>();
 	}
 	@java.lang.SuppressWarnings("all")
-	public ConstructorWithToBuilderBuilder<T> toBuilder() {
-		return new ConstructorWithToBuilderBuilder<T>().mOne(this.mOne).baz(this.foo).bars(this.bars);
+	public ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T> toBuilder() {
+		return new ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T>().mOne(this.mOne).baz(this.foo).bars(this.bars);
 	}
 }

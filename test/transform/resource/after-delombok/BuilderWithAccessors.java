@@ -24,22 +24,22 @@ class BuilderWithAccessors {
 		BuilderWithAccessorsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithAccessorsBuilder plower(final int plower) {
+		public BuilderWithAccessors.BuilderWithAccessorsBuilder plower(final int plower) {
 			this.plower = plower;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithAccessorsBuilder upper(final int upper) {
+		public BuilderWithAccessors.BuilderWithAccessorsBuilder upper(final int upper) {
 			this.upper = upper;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithAccessorsBuilder foo(final int foo) {
+		public BuilderWithAccessors.BuilderWithAccessorsBuilder foo(final int foo) {
 			this.foo = foo;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithAccessorsBuilder _bar(final int _bar) {
+		public BuilderWithAccessors.BuilderWithAccessorsBuilder _bar(final int _bar) {
 			this._bar = _bar;
 			return this;
 		}
@@ -54,7 +54,7 @@ class BuilderWithAccessors {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderWithAccessorsBuilder builder() {
-		return new BuilderWithAccessorsBuilder();
+	public static BuilderWithAccessors.BuilderWithAccessorsBuilder builder() {
+		return new BuilderWithAccessors.BuilderWithAccessorsBuilder();
 	}
 }

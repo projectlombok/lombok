@@ -3,7 +3,7 @@ public class SuperBuilderWithGenerics3 {
 	public static class Parent<A> {
 		private final String str;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ParentBuilder<A, C extends Parent<A>, B extends ParentBuilder<A, C, B>> {
+		public static abstract class ParentBuilder<A, C extends SuperBuilderWithGenerics3.Parent<A>, B extends SuperBuilderWithGenerics3.Parent.ParentBuilder<A, C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private String str;
 			@java.lang.SuppressWarnings("all")
@@ -22,28 +22,28 @@ public class SuperBuilderWithGenerics3 {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ParentBuilderImpl<A> extends ParentBuilder<A, Parent<A>, ParentBuilderImpl<A>> {
+		private static final class ParentBuilderImpl<A> extends SuperBuilderWithGenerics3.Parent.ParentBuilder<A, SuperBuilderWithGenerics3.Parent<A>, SuperBuilderWithGenerics3.Parent.ParentBuilderImpl<A>> {
 			@java.lang.SuppressWarnings("all")
 			private ParentBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl<A> self() {
+			protected SuperBuilderWithGenerics3.Parent.ParentBuilderImpl<A> self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Parent<A> build() {
-				return new Parent<A>(this);
+			public SuperBuilderWithGenerics3.Parent<A> build() {
+				return new SuperBuilderWithGenerics3.Parent<A>(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Parent(final ParentBuilder<A, ?, ?> b) {
+		protected Parent(final SuperBuilderWithGenerics3.Parent.ParentBuilder<A, ?, ?> b) {
 			this.str = b.str;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static <A> ParentBuilder<A, ?, ?> builder() {
-			return new ParentBuilderImpl<A>();
+		public static <A> SuperBuilderWithGenerics3.Parent.ParentBuilder<A, ?, ?> builder() {
+			return new SuperBuilderWithGenerics3.Parent.ParentBuilderImpl<A>();
 		}
 	}
 	public static class Child extends Parent<Child.SomeInnerStaticClass> {
@@ -51,7 +51,7 @@ public class SuperBuilderWithGenerics3 {
 		}
 		double field3;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<Child.SomeInnerStaticClass, C, B> {
+		public static abstract class ChildBuilder<C extends SuperBuilderWithGenerics3.Child, B extends SuperBuilderWithGenerics3.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<Child.SomeInnerStaticClass, C, B> {
 			@java.lang.SuppressWarnings("all")
 			private double field3;
 			@java.lang.Override
@@ -72,29 +72,29 @@ public class SuperBuilderWithGenerics3 {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
+		private static final class ChildBuilderImpl extends SuperBuilderWithGenerics3.Child.ChildBuilder<SuperBuilderWithGenerics3.Child, SuperBuilderWithGenerics3.Child.ChildBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private ChildBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ChildBuilderImpl self() {
+			protected SuperBuilderWithGenerics3.Child.ChildBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Child build() {
-				return new Child(this);
+			public SuperBuilderWithGenerics3.Child build() {
+				return new SuperBuilderWithGenerics3.Child(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Child(final ChildBuilder<?, ?> b) {
+		protected Child(final SuperBuilderWithGenerics3.Child.ChildBuilder<?, ?> b) {
 			super(b);
 			this.field3 = b.field3;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static ChildBuilder<?, ?> builder() {
-			return new ChildBuilderImpl();
+		public static SuperBuilderWithGenerics3.Child.ChildBuilder<?, ?> builder() {
+			return new SuperBuilderWithGenerics3.Child.ChildBuilderImpl();
 		}
 	}
 }

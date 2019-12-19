@@ -5,7 +5,7 @@ import lombok.Builder;
     @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodBuilder a(final String a) {
+    public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethod.BuilderWithNoBuilderMethodBuilder a(final String a) {
       this.a = a;
       return this;
     }
@@ -21,7 +21,7 @@ import lombok.Builder;
     super();
     this.a = a;
   }
-  public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodBuilder toBuilder() {
-    return new BuilderWithNoBuilderMethodBuilder().a(this.a);
+  public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethod.BuilderWithNoBuilderMethodBuilder toBuilder() {
+    return new BuilderWithNoBuilderMethod.BuilderWithNoBuilderMethodBuilder().a(this.a);
   }
 }

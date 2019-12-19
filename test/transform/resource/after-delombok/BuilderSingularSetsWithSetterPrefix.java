@@ -27,70 +27,70 @@ class BuilderSingularSetsWithSetterPrefix<T> {
 		BuilderSingularSetsWithSetterPrefixBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> withDangerMouse(final T dangerMouse) {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> withDangerMouse(final T dangerMouse) {
 			if (this.dangerMice == null) this.dangerMice = new java.util.ArrayList<T>();
 			this.dangerMice.add(dangerMouse);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> withDangerMice(final java.util.Collection<? extends T> dangerMice) {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> withDangerMice(final java.util.Collection<? extends T> dangerMice) {
 			if (this.dangerMice == null) this.dangerMice = new java.util.ArrayList<T>();
 			this.dangerMice.addAll(dangerMice);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> clearDangerMice() {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> clearDangerMice() {
 			if (this.dangerMice != null) this.dangerMice.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> withOctopus(final Number octopus) {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> withOctopus(final Number octopus) {
 			if (this.octopodes == null) this.octopodes = new java.util.ArrayList<Number>();
 			this.octopodes.add(octopus);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> withOctopodes(final java.util.Collection<? extends Number> octopodes) {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> withOctopodes(final java.util.Collection<? extends Number> octopodes) {
 			if (this.octopodes == null) this.octopodes = new java.util.ArrayList<Number>();
 			this.octopodes.addAll(octopodes);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> clearOctopodes() {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> clearOctopodes() {
 			if (this.octopodes != null) this.octopodes.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> withRawSet(final java.lang.Object rawSet) {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> withRawSet(final java.lang.Object rawSet) {
 			if (this.rawSet == null) this.rawSet = new java.util.ArrayList<java.lang.Object>();
 			this.rawSet.add(rawSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> withRawSet(final java.util.Collection<?> rawSet) {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> withRawSet(final java.util.Collection<?> rawSet) {
 			if (this.rawSet == null) this.rawSet = new java.util.ArrayList<java.lang.Object>();
 			this.rawSet.addAll(rawSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> clearRawSet() {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> clearRawSet() {
 			if (this.rawSet != null) this.rawSet.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> withStringSet(final String stringSet) {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> withStringSet(final String stringSet) {
 			if (this.stringSet == null) this.stringSet = new java.util.ArrayList<String>();
 			this.stringSet.add(stringSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> withStringSet(final java.util.Collection<? extends String> stringSet) {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> withStringSet(final java.util.Collection<? extends String> stringSet) {
 			if (this.stringSet == null) this.stringSet = new java.util.ArrayList<String>();
 			this.stringSet.addAll(stringSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularSetsWithSetterPrefixBuilder<T> clearStringSet() {
+		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> clearStringSet() {
 			if (this.stringSet != null) this.stringSet.clear();
 			return this;
 		}
@@ -147,7 +147,7 @@ class BuilderSingularSetsWithSetterPrefix<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> BuilderSingularSetsWithSetterPrefixBuilder<T> builder() {
-		return new BuilderSingularSetsWithSetterPrefixBuilder<T>();
+	public static <T> BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> builder() {
+		return new BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T>();
 	}
 }

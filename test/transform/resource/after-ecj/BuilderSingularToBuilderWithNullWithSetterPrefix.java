@@ -5,19 +5,19 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElem(final String elem) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElem(final String elem) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.add(elem);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElems(final java.util.Collection<? extends String> elems) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElems(final java.util.Collection<? extends String> elems) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.addAll(elems);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder clearElems() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder clearElems() {
       if ((this.elems != null))
           this.elems.clear();
       return this;
@@ -48,11 +48,11 @@ import lombok.Singular;
     super();
     this.elems = elems;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder() {
-    return new BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder() {
+    return new BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
   }
-  public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder toBuilder() {
-    final BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder = new BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
+  public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder toBuilder() {
+    final BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder = new BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
     if ((this.elems != null))
         builder.withElems(this.elems);
     return builder;

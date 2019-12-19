@@ -8,11 +8,11 @@ class BuilderGenericMethod<T> {
     @java.lang.SuppressWarnings("all") MapBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") MapBuilder<N> a(final int a) {
+    public @java.lang.SuppressWarnings("all") BuilderGenericMethod<T>.MapBuilder<N> a(final int a) {
       this.a = a;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") MapBuilder<N> b(final long b) {
+    public @java.lang.SuppressWarnings("all") BuilderGenericMethod<T>.MapBuilder<N> b(final long b) {
       this.b = b;
       return this;
     }
@@ -29,7 +29,7 @@ class BuilderGenericMethod<T> {
   public @Builder <N extends Number>Map<N, T> foo(int a, long b) {
     return null;
   }
-  public @java.lang.SuppressWarnings("all") <N extends Number>MapBuilder<N> builder() {
-    return new MapBuilder<N>();
+  public @java.lang.SuppressWarnings("all") <N extends Number>BuilderGenericMethod<T>.MapBuilder<N> builder() {
+    return this.new MapBuilder<N>();
   }
 }

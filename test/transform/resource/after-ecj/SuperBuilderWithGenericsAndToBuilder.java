@@ -1,7 +1,7 @@
 import java.util.Map;
 public class SuperBuilderWithGenericsAndToBuilder {
   public static @lombok.experimental.SuperBuilder(toBuilder = true) class Parent<A> {
-    public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<A, C extends Parent<A>, B extends ParentBuilder<A, C, B>> {
+    public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<A, C extends SuperBuilderWithGenericsAndToBuilder.Parent<A>, B extends SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder<A, C, B>> {
       private @java.lang.SuppressWarnings("all") A field1;
       private @java.lang.SuppressWarnings("all") java.util.ArrayList<Integer> items$key;
       private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items$value;
@@ -9,10 +9,10 @@ public class SuperBuilderWithGenericsAndToBuilder {
         super();
       }
       protected @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
-        ParentBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
+        SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
         return self();
       }
-      private static @java.lang.SuppressWarnings("all") <A>void $fillValuesFromInstanceIntoBuilder(final Parent<A> instance, final ParentBuilder<A, ?, ?> b) {
+      private static @java.lang.SuppressWarnings("all") <A>void $fillValuesFromInstanceIntoBuilder(final SuperBuilderWithGenericsAndToBuilder.Parent<A> instance, final SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder<A, ?, ?> b) {
         b.field1(instance.field1);
         b.items(((instance.items == null) ? java.util.Collections.emptyMap() : instance.items));
       }
@@ -57,20 +57,20 @@ public class SuperBuilderWithGenericsAndToBuilder {
         return (((((("SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder(field1=" + this.field1) + ", items$key=") + this.items$key) + ", items$value=") + this.items$value) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl<A> extends ParentBuilder<A, Parent<A>, ParentBuilderImpl<A>> {
+    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl<A> extends SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder<A, SuperBuilderWithGenericsAndToBuilder.Parent<A>, SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilderImpl<A>> {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl<A> self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilderImpl<A> self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") Parent<A> build() {
-        return new Parent<A>(this);
+      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithGenericsAndToBuilder.Parent<A> build() {
+        return new SuperBuilderWithGenericsAndToBuilder.Parent<A>(this);
       }
     }
     A field1;
     @lombok.Singular Map<Integer, String> items;
-    protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<A, ?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") Parent(final SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder<A, ?, ?> b) {
       super();
       this.field1 = b.field1;
       java.util.Map<Integer, String> items;
@@ -89,25 +89,25 @@ public class SuperBuilderWithGenericsAndToBuilder {
       }
       this.items = items;
     }
-    public @java.lang.SuppressWarnings("all") ParentBuilder<A, ?, ?> toBuilder() {
-      return new ParentBuilderImpl<A>().$fillValuesFrom(this);
+    public @java.lang.SuppressWarnings("all") SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder<A, ?, ?> toBuilder() {
+      return new SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilderImpl<A>().$fillValuesFrom(this);
     }
-    public static @java.lang.SuppressWarnings("all") <A>ParentBuilder<A, ?, ?> builder() {
-      return new ParentBuilderImpl<A>();
+    public static @java.lang.SuppressWarnings("all") <A>SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder<A, ?, ?> builder() {
+      return new SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilderImpl<A>();
     }
   }
   public static @lombok.experimental.SuperBuilder(toBuilder = true) class Child<A> extends Parent<A> {
-    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<A, C extends Child<A>, B extends ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
+    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<A, C extends SuperBuilderWithGenericsAndToBuilder.Child<A>, B extends SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
       private @java.lang.SuppressWarnings("all") double field3;
       public ChildBuilder() {
         super();
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
         super.$fillValuesFrom(instance);
-        ChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
+        SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
         return self();
       }
-      private static @java.lang.SuppressWarnings("all") <A>void $fillValuesFromInstanceIntoBuilder(final Child<A> instance, final ChildBuilder<A, ?, ?> b) {
+      private static @java.lang.SuppressWarnings("all") <A>void $fillValuesFromInstanceIntoBuilder(final SuperBuilderWithGenericsAndToBuilder.Child<A> instance, final SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, ?, ?> b) {
         b.field3(instance.field3);
       }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
@@ -120,27 +120,27 @@ public class SuperBuilderWithGenericsAndToBuilder {
         return (((("SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl<A> extends ChildBuilder<A, Child<A>, ChildBuilderImpl<A>> {
+    private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl<A> extends SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, SuperBuilderWithGenericsAndToBuilder.Child<A>, SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilderImpl<A>> {
       private ChildBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl<A> self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilderImpl<A> self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") Child<A> build() {
-        return new Child<A>(this);
+      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithGenericsAndToBuilder.Child<A> build() {
+        return new SuperBuilderWithGenericsAndToBuilder.Child<A>(this);
       }
     }
     double field3;
-    protected @java.lang.SuppressWarnings("all") Child(final ChildBuilder<A, ?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") Child(final SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, ?, ?> b) {
       super(b);
       this.field3 = b.field3;
     }
-    public @java.lang.SuppressWarnings("all") ChildBuilder<A, ?, ?> toBuilder() {
-      return new ChildBuilderImpl<A>().$fillValuesFrom(this);
+    public @java.lang.SuppressWarnings("all") SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, ?, ?> toBuilder() {
+      return new SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilderImpl<A>().$fillValuesFrom(this);
     }
-    public static @java.lang.SuppressWarnings("all") <A>ChildBuilder<A, ?, ?> builder() {
-      return new ChildBuilderImpl<A>();
+    public static @java.lang.SuppressWarnings("all") <A>SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, ?, ?> builder() {
+      return new SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilderImpl<A>();
     }
   }
   public SuperBuilderWithGenericsAndToBuilder() {

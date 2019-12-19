@@ -9,11 +9,11 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
     @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg1(final Z arg1) {
+    public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg1(final Z arg1) {
       this.arg1 = arg1;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg3(final String arg3) {
+    public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg3(final String arg3) {
       this.arg3 = arg3;
       return this;
     }
@@ -30,7 +30,7 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
   public static @Builder(setterPrefix = "with") <Z extends Number>BuilderWithExistingBuilderClassWithSetterPrefix<String, Z> staticMethod(Z arg1, boolean arg2, String arg3) {
     return null;
   }
-  public static @java.lang.SuppressWarnings("all") <Z extends Number>BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> builder() {
-    return new BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z>();
+  public static @java.lang.SuppressWarnings("all") <Z extends Number>BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> builder() {
+    return new BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z>();
   }
 }

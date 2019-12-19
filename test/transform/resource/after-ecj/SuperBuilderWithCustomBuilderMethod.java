@@ -1,7 +1,7 @@
 import java.util.List;
 public class SuperBuilderWithCustomBuilderMethod {
   public static @lombok.experimental.SuperBuilder class Parent<A> {
-    public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<A, C extends Parent<A>, B extends ParentBuilder<A, C, B>> {
+    public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<A, C extends SuperBuilderWithCustomBuilderMethod.Parent<A>, B extends SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder<A, C, B>> {
       private @java.lang.SuppressWarnings("all") A field1;
       private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items;
       public ParentBuilder() {
@@ -34,20 +34,20 @@ public class SuperBuilderWithCustomBuilderMethod {
         return (((("SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder(field1=" + this.field1) + ", items=") + this.items) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl<A> extends ParentBuilder<A, Parent<A>, ParentBuilderImpl<A>> {
+    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl<A> extends SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder<A, SuperBuilderWithCustomBuilderMethod.Parent<A>, SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilderImpl<A>> {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl<A> self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilderImpl<A> self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") Parent<A> build() {
-        return new Parent<A>(this);
+      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithCustomBuilderMethod.Parent<A> build() {
+        return new SuperBuilderWithCustomBuilderMethod.Parent<A>(this);
       }
     }
     A field1;
     @lombok.Singular List<String> items;
-    protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<A, ?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") Parent(final SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder<A, ?, ?> b) {
       super();
       this.field1 = b.field1;
       java.util.List<String> items;
@@ -63,12 +63,12 @@ public class SuperBuilderWithCustomBuilderMethod {
       }
       this.items = items;
     }
-    public static @java.lang.SuppressWarnings("all") <A>ParentBuilder<A, ?, ?> builder() {
-      return new ParentBuilderImpl<A>();
+    public static @java.lang.SuppressWarnings("all") <A>SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder<A, ?, ?> builder() {
+      return new SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilderImpl<A>();
     }
   }
   public static @lombok.experimental.SuperBuilder class Child<A> extends Parent<A> {
-    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<A, C extends Child<A>, B extends ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
+    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<A, C extends SuperBuilderWithCustomBuilderMethod.Child<A>, B extends SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
       private @java.lang.SuppressWarnings("all") double field3;
       public ChildBuilder() {
         super();
@@ -83,22 +83,22 @@ public class SuperBuilderWithCustomBuilderMethod {
         return (((("SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl<A> extends ChildBuilder<A, Child<A>, ChildBuilderImpl<A>> {
+    private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl<A> extends SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder<A, SuperBuilderWithCustomBuilderMethod.Child<A>, SuperBuilderWithCustomBuilderMethod.Child.ChildBuilderImpl<A>> {
       private ChildBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl<A> self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithCustomBuilderMethod.Child.ChildBuilderImpl<A> self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") Child<A> build() {
-        return new Child<A>(this);
+      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderWithCustomBuilderMethod.Child<A> build() {
+        return new SuperBuilderWithCustomBuilderMethod.Child<A>(this);
       }
     }
     double field3;
     public static <A>ChildBuilder<A, ?, ?> builder() {
       return new ChildBuilderImpl<A>().item("default item");
     }
-    protected @java.lang.SuppressWarnings("all") Child(final ChildBuilder<A, ?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") Child(final SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder<A, ?, ?> b) {
       super(b);
       this.field3 = b.field3;
     }

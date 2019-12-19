@@ -4,7 +4,7 @@ public class SuperBuilderWithGenerics2 {
 		A field1;
 		List<String> items;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ParentBuilder<A, C extends Parent<A>, B extends ParentBuilder<A, C, B>> {
+		public static abstract class ParentBuilder<A, C extends SuperBuilderWithGenerics2.Parent<A>, B extends SuperBuilderWithGenerics2.Parent.ParentBuilder<A, C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private A field1;
 			@java.lang.SuppressWarnings("all")
@@ -42,23 +42,23 @@ public class SuperBuilderWithGenerics2 {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ParentBuilderImpl<A> extends ParentBuilder<A, Parent<A>, ParentBuilderImpl<A>> {
+		private static final class ParentBuilderImpl<A> extends SuperBuilderWithGenerics2.Parent.ParentBuilder<A, SuperBuilderWithGenerics2.Parent<A>, SuperBuilderWithGenerics2.Parent.ParentBuilderImpl<A>> {
 			@java.lang.SuppressWarnings("all")
 			private ParentBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl<A> self() {
+			protected SuperBuilderWithGenerics2.Parent.ParentBuilderImpl<A> self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Parent<A> build() {
-				return new Parent<A>(this);
+			public SuperBuilderWithGenerics2.Parent<A> build() {
+				return new SuperBuilderWithGenerics2.Parent<A>(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Parent(final ParentBuilder<A, ?, ?> b) {
+		protected Parent(final SuperBuilderWithGenerics2.Parent.ParentBuilder<A, ?, ?> b) {
 			this.field1 = b.field1;
 			java.util.List<String> items;
 			switch (b.items == null ? 0 : b.items.size()) {
@@ -74,14 +74,14 @@ public class SuperBuilderWithGenerics2 {
 			this.items = items;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static <A> ParentBuilder<A, ?, ?> builder() {
-			return new ParentBuilderImpl<A>();
+		public static <A> SuperBuilderWithGenerics2.Parent.ParentBuilder<A, ?, ?> builder() {
+			return new SuperBuilderWithGenerics2.Parent.ParentBuilderImpl<A>();
 		}
 	}
 	public static class Child<A> extends Parent<String> {
 		A field3;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<A, C extends Child<A>, B extends ChildBuilder<A, C, B>> extends Parent.ParentBuilder<String, C, B> {
+		public static abstract class ChildBuilder<A, C extends SuperBuilderWithGenerics2.Child<A>, B extends SuperBuilderWithGenerics2.Child.ChildBuilder<A, C, B>> extends Parent.ParentBuilder<String, C, B> {
 			@java.lang.SuppressWarnings("all")
 			private A field3;
 			@java.lang.Override
@@ -102,29 +102,29 @@ public class SuperBuilderWithGenerics2 {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ChildBuilderImpl<A> extends ChildBuilder<A, Child<A>, ChildBuilderImpl<A>> {
+		private static final class ChildBuilderImpl<A> extends SuperBuilderWithGenerics2.Child.ChildBuilder<A, SuperBuilderWithGenerics2.Child<A>, SuperBuilderWithGenerics2.Child.ChildBuilderImpl<A>> {
 			@java.lang.SuppressWarnings("all")
 			private ChildBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ChildBuilderImpl<A> self() {
+			protected SuperBuilderWithGenerics2.Child.ChildBuilderImpl<A> self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public Child<A> build() {
-				return new Child<A>(this);
+			public SuperBuilderWithGenerics2.Child<A> build() {
+				return new SuperBuilderWithGenerics2.Child<A>(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected Child(final ChildBuilder<A, ?, ?> b) {
+		protected Child(final SuperBuilderWithGenerics2.Child.ChildBuilder<A, ?, ?> b) {
 			super(b);
 			this.field3 = b.field3;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static <A> ChildBuilder<A, ?, ?> builder2() {
-			return new ChildBuilderImpl<A>();
+		public static <A> SuperBuilderWithGenerics2.Child.ChildBuilder<A, ?, ?> builder2() {
+			return new SuperBuilderWithGenerics2.Child.ChildBuilderImpl<A>();
 		}
 	}
 	public static void test() {

@@ -11,7 +11,7 @@ import java.util.List;
     @java.lang.SuppressWarnings("all") BuilderTypeAnnosBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderTypeAnnosBuilder foo(final @TA List<String> foo) {
+    public @java.lang.SuppressWarnings("all") BuilderTypeAnnos.BuilderTypeAnnosBuilder foo(final @TA List<String> foo) {
       this.foo = foo;
       return this;
     }
@@ -27,7 +27,7 @@ import java.util.List;
     super();
     this.foo = foo;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderTypeAnnosBuilder builder() {
-    return new BuilderTypeAnnosBuilder();
+  public static @java.lang.SuppressWarnings("all") BuilderTypeAnnos.BuilderTypeAnnosBuilder builder() {
+    return new BuilderTypeAnnos.BuilderTypeAnnosBuilder();
   }
 }
