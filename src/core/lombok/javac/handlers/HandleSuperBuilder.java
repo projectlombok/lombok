@@ -26,6 +26,7 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.lang.model.element.Modifier;
 
@@ -1007,8 +1008,35 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				typeParamsForBuilderParameter.add(maker.Ident(((JCTypeParameter)typeParam).getName()));
 			} else if (typeParam instanceof JCIdent) {
 				typeParamsForBuilderParameter.add(maker.Ident(((JCIdent)typeParam).getName()));
+			} else if (typeParam instanceof JCFieldAccess) {
+				typeParamsForBuilderParameter.add(copySelect(maker, (JCFieldAccess) typeParam));
 			}
 		}
 		return typeParamsForBuilderParameter;
+	}
+
+	private JCExpression copySelect(JavacTreeMaker maker, JCFieldAccess typeParam) {
+		java.util.List<Name> chainNames = new ArrayList<Name>();
+		JCExpression expression = typeParam;
+		while (expression != null) {
+			if (expression instanceof JCFieldAccess) {
+				chainNames.add(((JCFieldAccess) expression).getIdentifier());
+				expression = ((JCFieldAccess) expression).getExpression();
+			} else if (expression instanceof JCIdent) {
+				chainNames.add(((JCIdent) expression).getName());
+				expression = null;
+			}
+		}
+
+		Collections.reverse(chainNames);
+		JCExpression typeParameter = null;
+		for (Name name : chainNames) {
+			if (typeParameter == null) {
+				typeParameter = maker.Ident(name);
+			} else {
+				typeParameter = maker.Select(typeParameter, name);
+			}
+		}
+		return typeParameter;
 	}
 }
