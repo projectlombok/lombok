@@ -106,6 +106,7 @@ public class HandlerUtil {
 			"lombok.NonNull",
 			// To update Checker Framework annotations, run:
 			// grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' $CHECKERFRAMEWORK/checker/src/main/java  $CHECKERFRAMEWORK/framework/src/main/java | grep '\.java$' | sed 's/.*\/java\//\t\t\t"/' | sed 's/\.java$/",/' | sed 's/\//./g' | sort
+			// Only add new annotations, do not remove annotations that have been removed from the lastest version of the Checker Framework.
 			"org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey",
 			"org.checkerframework.checker.compilermsgs.qual.CompilerMessageKeyBottom",
 			"org.checkerframework.checker.compilermsgs.qual.UnknownCompilerMessageKey",
@@ -215,6 +216,7 @@ public class HandlerUtil {
 			"org.checkerframework.checker.signature.qual.FieldDescriptor",
 			"org.checkerframework.checker.signature.qual.FieldDescriptorForPrimitive",
 			"org.checkerframework.checker.signature.qual.FieldDescriptorForPrimitiveOrArrayInUnnamedPackage",
+			"org.checkerframework.checker.signature.qual.FqBinaryName",
 			"org.checkerframework.checker.signature.qual.FullyQualifiedName",
 			"org.checkerframework.checker.signature.qual.Identifier",
 			"org.checkerframework.checker.signature.qual.IdentifierOrArray",
@@ -224,8 +226,11 @@ public class HandlerUtil {
 			"org.checkerframework.checker.signature.qual.SignatureBottom",
 			"org.checkerframework.checker.signedness.qual.Constant",
 			"org.checkerframework.checker.signedness.qual.PolySignedness",
+			"org.checkerframework.checker.signedness.qual.PolySigned",
 			"org.checkerframework.checker.signedness.qual.Signed",
 			"org.checkerframework.checker.signedness.qual.SignednessBottom",
+			"org.checkerframework.checker.signedness.qual.SignednessGlb",
+			"org.checkerframework.checker.signedness.qual.SignedPositive",
 			"org.checkerframework.checker.signedness.qual.UnknownSignedness",
 			"org.checkerframework.checker.signedness.qual.Unsigned",
 			"org.checkerframework.checker.tainting.qual.PolyTainted",
