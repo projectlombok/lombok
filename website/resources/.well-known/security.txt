@@ -1,4 +1,8 @@
 Contact: https://tidelift.com/security
 Contact: mailto:info@projectlombok.org
+Preferred-Languages: en
+Canonical: https://projectlombok.org/.well-known/security.txt
+Policy: https://tidelift.com/security
+Policy: https://github.com/rzwitserloot/lombok/blob/master/SECURITY.md
 
 # If encrypted communication is required, let us know and we'll provide a public GPG key.
