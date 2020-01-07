@@ -19,7 +19,7 @@ class BuilderSimpleWithSetterPrefix<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSimpleWithSetterPrefix<T> build() {
-			return new BuilderSimpleWithSetterPrefix<T>(unprefixed);
+			return new BuilderSimpleWithSetterPrefix<T>(this.unprefixed);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

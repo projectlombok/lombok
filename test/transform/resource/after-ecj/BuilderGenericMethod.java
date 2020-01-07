@@ -17,7 +17,7 @@ class BuilderGenericMethod<T> {
       return this;
     }
     public @java.lang.SuppressWarnings("all") Map<N, T> build() {
-      return BuilderGenericMethod.this.<N>foo(a, b);
+      return BuilderGenericMethod.this.<N>foo(this.a, this.b);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((("BuilderGenericMethod.MapBuilder(a=" + this.a) + ", b=") + this.b) + ")");

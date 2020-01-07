@@ -60,7 +60,7 @@ public class BuilderDefaultsWarnings {
 			default: 
 				items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.items));
 			}
-			return new BuilderDefaultsWarnings(x, z, items);
+			return new BuilderDefaultsWarnings(this.x, this.z, items);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

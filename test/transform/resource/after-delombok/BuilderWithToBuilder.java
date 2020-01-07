@@ -72,7 +72,7 @@ class BuilderWithToBuilder<T> {
 			default: 
 				bars = java.util.Collections.unmodifiableList(new java.util.ArrayList<T>(this.bars));
 			}
-			return new BuilderWithToBuilder<T>(one, two, foo, bars);
+			return new BuilderWithToBuilder<T>(this.one, this.two, this.foo, bars);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
@@ -127,7 +127,7 @@ class ConstructorWithToBuilder<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public ConstructorWithToBuilder<T> build() {
-			return new ConstructorWithToBuilder<T>(mOne, baz, bars);
+			return new ConstructorWithToBuilder<T>(this.mOne, this.baz, this.bars);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

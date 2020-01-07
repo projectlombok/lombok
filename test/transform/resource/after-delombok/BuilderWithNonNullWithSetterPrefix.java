@@ -25,7 +25,7 @@ class BuilderWithNonNullWithSetterPrefix {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithNonNullWithSetterPrefix build() {
-			return new BuilderWithNonNullWithSetterPrefix(id);
+			return new BuilderWithNonNullWithSetterPrefix(this.id);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

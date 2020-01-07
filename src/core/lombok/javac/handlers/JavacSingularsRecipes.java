@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 The Project Lombok Authors.
+ * Copyright (C) 2015-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -343,6 +343,10 @@ public class JavacSingularsRecipes {
 		protected abstract JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source);
 		
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
+		
+		public boolean shadowedDuringBuild() {
+			return true;
+		}
 		
 		public boolean requiresCleaning() {
 			try {

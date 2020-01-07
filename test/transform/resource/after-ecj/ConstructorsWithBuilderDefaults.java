@@ -20,7 +20,10 @@ final @NoArgsConstructor(force = true) @AllArgsConstructor @Builder @Value class
       return this;
     }
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults build() {
-      return new ConstructorsWithBuilderDefaults((x$set ? x$value : ConstructorsWithBuilderDefaults.$default$x()), y);
+      int x$value = this.x$value;
+      if ((! this.x$set))
+          x$value = ConstructorsWithBuilderDefaults.$default$x();
+      return new ConstructorsWithBuilderDefaults(x$value, this.y);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((("ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(x$value=" + this.x$value) + ", y=") + this.y) + ")");

@@ -16,7 +16,7 @@ import java.util.List;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderTypeAnnosWithSetterPrefix build() {
-      return new BuilderTypeAnnosWithSetterPrefix(foo);
+      return new BuilderTypeAnnosWithSetterPrefix(this.foo);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder(foo=" + this.foo) + ")");

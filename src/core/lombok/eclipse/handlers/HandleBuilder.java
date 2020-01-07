@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019 The Project Lombok Authors.
+ * Copyright (C) 2013-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,6 @@ import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
@@ -713,6 +712,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		List<Expression> args = new ArrayList<Expression>();
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.nameOfSetFlag != null) {
+				LocalDeclaration ld = new LocalDeclaration(bfd.builderFieldName, 0, 0);
+				ld.type = copyType(bfd.type);
+				FieldReference builderAssign = new FieldReference(bfd.builderFieldName, 0);
+				builderAssign.receiver = new ThisReference(0, 0);
+				ld.initialization = builderAssign;
+				statements.add(ld);
+				
 				MessageSend inv = new MessageSend();
 				inv.sourceStart = source.sourceStart;
 				inv.sourceEnd = source.sourceEnd;
@@ -720,12 +726,19 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				inv.selector = bfd.nameOfDefaultProvider;
 				inv.typeArguments = typeParameterNames(((TypeDeclaration) type.get()).typeParameters);
 				
-				args.add(new ConditionalExpression(
-					new SingleNameReference(bfd.nameOfSetFlag, 0L),
-					new SingleNameReference(bfd.builderFieldName, 0L),
-					inv));
-			} else {
+				Assignment defaultAssign = new Assignment(new SingleNameReference(bfd.builderFieldName, 0L), inv, 0);
+				FieldReference thisSet = new FieldReference(bfd.nameOfSetFlag, 0L);
+				thisSet.receiver = new ThisReference(0, 0);
+				Expression thisNotSet = new UnaryExpression(thisSet, OperatorIds.NOT);
+				statements.add(new IfStatement(thisNotSet, defaultAssign, 0, 0));
+			}
+			
+			if (bfd.nameOfSetFlag != null || (bfd.singularData != null && bfd.singularData.getSingularizer().shadowedDuringBuild())) {
 				args.add(new SingleNameReference(bfd.builderFieldName, 0L));
+			} else {
+				FieldReference fr = new FieldReference(bfd.builderFieldName, 0L);
+				fr.receiver = new ThisReference(0, 0);
+				args.add(fr);
 			}
 		}
 		

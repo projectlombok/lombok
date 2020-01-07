@@ -24,7 +24,7 @@
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderWithAccessors build() {
-      return new BuilderWithAccessors(plower, upper, foo, _bar);
+      return new BuilderWithAccessors(this.plower, this.upper, this.foo, this._bar);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((((("BuilderWithAccessors.BuilderWithAccessorsBuilder(plower=" + this.plower) + ", upper=") + this.upper) + ", foo=") + this.foo) + ", _bar=") + this._bar) + ")");

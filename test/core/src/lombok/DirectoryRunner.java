@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,23 @@ package lombok;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import lombok.eclipse.Eclipse;
-import lombok.javac.Javac;
 
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
+import lombok.eclipse.Eclipse;
+import lombok.javac.Javac;
+
 public class DirectoryRunner extends Runner {
-	/** Fill in a file name (or multiple, space separated) to reduce the testset to just the named file(s). */
-	private static final String DEBUG_FOCUS_ON_FILE = "";
+	/** Add 1 or more file names to reduce the testset to just the named file(s). No files = test it all. */
+	private static final List<String> DEBUG_FOCUS_ON_FILE = Arrays.asList(
+		);
 	
 	public enum Compiler {
 		DELOMBOK {
@@ -80,7 +83,7 @@ public class DirectoryRunner extends Runner {
 	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {
 		@Override public boolean accept(File file) {
 			return file.isFile() && file.getName().endsWith(".java") &&
-				(DEBUG_FOCUS_ON_FILE.isEmpty() || (" " + DEBUG_FOCUS_ON_FILE + " ").contains(" " + file.getName() + " "));
+				(DEBUG_FOCUS_ON_FILE.isEmpty() || DEBUG_FOCUS_ON_FILE.contains(file.getName()));
 		}
 	};
 	

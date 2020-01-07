@@ -26,7 +26,7 @@ class BuilderComplex {
       return this;
     }
     public @java.lang.SuppressWarnings("all") void execute() {
-      BuilderComplex.<T>testVoidWithGenerics(number, arg2, arg3, selfRef);
+      BuilderComplex.<T>testVoidWithGenerics(this.number, this.arg2, this.arg3, this.selfRef);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((((("BuilderComplex.TestVoidName(number=" + this.number) + ", arg2=") + this.arg2) + ", arg3=") + this.arg3) + ", selfRef=") + this.selfRef) + ")");

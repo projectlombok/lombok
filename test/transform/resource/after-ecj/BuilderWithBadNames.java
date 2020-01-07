@@ -14,7 +14,7 @@ public @lombok.Builder class BuilderWithBadNames {
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderWithBadNames build() {
-      return new BuilderWithBadNames(build, toString);
+      return new BuilderWithBadNames(this.build, this.toString);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((("BuilderWithBadNames.BuilderWithBadNamesBuilder(build=" + this.build) + ", toString=") + this.toString) + ")");

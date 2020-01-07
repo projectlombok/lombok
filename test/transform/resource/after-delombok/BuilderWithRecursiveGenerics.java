@@ -31,7 +31,7 @@ public class BuilderWithRecursiveGenerics {
 			}
 			@java.lang.SuppressWarnings("all")
 			public BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz> build() {
-				return new BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz>(foo, bar);
+				return new BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz>(this.foo, this.bar);
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")

@@ -29,7 +29,7 @@ class BuilderTypeAnnos {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderTypeAnnos build() {
-			return new BuilderTypeAnnos(foo);
+			return new BuilderTypeAnnos(this.foo);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

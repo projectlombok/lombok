@@ -29,7 +29,7 @@ class BuilderTypeAnnosWithSetterPrefix {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderTypeAnnosWithSetterPrefix build() {
-			return new BuilderTypeAnnosWithSetterPrefix(foo);
+			return new BuilderTypeAnnosWithSetterPrefix(this.foo);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

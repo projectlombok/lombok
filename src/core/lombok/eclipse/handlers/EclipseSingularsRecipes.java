@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 The Project Lombok Authors.
+ * Copyright (C) 2015-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -272,6 +272,10 @@ public class EclipseSingularsRecipes {
 		public abstract void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access);
 		
 		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable);
+		
+		public boolean shadowedDuringBuild() {
+			return true;
+		}
 		
 		public boolean requiresCleaning() {
 			try {

@@ -14,7 +14,7 @@ public @Builder class JacksonJsonProperty {
       return this;
     }
     public @java.lang.SuppressWarnings("all") JacksonJsonProperty build() {
-      return new JacksonJsonProperty(kebabCaseProp);
+      return new JacksonJsonProperty(this.kebabCaseProp);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("JacksonJsonProperty.JacksonJsonPropertyBuilder(kebabCaseProp=" + this.kebabCaseProp) + ")");

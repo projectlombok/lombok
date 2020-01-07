@@ -21,7 +21,7 @@ public class BuilderWithTolerate {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithTolerate build() {
-			return new BuilderWithTolerate(value);
+			return new BuilderWithTolerate(this.value);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

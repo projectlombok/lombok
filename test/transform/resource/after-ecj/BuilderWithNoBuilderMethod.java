@@ -10,7 +10,7 @@ import lombok.Builder;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethod build() {
-      return new BuilderWithNoBuilderMethod(a);
+      return new BuilderWithNoBuilderMethod(this.a);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("BuilderWithNoBuilderMethod.BuilderWithNoBuilderMethodBuilder(a=" + this.a) + ")");

@@ -26,7 +26,13 @@ final @Builder @Value class ConstructorsWithBuilderDefaults<T> {
       return this;
     }
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults<T> build() {
-      return new ConstructorsWithBuilderDefaults<T>((z$set ? z$value : ConstructorsWithBuilderDefaults.<T>$default$z()), (x$set ? x$value : ConstructorsWithBuilderDefaults.<T>$default$x()), q);
+      java.util.List<T> z$value = this.z$value;
+      if ((! this.z$set))
+          z$value = ConstructorsWithBuilderDefaults.<T>$default$z();
+      T x$value = this.x$value;
+      if ((! this.x$set))
+          x$value = ConstructorsWithBuilderDefaults.<T>$default$x();
+      return new ConstructorsWithBuilderDefaults<T>(z$value, x$value, this.q);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((("ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(z$value=" + this.z$value) + ", x$value=") + this.x$value) + ", q=") + this.q) + ")");

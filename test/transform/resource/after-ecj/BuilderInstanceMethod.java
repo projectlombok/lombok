@@ -25,7 +25,7 @@ class BuilderInstanceMethod<T> {
       return this;
     }
     public @java.lang.SuppressWarnings("all") String build() {
-      return BuilderInstanceMethod.this.create(show, yes, also, $andMe);
+      return BuilderInstanceMethod.this.create(this.show, this.yes, this.also, this.$andMe);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((((("BuilderInstanceMethod.StringBuilder(show=" + this.show) + ", yes=") + this.yes) + ", also=") + this.also) + ", $andMe=") + this.$andMe) + ")");

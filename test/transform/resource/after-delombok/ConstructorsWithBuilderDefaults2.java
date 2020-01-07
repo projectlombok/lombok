@@ -54,10 +54,10 @@ final class ConstructorsWithBuilderDefaults<T> {
 		@java.lang.SuppressWarnings("all")
 		public ConstructorsWithBuilderDefaults<T> build() {
 			java.util.List<T> z$value = this.z$value;
-			if (!z$set) z$value = ConstructorsWithBuilderDefaults.<T>$default$z();
+			if (!this.z$set) z$value = ConstructorsWithBuilderDefaults.<T>$default$z();
 			T x$value = this.x$value;
-			if (!x$set) x$value = ConstructorsWithBuilderDefaults.<T>$default$x();
-			return new ConstructorsWithBuilderDefaults<T>(z$value, x$value, q);
+			if (!this.x$set) x$value = ConstructorsWithBuilderDefaults.<T>$default$x();
+			return new ConstructorsWithBuilderDefaults<T>(z$value, x$value, this.q);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

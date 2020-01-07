@@ -20,7 +20,7 @@ public class BuilderWithRecursiveGenerics {
         return this;
       }
       public @java.lang.SuppressWarnings("all") BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz> build() {
-        return new BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz>(foo, bar);
+        return new BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz>(this.foo, this.bar);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("BuilderWithRecursiveGenerics.Test.TestBuilder(foo=" + this.foo) + ", bar=") + this.bar) + ")");

@@ -10,7 +10,7 @@ import java.util.List;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSimpleWithSetterPrefix<T> build() {
-      return new BuilderSimpleWithSetterPrefix<T>(unprefixed);
+      return new BuilderSimpleWithSetterPrefix<T>(this.unprefixed);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder(unprefixed=" + this.unprefixed) + ")");

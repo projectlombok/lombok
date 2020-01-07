@@ -25,7 +25,7 @@ import java.util.List;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderJavadoc<T> build() {
-      return new BuilderJavadoc<T>(basic, getsetwith, predef, predefWithJavadoc);
+      return new BuilderJavadoc<T>(this.basic, this.getsetwith, this.predef, this.predefWithJavadoc);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((((("BuilderJavadoc.BuilderJavadocBuilder(basic=" + this.basic) + ", getsetwith=") + this.getsetwith) + ", predef=") + this.predef) + ", predefWithJavadoc=") + this.predefWithJavadoc) + ")");

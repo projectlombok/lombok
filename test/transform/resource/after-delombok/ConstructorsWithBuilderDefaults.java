@@ -30,8 +30,8 @@ final class ConstructorsWithBuilderDefaults {
 		@java.lang.SuppressWarnings("all")
 		public ConstructorsWithBuilderDefaults build() {
 			int x$value = this.x$value;
-			if (!x$set) x$value = ConstructorsWithBuilderDefaults.$default$x();
-			return new ConstructorsWithBuilderDefaults(x$value, y);
+			if (!this.x$set) x$value = ConstructorsWithBuilderDefaults.$default$x();
+			return new ConstructorsWithBuilderDefaults(x$value, this.y);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

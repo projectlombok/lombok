@@ -30,7 +30,7 @@ class BuilderSimple<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSimple<T> build() {
-			return new BuilderSimple<T>(yes, also);
+			return new BuilderSimple<T>(this.yes, this.also);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

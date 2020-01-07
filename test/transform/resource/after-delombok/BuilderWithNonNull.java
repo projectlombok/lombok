@@ -25,7 +25,7 @@ class BuilderWithNonNull {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithNonNull build() {
-			return new BuilderWithNonNull(id);
+			return new BuilderWithNonNull(this.id);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

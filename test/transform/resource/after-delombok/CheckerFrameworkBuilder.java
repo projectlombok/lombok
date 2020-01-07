@@ -87,8 +87,8 @@ class CheckerFrameworkBuilder {
 				names = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.names));
 			}
 			int x$value = this.x$value;
-			if (!x$set) x$value = CheckerFrameworkBuilder.$default$x();
-			return new CheckerFrameworkBuilder(x$value, y, z, names);
+			if (!this.x$set) x$value = CheckerFrameworkBuilder.$default$x();
+			return new CheckerFrameworkBuilder(x$value, this.y, this.z, names);
 		}
 		@org.checkerframework.dataflow.qual.SideEffectFree
 		@java.lang.Override

@@ -27,7 +27,7 @@ public class BuilderWithBadNames {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithBadNames build() {
-			return new BuilderWithBadNames(build, toString);
+			return new BuilderWithBadNames(this.build, this.toString);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

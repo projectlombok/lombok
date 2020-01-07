@@ -50,7 +50,7 @@ import lombok.Builder;
       default :
           bars = java.util.Collections.unmodifiableList(new java.util.ArrayList<T>(this.bars));
       }
-      return new BuilderWithToBuilder<T>(one, two, foo, bars);
+      return new BuilderWithToBuilder<T>(this.one, this.two, this.foo, bars);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((((("BuilderWithToBuilder.BuilderWithToBuilderBuilder(one=" + this.one) + ", two=") + this.two) + ", foo=") + this.foo) + ", bars=") + this.bars) + ")");
@@ -101,7 +101,7 @@ import lombok.Builder;
       return this;
     }
     public @java.lang.SuppressWarnings("all") ConstructorWithToBuilder<T> build() {
-      return new ConstructorWithToBuilder<T>(mOne, baz, bars);
+      return new ConstructorWithToBuilder<T>(this.mOne, this.baz, this.bars);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((("ConstructorWithToBuilder.ConstructorWithToBuilderBuilder(mOne=" + this.mOne) + ", baz=") + this.baz) + ", bars=") + this.bars) + ")");

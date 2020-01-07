@@ -53,7 +53,10 @@ import lombok.Singular;
       default :
           names = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.names));
       }
-      return new CheckerFrameworkBuilder((x$set ? x$value : CheckerFrameworkBuilder.$default$x()), y, z, names);
+      int x$value = this.x$value;
+      if ((! this.x$set))
+          x$value = CheckerFrameworkBuilder.$default$x();
+      return new CheckerFrameworkBuilder(x$value, this.y, this.z, names);
     }
     public @java.lang.Override @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((((("CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder(x$value=" + this.x$value) + ", y=") + this.y) + ", z=") + this.z) + ", names=") + this.names) + ")");

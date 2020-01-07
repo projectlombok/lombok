@@ -51,10 +51,10 @@ public final class BuilderDefaults {
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaults build() {
 			int x$value = this.x$value;
-			if (!x$set) x$value = BuilderDefaults.$default$x();
+			if (!this.x$set) x$value = BuilderDefaults.$default$x();
 			long z$value = this.z$value;
-			if (!z$set) z$value = BuilderDefaults.$default$z();
-			return new BuilderDefaults(x$value, name, z$value);
+			if (!this.z$set) z$value = BuilderDefaults.$default$z();
+			return new BuilderDefaults(x$value, this.name, z$value);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

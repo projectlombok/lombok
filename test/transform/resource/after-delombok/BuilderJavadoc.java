@@ -69,7 +69,7 @@ class BuilderJavadoc<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderJavadoc<T> build() {
-			return new BuilderJavadoc<T>(basic, getsetwith, predef, predefWithJavadoc);
+			return new BuilderJavadoc<T>(this.basic, this.getsetwith, this.predef, this.predefWithJavadoc);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

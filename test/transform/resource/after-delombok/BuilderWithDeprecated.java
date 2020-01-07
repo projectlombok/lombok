@@ -99,7 +99,7 @@ public class BuilderWithDeprecated {
 				strings = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.strings));
 			}
 			com.google.common.collect.ImmutableList<Integer> numbers = this.numbers == null ? com.google.common.collect.ImmutableList.<Integer>of() : this.numbers.build();
-			return new BuilderWithDeprecated(dep1, dep2, strings, numbers);
+			return new BuilderWithDeprecated(this.dep1, this.dep2, strings, numbers);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

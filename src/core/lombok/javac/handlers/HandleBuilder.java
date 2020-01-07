@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019 The Project Lombok Authors.
+ * Copyright (C) 2013-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -661,12 +661,17 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
+		Name thisName = type.toName("this");
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.nameOfSetFlag != null) {
-				statements.append(maker.VarDef(maker.Modifiers(0L), bfd.builderFieldName, cloneType(maker, bfd.type, source, tdParent.getContext()), maker.Select(maker.Ident(type.toName("this")), bfd.builderFieldName)));
-				statements.append(maker.If(maker.Unary(CTC_NOT, maker.Ident(bfd.nameOfSetFlag)), maker.Exec(maker.Assign(maker.Ident(bfd.builderFieldName), maker.Apply(typeParameterNames(maker, ((JCClassDecl) tdParent.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) tdParent.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil()))), null));
+				statements.append(maker.VarDef(maker.Modifiers(0L), bfd.builderFieldName, cloneType(maker, bfd.type, source, tdParent.getContext()), maker.Select(maker.Ident(thisName), bfd.builderFieldName)));
+				statements.append(maker.If(maker.Unary(CTC_NOT, maker.Select(maker.Ident(thisName), bfd.nameOfSetFlag)), maker.Exec(maker.Assign(maker.Ident(bfd.builderFieldName), maker.Apply(typeParameterNames(maker, ((JCClassDecl) tdParent.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) tdParent.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil()))), null));
 			}
-			args.append(maker.Ident(bfd.builderFieldName));
+			if (bfd.nameOfSetFlag != null || (bfd.singularData != null && bfd.singularData.getSingularizer().shadowedDuringBuild())) {
+				args.append(maker.Ident(bfd.builderFieldName));
+			} else {
+				args.append(maker.Select(maker.Ident(thisName), bfd.builderFieldName));
+			}
 		}
 		
 		if (addCleaning) {

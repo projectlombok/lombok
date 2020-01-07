@@ -15,7 +15,7 @@ import java.util.List;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSimple<T> build() {
-      return new BuilderSimple<T>(yes, also);
+      return new BuilderSimple<T>(this.yes, this.also);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((("BuilderSimple.BuilderSimpleBuilder(yes=" + this.yes) + ", also=") + this.also) + ")");

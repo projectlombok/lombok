@@ -25,7 +25,13 @@ public final @Value @Builder class BuilderDefaults {
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderDefaults build() {
-      return new BuilderDefaults((x$set ? x$value : BuilderDefaults.$default$x()), name, (z$set ? z$value : BuilderDefaults.$default$z()));
+      int x$value = this.x$value;
+      if ((! this.x$set))
+          x$value = BuilderDefaults.$default$x();
+      long z$value = this.z$value;
+      if ((! this.z$set))
+          z$value = BuilderDefaults.$default$z();
+      return new BuilderDefaults(x$value, this.name, z$value);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((("BuilderDefaults.BuilderDefaultsBuilder(x$value=" + this.x$value) + ", name=") + this.name) + ", z$value=") + this.z$value) + ")");

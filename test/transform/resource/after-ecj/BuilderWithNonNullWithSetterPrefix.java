@@ -13,7 +13,7 @@
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderWithNonNullWithSetterPrefix build() {
-      return new BuilderWithNonNullWithSetterPrefix(id);
+      return new BuilderWithNonNullWithSetterPrefix(this.id);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("BuilderWithNonNullWithSetterPrefix.BuilderWithNonNullWithSetterPrefixBuilder(id=" + this.id) + ")");

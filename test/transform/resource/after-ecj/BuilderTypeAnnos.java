@@ -16,7 +16,7 @@ import java.util.List;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderTypeAnnos build() {
-      return new BuilderTypeAnnos(foo);
+      return new BuilderTypeAnnos(this.foo);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("BuilderTypeAnnos.BuilderTypeAnnosBuilder(foo=" + this.foo) + ")");
