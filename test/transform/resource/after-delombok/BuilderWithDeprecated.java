@@ -32,6 +32,7 @@ public class BuilderWithDeprecated {
 		}
 		/**
 		 * @deprecated since always
+		 * @return {@code this}.
 		 */
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")

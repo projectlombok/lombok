@@ -1962,7 +1962,7 @@ public class JavacHandlerUtil {
 		},
 		WITH {
 			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
-				return applySetter(cu, node, "WITH|WITHER");
+				return addReturnsUpdatedSelfIfNeeded(applySetter(cu, node, "WITH|WITHER"));
 			}
 		};
 		
@@ -1992,6 +1992,9 @@ public class JavacHandlerUtil {
 		}
 	}
 	
+	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
+		copyJavadoc(from, to, copyMode, false);
+	}
 	/**
 	 * Copies javadoc on one node to the other.
 	 * 
@@ -2001,12 +2004,15 @@ public class JavacHandlerUtil {
 	 * 
 	 * in 'SETTER' mode, stripping works similarly to 'GETTER' mode, except {@code param} are copied and stripped from the original and {@code @return} are skipped.
 	 */
-	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
+	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode, boolean forceAddReturn) {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
 		try {
 			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
 			String newJavadoc = copyMode.apply(cu, from);
-			if (newJavadoc != null) Javac.setDocComment(cu, to, newJavadoc);
+			if (newJavadoc != null) {
+				if (forceAddReturn) newJavadoc = addReturnsThisIfNeeded(newJavadoc);
+				Javac.setDocComment(cu, to, newJavadoc);
+			}
 		} catch (Exception ignore) {}
 	}
 	
@@ -2014,7 +2020,13 @@ public class JavacHandlerUtil {
 	static String addReturnsThisIfNeeded(String in) {
 		if (FIND_RETURN.matcher(in).find()) return in;
 		
-		return addJavadocLine(in, "@return this");
+		return addJavadocLine(in, "@return {@code this}.");
+	}
+	
+	static String addReturnsUpdatedSelfIfNeeded(String in) {
+		if (FIND_RETURN.matcher(in).find()) return in;
+		
+		return addJavadocLine(in, "@return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).");
 	}
 	
 	static String addJavadocLine(String in, String line) {

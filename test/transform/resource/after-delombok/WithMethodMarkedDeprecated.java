@@ -14,6 +14,7 @@ class WithMethodMarkedDeprecated {
 	}
 	/**
 	 * @deprecated
+	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")

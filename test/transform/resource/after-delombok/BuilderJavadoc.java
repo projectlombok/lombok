@@ -52,6 +52,7 @@ class BuilderJavadoc<T> {
 		 * basic gets only a builder setter.
 		 * @see #getsetwith
 		 * @param tag is moved to the setter.
+		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderJavadoc.BuilderJavadocBuilder<T> basic(final int basic) {
@@ -61,6 +62,7 @@ class BuilderJavadoc<T> {
 		/**
 		 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
 		 * @param tag is moved to the setters and wither.
+		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderJavadoc.BuilderJavadocBuilder<T> getsetwith(final int getsetwith) {
@@ -108,6 +110,7 @@ class BuilderJavadoc<T> {
 	/**
 	 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
 	 * @param tag is moved to the setters and wither.
+	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
 	public BuilderJavadoc<T> withGetsetwith(final int getsetwith) {

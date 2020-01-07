@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -279,7 +279,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
-		copyJavadoc(field, decl, CopyJavadoc.SETTER);
+		copyJavadoc(field, decl, CopyJavadoc.SETTER, returnStatement != null);
 		return decl;
 	}
 }

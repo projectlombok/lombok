@@ -116,7 +116,7 @@ class GetterSetterJavadoc4 {
 	 * Some text
 	 * 
 	 * @param fieldName Hello, World5
-	 * @return this
+	 * @return {@code this}.
 	 */
 	@java.lang.SuppressWarnings("all")
 	public GetterSetterJavadoc4 fieldName(final int fieldName) {

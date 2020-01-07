@@ -22,6 +22,7 @@ class SetterAndWithMethodJavadoc {
 	/**
 	 * Some value.
 	 * @param the new value
+	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
 	public SetterAndWithMethodJavadoc withI(final int i) {
@@ -38,6 +39,7 @@ class SetterAndWithMethodJavadoc {
 	/**
 	 * Reinstantiate with some other value.
 	 * @param the other new other value
+	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
 	public SetterAndWithMethodJavadoc withJ(final int j) {

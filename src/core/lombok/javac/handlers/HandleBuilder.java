@@ -819,7 +819,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			newMethod.params = List.of(recv, newMethod.params.get(0));
 		}
 		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
-		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER);
+		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER, true);
 		
 		injectMethod(builderType, newMethod);
 	}
