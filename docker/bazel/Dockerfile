@@ -1,10 +1,13 @@
 FROM ubuntu:18.04 as downloader
 
-ARG jdk=12
+ARG jdk=13
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
-ARG bazel=0.28.1
+ARG lombokjar=lombok.jar
+ADD https://projectlombok.org/downloads/${lombokjar} /lombok.jar
+
+ARG bazel=2.0.0
 ADD provision/bazel/bazel-${bazel}.sh provision/bazel/bazel-${bazel}.sh
 RUN provision/bazel/bazel-${bazel}.sh
 
@@ -20,10 +23,11 @@ WORKDIR workspace
 
 ADD shared/ ./
 ADD bazel/files/ ./
-ARG lombokjar=lombok.jar
-ADD https://projectlombok.org/downloads/${lombokjar} lombok.jar
 
-ARG jdk=12
+COPY --from=downloader /lombok.jar /workspace/classpath/lombok.jar
+COPY --from=downloader /lombok.jar /workspace/modules/lombok.jar
+
+ARG jdk=13
 ENV JDK_VERSION=${jdk}
 ENV JAVA_HOME=/opt/jdk
 ENV BAZEL_HOME=/opt/bazel

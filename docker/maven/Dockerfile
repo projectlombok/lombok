@@ -1,8 +1,11 @@
 FROM ubuntu:18.04 as downloader
 
-ARG jdk=12
+ARG jdk=13
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
+
+ARG lombokjar=lombok.jar
+ADD https://projectlombok.org/downloads/${lombokjar} /lombok.jar
 
 ARG maven=3.6.1
 ADD provision/maven/maven-${maven}.sh provision/maven/maven-${maven}.sh
@@ -19,11 +22,11 @@ WORKDIR workspace
 
 ADD shared/ ./
 
-ARG jdk=12
+ARG jdk=13
 ADD maven/files/jdk-${jdk} ./
 
-ARG lombokjar=lombok.jar
-ADD https://projectlombok.org/downloads/${lombokjar} lombok.jar
+COPY --from=downloader /lombok.jar /workspace/classpath/lombok.jar
+COPY --from=downloader /lombok.jar /workspace/modules/lombok.jar
 
 ENV JDK_VERSION=${jdk}
 ENV JAVA_HOME=/opt/jdk

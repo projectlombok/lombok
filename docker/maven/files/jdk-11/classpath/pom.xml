@@ -7,7 +7,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.9</java.version>
+        <java.version>11</java.version>
     </properties>
 
     <build>
@@ -15,7 +15,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.8.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -46,7 +46,7 @@
             <artifactId>lombok</artifactId>
             <version>1.2.3</version>
             <scope>system</scope>
-            <systemPath>/workspace/lombok.jar</systemPath>
+            <systemPath>/workspace/classpath/lombok.jar</systemPath>
         </dependency>
     </dependencies>
 
