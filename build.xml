@@ -392,6 +392,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 	</target>
 	
 	<target name="intellij" depends="deps, contrib" description="Creates intellij project files and downloads all dependencies. Open this directory as a project in IntelliJ after running this target.">
+		<fail>The core lombok contributors all use eclipse to develop lombok. We have some old work on letting you work on lombok via intellij (see the commented out, below), but this is currently broken. If you want to adopt 'work on lombok via intellij' as a task, we're open to it; this should take the form of both a PR to fix this as well as a commitment to continue to maintain it (fix any bugs and field any questions); if you are no longer capable of maintaining it, no problem – but let us know so we can restore this message.</fail>
 		<ivy:intellijgen>
 			<conf name="build" sources="contrib" />
 			<conf name="test" sources="contrib" />
