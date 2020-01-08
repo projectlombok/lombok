@@ -1400,6 +1400,19 @@ public class JavacHandlerUtil {
 		return result.toList();
 	}
 	
+	public static String scanForNearestAnnotation(JavacNode node, String... anns) {
+		while (node != null) {
+			for (JavacNode ann : node.down()) {
+				if (ann.getKind() != Kind.ANNOTATION) continue;
+				JCAnnotation a = (JCAnnotation) ann.get();
+				for (String annToFind : anns) if (typeMatches(annToFind, node, a.annotationType)) return annToFind;
+			}
+			node = node.up();
+		}
+		
+		return null;
+	}
+	
 	public static boolean hasNonNullAnnotations(JavacNode node) {
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {

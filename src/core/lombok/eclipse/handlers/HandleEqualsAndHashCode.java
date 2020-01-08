@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,7 @@ import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.InstanceOfExpression;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
@@ -504,9 +505,33 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return arr == null ? 0 : arr.length;
 	}
 	
+	/*
+	 * scan method, then class, then enclosing classes, then package for the first of:
+	 * javax.annotation.ParametersAreNonnullByDefault or javax.annotation.ParametersAreNullableByDefault. If it's the NN variant, generate javax.annotation.Nullable _on the type_.
+	 * org.eclipse.jdt.annotation.NonNullByDefault ->  org.eclipse.jdt.annotation.Nullable
+	 */
+	
+	private static final char[][] JAVAX_ANNOTATION_NULLABLE = Eclipse.fromQualifiedName("javax.annotation.Nullable");
+	private static final char[][] ORG_ECLIPSE_JDT_ANNOTATION_NULLABLE = Eclipse.fromQualifiedName("org.eclipse.jdt.annotation.Nullable");
+	
 	public MethodDeclaration createEquals(EclipseNode type, Collection<Included<EclipseNode, EqualsAndHashCode.Include>> members, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual, List<Annotation> onParam) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
+		
+		Annotation[] onParamType = null;
+		
+		String nearest = scanForNearestAnnotation(type, "javax.annotation.ParametersAreNullableByDefault", "javax.annotation.ParametersAreNonnullByDefault");
+		if ("javax.annotation.ParametersAreNonnullByDefault".equals(nearest)) {
+			onParamType = new Annotation[1];
+			onParamType[0] = new MarkerAnnotation(generateQualifiedTypeRef(source, JAVAX_ANNOTATION_NULLABLE), 0);
+		}
+		
+		nearest = scanForNearestAnnotation(type, "org.eclipse.jdt.annotation.NonNullByDefault");
+		if (nearest != null) {
+			Annotation a = new MarkerAnnotation(generateQualifiedTypeRef(source, ORG_ECLIPSE_JDT_ANNOTATION_NULLABLE), 0);
+			if (onParamType != null) onParamType = new Annotation[] {onParamType[0], a};
+			else onParamType = new Annotation[] {a};
+		}
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		setGeneratedBy(method, source);
@@ -526,7 +551,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
-		TypeReference objectRef = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { p, p, p });
+		QualifiedTypeReference objectRef = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { p, p, p });
+		if (onParamType != null) objectRef.annotations = new Annotation[][] {null, null, onParamType};
 		setGeneratedBy(objectRef, source);
 		method.arguments = new Argument[] {new Argument(new char[] { 'o' }, 0, objectRef, Modifier.FINAL)};
 		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;

@@ -53,6 +53,8 @@
 		</p><p>
 			If a getter exists for a field to be included, it is called instead of using a direct field reference. This behaviour can be suppressed:<br />
 			<code>@EqualsAndHashCode(doNotUseGetters = true)</code>
+		</p><p>
+			If the class (or an enclosing class) has either the <code>@org.eclipse.jdt.annotation.NonNullByDefault</code> or the <code>@javax.annotation.ParametersAreNonnullByDefault</code> annotation, the parameter of the generated <code>equals</code> method will have the appropriate <code>@Nullable</code> annotation; JDK8+ is required when you do this. <span class="since">(since 1.18.12)</span>.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

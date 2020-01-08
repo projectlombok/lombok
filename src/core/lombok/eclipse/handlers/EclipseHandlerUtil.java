@@ -745,6 +745,20 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	public static String scanForNearestAnnotation(EclipseNode node, String... anns) {
+		while (node != null) {
+			for (EclipseNode ann : node.down()) {
+				if (ann.getKind() != Kind.ANNOTATION) continue;
+				Annotation a = (Annotation) ann.get();
+				TypeReference aType = a.type;
+				for (String annToFind : anns) if (typeMatches(annToFind, node, aType)) return annToFind;
+			}
+			node = node.up();
+		}
+		
+		return null;
+	}
+	
 	public static boolean hasNonNullAnnotations(EclipseNode node) {
 		AbstractVariableDeclaration avd = (AbstractVariableDeclaration) node.get();
 		if (avd.annotations == null) return false;

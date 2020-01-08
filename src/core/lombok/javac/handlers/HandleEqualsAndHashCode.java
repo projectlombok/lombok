@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -381,6 +381,20 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Name otherName = typeNode.toName("other");
 		Name thisName = typeNode.toName("this");
 		
+		List<JCAnnotation> annsOnParamOnMethod = List.nil();
+		
+		String nearest = scanForNearestAnnotation(typeNode, "org.eclipse.jdt.annotation.NonNullByDefault");
+		if (nearest != null) {
+			JCAnnotation m = maker.Annotation(genTypeRef(typeNode, "org.eclipse.jdt.annotation.Nullable"), List.<JCExpression>nil());
+			annsOnParamOnMethod = annsOnParamOnMethod.prepend(m);
+		}
+		
+		nearest = scanForNearestAnnotation(typeNode, "javax.annotation.ParametersAreNullableByDefault", "javax.annotation.ParametersAreNonnullByDefault");
+		if ("javax.annotation.ParametersAreNonnullByDefault".equals(nearest)) {
+			JCAnnotation m = maker.Annotation(genTypeRef(typeNode, "javax.annotation.Nullable"), List.<JCExpression>nil());
+			annsOnParamOnMethod = annsOnParamOnMethod.prepend(m);
+		}
+		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		List<JCAnnotation> annsOnMethod = List.of(overrideAnnotation);
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(typeNode);
@@ -388,7 +402,14 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		}
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
-		JCExpression objectType = genJavaLangTypeRef(typeNode, "Object");
+		JCExpression objectType;
+		if (annsOnParamOnMethod.isEmpty()) {
+			objectType = genJavaLangTypeRef(typeNode, "Object");
+		} else {
+			objectType = chainDots(typeNode, "java", "lang", "Object");
+			objectType = maker.AnnotatedType(annsOnParamOnMethod, objectType);
+		}
+		
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);
 		
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
