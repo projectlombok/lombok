@@ -24,6 +24,20 @@
 		</p>
 	</@s.section>
 
+	<@s.section title="JDK9+ with module-info.java">
+		<p>
+			The configuration of the compiler plug-in should contain the following:<pre>
+&lt;annotationProcessorPaths&gt;
+	&lt;path&gt;
+		&lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+		&lt;artifactId&gt;lombok&lt;/artifactId&gt;
+		&lt;version&gt;${version}&lt;/version&gt;
+	&lt;/path&gt;
+&lt;/annotationProcessorPaths&gt;
+</pre>
+		</p>
+	</@s.section>
+
 	<@s.section title="Delomboking: The Lombok Maven Plugin">
 		<p>
 			There is a plugin for Maven that we recommend you use if you want to delombok via maven. Useful if you want to run source analysis tools on your source <em>after</em> lombok has been applied, or if you want to generate javadoc. The plugin is open source. Read more <a href="http://awhitford.github.io/lombok.maven/lombok-maven-plugin/">about the lombok maven plugin</a>.
