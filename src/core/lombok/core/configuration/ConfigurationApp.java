@@ -40,10 +40,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import lombok.ConfigurationKeys;
-import lombok.core.LombokApp;
-import lombok.core.configuration.ConfigurationParser.Collector;
-
 import org.mangosdk.spi.ProviderFor;
 
 import com.zwitserloot.cmdreader.CmdReader;
@@ -53,6 +49,11 @@ import com.zwitserloot.cmdreader.InvalidCommandLineException;
 import com.zwitserloot.cmdreader.Mandatory;
 import com.zwitserloot.cmdreader.Sequential;
 import com.zwitserloot.cmdreader.Shorthand;
+
+import lombok.ConfigurationKeys;
+import lombok.core.LombokApp;
+import lombok.core.configuration.ConfigurationParser.Collector;
+import lombok.core.configuration.ConfigurationParser.Context;
 
 @ProviderFor(LombokApp.class)
 public class ConfigurationApp extends LombokApp {
@@ -258,7 +259,7 @@ public class ConfigurationApp extends LombokApp {
 			File configFile = new File(currentDirectory, "lombok.config");
 			if (!configFile.exists() || !configFile.isFile()) continue;
 			
-			Map<ConfigurationKey<?>, List<String>> traces = trace(fileToString(configFile), configFile.getAbsolutePath(), keys);
+			Map<ConfigurationKey<?>, List<String>> traces = trace(fileToString(configFile), Context.fromFile(configFile), keys);
 			
 			stopBubbling = stopBubbling(traces.get(ConfigurationKeys.STOP_BUBBLING));
 			for (ConfigurationKey<?> key : keys) {
@@ -287,23 +288,23 @@ public class ConfigurationApp extends LombokApp {
 		return result;
 	}
 	
-	private Map<ConfigurationKey<?>, List<String>> trace(String content, String contentDescription, final Collection<ConfigurationKey<?>> keys) {
+	private Map<ConfigurationKey<?>, List<String>> trace(String content, Context context, final Collection<ConfigurationKey<?>> keys) {
 		final Map<ConfigurationKey<?>, List<String>> result = new HashMap<ConfigurationKey<?>, List<String>>();
 		
 		Collector collector = new Collector() {
-			@Override public void clear(ConfigurationKey<?> key, String contentDescription, int lineNumber) {
+			@Override public void clear(ConfigurationKey<?> key, Context context, int lineNumber) {
 				trace(key, "clear " + key.getKeyName(), lineNumber);
 			}
-
-			@Override public void set(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+			
+			@Override public void set(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
 				trace(key, key.getKeyName() + " = " + value, lineNumber);
 			}
 			
-			@Override public void add(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+			@Override public void add(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
 				trace(key, key.getKeyName() + " += " + value, lineNumber);
 			}
 			
-			@Override public void remove(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+			@Override public void remove(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
 				trace(key, key.getKeyName() + " -= " + value, lineNumber);
 			}
 			
@@ -317,7 +318,7 @@ public class ConfigurationApp extends LombokApp {
 				traces.add(String.format("%4d: %s", lineNumber, message));
 			}
 		};
-		new ConfigurationParser(VOID).parse(content, contentDescription, collector);
+		new ConfigurationParser(VOID).parse(content, context, collector);
 		return result;
 	}
 	

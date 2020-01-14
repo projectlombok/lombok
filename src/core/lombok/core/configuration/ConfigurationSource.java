@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ public interface ConfigurationSource {
 		}
 	}
 	
-	public static class ListModification {
+	public static final class ListModification {
 		private final Object value;
 		private final boolean added;
 		

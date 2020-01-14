@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 The Project Lombok Authors.
+ * Copyright (C) 2014-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.core.configuration;
 
+import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
 public class ConfigurationParser {
 	private static final Pattern LINE = Pattern.compile("(?:clear\\s+([^=]+))|(?:(\\S*?)\\s*([-+]?=)\\s*(.*?))");
 	private static final Pattern NEWLINE_FINDER = Pattern.compile("^[\t ]*(.*?)[\t\r ]*$", Pattern.MULTILINE);
+	private static final Pattern IMPORT = Pattern.compile("import\\s+(.*?)");
 	
 	private ConfigurationProblemReporter reporter;
 	
@@ -36,20 +38,32 @@ public class ConfigurationParser {
 		this.reporter = reporter;
 	}
 	
-	public void parse(CharSequence content, String contentDescription, Collector collector) {
+	public void parse(CharSequence content, Context context, Collector collector) {
 		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeys();
 		int lineNumber = 0;
 		Matcher lineMatcher = NEWLINE_FINDER.matcher(content);
+		boolean importsAllowed = true;
 		while (lineMatcher.find()) {
 			CharSequence line = content.subSequence(lineMatcher.start(1), lineMatcher.end(1));
 			lineNumber++;
 			if (line.length() == 0 || line.charAt(0) == '#') continue;
-
-			Matcher matcher = LINE.matcher(line);
-			if (!matcher.matches()) {
-				reporter.report(contentDescription, "Invalid line", lineNumber, line);
+			
+			Matcher importMatcher = IMPORT.matcher(line);
+			if (importMatcher.matches()) {
+				if (!importsAllowed) {
+					reporter.report(context.description(), "Imports are only allowed in the top of the file", lineNumber, line);
+					continue;
+				}
+//				collector.addImport(importMatcher.group(1), contentDescription, lineNumber);
 				continue;
 			}
+			
+			Matcher matcher = LINE.matcher(line);
+			if (!matcher.matches()) {
+				reporter.report(context.description(), "Invalid line", lineNumber, line);
+				continue;
+			}
+			importsAllowed = false;
 			
 			String operator = null;
 			String keyName = null;
@@ -65,18 +79,18 @@ public class ConfigurationParser {
 			}
 			ConfigurationKey<?> key = registeredKeys.get(keyName);
 			if (key == null) {
-				reporter.report(contentDescription, "Unknown key '" + keyName + "'", lineNumber, line);
+				reporter.report(context.description(), "Unknown key '" + keyName + "'", lineNumber, line);
 				continue;
 			}
 			
 			ConfigurationDataType type = key.getType();
 			boolean listOperator = operator.equals("+=") || operator.equals("-=");
 			if (listOperator && !type.isList()) {
-				reporter.report(contentDescription, "'" + keyName + "' is not a list and doesn't support " + operator + " (only = and clear)", lineNumber, line);
+				reporter.report(context.description(), "'" + keyName + "' is not a list and doesn't support " + operator + " (only = and clear)", lineNumber, line);
 				continue;
 			}
 			if (operator.equals("=") && type.isList()) {
-				reporter.report(contentDescription, "'" + keyName + "' is a list and cannot be assigned to (use +=, -= and clear instead)", lineNumber, line);
+				reporter.report(context.description(), "'" + keyName + "' is a list and cannot be assigned to (use +=, -= and clear instead)", lineNumber, line);
 				continue;
 			}
 			
@@ -84,26 +98,42 @@ public class ConfigurationParser {
 			if (stringValue != null) try {
 				value = type.getParser().parse(stringValue);
 			} catch (Exception e) {
-				reporter.report(contentDescription, "Error while parsing the value for '" + keyName + "' value '" + stringValue + "' (should be " + type.getParser().exampleValue() + ")", lineNumber, line);
+				reporter.report(context.description(), "Error while parsing the value for '" + keyName + "' value '" + stringValue + "' (should be " + type.getParser().exampleValue() + ")", lineNumber, line);
 				continue;
 			}
 			
 			if (operator.equals("clear")) {
-				collector.clear(key, contentDescription, lineNumber);
+				collector.clear(key, context, lineNumber);
 			} else if (operator.equals("=")) {
-				collector.set(key, value, contentDescription, lineNumber);
+				collector.set(key, value, context, lineNumber);
 			} else if (operator.equals("+=")) {
-				collector.add(key, value, contentDescription, lineNumber);
+				collector.add(key, value, context, lineNumber);
 			} else {
-				collector.remove(key, value, contentDescription, lineNumber);
+				collector.remove(key, value, context, lineNumber);
 			}
 		}
 	}
 	
 	public interface Collector {
-		void clear(ConfigurationKey<?> key, String contentDescription, int lineNumber);
-		void set(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber);
-		void add(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber);
-		void remove(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber);
+		void clear(ConfigurationKey<?> key, Context context, int lineNumber);
+		void set(ConfigurationKey<?> key, Object value, Context context, int lineNumber);
+		void add(ConfigurationKey<?> key, Object value, Context context, int lineNumber);
+		void remove(ConfigurationKey<?> key, Object value, Context context, int lineNumber);
+	}
+	
+	public static final class Context {
+		private final File file;
+		
+		public static Context fromFile(File file) {
+			return new Context(file);
+		}
+		
+		private Context(File file) {
+			this.file = file;
+		}
+		
+		public String description() {
+			return file.getAbsolutePath();
+		}
 	}
 }

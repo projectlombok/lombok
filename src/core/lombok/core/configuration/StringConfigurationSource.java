@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,28 +29,28 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import lombok.core.configuration.ConfigurationParser.Collector;
+import lombok.core.configuration.ConfigurationParser.Context;
 
 public class StringConfigurationSource implements ConfigurationSource {
 	private final Map<ConfigurationKey<?>, Result> values;
 	
-	public static ConfigurationSource forString(CharSequence content, ConfigurationProblemReporter reporter, String contentDescription) {
-		
+	public static ConfigurationSource forString(CharSequence content, ConfigurationProblemReporter reporter, Context context) {
 		final Map<ConfigurationKey<?>, Result> values = new HashMap<ConfigurationKey<?>, Result>();
 		
-		new ConfigurationParser(reporter).parse(content, contentDescription, new Collector() {
-			@Override public void clear(ConfigurationKey<?> key, String contentDescription, int lineNumber) {
+		Collector collector = new Collector() {
+			@Override public void clear(ConfigurationKey<?> key, Context context, int lineNumber) {
 				values.put(key, new Result(null, true));
 			}
 			
-			@Override public void set(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+			@Override public void set(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
 				values.put(key, new Result(value, true));
 			}
 			
-			@Override public void add(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+			@Override public void add(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
 				modifyList(key, value, true);
 			}
 			
-			@Override public void remove(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+			@Override public void remove(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
 				modifyList(key, value, false);
 			}
 			
@@ -66,7 +66,8 @@ public class StringConfigurationSource implements ConfigurationSource {
 				}
 				list.add(new ListModification(value, add));
 			}
-		});
+		};
+		new ConfigurationParser(reporter).parse(content, context, collector);
 		return new StringConfigurationSource(values);
 	}
 	

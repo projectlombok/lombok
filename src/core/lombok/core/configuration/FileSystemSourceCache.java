@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 The Project Lombok Authors.
+ * Copyright (C) 2014-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import lombok.ConfigurationKeys;
+import lombok.core.configuration.ConfigurationParser.Context;
 import lombok.core.configuration.ConfigurationSource.Result;
 import lombok.core.debug.ProblemReporter;
 
@@ -43,7 +44,7 @@ public class FileSystemSourceCache {
 	private static final long NEVER_CHECKED = -1;
 	private static final long MISSING = -88; // Magic value; any lombok.config with this exact epochmillis last modified will never be read, so, let's ensure nobody accidentally has one with that exact last modified stamp.
 	
-	private final ConcurrentMap<File, Content> dirCache = new ConcurrentHashMap<File, Content>(); // caches files (representing dirs) to the content object that tracks content.
+	private final ConcurrentMap<File, Content> fileCache = new ConcurrentHashMap<File, Content>(); // caches files to the content object that tracks content.
 	private final ConcurrentMap<URI, File> uriCache = new ConcurrentHashMap<URI, File>(); // caches URIs of java source files to the dir that contains it.
 	private volatile long lastCacheClear = System.currentTimeMillis();
 	
@@ -54,7 +55,7 @@ public class FileSystemSourceCache {
 		long delta = now - lastCacheClear;
 		if (delta > FULL_CACHE_CLEAR_INTERVAL) {
 			lastCacheClear = now;
-			dirCache.clear();
+			fileCache.clear();
 			uriCache.clear();
 		}
 	}
@@ -149,10 +150,13 @@ public class FileSystemSourceCache {
 	}
 	
 	ConfigurationSource getSourceForDirectory(File directory, ConfigurationProblemReporter reporter) {
-		long now = System.currentTimeMillis();
 		File configFile = new File(directory, LOMBOK_CONFIG_FILENAME);
-		
-		Content content = ensureContent(directory);
+		return getSourceForConfigFile(configFile, reporter);
+	}
+	
+	private ConfigurationSource getSourceForConfigFile(File configFile, ConfigurationProblemReporter reporter) {
+		long now = System.currentTimeMillis();
+		Content content = ensureContent(configFile);
 		synchronized (content) {
 			if (content.lastChecked != NEVER_CHECKED && now - content.lastChecked < RECHECK_FILESYSTEM) {
 				return content.source;
@@ -165,21 +169,21 @@ public class FileSystemSourceCache {
 		}
 	}
 	
-	private Content ensureContent(File directory) {
-		Content content = dirCache.get(directory);
+	private Content ensureContent(File configFile) {
+		Content content = fileCache.get(configFile);
 		if (content != null) {
 			return content;
 		}
-		dirCache.putIfAbsent(directory, Content.empty());
-		return dirCache.get(directory);
+		fileCache.putIfAbsent(configFile, Content.empty());
+		return fileCache.get(configFile);
 	}
 	
 	private ConfigurationSource parse(File configFile, ConfigurationProblemReporter reporter) {
-		String contentDescription = configFile.getAbsolutePath();
+		Context context = Context.fromFile(configFile);
 		try {
-			return StringConfigurationSource.forString(fileToString(configFile), reporter, contentDescription);
+			return StringConfigurationSource.forString(fileToString(configFile), reporter, context);
 		} catch (Exception e) {
-			reporter.report(contentDescription, "Exception while reading file: " + e.getMessage(), 0, null);
+			reporter.report(context.description(), "Exception while reading file: " + e.getMessage(), 0, null);
 			return null;
 		}
 	}
