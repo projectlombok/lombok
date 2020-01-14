@@ -565,7 +565,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		invoke.type = namePlusTypeParamsToTypeReference(type, builderClassName.toCharArray(), !isStatic, typeParams, p);
 		
 		Expression receiver = invoke;
-		List<Statement> statements = null;
+		List<Statement> preStatements = null;
+		List<Statement> postStatements = null;
+		
 		for (BuilderFieldData bfd : builderFields) {
 			String setterName = new String(bfd.name);
 			String setterPrefix = !prefix.isEmpty() ? prefix : fluent ? "" : "set";
@@ -584,23 +586,31 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			} else {
 				String obtainName = bfd.obtainVia.method();
 				boolean obtainIsStatic = bfd.obtainVia.isStatic();
-				for (int i = 0; i < tgt.length; i++) {
-					MessageSend obtainExpr = new MessageSend();
-					if (obtainIsStatic) {
-						if (typeParams != null && typeParams.length > 0) {
-							obtainExpr.typeArguments = new TypeReference[typeParams.length];
-							for (int j = 0; j<typeParams.length; j++) {
-								obtainExpr.typeArguments[j] = new SingleTypeReference(typeParams[j].name, 0);
-							}
+				MessageSend obtainExpr = new MessageSend();
+				if (obtainIsStatic) {
+					if (typeParams != null && typeParams.length > 0) {
+						obtainExpr.typeArguments = new TypeReference[typeParams.length];
+						for (int j = 0; j<typeParams.length; j++) {
+							obtainExpr.typeArguments[j] = new SingleTypeReference(typeParams[j].name, 0);
 						}
-						obtainExpr.receiver = generateNameReference(type, 0);
-					} else {
-						obtainExpr.receiver = new ThisReference(0, 0);
 					}
-					obtainExpr.selector = obtainName.toCharArray();
-					if (obtainIsStatic) obtainExpr.arguments = new Expression[] {new ThisReference(0, 0)};
-					tgt[i] = obtainExpr;
+					obtainExpr.receiver = generateNameReference(type, 0);
+				} else {
+					obtainExpr.receiver = new ThisReference(0, 0);
 				}
+				obtainExpr.selector = obtainName.toCharArray();
+				if (obtainIsStatic) obtainExpr.arguments = new Expression[] {new ThisReference(0, 0)};
+				for (int i = 0; i < tgt.length; i++) tgt[i] = new SingleNameReference(bfd.name, 0L);
+				
+				// javac appears to cache the type of JCMethodInvocation expressions based on position, meaning, if you have 2 ObtainVia-based method invokes on different types, you get bizarre type mismatch errors.
+				// going via a local variable declaration solves the problem. We copy this behaviour
+				// for ecj so we match what javac's handler does.
+				LocalDeclaration ld = new LocalDeclaration(bfd.name, 0, 0);
+				ld.modifiers = ClassFileConstants.AccFinal;
+				ld.type = EclipseHandlerUtil.copyType(bfd.type, source);
+				ld.initialization = obtainExpr;
+				if (preStatements == null) preStatements = new ArrayList<Statement>();
+				preStatements.add(ld);
 			}
 			
 			ms.selector = setterName.toCharArray();
@@ -612,23 +622,28 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				ms.arguments = new Expression[] {tgt[1]};
 				ms.receiver = new SingleNameReference(BUILDER_TEMP_VAR, p);
 				EqualExpression isNotNull = new EqualExpression(tgt[0], new NullLiteral(pS, pE), OperatorIds.NOT_EQUAL);
-				if (statements == null) statements = new ArrayList<Statement>();
-				statements.add(new IfStatement(isNotNull, ms, pS, pE));
+				if (postStatements == null) postStatements = new ArrayList<Statement>();
+				postStatements.add(new IfStatement(isNotNull, ms, pS, pE));
 			}
 		}
 		
-		if (statements != null) {
-			out.statements = new Statement[statements.size() + 2];
-			for (int i = 0; i < statements.size(); i++) out.statements[i + 1] = statements.get(i);
+		int preSs = preStatements == null ? 0 : preStatements.size();
+		int postSs = postStatements == null ? 0 : postStatements.size();
+		if (postSs > 0) {
+			out.statements = new Statement[preSs + postSs + 2];
+			for (int i = 0; i < preSs; i++) out.statements[i] = preStatements.get(i);
+			for (int i = 0; i < postSs; i++) out.statements[preSs + 1 + i] = postStatements.get(i);
 			LocalDeclaration b = new LocalDeclaration(BUILDER_TEMP_VAR, pS, pE);
-			out.statements[0] = b;
-			b.modifiers |= Modifier.FINAL;
+			out.statements[preSs] = b;
+			b.modifiers |= ClassFileConstants.AccFinal;
 			b.type = namePlusTypeParamsToTypeReference(type, builderClassName.toCharArray(), !isStatic, typeParams, p);
 			b.type.sourceStart = pS; b.type.sourceEnd = pE;
 			b.initialization = receiver;
-			out.statements[out.statements.length - 1] = new ReturnStatement(new SingleNameReference(BUILDER_TEMP_VAR, p), pS, pE);
+			out.statements[preSs + postSs + 1] = new ReturnStatement(new SingleNameReference(BUILDER_TEMP_VAR, p), pS, pE);
 		} else {
-			out.statements = new Statement[] {new ReturnStatement(receiver, pS, pE)};
+			out.statements = new Statement[preSs + 1];
+			for (int i = 0; i < preSs; i++) out.statements[i] = preStatements.get(i);
+			out.statements[preSs] = new ReturnStatement(receiver, pS, pE);
 		}
 		
 		if (cfv.generateUnique()) {

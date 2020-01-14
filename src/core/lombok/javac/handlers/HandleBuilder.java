@@ -45,6 +45,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
@@ -553,7 +554,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JCExpression call = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, type, type.toName(builderClassName), !isStatic, typeParams), List.<JCExpression>nil(), null);
 		JCExpression invoke = call;
+		ListBuffer<JCStatement> preStatements = null;
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+		
 		for (BuilderFieldData bfd : builderFields) {
 			String setterPrefix = !prefix.isEmpty() ? prefix : fluent ? "" : "set";
 			String prefixedSetterName = bfd.name.toString();
@@ -566,17 +569,22 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					tgt[i] = maker.Select(maker.Ident(type.toName("this")), bfd.obtainVia == null ? bfd.rawName : type.toName(bfd.obtainVia.field()));
 				}
 			} else {
+				String name = bfd.obtainVia.method();
+				JCMethodInvocation inv;
 				if (bfd.obtainVia.isStatic()) {
-					for (int i = 0; i < tgt.length; i++) {
-						JCExpression c = maker.Select(maker.Ident(type.toName(type.getName())), type.toName(bfd.obtainVia.method()));
-						tgt[i] = maker.Apply(typeParameterNames(maker, typeParams), c, List.<JCExpression>of(maker.Ident(type.toName("this"))));
-					}
+					JCExpression c = maker.Select(maker.Ident(type.toName(type.getName())), type.toName(name));
+					inv = maker.Apply(typeParameterNames(maker, typeParams), c, List.<JCExpression>of(maker.Ident(type.toName("this"))));
 				} else {
-					for (int i = 0; i < tgt.length; i++) {
-						JCExpression c = maker.Select(maker.Ident(type.toName("this")), type.toName(bfd.obtainVia.method()));
-						tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>nil());
-					}
+					JCExpression c = maker.Select(maker.Ident(type.toName("this")), type.toName(name));
+					inv = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>nil());
 				}
+				for (int i = 0; i < tgt.length; i++) tgt[i] = maker.Ident(bfd.name);
+				
+				// javac appears to cache the type of JCMethodInvocation expressions based on position, meaning, if you have 2 ObtainVia-based method invokes on different types, you get bizarre type mismatch errors.
+				// going via a local variable declaration solves the problem.
+				JCExpression varType = JavacHandlerUtil.cloneType(maker, bfd.type, ast, type.getContext());
+				if (preStatements == null) preStatements = new ListBuffer<JCStatement>();
+				preStatements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), bfd.name, varType, inv));
 			}
 			
 			JCExpression arg;
@@ -589,12 +597,18 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				statements.append(maker.If(isNotNull, maker.Exec(invokeBuilder), null));
 			}
 		}
+		
 		if (!statements.isEmpty()) {
 			JCExpression tempVarType = namePlusTypeParamsToTypeReference(maker, type, type.toName(builderClassName), !isStatic, typeParams);
 			statements.prepend(maker.VarDef(maker.Modifiers(Flags.FINAL), type.toName(BUILDER_TEMP_VAR), tempVarType, invoke));
 			statements.append(maker.Return(maker.Ident(type.toName(BUILDER_TEMP_VAR))));
 		} else {
 			statements.append(maker.Return(invoke));
+		}
+		
+		if (preStatements != null) {
+			preStatements.appendList(statements);
+			statements = preStatements;
 		}
 		JCBlock body = maker.Block(0, statements.toList());
 		List<JCAnnotation> annsOnMethod = cfv.generateUnique() ? List.of(maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
