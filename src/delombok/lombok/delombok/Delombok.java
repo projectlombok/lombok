@@ -354,11 +354,15 @@ public class Delombok {
 		StringBuilder s = new StringBuilder();
 		try {
 			InputStreamReader isr = new InputStreamReader(in, "UTF-8");
-			char[] c = new char[4096];
-			while (true) {
-				int r = isr.read(c);
-				if (r == -1) break;
-				s.append(c, 0, r);
+			try {
+				char[] c = new char[4096];
+				while (true) {
+					int r = isr.read(c);
+					if (r == -1) break;
+					s.append(c, 0, r);
+				}
+			} finally {
+				isr.close();
 			}
 		} finally {
 			in.close();

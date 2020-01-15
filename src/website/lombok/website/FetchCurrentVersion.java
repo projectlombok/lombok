@@ -21,11 +21,15 @@ public class FetchCurrentVersion {
 		InputStream in = new URL("https://projectlombok.org/download").openStream();
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-			for (String line = br.readLine(); line != null; line = br.readLine()) {
-				Matcher m = VERSION_PATTERN.matcher(line);
-				if (m.matches() && m.group(1).equals("currentVersionFull") == fetchFull) return m.group(2).replace("&quot;", "\"");
+			try {
+				for (String line = br.readLine(); line != null; line = br.readLine()) {
+					Matcher m = VERSION_PATTERN.matcher(line);
+					if (m.matches() && m.group(1).equals("currentVersionFull") == fetchFull) return m.group(2).replace("&quot;", "\"");
+				}
+				throw new IOException("Expected a span with id 'currentVersion'");
+			} finally {
+				br.close();
 			}
-			throw new IOException("Expected a span with id 'currentVersion'");
 		} finally {
 			in.close();
 		}
