@@ -25,7 +25,6 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-import static lombok.javac.handlers.JavacHandlerUtil.isFieldDeprecated;
 
 import java.util.ArrayList;
 
