@@ -21,9 +21,7 @@
  */
 package lombok.core.configuration;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Iterator;
@@ -33,7 +31,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import lombok.ConfigurationKeys;
-import lombok.core.configuration.ConfigurationParser.Context;
 import lombok.core.configuration.ConfigurationSource.Result;
 import lombok.core.debug.ProblemReporter;
 
@@ -42,9 +39,9 @@ public class FileSystemSourceCache {
 	private static final long FULL_CACHE_CLEAR_INTERVAL = TimeUnit.MINUTES.toMillis(30);
 	private static final long RECHECK_FILESYSTEM = TimeUnit.SECONDS.toMillis(2);
 	private static final long NEVER_CHECKED = -1;
-	private static final long MISSING = -88; // Magic value; any lombok.config with this exact epochmillis last modified will never be read, so, let's ensure nobody accidentally has one with that exact last modified stamp.
+	static final long MISSING = -88; // Magic value; any lombok.config with this exact epochmillis last modified will never be read, so, let's ensure nobody accidentally has one with that exact last modified stamp.
 	
-	private final ConcurrentMap<File, Content> fileCache = new ConcurrentHashMap<File, Content>(); // caches files to the content object that tracks content.
+	private final ConcurrentMap<ConfigurationFile, Content> fileCache = new ConcurrentHashMap<ConfigurationFile, Content>(); // caches files to the content object that tracks content.
 	private final ConcurrentMap<URI, File> uriCache = new ConcurrentHashMap<URI, File>(); // caches URIs of java source files to the dir that contains it.
 	private volatile long lastCacheClear = System.currentTimeMillis();
 	
@@ -150,69 +147,40 @@ public class FileSystemSourceCache {
 	}
 	
 	ConfigurationSource getSourceForDirectory(File directory, ConfigurationProblemReporter reporter) {
-		File configFile = new File(directory, LOMBOK_CONFIG_FILENAME);
-		return getSourceForConfigFile(configFile, reporter);
+		return getSourceForConfigFile(ConfigurationFile.fromFile(new File(directory, LOMBOK_CONFIG_FILENAME)), reporter);
 	}
 	
-	private ConfigurationSource getSourceForConfigFile(File configFile, ConfigurationProblemReporter reporter) {
+	private ConfigurationSource getSourceForConfigFile(ConfigurationFile context, ConfigurationProblemReporter reporter) {
 		long now = System.currentTimeMillis();
-		Content content = ensureContent(configFile);
+		Content content = ensureContent(context);
 		synchronized (content) {
 			if (content.lastChecked != NEVER_CHECKED && now - content.lastChecked < RECHECK_FILESYSTEM) {
 				return content.source;
 			}
 			content.lastChecked = now;
 			long previouslyModified = content.lastModified;
-			content.lastModified = getLastModifiedOrMissing(configFile);
-			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(configFile, reporter);
+			content.lastModified = context.getLastModifiedOrMissing();
+			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(context, reporter);
 			return content.source;
 		}
 	}
 	
-	private Content ensureContent(File configFile) {
-		Content content = fileCache.get(configFile);
+	private Content ensureContent(ConfigurationFile context) {
+		Content content = fileCache.get(context);
 		if (content != null) {
 			return content;
 		}
-		fileCache.putIfAbsent(configFile, Content.empty());
-		return fileCache.get(configFile);
+		fileCache.putIfAbsent(context, Content.empty());
+		return fileCache.get(context);
 	}
 	
-	private ConfigurationSource parse(File configFile, ConfigurationProblemReporter reporter) {
-		Context context = Context.fromFile(configFile);
+	private ConfigurationSource parse(ConfigurationFile context, ConfigurationProblemReporter reporter) {
 		try {
-			return StringConfigurationSource.forString(fileToString(configFile), reporter, context);
+			return StringConfigurationSource.forString(context.contents(), reporter, context);
 		} catch (Exception e) {
 			reporter.report(context.description(), "Exception while reading file: " + e.getMessage(), 0, null);
 			return null;
 		}
-	}
-	
-	private static final ThreadLocal<byte[]> buffers = new ThreadLocal<byte[]>() {
-		protected byte[] initialValue() {
-			return new byte[65536];
-		}
-	};
-	
-	static String fileToString(File configFile) throws Exception {
-		byte[] b = buffers.get();
-		FileInputStream fis = new FileInputStream(configFile);
-		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			while (true) {
-				int r = fis.read(b);
-				if (r == -1) break;
-				out.write(b, 0, r);
-			}
-			return new String(out.toByteArray(), "UTF-8");
-		} finally {
-			fis.close();
-		}
-	}
-	
-	private static final long getLastModifiedOrMissing(File file) {
-		if (!file.exists() || !file.isFile()) return MISSING;
-		return file.lastModified();
 	}
 	
 	private static class Content {

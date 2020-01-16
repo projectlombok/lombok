@@ -21,7 +21,6 @@
  */
 package lombok.core.configuration;
 
-import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,7 +28,7 @@ import java.util.regex.Pattern;
 public class ConfigurationParser {
 	private static final Pattern LINE = Pattern.compile("(?:clear\\s+([^=]+))|(?:(\\S*?)\\s*([-+]?=)\\s*(.*?))");
 	private static final Pattern NEWLINE_FINDER = Pattern.compile("^[\t ]*(.*?)[\t\r ]*$", Pattern.MULTILINE);
-	private static final Pattern IMPORT = Pattern.compile("import\\s+(.*?)");
+	private static final Pattern IMPORT = Pattern.compile("import\\s+(.+?)");
 	
 	private ConfigurationProblemReporter reporter;
 	
@@ -38,7 +37,7 @@ public class ConfigurationParser {
 		this.reporter = reporter;
 	}
 	
-	public void parse(CharSequence content, Context context, Collector collector) {
+	public void parse(CharSequence content, ConfigurationFile context, Collector collector) {
 		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeys();
 		int lineNumber = 0;
 		Matcher lineMatcher = NEWLINE_FINDER.matcher(content);
@@ -54,7 +53,10 @@ public class ConfigurationParser {
 					reporter.report(context.description(), "Imports are only allowed in the top of the file", lineNumber, line);
 					continue;
 				}
-//				collector.addImport(importMatcher.group(1), contentDescription, lineNumber);
+				String imported = importMatcher.group(1);
+				if (!context.importResolves(imported)) {
+					reporter.report(context.description(), "Imported file does not exist", lineNumber, line);
+				}
 				continue;
 			}
 			
@@ -115,25 +117,9 @@ public class ConfigurationParser {
 	}
 	
 	public interface Collector {
-		void clear(ConfigurationKey<?> key, Context context, int lineNumber);
-		void set(ConfigurationKey<?> key, Object value, Context context, int lineNumber);
-		void add(ConfigurationKey<?> key, Object value, Context context, int lineNumber);
-		void remove(ConfigurationKey<?> key, Object value, Context context, int lineNumber);
-	}
-	
-	public static final class Context {
-		private final File file;
-		
-		public static Context fromFile(File file) {
-			return new Context(file);
-		}
-		
-		private Context(File file) {
-			this.file = file;
-		}
-		
-		public String description() {
-			return file.getAbsolutePath();
-		}
+		void clear(ConfigurationKey<?> key, ConfigurationFile context, int lineNumber);
+		void set(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber);
+		void add(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber);
+		void remove(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber);
 	}
 }

@@ -41,6 +41,7 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 	public <T> T resolve(ConfigurationKey<T> key) {
 		boolean isList = key.getType().isList();
 		List<List<ListModification>> listModificationsList = null;
+		outer:
 		for (ConfigurationSource source : sources) {
 			Result result = source.resolve(key);
 			if (result == null) continue;
@@ -49,7 +50,7 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 				listModificationsList.add((List<ListModification>)result.getValue());
 			}
 			if (result.isAuthoritative()) {
-				if (isList) break;
+				if (isList) break outer;
 				return (T) result.getValue();
 			}
 		}

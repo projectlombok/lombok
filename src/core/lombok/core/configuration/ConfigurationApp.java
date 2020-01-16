@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 The Project Lombok Authors.
+ * Copyright (C) 2014-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,6 @@
  * THE SOFTWARE.
  */
 package lombok.core.configuration;
-
-import static lombok.core.configuration.FileSystemSourceCache.fileToString;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -53,7 +51,6 @@ import com.zwitserloot.cmdreader.Shorthand;
 import lombok.ConfigurationKeys;
 import lombok.core.LombokApp;
 import lombok.core.configuration.ConfigurationParser.Collector;
-import lombok.core.configuration.ConfigurationParser.Context;
 
 @ProviderFor(LombokApp.class)
 public class ConfigurationApp extends LombokApp {
@@ -254,12 +251,13 @@ public class ConfigurationApp extends LombokApp {
 		Set<ConfigurationKey<?>> used = new HashSet<ConfigurationKey<?>>();
 		
 		boolean stopBubbling = false;
-		String previousFileName = null;
+		String previousDescription = null;
 		for (File currentDirectory = new File(directory); currentDirectory != null && !stopBubbling; currentDirectory = currentDirectory.getParentFile()) {
 			File configFile = new File(currentDirectory, "lombok.config");
 			if (!configFile.exists() || !configFile.isFile()) continue;
 			
-			Map<ConfigurationKey<?>, List<String>> traces = trace(fileToString(configFile), Context.fromFile(configFile), keys);
+			ConfigurationFile context = ConfigurationFile.fromFile(configFile);
+			Map<ConfigurationKey<?>, List<String>> traces = trace(context.contents(), context, keys);
 			
 			stopBubbling = stopBubbling(traces.get(ConfigurationKeys.STOP_BUBBLING));
 			for (ConfigurationKey<?> key : keys) {
@@ -270,17 +268,17 @@ public class ConfigurationApp extends LombokApp {
 				} else {
 					used.add(key);
 				}
-				if (previousFileName != null) {
+				if (previousDescription != null) {
 					modifications.add("");
-					modifications.add(previousFileName + ":");
+					modifications.add(previousDescription + ":");
 				}
 				result.get(key).addAll(0, modifications);
 			}
-			previousFileName = configFile.getAbsolutePath();
+			previousDescription = context.description();
 		}
 		for (ConfigurationKey<?> key : keys) {
 			if (used.contains(key)) {
-				result.get(key).add(0, previousFileName + (stopBubbling ? " (stopped bubbling):" : ":"));
+				result.get(key).add(0, previousDescription + (stopBubbling ? " (stopped bubbling):" : ":"));
 			} else {
 				result.put(key, Collections.<String>emptyList());
 			}
@@ -288,23 +286,23 @@ public class ConfigurationApp extends LombokApp {
 		return result;
 	}
 	
-	private Map<ConfigurationKey<?>, List<String>> trace(String content, Context context, final Collection<ConfigurationKey<?>> keys) {
+	private Map<ConfigurationKey<?>, List<String>> trace(String content, ConfigurationFile context, final Collection<ConfigurationKey<?>> keys) {
 		final Map<ConfigurationKey<?>, List<String>> result = new HashMap<ConfigurationKey<?>, List<String>>();
 		
 		Collector collector = new Collector() {
-			@Override public void clear(ConfigurationKey<?> key, Context context, int lineNumber) {
+			@Override public void clear(ConfigurationKey<?> key, ConfigurationFile context, int lineNumber) {
 				trace(key, "clear " + key.getKeyName(), lineNumber);
 			}
 			
-			@Override public void set(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
+			@Override public void set(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber) {
 				trace(key, key.getKeyName() + " = " + value, lineNumber);
 			}
 			
-			@Override public void add(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
+			@Override public void add(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber) {
 				trace(key, key.getKeyName() + " += " + value, lineNumber);
 			}
 			
-			@Override public void remove(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
+			@Override public void remove(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber) {
 				trace(key, key.getKeyName() + " -= " + value, lineNumber);
 			}
 			

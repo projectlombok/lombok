@@ -29,28 +29,27 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import lombok.core.configuration.ConfigurationParser.Collector;
-import lombok.core.configuration.ConfigurationParser.Context;
 
 public class StringConfigurationSource implements ConfigurationSource {
 	private final Map<ConfigurationKey<?>, Result> values;
 	
-	public static ConfigurationSource forString(CharSequence content, ConfigurationProblemReporter reporter, Context context) {
+	public static ConfigurationSource forString(CharSequence content, ConfigurationProblemReporter reporter, ConfigurationFile context) {
 		final Map<ConfigurationKey<?>, Result> values = new HashMap<ConfigurationKey<?>, Result>();
 		
 		Collector collector = new Collector() {
-			@Override public void clear(ConfigurationKey<?> key, Context context, int lineNumber) {
+			@Override public void clear(ConfigurationKey<?> key, ConfigurationFile context, int lineNumber) {
 				values.put(key, new Result(null, true));
 			}
 			
-			@Override public void set(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
+			@Override public void set(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber) {
 				values.put(key, new Result(value, true));
 			}
 			
-			@Override public void add(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
+			@Override public void add(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber) {
 				modifyList(key, value, true);
 			}
 			
-			@Override public void remove(ConfigurationKey<?> key, Object value, Context context, int lineNumber) {
+			@Override public void remove(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber) {
 				modifyList(key, value, false);
 			}
 			

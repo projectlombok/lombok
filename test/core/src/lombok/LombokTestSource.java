@@ -41,7 +41,7 @@ import org.junit.Assert;
 
 import lombok.core.LombokImmutableList;
 import lombok.core.configuration.BubblingConfigurationResolver;
-import lombok.core.configuration.ConfigurationParser.Context;
+import lombok.core.configuration.ConfigurationFile;
 import lombok.core.configuration.ConfigurationProblemReporter;
 import lombok.core.configuration.ConfigurationResolver;
 import lombok.core.configuration.StringConfigurationSource;
@@ -245,7 +245,7 @@ public class LombokTestSource {
 			}
 		};
 		
-		this.configuration = new BubblingConfigurationResolver(Collections.singleton(StringConfigurationSource.forString(conf, reporter, Context.fromFile(file))));
+		this.configuration = new BubblingConfigurationResolver(Collections.singleton(StringConfigurationSource.forString(conf, reporter, ConfigurationFile.fromFile(file))));
 		this.formatPreferences = Collections.unmodifiableMap(formats);
 	}
 	
