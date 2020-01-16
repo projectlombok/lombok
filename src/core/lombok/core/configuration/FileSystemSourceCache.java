@@ -23,26 +23,20 @@ package lombok.core.configuration;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import lombok.ConfigurationKeys;
-import lombok.core.configuration.ConfigurationSource.Result;
 import lombok.core.debug.ProblemReporter;
 
 public class FileSystemSourceCache {
-	private static final String LOMBOK_CONFIG_FILENAME = "lombok.config";
 	private static final long FULL_CACHE_CLEAR_INTERVAL = TimeUnit.MINUTES.toMillis(30);
 	private static final long RECHECK_FILESYSTEM = TimeUnit.SECONDS.toMillis(2);
 	private static final long NEVER_CHECKED = -1;
 	static final long MISSING = -88; // Magic value; any lombok.config with this exact epochmillis last modified will never be read, so, let's ensure nobody accidentally has one with that exact last modified stamp.
 	
 	private final ConcurrentMap<ConfigurationFile, Content> fileCache = new ConcurrentHashMap<ConfigurationFile, Content>(); // caches files to the content object that tracks content.
-	private final ConcurrentMap<URI, File> uriCache = new ConcurrentHashMap<URI, File>(); // caches URIs of java source files to the dir that contains it.
+	private final ConcurrentMap<URI, ConfigurationFile> uriCache = new ConcurrentHashMap<URI, ConfigurationFile>(); // caches URIs of java source files to the dir that contains it.
 	private volatile long lastCacheClear = System.currentTimeMillis();
 	
 	private void cacheClear() {
@@ -57,19 +51,28 @@ public class FileSystemSourceCache {
 		}
 	}
 	
-	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, ConfigurationParser parser) {
-		if (javaFile == null) return Collections.emptyList();
+	public ConfigurationFileToSource fileToSource(final ConfigurationParser parser) {
+		return new ConfigurationFileToSource() {
+			@Override public ConfigurationSource parsed(ConfigurationFile fileLocation) {
+				return parseIfNeccesary(fileLocation, parser);
+			}
+		};
+	}
+	
+	public ConfigurationFile forUri(URI javaFile) {
+		if (javaFile == null) return null;
 		cacheClear();
-		File dir = uriCache.get(javaFile);
-		if (dir == null) {
+		ConfigurationFile result = uriCache.get(javaFile);
+		if (result == null) {
 			URI uri = javaFile.normalize();
 			if (!uri.isAbsolute()) uri = URI.create("file:" + uri.toString());
 			
 			try {
 				File file = new File(uri);
 				if (!file.exists()) throw new IllegalArgumentException("File does not exist: " + uri);
-				dir = file.isDirectory() ? file : file.getParentFile();
-				if (dir != null) uriCache.put(javaFile, dir);
+				File directory = file.isDirectory() ? file : file.getParentFile();
+				if (directory != null) result = ConfigurationFile.forDirectory(directory);
+				uriCache.put(javaFile, result);
 			} catch (IllegalArgumentException e) {
 				// This means that the file as passed is not actually a file at all, and some exotic path system is involved.
 				// examples: sourcecontrol://jazz stuff, or an actual relative path (uri.isAbsolute() is completely different, that checks presence of schema!),
@@ -83,84 +86,20 @@ public class FileSystemSourceCache {
 				ProblemReporter.error("Can't find absolute path of file being compiled: " + javaFile, e);
 			}
 		}
-		
-		if (dir != null) {
-			try {
-				return sourcesForDirectory(dir, parser);
-			} catch (Exception e) {
-				// Especially for eclipse's sake, exceptions here make eclipse borderline unusable, so let's play nice.
-				ProblemReporter.error("Can't resolve config stack for dir: " + dir.getAbsolutePath(), e);
-			}
-		}
-		
-		return Collections.emptyList();
+		return result;
 	}
-	
-	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationParser parser) {
-		return sourcesForJavaFile(directory, parser);
-	}
-	
-	private Iterable<ConfigurationSource> sourcesForDirectory(final File directory, final ConfigurationParser parser) {
-		return new Iterable<ConfigurationSource>() {
-			@Override 
-			public Iterator<ConfigurationSource> iterator() {
-				return new Iterator<ConfigurationSource>() {
-					File currentDirectory = directory;
-					ConfigurationSource next;
-					boolean stopBubbling = false;
-					
-					@Override
-					public boolean hasNext() {
-						if (next != null) return true;
-						if (stopBubbling) return false;
-						next = findNext();
-						return next != null;
-					}
-					
-					@Override
-					public ConfigurationSource next() {
-						if (!hasNext()) throw new NoSuchElementException();
-						ConfigurationSource result = next;
-						next = null;
-						return result;
-					}
-					
-					private ConfigurationSource findNext() {
-						while (currentDirectory != null && next == null) {
-							next = getSourceForDirectory(currentDirectory, parser);
-							currentDirectory = currentDirectory.getParentFile();
-						}
-						if (next != null) {
-							Result stop = next.resolve(ConfigurationKeys.STOP_BUBBLING);
-							stopBubbling = (stop != null && Boolean.TRUE.equals(stop.getValue()));
-						}
-						return next;
-					}
-					
-					@Override
-					public void remove() {
-						throw new UnsupportedOperationException();
-					}
-				};
-			}
-		};
-	}
-	
-	ConfigurationSource getSourceForDirectory(File directory,ConfigurationParser parser) {
-		return getSourceForConfigFile(ConfigurationFile.fromFile(new File(directory, LOMBOK_CONFIG_FILENAME)), parser);
-	}
-	
-	private ConfigurationSource getSourceForConfigFile(ConfigurationFile context, ConfigurationParser parser) {
+
+	private ConfigurationSource parseIfNeccesary(ConfigurationFile file, ConfigurationParser parser) {
 		long now = System.currentTimeMillis();
-		Content content = ensureContent(context);
+		Content content = ensureContent(file);
 		synchronized (content) {
 			if (content.lastChecked != NEVER_CHECKED && now - content.lastChecked < RECHECK_FILESYSTEM) {
 				return content.source;
 			}
 			content.lastChecked = now;
 			long previouslyModified = content.lastModified;
-			content.lastModified = context.getLastModifiedOrMissing();
-			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(context, parser);
+			content.lastModified = file.getLastModifiedOrMissing();
+			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : SingleConfigurationSource.parse(file, parser);
 			return content.source;
 		}
 	}
@@ -172,10 +111,6 @@ public class FileSystemSourceCache {
 		}
 		fileCache.putIfAbsent(context, Content.empty());
 		return fileCache.get(context);
-	}
-	
-	private ConfigurationSource parse(ConfigurationFile context, ConfigurationParser parser) {
-		return SingleConfigurationSource.parse(context, parser);
 	}
 	
 	private static class Content {

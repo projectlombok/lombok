@@ -42,9 +42,11 @@ import org.junit.Assert;
 import lombok.core.LombokImmutableList;
 import lombok.core.configuration.BubblingConfigurationResolver;
 import lombok.core.configuration.ConfigurationFile;
+import lombok.core.configuration.ConfigurationFileToSource;
 import lombok.core.configuration.ConfigurationParser;
 import lombok.core.configuration.ConfigurationProblemReporter;
 import lombok.core.configuration.ConfigurationResolver;
+import lombok.core.configuration.ConfigurationSource;
 import lombok.core.configuration.SingleConfigurationSource;
 
 public class LombokTestSource {
@@ -240,12 +242,21 @@ public class LombokTestSource {
 		this.skipIdempotent = skipIdempotent;
 		this.unchanged = unchanged;
 		this.platforms = platformLimit == null ? null : Arrays.asList(platformLimit);
+		
 		ConfigurationProblemReporter reporter = new ConfigurationProblemReporter() {
 			@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {
 				Assert.fail("Problem on directive line: " + problem + " at conf line #" + lineNumber + " (" + line + ")");
 			}
 		};
-		this.configuration = new BubblingConfigurationResolver(Collections.singleton(SingleConfigurationSource.parse(ConfigurationFile.fromCharSequence(file.getAbsoluteFile().getPath(), conf, ConfigurationFile.getLastModifiedOrMissing(file)), new ConfigurationParser(reporter))));
+		final ConfigurationFile configurationFile = ConfigurationFile.fromCharSequence(file.getAbsoluteFile().getPath(), conf, ConfigurationFile.getLastModifiedOrMissing(file));
+		final ConfigurationSource source = SingleConfigurationSource.parse(configurationFile, new ConfigurationParser(reporter));
+		ConfigurationFileToSource sourceFinder = new ConfigurationFileToSource() {
+			@Override public ConfigurationSource parsed(ConfigurationFile fileLocation) {
+				return fileLocation.equals(configurationFile) ? source : null;
+			}
+		};
+		
+		this.configuration = new BubblingConfigurationResolver(configurationFile, sourceFinder);
 		this.formatPreferences = Collections.unmodifiableMap(formats);
 	}
 	

@@ -204,7 +204,7 @@ public class ConfigurationApp extends LombokApp {
 				out.println();
 			}
 			URI directory = entry.getKey();
-			ConfigurationResolver resolver = new BubblingConfigurationResolver(cache.sourcesForDirectory(directory, parser));
+			ConfigurationResolver resolver = new BubblingConfigurationResolver(cache.forUri(directory), cache.fileToSource(parser));
 			Map<ConfigurationKey<?>, ? extends Collection<String>> traces = trace(keys, directory);
 			boolean printed = false;
 			for (ConfigurationKey<?> key : keys) {
@@ -255,10 +255,9 @@ public class ConfigurationApp extends LombokApp {
 		boolean stopBubbling = false;
 		String previousDescription = null;
 		for (File currentDirectory = new File(directory); currentDirectory != null && !stopBubbling; currentDirectory = currentDirectory.getParentFile()) {
-			File configFile = new File(currentDirectory, "lombok.config");
-			if (!configFile.exists() || !configFile.isFile()) continue;
+			ConfigurationFile context = ConfigurationFile.forDirectory(currentDirectory);
+			if (!context.exists()) continue;
 			
-			ConfigurationFile context = ConfigurationFile.fromFile(configFile);
 			Map<ConfigurationKey<?>, List<String>> traces = trace(context, keys);
 			
 			stopBubbling = stopBubbling(traces.get(ConfigurationKeys.STOP_BUBBLING));
@@ -293,7 +292,7 @@ public class ConfigurationApp extends LombokApp {
 		
 		Collector collector = new Collector() {
 			@Override public void addImport(ConfigurationFile importFile, ConfigurationFile context, int lineNumber) {
-				// TODO Trace imports
+				// nothing to display here
 			}
 			@Override public void clear(ConfigurationKey<?> key, ConfigurationFile context, int lineNumber) {
 				trace(key, "clear " + key.getKeyName(), lineNumber);

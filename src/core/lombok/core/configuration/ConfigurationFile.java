@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public abstract class ConfigurationFile {
+	private static final String LOMBOK_CONFIG_FILENAME = "lombok.config";
+	
 	private static final ThreadLocal<byte[]> buffers = new ThreadLocal<byte[]>() {
 		protected byte[] initialValue() {
 			return new byte[65536];
@@ -36,8 +38,13 @@ public abstract class ConfigurationFile {
 		
 	private final String identifier;
 	
-	public static ConfigurationFile fromFile(File file) {
+	public static ConfigurationFile forFile(File file) {
 		return new RegularConfigurationFile(file);
+	}
+	
+	
+	public static ConfigurationFile forDirectory(File directory) {
+		return ConfigurationFile.forFile(new File(directory, LOMBOK_CONFIG_FILENAME));
 	}
 	
 	public static ConfigurationFile fromCharSequence(String identifier, CharSequence contents, long lastModified) {
@@ -52,6 +59,7 @@ public abstract class ConfigurationFile {
 	abstract boolean exists();
 	abstract CharSequence contents() throws IOException;
 	public abstract ConfigurationFile resolve(String path);
+	abstract ConfigurationFile parent();
 	
 	final String description() {
 		return identifier;
@@ -104,7 +112,7 @@ public abstract class ConfigurationFile {
 		
 		public ConfigurationFile resolve(String path) {
 			File file = resolveFile(path);
-			return file == null ? null : fromFile(file);
+			return file == null ? null : forFile(file);
 		}
 		
 		private File resolveFile(String path) {
@@ -133,6 +141,11 @@ public abstract class ConfigurationFile {
 		CharSequence contents() throws IOException {
 			return read(new FileInputStream(file));
 		}
+
+		@Override ConfigurationFile parent() {
+			File parent = file.getParentFile().getParentFile();
+			return parent == null ? null : forDirectory(parent);
+		}
 	}
 	
 	private static class CharSequenceConfigurationFile extends ConfigurationFile {
@@ -158,6 +171,10 @@ public abstract class ConfigurationFile {
 		}
 
 		@Override public ConfigurationFile resolve(String path) {
+			return null;
+		}
+
+		@Override ConfigurationFile parent() {
 			return null;
 		}
 	}

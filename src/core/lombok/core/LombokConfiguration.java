@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.Collections;
 
 import lombok.core.configuration.BubblingConfigurationResolver;
+import lombok.core.configuration.ConfigurationFileToSource;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.ConfigurationParser;
 import lombok.core.configuration.ConfigurationProblemReporter;
@@ -65,7 +66,7 @@ public class LombokConfiguration {
 	}
 	
 	static <T> T read(ConfigurationKey<T> key, AST<?, ?, ?> ast) {
-		return configurationResolverFactory.createResolver(ast.getAbsoluteFileLocation()).resolve(key);
+		return read(key, ast.getAbsoluteFileLocation());
 	}
 	
 	public static <T> T read(ConfigurationKey<T> key, URI sourceLocation) {
@@ -73,9 +74,10 @@ public class LombokConfiguration {
 	}
 	
 	private static ConfigurationResolverFactory createFileSystemBubblingResolverFactory() {
+		final ConfigurationFileToSource fileToSource = cache.fileToSource(new ConfigurationParser(ConfigurationProblemReporter.CONSOLE));
 		return new ConfigurationResolverFactory() {
 			@Override public ConfigurationResolver createResolver(URI sourceLocation) {
-				return new BubblingConfigurationResolver(cache.sourcesForJavaFile(sourceLocation, new ConfigurationParser(ConfigurationProblemReporter.CONSOLE)));
+				return new BubblingConfigurationResolver(cache.forUri(sourceLocation), fileToSource);
 			}
 		};
 	}
