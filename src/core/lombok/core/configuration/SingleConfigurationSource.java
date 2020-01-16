@@ -30,13 +30,18 @@ import java.util.Map.Entry;
 
 import lombok.core.configuration.ConfigurationParser.Collector;
 
-public class StringConfigurationSource implements ConfigurationSource {
+public final class SingleConfigurationSource implements ConfigurationSource {
 	private final Map<ConfigurationKey<?>, Result> values;
+	private final List<ConfigurationFile> imports;
 	
-	public static ConfigurationSource forString(CharSequence content, ConfigurationProblemReporter reporter, ConfigurationFile context) {
+	public static ConfigurationSource parse(ConfigurationFile context, ConfigurationParser parser) {
 		final Map<ConfigurationKey<?>, Result> values = new HashMap<ConfigurationKey<?>, Result>();
-		
+		final List<ConfigurationFile> imports = new ArrayList<ConfigurationFile>();
 		Collector collector = new Collector() {
+			@Override public void addImport(ConfigurationFile importFile, ConfigurationFile context, int lineNumber) {
+				imports.add(importFile);
+			}
+			
 			@Override public void clear(ConfigurationKey<?> key, ConfigurationFile context, int lineNumber) {
 				values.put(key, new Result(null, true));
 			}
@@ -66,11 +71,11 @@ public class StringConfigurationSource implements ConfigurationSource {
 				list.add(new ListModification(value, add));
 			}
 		};
-		new ConfigurationParser(reporter).parse(content, context, collector);
-		return new StringConfigurationSource(values);
+		parser.parse(context, collector);
+		return new SingleConfigurationSource(values, imports);
 	}
 	
-	private StringConfigurationSource(Map<ConfigurationKey<?>, Result> values) {
+	private SingleConfigurationSource(Map<ConfigurationKey<?>, Result> values, List<ConfigurationFile> imports) {
 		this.values = new HashMap<ConfigurationKey<?>, Result>();
 		for (Entry<ConfigurationKey<?>, Result> entry : values.entrySet()) {
 			Result result = entry.getValue();
@@ -80,10 +85,16 @@ public class StringConfigurationSource implements ConfigurationSource {
 				this.values.put(entry.getKey(), result);
 			}
 		}
+		this.imports = Collections.unmodifiableList(imports);
 	}
 	
 	@Override 
 	public Result resolve(ConfigurationKey<?> key) {
 		return values.get(key);
+	}
+	
+	@Override
+	public List<ConfigurationFile> imports() {
+		return imports;
 	}
 }

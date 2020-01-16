@@ -21,9 +21,12 @@
  */
 package lombok.core.configuration;
 
+import java.util.List;
+
 public interface ConfigurationSource {
 	
 	Result resolve(ConfigurationKey<?> key);
+	List<ConfigurationFile> imports();
 	
 	public static final class Result {
 		private final Object value;

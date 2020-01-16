@@ -43,6 +43,7 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 		List<List<ListModification>> listModificationsList = null;
 		outer:
 		for (ConfigurationSource source : sources) {
+			source.imports();
 			Result result = source.resolve(key);
 			if (result == null) continue;
 			if (isList) {

@@ -57,7 +57,7 @@ public class FileSystemSourceCache {
 		}
 	}
 	
-	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, ConfigurationProblemReporter reporter) {
+	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, ConfigurationParser parser) {
 		if (javaFile == null) return Collections.emptyList();
 		cacheClear();
 		File dir = uriCache.get(javaFile);
@@ -86,7 +86,7 @@ public class FileSystemSourceCache {
 		
 		if (dir != null) {
 			try {
-				return sourcesForDirectory(dir, reporter);
+				return sourcesForDirectory(dir, parser);
 			} catch (Exception e) {
 				// Especially for eclipse's sake, exceptions here make eclipse borderline unusable, so let's play nice.
 				ProblemReporter.error("Can't resolve config stack for dir: " + dir.getAbsolutePath(), e);
@@ -96,11 +96,11 @@ public class FileSystemSourceCache {
 		return Collections.emptyList();
 	}
 	
-	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationProblemReporter reporter) {
-		return sourcesForJavaFile(directory, reporter);
+	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationParser parser) {
+		return sourcesForJavaFile(directory, parser);
 	}
 	
-	private Iterable<ConfigurationSource> sourcesForDirectory(final File directory, final ConfigurationProblemReporter reporter) {
+	private Iterable<ConfigurationSource> sourcesForDirectory(final File directory, final ConfigurationParser parser) {
 		return new Iterable<ConfigurationSource>() {
 			@Override 
 			public Iterator<ConfigurationSource> iterator() {
@@ -127,7 +127,7 @@ public class FileSystemSourceCache {
 					
 					private ConfigurationSource findNext() {
 						while (currentDirectory != null && next == null) {
-							next = getSourceForDirectory(currentDirectory, reporter);
+							next = getSourceForDirectory(currentDirectory, parser);
 							currentDirectory = currentDirectory.getParentFile();
 						}
 						if (next != null) {
@@ -146,11 +146,11 @@ public class FileSystemSourceCache {
 		};
 	}
 	
-	ConfigurationSource getSourceForDirectory(File directory, ConfigurationProblemReporter reporter) {
-		return getSourceForConfigFile(ConfigurationFile.fromFile(new File(directory, LOMBOK_CONFIG_FILENAME)), reporter);
+	ConfigurationSource getSourceForDirectory(File directory,ConfigurationParser parser) {
+		return getSourceForConfigFile(ConfigurationFile.fromFile(new File(directory, LOMBOK_CONFIG_FILENAME)), parser);
 	}
 	
-	private ConfigurationSource getSourceForConfigFile(ConfigurationFile context, ConfigurationProblemReporter reporter) {
+	private ConfigurationSource getSourceForConfigFile(ConfigurationFile context, ConfigurationParser parser) {
 		long now = System.currentTimeMillis();
 		Content content = ensureContent(context);
 		synchronized (content) {
@@ -160,7 +160,7 @@ public class FileSystemSourceCache {
 			content.lastChecked = now;
 			long previouslyModified = content.lastModified;
 			content.lastModified = context.getLastModifiedOrMissing();
-			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(context, reporter);
+			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(context, parser);
 			return content.source;
 		}
 	}
@@ -174,13 +174,8 @@ public class FileSystemSourceCache {
 		return fileCache.get(context);
 	}
 	
-	private ConfigurationSource parse(ConfigurationFile context, ConfigurationProblemReporter reporter) {
-		try {
-			return StringConfigurationSource.forString(context.contents(), reporter, context);
-		} catch (Exception e) {
-			reporter.report(context.description(), "Exception while reading file: " + e.getMessage(), 0, null);
-			return null;
-		}
+	private ConfigurationSource parse(ConfigurationFile context, ConfigurationParser parser) {
+		return SingleConfigurationSource.parse(context, parser);
 	}
 	
 	private static class Content {

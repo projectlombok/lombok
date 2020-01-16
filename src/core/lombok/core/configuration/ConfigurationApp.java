@@ -22,6 +22,7 @@
 package lombok.core.configuration;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -188,6 +189,7 @@ public class ConfigurationApp extends LombokApp {
 		};
 		
 		FileSystemSourceCache cache = new FileSystemSourceCache();
+		ConfigurationParser parser = new ConfigurationParser(reporter);
 		boolean first = true;
 		for (Entry<URI, Set<String>> entry : sharedDirectories.entrySet()) {
 			if (!first) {
@@ -202,7 +204,7 @@ public class ConfigurationApp extends LombokApp {
 				out.println();
 			}
 			URI directory = entry.getKey();
-			ConfigurationResolver resolver = new BubblingConfigurationResolver(cache.sourcesForDirectory(directory, reporter));
+			ConfigurationResolver resolver = new BubblingConfigurationResolver(cache.sourcesForDirectory(directory, parser));
 			Map<ConfigurationKey<?>, ? extends Collection<String>> traces = trace(keys, directory);
 			boolean printed = false;
 			for (ConfigurationKey<?> key : keys) {
@@ -257,7 +259,7 @@ public class ConfigurationApp extends LombokApp {
 			if (!configFile.exists() || !configFile.isFile()) continue;
 			
 			ConfigurationFile context = ConfigurationFile.fromFile(configFile);
-			Map<ConfigurationKey<?>, List<String>> traces = trace(context.contents(), context, keys);
+			Map<ConfigurationKey<?>, List<String>> traces = trace(context, keys);
 			
 			stopBubbling = stopBubbling(traces.get(ConfigurationKeys.STOP_BUBBLING));
 			for (ConfigurationKey<?> key : keys) {
@@ -286,10 +288,13 @@ public class ConfigurationApp extends LombokApp {
 		return result;
 	}
 	
-	private Map<ConfigurationKey<?>, List<String>> trace(String content, ConfigurationFile context, final Collection<ConfigurationKey<?>> keys) {
+	private Map<ConfigurationKey<?>, List<String>> trace(ConfigurationFile context, final Collection<ConfigurationKey<?>> keys) throws IOException {
 		final Map<ConfigurationKey<?>, List<String>> result = new HashMap<ConfigurationKey<?>, List<String>>();
 		
 		Collector collector = new Collector() {
+			@Override public void addImport(ConfigurationFile importFile, ConfigurationFile context, int lineNumber) {
+				// TODO Trace imports
+			}
 			@Override public void clear(ConfigurationKey<?> key, ConfigurationFile context, int lineNumber) {
 				trace(key, "clear " + key.getKeyName(), lineNumber);
 			}
@@ -315,8 +320,9 @@ public class ConfigurationApp extends LombokApp {
 				}
 				traces.add(String.format("%4d: %s", lineNumber, message));
 			}
+
 		};
-		new ConfigurationParser(VOID).parse(content, context, collector);
+		new ConfigurationParser(VOID).parse(context, collector);
 		return result;
 	}
 	

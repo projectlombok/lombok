@@ -21,6 +21,7 @@
  */
 package lombok.core.configuration;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,13 +38,17 @@ public class ConfigurationParser {
 		this.reporter = reporter;
 	}
 	
-	public void parse(CharSequence content, ConfigurationFile context, Collector collector) {
+	public void parse(ConfigurationFile context, Collector collector) {
+		CharSequence contents = contents(context);
+		if (contents == null) {
+			return;
+		}
 		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeys();
 		int lineNumber = 0;
-		Matcher lineMatcher = NEWLINE_FINDER.matcher(content);
+		Matcher lineMatcher = NEWLINE_FINDER.matcher(contents);
 		boolean importsAllowed = true;
 		while (lineMatcher.find()) {
-			CharSequence line = content.subSequence(lineMatcher.start(1), lineMatcher.end(1));
+			CharSequence line = contents.subSequence(lineMatcher.start(1), lineMatcher.end(1));
 			lineNumber++;
 			if (line.length() == 0 || line.charAt(0) == '#') continue;
 			
@@ -54,9 +59,16 @@ public class ConfigurationParser {
 					continue;
 				}
 				String imported = importMatcher.group(1);
-				if (!context.importResolves(imported)) {
-					reporter.report(context.description(), "Imported file does not exist", lineNumber, line);
+				ConfigurationFile importFile = context.resolve(imported);
+				if (importFile == null) {
+					reporter.report(context.description(), "Import is not valid", lineNumber, line);
+					continue;
 				}
+				if (!importFile.exists()) {
+					reporter.report(context.description(), "Imported file does not exist", lineNumber, line);
+					continue;
+				}
+				collector.addImport(importFile, context, lineNumber);
 				continue;
 			}
 			
@@ -116,7 +128,17 @@ public class ConfigurationParser {
 		}
 	}
 	
+	private CharSequence contents(ConfigurationFile context) {
+		try {
+			return context.contents();
+		} catch (IOException e) {
+			reporter.report(context.description(), "Exception while reading file: " + e.getMessage(), 0, null);
+		}
+		return null;
+	}
+	
 	public interface Collector {
+		void addImport(ConfigurationFile importFile, ConfigurationFile context, int lineNumber);
 		void clear(ConfigurationKey<?> key, ConfigurationFile context, int lineNumber);
 		void set(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber);
 		void add(ConfigurationKey<?> key, Object value, ConfigurationFile context, int lineNumber);

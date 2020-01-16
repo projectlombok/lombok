@@ -42,9 +42,10 @@ import org.junit.Assert;
 import lombok.core.LombokImmutableList;
 import lombok.core.configuration.BubblingConfigurationResolver;
 import lombok.core.configuration.ConfigurationFile;
+import lombok.core.configuration.ConfigurationParser;
 import lombok.core.configuration.ConfigurationProblemReporter;
 import lombok.core.configuration.ConfigurationResolver;
-import lombok.core.configuration.StringConfigurationSource;
+import lombok.core.configuration.SingleConfigurationSource;
 
 public class LombokTestSource {
 	private final File file;
@@ -244,8 +245,7 @@ public class LombokTestSource {
 				Assert.fail("Problem on directive line: " + problem + " at conf line #" + lineNumber + " (" + line + ")");
 			}
 		};
-		
-		this.configuration = new BubblingConfigurationResolver(Collections.singleton(StringConfigurationSource.forString(conf, reporter, ConfigurationFile.fromFile(file))));
+		this.configuration = new BubblingConfigurationResolver(Collections.singleton(SingleConfigurationSource.parse(ConfigurationFile.fromCharSequence(file.getAbsoluteFile().getPath(), conf, ConfigurationFile.getLastModifiedOrMissing(file)), new ConfigurationParser(reporter))));
 		this.formatPreferences = Collections.unmodifiableMap(formats);
 	}
 	
