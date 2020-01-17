@@ -39,8 +39,8 @@ public class TestConfiguration {
 	@Test
 	public void testDisplayVerbose() throws Exception {
 		
-		@SuppressWarnings("unchecked") 
-		Collection<ConfigurationKey<?>> keys = Arrays.asList(ACCESSORS_FLAG_USAGE, ACCESSORS_CHAIN, ACCESSORS_PREFIX, LOG_ANY_FIELD_NAME);
+		@SuppressWarnings(value = {"unchecked", "deprecation"})
+		Collection<ConfigurationKey<?>> keys = Arrays.asList(ACCESSORS_FLAG_USAGE, ACCESSORS_CHAIN, ACCESSORS_PREFIX, ADD_GENERATED_ANNOTATIONS, ADD_JAVAX_GENERATED_ANNOTATIONS, ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES, LOG_ANY_FIELD_NAME, COPYABLE_ANNOTATIONS);
 		
 		String baseName = "test/configuration/resource/configurationRoot/";
 		File directory = new File(baseName);

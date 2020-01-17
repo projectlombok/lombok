@@ -15,8 +15,22 @@ lombok.accessors.prefix += f
 # BASE/d1/d11/lombok.config (stopped bubbling):
 #    5: lombok.accessors.prefix += f
 
+# Generate @javax.annotation.Generated on all generated code (default: false). Deprecated, use 'lombok.addJavaxGeneratedAnnotation' instead.
+clear lombok.addGeneratedAnnotation
+
+# Generate @javax.annotation.Generated on all generated code (default: follow lombok.addGeneratedAnnotation).
+clear lombok.addJavaxGeneratedAnnotation
+
+# Generate @ConstructorProperties for generated constructors (default: false).
+clear lombok.anyConstructor.addConstructorProperties
+
 # Use this name for the generated logger fields (default: 'log').
 clear lombok.log.fieldName
+
+# Copy these annotations to getters, setters, with methods, builder-setters, etc.
+lombok.copyableAnnotations += copy1
+# BASE/d1/d11/lombok.config (stopped bubbling):
+#    7: lombok.copyableAnnotations += copy1
 
 
 Configuration for:
@@ -50,8 +64,34 @@ lombok.accessors.prefix += m_
 # BASE/d1/d11/d111/lombok.config:
 #    4: lombok.accessors.prefix += m_
 
+# Generate @javax.annotation.Generated on all generated code (default: false). Deprecated, use 'lombok.addJavaxGeneratedAnnotation' instead.
+lombok.addGeneratedAnnotation = true
+# BASE/archives/a1.jar!d1/include.config (imported from BASE/archives/a1.jar!lombok.config:1) (stopped bubbling):
+#    4: lombok.addGeneratedAnnotation = true
+
+# Generate @javax.annotation.Generated on all generated code (default: follow lombok.addGeneratedAnnotation).
+lombok.addJavaxGeneratedAnnotation = true
+# BASE/archives/a1.jar!d2/include.config (imported from BASE/archives/a1.jar!d1/include.config:1) (stopped bubbling):
+#    1: lombok.addJavaxGeneratedAnnotation = true
+
+# Generate @ConstructorProperties for generated constructors (default: false).
+lombok.anyConstructor.addConstructorProperties = true
+# BASE/archives/a1.jar!lombok.config (imported from BASE/d1/d11/d111/import1.config:4) (stopped bubbling):
+#    3: lombok.anyConstructor.addConstructorProperties = true
+
 # Use this name for the generated logger fields (default: 'log').
 clear lombok.log.fieldName
+
+# Copy these annotations to getters, setters, with methods, builder-setters, etc.
+lombok.copyableAnnotations += copy2
+# BASE/d1/d11/lombok.config (stopped bubbling):
+#    7: lombok.copyableAnnotations += copy1
+# 
+# BASE/archives/a2.zip!reset.config (imported from BASE/d1/d11/d111/lombok.config:2):
+#    1: clear lombok.copyableAnnotations
+# 
+# BASE/d1/d11/d111/lombok.config:
+#    5: lombok.copyableAnnotations += copy2
 
 
 Configuration for 'BASE/d1/d12'.
@@ -67,5 +107,17 @@ lombok.accessors.chain = true
 # Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.
 clear lombok.accessors.prefix
 
+# Generate @javax.annotation.Generated on all generated code (default: false). Deprecated, use 'lombok.addJavaxGeneratedAnnotation' instead.
+clear lombok.addGeneratedAnnotation
+
+# Generate @javax.annotation.Generated on all generated code (default: follow lombok.addGeneratedAnnotation).
+clear lombok.addJavaxGeneratedAnnotation
+
+# Generate @ConstructorProperties for generated constructors (default: false).
+clear lombok.anyConstructor.addConstructorProperties
+
 # Use this name for the generated logger fields (default: 'log').
 clear lombok.log.fieldName
+
+# Copy these annotations to getters, setters, with methods, builder-setters, etc.
+clear lombok.copyableAnnotations
