@@ -1,2 +1,4 @@
 Problems in the configuration files:
 - Imported file does not exist: import missing (BASE/d1/d11/d111/import1.config:1)
+- Import is not valid: import /illegal (BASE/archives/a1.jar!lombok.config:2)
+- Imported file does not exist: import nonexisting (BASE/archives/a1.jar!d1/include.config:2)

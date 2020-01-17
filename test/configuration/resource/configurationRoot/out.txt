@@ -28,7 +28,19 @@ lombok.accessors.flagUsage = ERROR
 # BASE/d1/d11/lombok.config (stopped bubbling):
 #    4: lombok.accessors.flagUsage = ERROR
 # 
+# BASE/archives/a1.jar!d2/include.config (imported from BASE/archives/a1.jar!d1/include.config:1):
+#      <'lombok.accessors.flagUsage' not mentioned>
+# 
+# BASE/archives/a1.jar!d1/include.config (imported from BASE/archives/a1.jar!lombok.config:1):
+#      <'lombok.accessors.flagUsage' not mentioned>
+# 
+# BASE/archives/a1.jar!lombok.config (imported from BASE/d1/d11/d111/import1.config:4):
+#      <'lombok.accessors.flagUsage' not mentioned>
+# 
 # BASE/d1/d11/d111/import1.config (imported from BASE/d1/d11/d111/lombok.config:1):
+#      <'lombok.accessors.flagUsage' not mentioned>
+# 
+# BASE/archives/a2.zip!reset.config (imported from BASE/d1/d11/d111/lombok.config:2):
 #      <'lombok.accessors.flagUsage' not mentioned>
 # 
 # BASE/d1/d11/d111/lombok.config:
@@ -39,11 +51,23 @@ clear lombok.accessors.chain
 # BASE/d1/d11/lombok.config (stopped bubbling):
 #    3: lombok.accessors.chain = false
 # 
+# BASE/archives/a1.jar!d2/include.config (imported from BASE/archives/a1.jar!d1/include.config:1):
+#      <'lombok.accessors.chain' not mentioned>
+# 
+# BASE/archives/a1.jar!d1/include.config (imported from BASE/archives/a1.jar!lombok.config:1):
+#      <'lombok.accessors.chain' not mentioned>
+# 
+# BASE/archives/a1.jar!lombok.config (imported from BASE/d1/d11/d111/import1.config:4):
+#      <'lombok.accessors.chain' not mentioned>
+# 
 # BASE/d1/d11/d111/import1.config (imported from BASE/d1/d11/d111/lombok.config:1):
 #      <'lombok.accessors.chain' not mentioned>
 # 
+# BASE/archives/a2.zip!reset.config (imported from BASE/d1/d11/d111/lombok.config:2):
+#      <'lombok.accessors.chain' not mentioned>
+# 
 # BASE/d1/d11/d111/lombok.config:
-#    2: clear lombok.accessors.chain
+#    3: clear lombok.accessors.chain
 
 # Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.
 lombok.accessors.prefix += z_
@@ -52,12 +76,24 @@ lombok.accessors.prefix += m_
 # BASE/d1/d11/lombok.config (stopped bubbling):
 #    5: lombok.accessors.prefix += f
 # 
+# BASE/archives/a1.jar!d2/include.config (imported from BASE/archives/a1.jar!d1/include.config:1):
+#      <'lombok.accessors.prefix' not mentioned>
+# 
+# BASE/archives/a1.jar!d1/include.config (imported from BASE/archives/a1.jar!lombok.config:1):
+#      <'lombok.accessors.prefix' not mentioned>
+# 
+# BASE/archives/a1.jar!lombok.config (imported from BASE/d1/d11/d111/import1.config:4):
+#      <'lombok.accessors.prefix' not mentioned>
+# 
 # BASE/d1/d11/d111/import1.config (imported from BASE/d1/d11/d111/lombok.config:1):
-#    4: lombok.accessors.prefix += z_
-#    5: lombok.accessors.prefix += f
+#    5: lombok.accessors.prefix += z_
+#    6: lombok.accessors.prefix += f
+# 
+# BASE/archives/a2.zip!reset.config (imported from BASE/d1/d11/d111/lombok.config:2):
+#      <'lombok.accessors.prefix' not mentioned>
 # 
 # BASE/d1/d11/d111/lombok.config:
-#    3: lombok.accessors.prefix += m_
+#    4: lombok.accessors.prefix += m_
 
 # Use this name for the generated logger fields (default: 'log').
 clear lombok.log.fieldName
