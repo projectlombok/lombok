@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ public class TestConfiguration {
 		PrintStream outStream = new PrintStream(rawOut);
 		PrintStream errStream = new PrintStream(rawErr);
 		
-		int result = new ConfigurationApp().redirectOutput(outStream, errStream).display(keys, true, paths, true);
+		int result = new ConfigurationApp().redirectOutput(outStream, errStream).display(keys, true, paths, true, false);
 		
 		outStream.flush();
 		errStream.flush();
