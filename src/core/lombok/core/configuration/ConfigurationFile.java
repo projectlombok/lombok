@@ -35,13 +35,12 @@ public abstract class ConfigurationFile {
 			return new byte[65536];
 		}
 	};
-		
+	
 	private final String identifier;
 	
 	public static ConfigurationFile forFile(File file) {
 		return new RegularConfigurationFile(file);
 	}
-	
 	
 	public static ConfigurationFile forDirectory(File directory) {
 		return ConfigurationFile.forFile(new File(directory, LOMBOK_CONFIG_FILENAME));
@@ -82,7 +81,7 @@ public abstract class ConfigurationFile {
 	private static boolean fileExists(File file) {
 		return file.exists() && file.isFile();
 	}
-
+	
 	private static String read(InputStream is) throws IOException {
 		byte[] b = buffers.get();
 		try {

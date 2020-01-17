@@ -25,11 +25,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -221,8 +223,8 @@ public class ConfigurationApp extends LombokApp {
 		}
 		
 		if (!problems.isEmpty()) {
-			out.printf("%nProblems in the configuration files: %n");
-			for (String problem : problems) out.printf("- %s%n", problem);
+			err.printf("Problems in the configuration files:%n");
+			for (String problem : problems) err.printf("- %s%n", problem);
 		}
 		
 		return 0;
@@ -253,33 +255,42 @@ public class ConfigurationApp extends LombokApp {
 		Set<ConfigurationKey<?>> used = new HashSet<ConfigurationKey<?>>();
 		
 		boolean stopBubbling = false;
-		String previousDescription = null;
-		for (File currentDirectory = new File(directory); currentDirectory != null && !stopBubbling; currentDirectory = currentDirectory.getParentFile()) {
-			ConfigurationFile context = ConfigurationFile.forDirectory(currentDirectory);
+		Collection<ConfigurationFile> visited = new HashSet<ConfigurationFile>();
+		for (ConfigurationFile context = ConfigurationFile.forDirectory(new File(directory)); context != null && !stopBubbling; context = context.parent()) {
 			if (!context.exists()) continue;
 			
-			Map<ConfigurationKey<?>, List<String>> traces = trace(context, keys);
+			Deque<Source> round = new ArrayDeque<Source>();
+			round.push(new Source(context, context.description()));
 			
-			stopBubbling = stopBubbling(traces.get(ConfigurationKeys.STOP_BUBBLING));
-			for (ConfigurationKey<?> key : keys) {
-				List<String> modifications = traces.get(key);
-				if (modifications == null) {
-					modifications = new ArrayList<String>();
-					modifications.add("     <'" + key.getKeyName() + "' not mentioned>");
-				} else {
-					used.add(key);
+			while (!round.isEmpty()) {
+				Source current = round.pop();
+				if (current == null || !visited.add(current.file) || !current.file.exists()) continue;
+				
+				Map<ConfigurationKey<?>, List<String>> traces = trace(current.file, keys, round);
+				
+				stopBubbling = stopBubbling(traces.get(ConfigurationKeys.STOP_BUBBLING));
+				for (ConfigurationKey<?> key : keys) {
+					List<String> modifications = traces.get(key);
+					if (modifications == null) {
+						modifications = new ArrayList<String>();
+						modifications.add("     <'" + key.getKeyName() + "' not mentioned>");
+					} else {
+						used.add(key);
+					}
+					modifications.add(0, current.description + ":");
+					modifications.add(0, "");
+					result.get(key).addAll(0, modifications);
 				}
-				if (previousDescription != null) {
-					modifications.add("");
-					modifications.add(previousDescription + ":");
-				}
-				result.get(key).addAll(0, modifications);
 			}
-			previousDescription = context.description();
 		}
 		for (ConfigurationKey<?> key : keys) {
 			if (used.contains(key)) {
-				result.get(key).add(0, previousDescription + (stopBubbling ? " (stopped bubbling):" : ":"));
+				List<String> modifications = result.get(key);
+				modifications.remove(0);
+				if (stopBubbling) {
+					String mostRecent = modifications.get(0);
+					modifications.set(0, mostRecent.substring(0, mostRecent.length() - 1) + " (stopped bubbling):");
+				}
 			} else {
 				result.put(key, Collections.<String>emptyList());
 			}
@@ -287,12 +298,22 @@ public class ConfigurationApp extends LombokApp {
 		return result;
 	}
 	
-	private Map<ConfigurationKey<?>, List<String>> trace(ConfigurationFile context, final Collection<ConfigurationKey<?>> keys) throws IOException {
+	private static final class Source {
+		final ConfigurationFile file;
+		final String description;
+
+		Source(ConfigurationFile file, String description) {
+			this.file = file;
+			this.description = description;
+		}
+	}
+	
+	private Map<ConfigurationKey<?>, List<String>> trace(ConfigurationFile context, final Collection<ConfigurationKey<?>> keys, final Deque<Source> round) throws IOException {
 		final Map<ConfigurationKey<?>, List<String>> result = new HashMap<ConfigurationKey<?>, List<String>>();
 		
 		Collector collector = new Collector() {
 			@Override public void addImport(ConfigurationFile importFile, ConfigurationFile context, int lineNumber) {
-				// nothing to display here
+				round.push(new Source(importFile, importFile.description() + " (imported from " + context.description() + ":" + lineNumber + ")"));
 			}
 			@Override public void clear(ConfigurationKey<?> key, ConfigurationFile context, int lineNumber) {
 				trace(key, "clear " + key.getKeyName(), lineNumber);
@@ -311,7 +332,7 @@ public class ConfigurationApp extends LombokApp {
 			}
 			
 			private void trace(ConfigurationKey<?> key, String message, int lineNumber) {
-				if (!keys.contains(key)) return;
+				if (!keys.contains(key) && key != ConfigurationKeys.STOP_BUBBLING) return;
 				List<String> traces = result.get(key);
 				if (traces == null) {
 					traces = new ArrayList<String>();
