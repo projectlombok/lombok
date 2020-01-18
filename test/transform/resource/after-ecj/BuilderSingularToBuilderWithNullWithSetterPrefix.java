@@ -12,6 +12,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElems(final java.util.Collection<? extends String> elems) {
+      if ((elems == null))
+          throw new java.lang.NullPointerException("elems cannot be null");
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.addAll(elems);

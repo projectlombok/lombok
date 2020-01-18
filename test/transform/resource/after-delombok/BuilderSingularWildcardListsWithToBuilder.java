@@ -25,6 +25,7 @@ class BuilderSingularWildcardListsWithToBuilder {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder objects(final java.util.Collection<?> objects) {
+			if (objects == null) throw new java.lang.NullPointerException("objects cannot be null");
 			if (this.objects == null) this.objects = new java.util.ArrayList<java.lang.Object>();
 			this.objects.addAll(objects);
 			return this;
@@ -42,6 +43,7 @@ class BuilderSingularWildcardListsWithToBuilder {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder numbers(final java.util.Collection<? extends Number> numbers) {
+			if (numbers == null) throw new java.lang.NullPointerException("numbers cannot be null");
 			if (this.numbers == null) this.numbers = new java.util.ArrayList<Number>();
 			this.numbers.addAll(numbers);
 			return this;

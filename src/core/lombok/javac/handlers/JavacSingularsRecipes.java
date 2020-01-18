@@ -24,16 +24,34 @@ package lombok.javac.handlers;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.code.BoundKind;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
+import com.sun.tools.javac.util.Name;
+
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
+import lombok.Singular.NullCollectionBehavior;
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
@@ -41,22 +59,6 @@ import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.handlers.HandlerUtil;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
-
-import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.code.BoundKind;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCAnnotation;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCModifiers;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.JCTree.JCWildcard;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.util.Name;
 
 public class JavacSingularsRecipes {
 	public interface ExpressionMaker {
@@ -120,12 +122,13 @@ public class JavacSingularsRecipes {
 		private final String targetFqn;
 		private final JavacSingularizer singularizer;
 		private final String setterPrefix;
+		private final NullCollectionBehavior nullCollectionBehavior;
 		
-		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer) {
-			this(annotation, singularName, pluralName, typeArgs, targetFqn, singularizer, "");
+		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, NullCollectionBehavior nullCollectionBehavior) {
+			this(annotation, singularName, pluralName, typeArgs, targetFqn, singularizer, nullCollectionBehavior, "");
 		}
 		
-		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, String setterPrefix) {
+		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, NullCollectionBehavior nullCollectionBehavior, String setterPrefix) {
 			this.annotation = annotation;
 			this.singularName = singularName;
 			this.pluralName = pluralName;
@@ -133,6 +136,7 @@ public class JavacSingularsRecipes {
 			this.targetFqn = targetFqn;
 			this.singularizer = singularizer;
 			this.setterPrefix = setterPrefix;
+			this.nullCollectionBehavior = nullCollectionBehavior;
 		}
 		
 		public JavacNode getAnnotation() {
@@ -161,6 +165,10 @@ public class JavacSingularsRecipes {
 		
 		public JavacSingularizer getSingularizer() {
 			return singularizer;
+		}
+		
+		public NullCollectionBehavior getNullCollectionBehavior() {
+			return nullCollectionBehavior;
 		}
 		
 		public String getTargetSimpleType() {
@@ -320,6 +328,7 @@ public class JavacSingularsRecipes {
 		
 		private void generatePluralMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent, AccessLevel access) {
 			ListBuffer<JCStatement> statements = generatePluralMethodStatements(maker, data, builderType, source);
+			
 			Name name = data.getPluralName();
 			String setterPrefix = data.getSetterPrefix();
 			if (setterPrefix.isEmpty() && !fluent) setterPrefix = getAddMethodName() + "All";
@@ -329,13 +338,40 @@ public class JavacSingularsRecipes {
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 			statements.prepend(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
+			
+			NullCollectionBehavior behavior = data.getNullCollectionBehavior();
+			
+			if (behavior == NullCollectionBehavior.IGNORE) {
+				JCExpression incomingIsNotNull = maker.Binary(CTC_NOT_EQUAL, maker.Ident(data.getPluralName()), maker.Literal(CTC_BOT, null));
+				JCStatement onNotNull = maker.Block(0, statements.toList());
+				statements = new ListBuffer<JCStatement>();
+				statements.add(maker.If(incomingIsNotNull, onNotNull, null));
+			} else {
+				JCLiteral message = maker.Literal(behavior.toExceptionMessage(data.getPluralName().toString()));
+				if (behavior.getExceptionType() != null) {
+					JCExpression incomingIsNull = maker.Binary(CTC_EQUAL, maker.Ident(data.getPluralName()), maker.Literal(CTC_BOT, null));
+					JCExpression exType = genTypeRef(builderType, behavior.getExceptionType());
+					JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), exType, List.<JCExpression>of(message), null);
+					JCStatement onNull = maker.Throw(exception);
+					statements.prepend(maker.If(incomingIsNull, onNull, null));
+				} else {
+					LombokImmutableList<String> method = behavior.getMethod();
+					JCExpression invoke = maker.Apply(List.<JCExpression>nil(), chainDots(builderType, method), List.of(maker.Ident(data.getPluralName()), message));
+					statements.prepend(maker.Exec(invoke));
+				}
+			}
+			
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, List.of(param), access);
 		}
 		
 		protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+			
 			JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
 			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getPluralName())));
-			return new ListBuffer<JCStatement>().append(maker.Exec(invokeAdd));
+			statements.append(maker.Exec(invokeAdd));
+			
+			return statements;
 		}
 		
 		protected abstract JCExpression getPluralMethodParamType(JavacNode builderType);

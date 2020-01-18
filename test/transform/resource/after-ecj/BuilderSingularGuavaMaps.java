@@ -17,6 +17,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaMaps.BuilderSingularGuavaMapsBuilder<K, V> battleaxes(final java.util.Map<? extends K, ? extends V> battleaxes) {
+      if ((battleaxes == null))
+          throw new java.lang.NullPointerException("battleaxes cannot be null");
       if ((this.battleaxes == null))
           this.battleaxes = com.google.common.collect.ImmutableMap.builder();
       this.battleaxes.putAll(battleaxes);
@@ -33,6 +35,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaMaps.BuilderSingularGuavaMapsBuilder<K, V> vertices(final java.util.Map<? extends Integer, ? extends V> vertices) {
+      if ((vertices == null))
+          throw new java.lang.NullPointerException("vertices cannot be null");
       if ((this.vertices == null))
           this.vertices = com.google.common.collect.ImmutableSortedMap.naturalOrder();
       this.vertices.putAll(vertices);
@@ -49,6 +53,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaMaps.BuilderSingularGuavaMapsBuilder<K, V> rawMap(final java.util.Map<?, ?> rawMap) {
+      if ((rawMap == null))
+          throw new java.lang.NullPointerException("rawMap cannot be null");
       if ((this.rawMap == null))
           this.rawMap = com.google.common.collect.ImmutableBiMap.builder();
       this.rawMap.putAll(rawMap);

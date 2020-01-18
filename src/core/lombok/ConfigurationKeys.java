@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019 The Project Lombok Authors.
+ * Copyright (C) 2013-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,13 @@ package lombok;
 
 import java.util.List;
 
+import lombok.Singular.NullCollectionBehavior;
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.ConfigurationKey;
-import lombok.core.configuration.LogDeclaration;
 import lombok.core.configuration.FlagUsageType;
 import lombok.core.configuration.IdentifierName;
+import lombok.core.configuration.LogDeclaration;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
 
@@ -287,7 +288,19 @@ public class ConfigurationKeys {
 	 * 
 	 * By default or if explicitly set to {@code true}, lombok will attempt to automatically singularize the name of your variable/parameter when using {@code @Singular}; the name is assumed to be written in english, and a plural. If explicitly to {@code false}, you must always specify the singular form; this is especially useful if your identifiers are in a foreign language.
 	 */
-	public static final ConfigurationKey<Boolean> SINGULAR_AUTO = new ConfigurationKey<Boolean>("lombok.singular.auto", "If true (default): Automatically singularize the assumed-to-be-plural name of your variable/parameter when using {@code @Singular}.") {}; 
+	public static final ConfigurationKey<Boolean> SINGULAR_AUTO = new ConfigurationKey<Boolean>("lombok.singular.auto", "If true (default): Automatically singularize the assumed-to-be-plural name of your variable/parameter when using @Singular.") {}; 
+	
+	/**
+	 * lombok configuration: {@code lombok.singular.nullCollections} = one of: [{@code NullPointerException}, {@code IllegalArgumentException}, {@code JDK}, {@code Guava}, or {@code ignore}].
+	 * 
+	 * Lombok generates a 'plural form' method, which takes in a collection and will <em>add</em> each element in it to the {@code @Singular} marked target. What should happen if {@code null} is passed instead of a collection instance?<ul>
+	 * <li>If the chosen configuration is {@code NullPointerException} (the default), or {@code IllegalArgumentException}, that exception type is a thrown, with as message <code><em>field-name</em> must not be null</code>.</li>
+	 * <li>If the chosen configuration is {@code JDK}, a call to {@code java.util.Objects.requireNonNull} is generated with the fieldname passed along (which throws {@code NullPointerException}).</li>
+	 * <li>If the chosen configuration is {@code Guava}, a call to {@code com.google.common.base.Preconditions.checkNotNull} is generated with the fieldname passed along (which throws {@code NullPointerException}).</li>
+	 * <li>If the chosen configuration is {@code Ignore}, then no exception occurs, and the call does nothing; it acts as if an empty collection was passed.</li>
+	 * </ul>
+	 */
+	public static final ConfigurationKey<NullCollectionBehavior> SINGULAR_NULL_COLLECTIONS = new ConfigurationKey<NullCollectionBehavior>("lombok.singular.nullCollections", "Lombok generates a method to add all elements in a collection when using @Singular. What should happen if a null ref is passed? default: throw NullPointerException.") {};
 	
 	// ##### Standalones #####
 	
@@ -312,10 +325,14 @@ public class ConfigurationKeys {
 	// ----- NonNull -----
 	
 	/**
-	 * lombok configuration: {@code lombok.nonNull.exceptionType} = one of: [{@code IllegalArgumentException}, {@code NullPointerException}, or {@code Assertion}].
+	 * lombok configuration: {@code lombok.nonNull.exceptionType} = one of: [{@code IllegalArgumentException}, {@code NullPointerException}, {@code JDK}, {@code Guava}, or {@code Assertion}].
 	 * 
-	 * Sets the exception to throw if {@code @NonNull} is applied to a method parameter, and a caller passes in {@code null}. If the chosen configuration is {@code Assertion}, an assertion is generated instead,
-	 * which would mean your code throws an {@code AssertionError} if assertions are enabled, and does nothing if assertions are not enabled.
+	 * Sets the behavior of the generated nullcheck if {@code @NonNull} is applied to a method parameter, and a caller passes in {@code null}.<ul>
+	 * <li>If the chosen configuration is {@code NullPointerException} (the default), or {@code IllegalArgumentException}, that exception type is a thrown, with as message <code><em>field-name</em> is marked non-null but is null</code>.</li>
+	 * <li>If the chosen configuration is {@code Assert}, then an {@code assert} statement is generated. This means an {@code AssertionError} will be thrown if assertions are on (VM started with {@code -ea} parameter), and nothing happens if not.</li>
+	 * <li>If the chosen configuration is {@code JDK}, a call to {@code java.util.Objects.requireNonNull} is generated with the fieldname passed along (which throws {@code NullPointerException}).</li>
+	 * <li>If the chosen configuration is {@code Guava}, a call to {@code com.google.common.base.Preconditions.checkNotNull} is generated with the fieldname passed along (which throws {@code NullPointerException}).</li>
+	 * </ul>
 	 */
 	public static final ConfigurationKey<NullCheckExceptionType> NON_NULL_EXCEPTION_TYPE = new ConfigurationKey<NullCheckExceptionType>("lombok.nonNull.exceptionType", "The type of the exception to throw if a passed-in argument is null (Default: NullPointerException).") {};
 	

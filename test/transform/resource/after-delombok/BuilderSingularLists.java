@@ -30,6 +30,7 @@ class BuilderSingularLists<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularLists.BuilderSingularListsBuilder<T> children(final java.util.Collection<? extends T> children) {
+			if (children == null) throw new java.lang.NullPointerException("children cannot be null");
 			if (this.children == null) this.children = new java.util.ArrayList<T>();
 			this.children.addAll(children);
 			return this;
@@ -47,6 +48,7 @@ class BuilderSingularLists<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularLists.BuilderSingularListsBuilder<T> scarves(final java.util.Collection<? extends Number> scarves) {
+			if (scarves == null) throw new java.lang.NullPointerException("scarves cannot be null");
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.addAll(scarves);
 			return this;
@@ -64,6 +66,7 @@ class BuilderSingularLists<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularLists.BuilderSingularListsBuilder<T> rawList(final java.util.Collection<?> rawList) {
+			if (rawList == null) throw new java.lang.NullPointerException("rawList cannot be null");
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.addAll(rawList);
 			return this;

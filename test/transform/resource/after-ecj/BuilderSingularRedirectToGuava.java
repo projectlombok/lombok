@@ -17,6 +17,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder dangerMice(final java.lang.Iterable<? extends String> dangerMice) {
+      if ((dangerMice == null))
+          throw new java.lang.NullPointerException("dangerMice cannot be null");
       if ((this.dangerMice == null))
           this.dangerMice = com.google.common.collect.ImmutableSet.builder();
       this.dangerMice.addAll(dangerMice);
@@ -33,6 +35,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder things(final java.util.Map<? extends Integer, ? extends Number> things) {
+      if ((things == null))
+          throw new java.lang.NullPointerException("things cannot be null");
       if ((this.things == null))
           this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
       this.things.putAll(things);
@@ -49,6 +53,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder doohickeys(final java.lang.Iterable<? extends Class<?>> doohickeys) {
+      if ((doohickeys == null))
+          throw new java.lang.NullPointerException("doohickeys cannot be null");
       if ((this.doohickeys == null))
           this.doohickeys = com.google.common.collect.ImmutableList.builder();
       this.doohickeys.addAll(doohickeys);

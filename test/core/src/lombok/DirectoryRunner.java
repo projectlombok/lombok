@@ -77,7 +77,7 @@ public class DirectoryRunner extends Runner {
 			return true;
 		}
 		
-		public abstract boolean expectChanges(); 
+		public abstract boolean expectChanges();
 	}
 	
 	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019 The Project Lombok Authors.
+ * Copyright (C) 2014-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ package lombok.core.configuration;
 
 import lombok.core.LombokImmutableList;
 
-@ExampleValueString("[NullPointerException | IllegalArgumentException | Assertion | JDK | GUAVA]")
+@ExampleValueString("[NullPointerException | IllegalArgumentException | Assertion | JDK | Guava]")
 public enum NullCheckExceptionType {
 	ILLEGAL_ARGUMENT_EXCEPTION {
 		@Override public String getExceptionType() {

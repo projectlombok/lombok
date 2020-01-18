@@ -42,6 +42,7 @@ public class SuperBuilderWithGenericsAndToBuilder {
 			}
 			@java.lang.SuppressWarnings("all")
 			public B items(final java.util.Map<? extends Integer, ? extends String> items) {
+				if (items == null) throw new java.lang.NullPointerException("items cannot be null");
 				if (this.items$key == null) {
 					this.items$key = new java.util.ArrayList<Integer>();
 					this.items$value = new java.util.ArrayList<String>();

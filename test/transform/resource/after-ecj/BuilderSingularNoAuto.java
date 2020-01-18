@@ -15,6 +15,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
+      if ((things == null))
+          throw new java.lang.NullPointerException("things cannot be null");
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.addAll(things);
@@ -32,6 +34,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
+      if ((widgets == null))
+          throw new java.lang.NullPointerException("widgets cannot be null");
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.addAll(widgets);
@@ -49,6 +53,8 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
+      if ((items == null))
+          throw new java.lang.NullPointerException("items cannot be null");
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);

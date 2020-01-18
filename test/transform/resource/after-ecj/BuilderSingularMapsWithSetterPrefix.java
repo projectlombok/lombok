@@ -25,16 +25,19 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withWomen(final java.util.Map<? extends K, ? extends V> women) {
-      if ((this.women$key == null))
+      if ((women != null))
           {
-            this.women$key = new java.util.ArrayList<K>();
-            this.women$value = new java.util.ArrayList<V>();
+            if ((this.women$key == null))
+                {
+                  this.women$key = new java.util.ArrayList<K>();
+                  this.women$value = new java.util.ArrayList<V>();
+                }
+            for (java.util.Map.Entry<? extends K, ? extends V> $lombokEntry : women.entrySet()) 
+              {
+                this.women$key.add($lombokEntry.getKey());
+                this.women$value.add($lombokEntry.getValue());
+              }
           }
-      for (java.util.Map.Entry<? extends K, ? extends V> $lombokEntry : women.entrySet()) 
-        {
-          this.women$key.add($lombokEntry.getKey());
-          this.women$value.add($lombokEntry.getValue());
-        }
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearWomen() {
@@ -56,16 +59,19 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withMen(final java.util.Map<? extends K, ? extends Number> men) {
-      if ((this.men$key == null))
+      if ((men != null))
           {
-            this.men$key = new java.util.ArrayList<K>();
-            this.men$value = new java.util.ArrayList<Number>();
+            if ((this.men$key == null))
+                {
+                  this.men$key = new java.util.ArrayList<K>();
+                  this.men$value = new java.util.ArrayList<Number>();
+                }
+            for (java.util.Map.Entry<? extends K, ? extends Number> $lombokEntry : men.entrySet()) 
+              {
+                this.men$key.add($lombokEntry.getKey());
+                this.men$value.add($lombokEntry.getValue());
+              }
           }
-      for (java.util.Map.Entry<? extends K, ? extends Number> $lombokEntry : men.entrySet()) 
-        {
-          this.men$key.add($lombokEntry.getKey());
-          this.men$value.add($lombokEntry.getValue());
-        }
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearMen() {
@@ -87,16 +93,19 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withRawMap(final java.util.Map<?, ?> rawMap) {
-      if ((this.rawMap$key == null))
+      if ((rawMap != null))
           {
-            this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
-            this.rawMap$value = new java.util.ArrayList<java.lang.Object>();
+            if ((this.rawMap$key == null))
+                {
+                  this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
+                  this.rawMap$value = new java.util.ArrayList<java.lang.Object>();
+                }
+            for (java.util.Map.Entry<?, ?> $lombokEntry : rawMap.entrySet()) 
+              {
+                this.rawMap$key.add($lombokEntry.getKey());
+                this.rawMap$value.add($lombokEntry.getValue());
+              }
           }
-      for (java.util.Map.Entry<?, ?> $lombokEntry : rawMap.entrySet()) 
-        {
-          this.rawMap$key.add($lombokEntry.getKey());
-          this.rawMap$value.add($lombokEntry.getValue());
-        }
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearRawMap() {
@@ -118,16 +127,19 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withStringMap(final java.util.Map<? extends String, ? extends V> stringMap) {
-      if ((this.stringMap$key == null))
+      if ((stringMap != null))
           {
-            this.stringMap$key = new java.util.ArrayList<String>();
-            this.stringMap$value = new java.util.ArrayList<V>();
+            if ((this.stringMap$key == null))
+                {
+                  this.stringMap$key = new java.util.ArrayList<String>();
+                  this.stringMap$value = new java.util.ArrayList<V>();
+                }
+            for (java.util.Map.Entry<? extends String, ? extends V> $lombokEntry : stringMap.entrySet()) 
+              {
+                this.stringMap$key.add($lombokEntry.getKey());
+                this.stringMap$value.add($lombokEntry.getValue());
+              }
           }
-      for (java.util.Map.Entry<? extends String, ? extends V> $lombokEntry : stringMap.entrySet()) 
-        {
-          this.stringMap$key.add($lombokEntry.getKey());
-          this.stringMap$value.add($lombokEntry.getValue());
-        }
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearStringMap() {

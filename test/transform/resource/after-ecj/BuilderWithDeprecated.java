@@ -25,6 +25,8 @@ public @Builder class BuilderWithDeprecated {
       return this;
     }
     public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecated.BuilderWithDeprecatedBuilder strings(final java.util.Collection<? extends String> strings) {
+      if ((strings == null))
+          throw new java.lang.NullPointerException("strings cannot be null");
       if ((this.strings == null))
           this.strings = new java.util.ArrayList<String>();
       this.strings.addAll(strings);
@@ -42,6 +44,8 @@ public @Builder class BuilderWithDeprecated {
       return this;
     }
     public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecated.BuilderWithDeprecatedBuilder numbers(final java.lang.Iterable<? extends Integer> numbers) {
+      if ((numbers == null))
+          throw new java.lang.NullPointerException("numbers cannot be null");
       if ((this.numbers == null))
           this.numbers = com.google.common.collect.ImmutableList.builder();
       this.numbers.addAll(numbers);

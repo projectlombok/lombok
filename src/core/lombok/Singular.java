@@ -27,6 +27,10 @@ import static java.lang.annotation.RetentionPolicy.*;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import lombok.core.LombokImmutableList;
+import lombok.core.configuration.ExampleValueString;
+import lombok.core.configuration.NullCheckExceptionType;
+
 /**
  * The singular annotation is used together with {@code @Builder} to create single element 'add' methods in the builder for collections.
  */
@@ -35,4 +39,64 @@ import java.lang.annotation.Target;
 public @interface Singular {
 	/** @return The singular name of this field. If it's a normal english plural, lombok will figure it out automatically. Otherwise, this parameter is mandatory. */
 	String value() default "";
+	
+	NullCollectionBehavior nullBehavior() default NullCollectionBehavior.NULL_POINTER_EXCEPTION;
+	
+	@ExampleValueString("[NullPointerException | IllegalArgumentException | JDK | Guava | Ignore]")
+	public enum NullCollectionBehavior {
+		ILLEGAL_ARGUMENT_EXCEPTION {
+			@Override public String getExceptionType() {
+				return NullCheckExceptionType.ILLEGAL_ARGUMENT_EXCEPTION.getExceptionType();
+			}
+			
+			@Override public LombokImmutableList<String> getMethod() {
+				return NullCheckExceptionType.ILLEGAL_ARGUMENT_EXCEPTION.getMethod();
+			}
+		},
+		NULL_POINTER_EXCEPTION {
+			@Override public String getExceptionType() {
+				return NullCheckExceptionType.NULL_POINTER_EXCEPTION.getExceptionType();
+			}
+			
+			@Override public LombokImmutableList<String> getMethod() {
+				return NullCheckExceptionType.NULL_POINTER_EXCEPTION.getMethod();
+			}
+		},
+		JDK {
+			@Override public String getExceptionType() {
+				return NullCheckExceptionType.JDK.getExceptionType();
+			}
+			
+			@Override public LombokImmutableList<String> getMethod() {
+				return NullCheckExceptionType.JDK.getMethod();
+			}
+		},
+		GUAVA {
+			@Override public String getExceptionType() {
+				return NullCheckExceptionType.GUAVA.getExceptionType();
+			}
+			
+			@Override public LombokImmutableList<String> getMethod() {
+				return NullCheckExceptionType.GUAVA.getMethod();
+			}
+		},
+		IGNORE {
+			@Override public String getExceptionType() {
+				return null;
+			}
+			
+			@Override public LombokImmutableList<String> getMethod() {
+				return null;
+			}
+		};
+		
+		
+		public String toExceptionMessage(String fieldName) {
+			return fieldName + " cannot be null";
+		}
+		
+		public abstract String getExceptionType();
+		
+		public abstract LombokImmutableList<String> getMethod();
+	}
 }

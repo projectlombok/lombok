@@ -44,8 +44,8 @@ public @Builder class I2335_BuilderMultipleObtainVia {
     return new I2335_BuilderMultipleObtainVia.I2335_BuilderMultipleObtainViaBuilder();
   }
   public @java.lang.SuppressWarnings("all") I2335_BuilderMultipleObtainVia.I2335_BuilderMultipleObtainViaBuilder toBuilder() {
-    String theString = this.getTheString();
-    Long theLong = this.getTheLong();
+    final String theString = this.getTheString();
+    final Long theLong = this.getTheLong();
     return new I2335_BuilderMultipleObtainVia.I2335_BuilderMultipleObtainViaBuilder().theString(theString).theLong(theLong);
   }
 }

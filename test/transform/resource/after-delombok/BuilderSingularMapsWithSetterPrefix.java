@@ -46,13 +46,15 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withWomen(java.util.Map<? extends K, ? extends V> women) {
-			if (this.women$key == null) {
-				this.women$key = new java.util.ArrayList<K>();
-				this.women$value = new java.util.ArrayList<V>();
-			}
-			for (java.util.Map.Entry<? extends K, ? extends V> $lombokEntry : women.entrySet()) {
-				this.women$key.add($lombokEntry.getKey());
-				this.women$value.add($lombokEntry.getValue());
+			if (women != null) {
+				if (this.women$key == null) {
+					this.women$key = new java.util.ArrayList<K>();
+					this.women$value = new java.util.ArrayList<V>();
+				}
+				for (java.util.Map.Entry<? extends K, ? extends V> $lombokEntry : women.entrySet()) {
+					this.women$key.add($lombokEntry.getKey());
+					this.women$value.add($lombokEntry.getValue());
+				}
 			}
 			return this;
 		}
@@ -76,13 +78,15 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withMen(java.util.Map<? extends K, ? extends Number> men) {
-			if (this.men$key == null) {
-				this.men$key = new java.util.ArrayList<K>();
-				this.men$value = new java.util.ArrayList<Number>();
-			}
-			for (java.util.Map.Entry<? extends K, ? extends Number> $lombokEntry : men.entrySet()) {
-				this.men$key.add($lombokEntry.getKey());
-				this.men$value.add($lombokEntry.getValue());
+			if (men != null) {
+				if (this.men$key == null) {
+					this.men$key = new java.util.ArrayList<K>();
+					this.men$value = new java.util.ArrayList<Number>();
+				}
+				for (java.util.Map.Entry<? extends K, ? extends Number> $lombokEntry : men.entrySet()) {
+					this.men$key.add($lombokEntry.getKey());
+					this.men$value.add($lombokEntry.getValue());
+				}
 			}
 			return this;
 		}
@@ -106,13 +110,15 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withRawMap(java.util.Map<?, ?> rawMap) {
-			if (this.rawMap$key == null) {
-				this.rawMap$key = new java.util.ArrayList<Object>();
-				this.rawMap$value = new java.util.ArrayList<Object>();
-			}
-			for (java.util.Map.Entry<?, ?> $lombokEntry : rawMap.entrySet()) {
-				this.rawMap$key.add($lombokEntry.getKey());
-				this.rawMap$value.add($lombokEntry.getValue());
+			if (rawMap != null) {
+				if (this.rawMap$key == null) {
+					this.rawMap$key = new java.util.ArrayList<Object>();
+					this.rawMap$value = new java.util.ArrayList<Object>();
+				}
+				for (java.util.Map.Entry<?, ?> $lombokEntry : rawMap.entrySet()) {
+					this.rawMap$key.add($lombokEntry.getKey());
+					this.rawMap$value.add($lombokEntry.getValue());
+				}
 			}
 			return this;
 		}
@@ -136,13 +142,15 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withStringMap(java.util.Map<? extends String, ? extends V> stringMap) {
-			if (this.stringMap$key == null) {
-				this.stringMap$key = new java.util.ArrayList<String>();
-				this.stringMap$value = new java.util.ArrayList<V>();
-			}
-			for (java.util.Map.Entry<? extends String, ? extends V> $lombokEntry : stringMap.entrySet()) {
-				this.stringMap$key.add($lombokEntry.getKey());
-				this.stringMap$value.add($lombokEntry.getValue());
+			if (stringMap != null) {
+				if (this.stringMap$key == null) {
+					this.stringMap$key = new java.util.ArrayList<String>();
+					this.stringMap$value = new java.util.ArrayList<V>();
+				}
+				for (java.util.Map.Entry<? extends String, ? extends V> $lombokEntry : stringMap.entrySet()) {
+					this.stringMap$key.add($lombokEntry.getKey());
+					this.stringMap$value.add($lombokEntry.getValue());
+				}
 			}
 			return this;
 		}

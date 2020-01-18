@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 The Project Lombok Authors.
+ * Copyright (C) 2015-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -305,6 +305,9 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		forEachContent.statements = new Statement[] {addKey, addValue};
 		forEach.action = forEachContent;
 		statements.add(forEach);
+		
+		nullBehaviorize(data, statements);
+		
 		if (returnStatement != null) statements.add(returnStatement);
 		
 		md.statements = statements.toArray(new Statement[0]);

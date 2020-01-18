@@ -31,6 +31,8 @@ import lombok.Singular;
       return this;
     }
     public @org.checkerframework.checker.builder.qual.ReturnsReceiver @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder names(final java.util.Collection<? extends String> names) {
+      if ((names == null))
+          throw new java.lang.NullPointerException("names cannot be null");
       if ((this.names == null))
           this.names = new java.util.ArrayList<String>();
       this.names.addAll(names);

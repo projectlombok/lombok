@@ -79,6 +79,7 @@ import org.mangosdk.spi.ProviderFor;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.ObtainVia;
+import lombok.Singular.NullCollectionBehavior;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
 import lombok.ToString;
@@ -1000,7 +1001,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			
 			char[] pluralName = node.getKind() == Kind.FIELD ? removePrefixFromField(node) : ((AbstractVariableDeclaration) node.get()).name;
 			AnnotationValues<Singular> ann = createAnnotation(Singular.class, child);
-			String explicitSingular = ann.getInstance().value();
+			Singular singularInstance = ann.getInstance();
+			String explicitSingular = singularInstance.value();
 			if (explicitSingular.isEmpty()) {
 				if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_AUTO))) {
 					node.addError("The singular must be specified explicitly (e.g. @Singular(\"task\")) because auto singularization is disabled.");
@@ -1042,7 +1044,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				return null;
 			}
 			
-			return new SingularData(child, singularName, pluralName, typeArgs == null ? Collections.<TypeReference>emptyList() : Arrays.asList(typeArgs), targetFqn, singularizer, source);
+			NullCollectionBehavior behavior = HandleBuilder.getNullBehaviorFor(ann, singularInstance, node);
+			return new SingularData(child, singularName, pluralName, typeArgs == null ? Collections.<TypeReference>emptyList() : Arrays.asList(typeArgs), targetFqn, singularizer, source, behavior);
 		}
 		
 		return null;

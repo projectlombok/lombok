@@ -61,6 +61,7 @@ import lombok.Builder;
 import lombok.Builder.ObtainVia;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
+import lombok.Singular.NullCollectionBehavior;
 import lombok.ToString;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
@@ -869,8 +870,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (!annotationTypeMatches(Singular.class, child)) continue;
 			Name pluralName = node.getKind() == Kind.FIELD ? removePrefixFromField(node) : ((JCVariableDecl) node.get()).name;
 			AnnotationValues<Singular> ann = createAnnotation(Singular.class, child);
+			Singular singularInstance = ann.getInstance();
 			deleteAnnotationIfNeccessary(child, Singular.class);
-			String explicitSingular = ann.getInstance().value();
+			String explicitSingular = singularInstance.value();
 			if (explicitSingular.isEmpty()) {
 				if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_AUTO))) {
 					node.addError("The singular must be specified explicitly (e.g. @Singular(\"task\")) because auto singularization is disabled.");
@@ -906,9 +908,22 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				return null;
 			}
 			
-			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, setterPrefix);
+			NullCollectionBehavior behavior = getNullBehaviorFor(ann, singularInstance, node);
+			
+			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, behavior, setterPrefix);
 		}
 		
 		return null;
+	}
+	
+	static NullCollectionBehavior getNullBehaviorFor(AnnotationValues<Singular> ann, Singular singularInstance, JavacNode node) {
+		NullCollectionBehavior behavior;
+		if (ann.isExplicit("nullBehavior")) {
+			behavior = singularInstance.nullBehavior();
+		} else {
+			behavior = node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_NULL_COLLECTIONS);
+		}
+		if (behavior == null) return NullCollectionBehavior.NULL_POINTER_EXCEPTION;
+		return behavior;
 	}
 }
