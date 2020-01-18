@@ -2,7 +2,8 @@
 
 <@f.scaffold title="Configuration system" logline="Lombok, made to order: Configure lombok features in one place for your entire project or even your workspace.">
 	<@f.history>
-		The configuration system was introduced in lombok 1.14.
+		The configuration system was introduced in lombok 1.14.<br />
+		The <code>import</code> directive was added in lombok 1.18.12.
 	</@f.history>
 	
 	<@f.overview>
@@ -111,4 +112,55 @@
 			Turning either of these options on means lombok will make <em>every</em> field in <em>every</em> source file final and/or private unless it has an explicit access modifier or annotation to suppress this. <a href="experimental/FieldDefaults">See the <code>@FieldDefaults</code> documentation for more</a>.
 		</p>
 	</@f.featureSection>
+
+	<@f.featureSection>
+		<@f.main.h3 title="Importing the configuration from a different file" />
+		<p>
+			At the top of a configuration file it is possible to import other configuration files. Imported files don't have to be called <code>lombok.config</code> and can have any file extension (or even none).<br />
+			<div class="snippet example">
+				<code>import ../configuration/model.config</code>
+			</div>
+			The location of an imported file is resolved relative to the file that imports it.
+		</p>
+		<p>
+			For shared projects, it makes sense to always use relative paths. For individuals, it is also possible to use absolute paths.<br />
+			<div class="snippet example">
+				<code># Linux</code><br />
+				<code>import /etc/lombok/model.config</code><br />
+				<code># Windows</code><br />
+				<code>import d:/lombok/model.config</code>
+			</div>
+		</p>
+		<p>
+			Configuration files can import multiple configuration files as long as they are specified before any configuration key.
+			The system behaves as if the contents of the imported file is at the location of the <code>import</code> declaration. 
+		</p>
+		<p>
+			The way the configuration system works is that duplicate entries are effectively ignored. It is a last-wins. Lombok will only 
+			process a configuration file once when resolving a specific value. This allows you to import the same files from different 
+			configuration files, and even create loops without any problems.
+		</p>
+		<p>
+			It is also possible to import files from <code>.jar</code> and <code>.zip</code> files.<br />
+			<div class="snippet example">
+				<code># Use 'lombok.config' from the root of the archive.</code><br />
+				<code>import ../deps/lombok-config.jar</code><br />
+				<code># Use a given file in the archive.</code><br />
+				<code>import ../deps/lombok-config.zip!base/model.config</code>
+			</div>
+			Configuration files inside archives can import other configuration files, provided that they are in the same archive.
+		</p>
+		<p>
+			When importing files, it is possible to use environment variables.<br />
+			<div class="snippet example">
+				<code># Environment variables are names surrounded by angle brackets (&lt;, &gt;).</code><br />
+				<code># They are replaced by System.getenv(name), if present.</code><br />
+				<code>import &lt;JAVA_PROJECTS&gt;/shared.config></code><br />
+				<code># A tilde (~) at the start gets replaced by System.getProperty("user.home", "~").</code><br />
+				<code>import ~/my.config</code>
+			</div>
+			As with absolute paths, this is more useful for individuals than for shared projects.
+		</p>
+	</@f.featureSection>
+
 </@f.scaffold>
