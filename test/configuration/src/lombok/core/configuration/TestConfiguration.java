@@ -52,7 +52,15 @@ public class TestConfiguration {
 		PrintStream outStream = new PrintStream(rawOut);
 		PrintStream errStream = new PrintStream(rawErr);
 		
-		int result = new ConfigurationApp().redirectOutput(outStream, errStream).display(keys, true, paths, true, false);
+		ConfigurationFile.setEnvironment("env", normalizedName + "/e1");
+		String userHome = System.getProperty("user.home");
+		int result = -1;
+		try {
+			System.setProperty("user.home", normalizedName + "/home");
+			result = new ConfigurationApp().redirectOutput(outStream, errStream).display(keys, true, paths, true, false);
+		} finally {
+			System.setProperty("user.home", userHome);
+		}
 		
 		outStream.flush();
 		errStream.flush();

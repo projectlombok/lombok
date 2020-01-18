@@ -27,19 +27,29 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public abstract class ConfigurationFile {
+	private static final Pattern VARIABLE = Pattern.compile("\\<(.+?)\\>");
 	private static final String LOMBOK_CONFIG_FILENAME = "lombok.config";
+	private static final Map<String, String> ENV = new HashMap<String, String>(System.getenv());;
 	
 	private static final ThreadLocal<byte[]> buffers = new ThreadLocal<byte[]>() {
 		protected byte[] initialValue() {
 			return new byte[65536];
 		}
 	};
+	
+	static void setEnvironment(String key, String value) {
+		ENV.put(key, value);
+	}
 	
 	private final String identifier;
 	
@@ -48,7 +58,7 @@ public abstract class ConfigurationFile {
 	}
 	
 	public static ConfigurationFile forDirectory(File directory) {
-		return ConfigurationFile.forFile(new File(directory, LOMBOK_CONFIG_FILENAME));
+		return forFile(new File(directory, LOMBOK_CONFIG_FILENAME));
 	}
 	
 	public static ConfigurationFile fromCharSequence(String identifier, CharSequence contents, long lastModified) {
@@ -117,7 +127,7 @@ public abstract class ConfigurationFile {
 			if (parts.length > 2) return null;
 			
 			String realFileName = parts[0];
-			File file = resolveFile(realFileName);
+			File file = resolveFile(replaceEnvironmentVariables(realFileName));
 			if (realFileName.endsWith(".zip") || realFileName.endsWith(".jar")) {
 				try {
 					return ArchivedConfigurationFile.create(file, URI.create(parts.length == 1 ? LOMBOK_CONFIG_FILENAME : parts[1]));
@@ -165,6 +175,24 @@ public abstract class ConfigurationFile {
 		@Override ConfigurationFile parent() {
 			File parent = file.getParentFile().getParentFile();
 			return parent == null ? null : forDirectory(parent);
+		}
+		
+		private static String replaceEnvironmentVariables(String fileName) {
+			int start = 0;;
+			StringBuffer result = new StringBuffer();
+			if (fileName.startsWith("~")) {
+				start = 1;
+				result.append(System.getProperty("user.home", "~"));
+			}
+			Matcher matcher = VARIABLE.matcher(fileName.substring(start));
+			while (matcher.find()) {
+				String key = matcher.group(1);
+				String value = ENV.get(key);
+				if (value == null) value = "<" + key + ">";
+				matcher.appendReplacement(result, value);
+			}
+			matcher.appendTail(result);
+			return result.toString();
 		}
 	}
 	

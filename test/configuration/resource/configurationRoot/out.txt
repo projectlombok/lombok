@@ -51,15 +51,23 @@ clear lombok.accessors.chain
 #    3: clear lombok.accessors.chain
 
 # Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.
+lombok.accessors.prefix += e_
+lombok.accessors.prefix += h_
 lombok.accessors.prefix += z_
 lombok.accessors.prefix += f
 lombok.accessors.prefix += m_
 # BASE/d1/d11/lombok.config (stopped bubbling):
 #    5: lombok.accessors.prefix += f
 # 
+# BASE/e1/environment.config (imported from BASE/d1/d11/d111/import1.config:6):
+#    1: lombok.accessors.prefix += e_
+# 
+# BASE/home/home.config (imported from BASE/d1/d11/d111/import1.config:7):
+#    1: lombok.accessors.prefix += h_
+# 
 # BASE/d1/d11/d111/import1.config (imported from BASE/d1/d11/d111/lombok.config:1):
-#    5: lombok.accessors.prefix += z_
-#    6: lombok.accessors.prefix += f
+#    8: lombok.accessors.prefix += z_
+#    9: lombok.accessors.prefix += f
 # 
 # BASE/d1/d11/d111/lombok.config:
 #    4: lombok.accessors.prefix += m_
