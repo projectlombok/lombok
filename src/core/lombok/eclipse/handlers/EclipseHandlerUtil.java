@@ -2018,7 +2018,7 @@ public class EclipseHandlerUtil {
 				utilityTypeName[i] = method.get(i).toCharArray();
 			}
 			
-			invocation.receiver = new QualifiedNameReference(utilityTypeName, new long[method.size()], pS, pE);
+			invocation.receiver = new QualifiedNameReference(utilityTypeName, new long[method.size() - 1], pS, pE);
 			setGeneratedBy(invocation.receiver, source);
 			invocation.selector = method.get(method.size() - 1).toCharArray();
 			invocation.arguments = new Expression[] {varName, message};
