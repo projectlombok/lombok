@@ -236,6 +236,40 @@ div.snippet code {
 	word-break: break-word;
 }
 
+
+ol.snippet {
+	background: repeat-y url(/img/line-numbers.png);
+	padding-left: 3em;
+	list-style-type: decimal;
+}
+
+ol.snippet li {
+	font-size: 14px;
+	font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+	color: #9898A8;
+}
+
+ol.snippet li code {
+	word-break: break-word;
+	padding: 0;
+}
+
+ol.snippet.oneliner, ol.snippet.cmd {
+	list-style-type: none;
+}
+
+ol.snippet.oneliner li, ol.snippet.cmd li {
+	text-indent: -1.7em;
+}
+
+ol.snippet.oneliner li:before {
+	content: "#\A0\A0";
+}
+
+ol.snippet.cmd li:before {
+	content: ">\A0\A0";
+}
+
 .fork-me {
 	position: fixed;
 	width: 150px;
