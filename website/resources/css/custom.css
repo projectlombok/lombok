@@ -233,6 +233,7 @@ div.snippet code {
 	padding: 0 0 0 2rem;
 	display: inline-block;
 	text-indent: -2rem;
+	word-break: break-word;
 }
 
 .fork-me {
