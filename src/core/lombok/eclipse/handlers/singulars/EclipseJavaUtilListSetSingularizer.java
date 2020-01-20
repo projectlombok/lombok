@@ -174,14 +174,15 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		thisDotFieldDotAddAll.selector = "addAll".toCharArray();
 		statements.add(thisDotFieldDotAddAll);
 		
-		nullBehaviorize(data, statements);
+		TypeReference paramType = new QualifiedTypeReference(TypeConstants.JAVA_UTIL_COLLECTION, NULL_POSS);
+		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs());
+		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
+		
+		nullBehaviorize(builderType, data, statements, param);
 		if (returnStatement != null) statements.add(returnStatement);
 		
 		md.statements = statements.toArray(new Statement[0]);
 		
-		TypeReference paramType = new QualifiedTypeReference(TypeConstants.JAVA_UTIL_COLLECTION, NULL_POSS);
-		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs());
-		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
 		char[] prefixedSelector = data.getSetterPrefix().length == 0 ? data.getPluralName() : HandlerUtil.buildAccessorName(new String(data.getSetterPrefix()), new String(data.getPluralName())).toCharArray();

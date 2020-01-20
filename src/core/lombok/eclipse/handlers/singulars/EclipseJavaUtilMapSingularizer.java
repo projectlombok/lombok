@@ -306,15 +306,16 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		forEach.action = forEachContent;
 		statements.add(forEach);
 		
-		nullBehaviorize(data, statements);
+		TypeReference paramType = new QualifiedTypeReference(JAVA_UTIL_MAP, NULL_POSS);
+		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs());
+		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
+		
+		nullBehaviorize(builderType, data, statements, param);
 		
 		if (returnStatement != null) statements.add(returnStatement);
 		
 		md.statements = statements.toArray(new Statement[0]);
 		
-		TypeReference paramType = new QualifiedTypeReference(JAVA_UTIL_MAP, NULL_POSS);
-		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs());
-		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
 		

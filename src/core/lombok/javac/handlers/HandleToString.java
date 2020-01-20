@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -253,8 +253,10 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		JCBlock body = maker.Block(0, List.of(returnStatement));
 		
-		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("toString"), returnType,
-			List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source, typeNode.getContext());
+		JCMethodDecl methodDef = maker.MethodDef(mods, typeNode.toName("toString"), returnType,
+			List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		createRelevantNonNullAnnotation(typeNode, methodDef);
+		return recursiveSetGeneratedBy(methodDef, source, typeNode.getContext());
 	}
 	
 	public static String getTypeName(JavacNode typeNode) {

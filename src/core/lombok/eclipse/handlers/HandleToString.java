@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -315,6 +315,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		method.statements = new Statement[] { returnStatement };
+		EclipseHandlerUtil.createRelevantNonNullAnnotation(type, method);
 		return method;
 	}
 	

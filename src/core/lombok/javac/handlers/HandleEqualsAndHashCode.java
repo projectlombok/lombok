@@ -383,18 +383,6 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		List<JCAnnotation> annsOnParamOnMethod = List.nil();
 		
-		String nearest = scanForNearestAnnotation(typeNode, "org.eclipse.jdt.annotation.NonNullByDefault");
-		if (nearest != null) {
-			JCAnnotation m = maker.Annotation(genTypeRef(typeNode, "org.eclipse.jdt.annotation.Nullable"), List.<JCExpression>nil());
-			annsOnParamOnMethod = annsOnParamOnMethod.prepend(m);
-		}
-		
-		nearest = scanForNearestAnnotation(typeNode, "javax.annotation.ParametersAreNullableByDefault", "javax.annotation.ParametersAreNonnullByDefault");
-		if ("javax.annotation.ParametersAreNonnullByDefault".equals(nearest)) {
-			JCAnnotation m = maker.Annotation(genTypeRef(typeNode, "javax.annotation.Nullable"), List.<JCExpression>nil());
-			annsOnParamOnMethod = annsOnParamOnMethod.prepend(m);
-		}
-		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		List<JCAnnotation> annsOnMethod = List.of(overrideAnnotation);
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(typeNode);
@@ -415,7 +403,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
 		
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		final List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(finalFlag | Flags.PARAMETER, onParam), oName, objectType, null));
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(finalFlag | Flags.PARAMETER, onParam), oName, objectType, null);
+		JavacHandlerUtil.createRelevantNullableAnnotation(typeNode, param);
+		
+		final List<JCVariableDecl> params = List.of(param);
 		
 		/* if (o == this) return true; */ {
 			statements.append(maker.If(maker.Binary(CTC_EQUAL, maker.Ident(oName),
@@ -538,7 +529,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCExpression objectType = genJavaLangTypeRef(typeNode, "Object");
 		Name otherName = typeNode.toName("other");
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(flags, onParam), otherName, objectType, null));
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, onParam), otherName, objectType, null);
+		createRelevantNullableAnnotation(typeNode, param);
+		List<JCVariableDecl> params = List.of(param);
 		
 		JCBlock body = maker.Block(0, List.<JCStatement>of(
 			maker.Return(maker.TypeTest(maker.Ident(otherName), createTypeReference(typeNode, false)))));

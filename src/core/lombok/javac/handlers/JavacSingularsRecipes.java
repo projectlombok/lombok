@@ -273,12 +273,19 @@ public class JavacSingularsRecipes {
 			generateClearMethod(cfv, deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, access);
 		}
 		
-		private void finishAndInjectMethod(CheckerFrameworkVersion cfv, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean deprecate, ListBuffer<JCStatement> statements, Name methodName, List<JCVariableDecl> jcVariableDecls, AccessLevel access) {
+		private void finishAndInjectMethod(CheckerFrameworkVersion cfv, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean deprecate, ListBuffer<JCStatement> statements, Name methodName, List<JCVariableDecl> jcVariableDecls, AccessLevel access, NullCollectionBehavior nullBehavior) {
 			if (returnStatement != null) statements.append(returnStatement);
 			JCBlock body = maker.Block(0, statements.toList());
 			JCModifiers mods = makeMods(maker, cfv, builderType, deprecate, access);
 			List<JCTypeParameter> typeParams = List.nil();
 			List<JCExpression> thrown = List.nil();
+			
+			if (nullBehavior == NullCollectionBehavior.IGNORE) {
+				for (JCVariableDecl d : jcVariableDecls) createRelevantNullableAnnotation(builderType, d);
+			} else if (nullBehavior != null) {
+				for (JCVariableDecl d : jcVariableDecls) createRelevantNonNullAnnotation(builderType, d);
+			}
+			
 			JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, jcVariableDecls, thrown, body, null);
 			recursiveSetGeneratedBy(method, source, builderType.getContext());
 			injectMethod(builderType, method);
@@ -290,7 +297,7 @@ public class JavacSingularsRecipes {
 			statements.add(clearStatement);
 			
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil(), access);
+			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil(), access, null);
 		}
 		
 		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);
@@ -304,7 +311,7 @@ public class JavacSingularsRecipes {
 			if (!setterPrefix.isEmpty()) name = builderType.toName(HandlerUtil.buildAccessorName(setterPrefix, name.toString()));
 			
 			statements.prepend(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
-			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, params, access);
+			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, params, access, null);
 		}
 		
 		protected JCVariableDecl generateSingularMethodParameter(int typeIndex, JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, Name name) {
@@ -336,10 +343,11 @@ public class JavacSingularsRecipes {
 			JCExpression paramType = getPluralMethodParamType(builderType);
 			paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-			statements.prepend(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
-			
 			NullCollectionBehavior behavior = data.getNullCollectionBehavior();
+			if (behavior == null) behavior = NullCollectionBehavior.IGNORE;
+			JCModifiers paramMods = maker.Modifiers(paramFlags);
+			JCVariableDecl param = maker.VarDef(paramMods, data.getPluralName(), paramType, null);
+			statements.prepend(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 			
 			if (behavior == NullCollectionBehavior.IGNORE) {
 				JCExpression incomingIsNotNull = maker.Binary(CTC_NOT_EQUAL, maker.Ident(data.getPluralName()), maker.Literal(CTC_BOT, null));
@@ -361,7 +369,7 @@ public class JavacSingularsRecipes {
 				}
 			}
 			
-			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, List.of(param), access);
+			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, List.of(param), access, behavior);
 		}
 		
 		protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {

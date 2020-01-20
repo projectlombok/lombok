@@ -80,6 +80,12 @@
 			</ol>
 			can be included. We suggest you put this in the root of your workspace directory.
 		</p><p>
+			Lombok can add nullity annotations (usually called <code>@NonNull</code> and <code>@Nullable</code>) whenever it makes sense to do so; think of generated <a href="ToString"><code>toString</code></a> and <a href="with"><code>withX</code> methods (these never return null), or the parameter of a generated <a href="EqualsAndHashCode"><code>equals</code></a> method, which is allowed to be null, and requires such an annotation if you've set up your IDE for strict null checks as well as 'parameters are non-null by default'. There are many such libraries; you must tell lombok which one to use. By default, no such annotations are added. Enable this feature with:
+			<div class="snippet example">
+				<code>lombok.addNullAnnotations = <em>flavour</em></code> (flavours: <code>javax</code> (=JSR305; not recommended), <code>eclipse</code>, <code>jetbrains</code>, <code>netbeans</code>, <code>androidx</code>, <code>android.support</code> (deprecated within android), <code>checkerframework</code> (recommended), <code>findbugs</code>, <code>spring</code>, <code>jml</code>, or define your own via <code>CUSTOM:fully.qualified.NonNullAnnotation:fully.qualified.NullableAnnotation</code>.
+			</div>
+			<em>This feature was introduced in lombok v1.20.0</em>.
+		</p><p>
 			Lombok can add <code>@javax.annotation.Generated</code> annotations to all generated nodes where possible. You can enable this with:
 			<ol class="snippet example oneliner">
 				<li><code>lombok.addJavaxGeneratedAnnotation = true</code></li>

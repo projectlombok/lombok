@@ -136,6 +136,8 @@
 				The snippet below does not show what lombok generates for a <code>@Singular</code> field/parameter because it is rather complicated. You can view a snippet <a href="builderSingular">here</a>.
 		</p><p>
 			If also using <code>setterPrefix = "with"</code>, the generated names are, for example, <code>withName</code> (add 1 name), <code>withNames</code> (add many names), and <code>clearNames</code> (reset all names).
+		</p><p>
+			Ordinarily, the generated 'plural form' method (which takes in a collection, and adds each element in this collection) will check if a <code>null</code> is passed and throws a <code>NullPointerException</code> with an appropriate message. However, you can configure alternative behaviour. For example, for deserialization classes it can be useful to just do nothing (as if an empty collection was passed) instead: <code>@Singular(nullBehavior = NullCollectionBehavior.IGNORE)</code>. If you want to change the kind of nullcheck lombok generates (for example, if you prefer the non-recommended <code>IllegalArgumentException</code> instead, we suggest you configure this in one central place by making a <code>lombok.config</code> entry instead; the intended use for specifying the behavior on the <code>@Singular</code> annotation directly is to explicitly request the <code>IGNORE</code> behaviour.
 		</p>
 	</@f.featureSection>
 
@@ -146,7 +148,7 @@
 @Value @Builder
 @JsonDeserialize(builder = JacksonExample.JacksonExampleBuilder.class)
 public class JacksonExample {
-	@Singular private List&lt;Foo&gt; foos;
+	@Singular(nullBehavior = NullCollectionBehavior.IGNORE) private List&lt;Foo&gt; foos;
 	
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JacksonExampleBuilder implements JacksonExampleBuilderMeta {
@@ -179,6 +181,10 @@ public class JacksonExample {
 			<code>lombok.singular.auto</code> = [<code>true</code> | <code>false</code>] (default: true)
 		</dt><dd>
 			If <code>true</code> (which is the default), lombok automatically tries to singularize your identifier name by assuming that it is a common english plural. If <code>false</code>, you must always explicitly specify the singular name, and lombok will generate an error if you don't (useful if you write your code in a language other than english).
+		</dd><dt>
+			<code>lombok.singular.nullCollections</code> = [<code>NullPointerException</code> | <code>IllegalArgumentException</code> | <code>Guava</code> | <code>JDK</code> | <code>ignore</code>] (default: <code>NullPointerException</code>)
+		</dt><dd>
+			What should lombok do when a generated 'plural form' (for singular properties) method is called with a <code>null</code> argument? Normally, lombok does an explicit null check with an appropriate message, but you can use this configuration to pick another flavour of nullcheck. The <code>ignore</code> option makes lombok treat null as an empty collection: Do nothing. An appropriate nullity annotation will be placed on the generated plural form method's parameter if you configured the flavour of nullity annotations you want via <a href="configuration"><code>lombok.config</code></a> key <code>lombok.addNullAnnotations</code>.
 		</dd>
 	</@f.confKeys>
 
@@ -211,6 +217,8 @@ public class JacksonExample {
 		</p><p>
 			If setting the access level to <code>PROTECTED</code>, all methods generated inside the builder class are actually generated as <code>public</code>; the meaning of the
 			<code>protected</code> keyword is different inside the inner class, and the precise behaviour that <code>PROTECTED</code> would indicate (access by any source in the same package is allowed, as well as any subclasses <em>from the outer class, marked with <code>@Builder</code></em> is not possible, and marking the inner members <code>public</code> is as close as we can get.
+		</p><p>
+			If you have configured a nullity annotation flavour via <a href="configuration"><code>lombok.config</code></a> key <code>lombok.addNullAnnotations</code>, any plural-form generated builder methods for <code>@Singular</code> marked properties (these plural form methods take a collection of some sort and add all elements) get a nullity annotation on the parameter. You get a non-null one normally, but if you have configured the behaviour on <code>null</code> being passed in as collection to <code>IGNORE</code>, a nullable annotation is generated instead.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

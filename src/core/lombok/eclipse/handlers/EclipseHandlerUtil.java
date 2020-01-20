@@ -43,6 +43,7 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ArrayQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
@@ -112,6 +113,7 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.LombokImmutableList;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
 import lombok.core.debug.ProblemReporter;
@@ -2379,6 +2381,101 @@ public class EclipseHandlerUtil {
 		if (typeDecl.superclass == null) return true;
 		String p = typeDecl.superclass.toString();
 		return p.equals("Object") || p.equals("java.lang.Object");
+	}
+	
+	public static void createRelevantNullableAnnotation(EclipseNode typeNode, MethodDeclaration mth) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null) return;
+		
+		applyAnnotationToMethodDecl(typeNode, mth, lib.getNullableAnnotation(), lib.isTypeUse());
+	}
+	
+	public static void createRelevantNonNullAnnotation(EclipseNode typeNode, MethodDeclaration mth) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null) return;
+		
+		applyAnnotationToMethodDecl(typeNode, mth, lib.getNonNullAnnotation(), lib.isTypeUse());
+	}
+	
+	public static void createRelevantNullableAnnotation(EclipseNode typeNode, Argument arg) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null) return;
+		
+		applyAnnotationToVarDecl(typeNode, arg, lib.getNullableAnnotation(), lib.isTypeUse());
+	}
+	
+	public static void createRelevantNonNullAnnotation(EclipseNode typeNode, Argument arg) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null) return;
+		
+		applyAnnotationToVarDecl(typeNode, arg, lib.getNonNullAnnotation(), lib.isTypeUse());
+	}
+	
+	private static void applyAnnotationToMethodDecl(EclipseNode typeNode, MethodDeclaration mth, String annType, boolean typeUse) {
+		if (annType == null) return;
+		
+		int partCount = 1;
+		for (int i = 0; i < annType.length(); i++) if (annType.charAt(i) == '.') partCount++;
+		long[] ps = new long[partCount];
+		Arrays.fill(ps, 0L);
+		Annotation ann = new MarkerAnnotation(new QualifiedTypeReference(Eclipse.fromQualifiedName(annType), ps), 0);
+		
+		if (!typeUse || mth.returnType == null || mth.returnType.getTypeName().length < 2) {
+			Annotation[] a = mth.annotations;
+			if (a == null) a = new Annotation[1];
+			else {
+				Annotation[] b = new Annotation[a.length + 1];
+				System.arraycopy(a, 0, b, 0, a.length);
+				a = b;
+			}
+			a[a.length - 1] = ann;
+			mth.annotations = a;
+		} else {
+			int len = mth.returnType.getTypeName().length;
+			if (mth.returnType.annotations == null) mth.returnType.annotations = new Annotation[len][];
+			Annotation[] a = mth.returnType.annotations[len - 1];
+			if (a == null) a = new Annotation[1];
+			else {
+				Annotation[] b = new Annotation[a.length + 1];
+				System.arraycopy(a, 0, b, 1, a.length);
+				a = b;
+			}
+			a[0] = ann;
+			mth.returnType.annotations[len - 1] = a;
+		}
+	}
+	private static void applyAnnotationToVarDecl(EclipseNode typeNode, Argument arg, String annType, boolean typeUse) {
+		if (annType == null) return;
+		
+		int partCount = 1;
+		for (int i = 0; i < annType.length(); i++) if (annType.charAt(i) == '.') partCount++;
+		long[] ps = new long[partCount];
+		Arrays.fill(ps, 0L);
+		Annotation ann = new MarkerAnnotation(new QualifiedTypeReference(Eclipse.fromQualifiedName(annType), ps), 0);
+		
+		if (!typeUse || arg.type.getTypeName().length < 2) {
+			Annotation[] a = arg.annotations;
+			if (a == null) a = new Annotation[1];
+			else {
+				Annotation[] b = new Annotation[a.length + 1];
+				System.arraycopy(a, 0, b, 0, a.length);
+				a = b;
+			}
+			a[a.length - 1] = ann;
+			arg.annotations = a;
+		} else {
+			int len = arg.type.getTypeName().length;
+			if (arg.type.annotations == null) arg.type.annotations = new Annotation[len][];
+			Annotation[] a = arg.type.annotations[len - 1];
+			if (a == null) a = new Annotation[1];
+			else {
+				Annotation[] b = new Annotation[a.length + 1];
+				System.arraycopy(a, 0, b, 1, a.length);
+				a = b;
+			}
+			a[0] = ann;
+			arg.type.annotations[len - 1] = a;
+		}
 	}
 	
 	public static NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {

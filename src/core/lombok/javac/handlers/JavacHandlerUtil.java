@@ -94,6 +94,7 @@ import lombok.core.CleanupTask;
 import lombok.core.LombokImmutableList;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
 import lombok.core.handlers.HandlerUtil;
@@ -1085,6 +1086,13 @@ public class JavacHandlerUtil {
 			}
 		}
 		
+		static void setAnnotations(JCTree obj, List<JCAnnotation> anns) {
+			init(obj.getClass());
+			try {
+				ANNOTATIONS.set(obj, anns);
+			} catch (Exception e) {}
+		}
+		
 		static JCExpression getUnderlyingType(JCTree obj) {
 			init(obj.getClass());
 			try {
@@ -2053,5 +2061,96 @@ public class JavacHandlerUtil {
 		if (extending == null) return true;
 		String p = extending.toString();
 		return p.equals("Object") || p.equals("java.lang.Object");
+	}
+	
+	public static void createRelevantNullableAnnotation(JavacNode typeNode, JCMethodDecl mth) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null) return;
+		applyAnnotationToMethodDecl(typeNode, mth, lib.getNullableAnnotation(), lib.isTypeUse());
+	}
+	
+	public static void createRelevantNonNullAnnotation(JavacNode typeNode, JCMethodDecl mth) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null) return;
+		applyAnnotationToMethodDecl(typeNode, mth, lib.getNonNullAnnotation(), lib.isTypeUse());
+	}
+	
+	public static void createRelevantNonNullAnnotation(JavacNode typeNode, JCVariableDecl arg) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null) return;
+		
+		applyAnnotationToVarDecl(typeNode, arg, lib.getNonNullAnnotation(), lib.isTypeUse());
+	}
+	
+	public static void createRelevantNullableAnnotation(JavacNode typeNode, JCVariableDecl arg) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null) return;
+		
+		applyAnnotationToVarDecl(typeNode, arg, lib.getNullableAnnotation(), lib.isTypeUse());
+	}
+	
+	private static void applyAnnotationToMethodDecl(JavacNode typeNode, JCMethodDecl mth, String annType, boolean typeUse) {
+		if (annType == null) return;
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		JCAnnotation m = maker.Annotation(genTypeRef(typeNode, annType), List.<JCExpression>nil());
+		if (typeUse) {
+			JCExpression resType = mth.restype;
+			if (resType instanceof JCTypeApply) {
+				JCTypeApply ta = (JCTypeApply) resType;
+				resType = ta.clazz;
+			}
+			
+			if (resType instanceof JCFieldAccess || resType instanceof JCArrayTypeTree) {
+				mth.restype = maker.AnnotatedType(List.of(m), resType);
+				return;
+			}
+			
+			if (JCAnnotatedTypeReflect.is(resType)) {
+				List<JCAnnotation> annotations = JCAnnotatedTypeReflect.getAnnotations(resType);
+				JCAnnotatedTypeReflect.setAnnotations(resType, annotations.prepend(m));
+				return;
+			}
+			
+			if (resType instanceof JCPrimitiveTypeTree || resType instanceof JCIdent) {
+				mth.mods.annotations = mth.mods.annotations == null ? List.of(m) : mth.mods.annotations.prepend(m);
+			}
+		} else {
+			mth.mods.annotations = mth.mods.annotations == null ? List.of(m) : mth.mods.annotations.prepend(m);
+		}
+	}
+	
+	private static void applyAnnotationToVarDecl(JavacNode typeNode, JCVariableDecl arg, String annType, boolean typeUse) {
+		if (annType == null) return;
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		JCAnnotation m = maker.Annotation(genTypeRef(typeNode, annType), List.<JCExpression>nil());
+		if (typeUse) {
+			JCExpression varType = arg.vartype;
+			JCTypeApply ta = null;
+			if (varType instanceof JCTypeApply) {
+				ta = (JCTypeApply) varType;
+				varType = ta.clazz;
+			}
+			
+			if (varType instanceof JCFieldAccess || varType instanceof JCArrayTypeTree) {
+				varType = maker.AnnotatedType(List.of(m), varType);
+				if (ta != null) ta.clazz = varType;
+				else arg.vartype = varType;
+				return;
+			}
+			
+			if (JCAnnotatedTypeReflect.is(varType)) {
+				List<JCAnnotation> annotations = JCAnnotatedTypeReflect.getAnnotations(varType);
+				JCAnnotatedTypeReflect.setAnnotations(varType, annotations.prepend(m));
+				return;
+			}
+			
+			if (varType instanceof JCPrimitiveTypeTree || varType instanceof JCIdent) {
+				arg.mods.annotations = arg.mods.annotations == null ? List.of(m) : arg.mods.annotations.prepend(m);
+			}
+		} else {
+			arg.mods.annotations = arg.mods.annotations == null ? List.of(m) : arg.mods.annotations.prepend(m);
+		}
 	}
 }

@@ -79,7 +79,7 @@ public class HandlerUtil {
 	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS;
 	static {
 		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
-			"android.annotation.NonNull",
+			"androidx.annotation.NonNull",
 			"android.support.annotation.NonNull",
 			"com.sun.istack.internal.NotNull",
 			"edu.umd.cs.findbugs.annotations.NonNull",
@@ -95,6 +95,8 @@ public class HandlerUtil {
 			"org.springframework.lang.NonNull",
 		}));
 		BASE_COPYABLE_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"androidx.annotation.NonNull",
+			"androidx.annotation.Nullable",
 			"android.support.annotation.NonNull",
 			"android.support.annotation.Nullable",
 			"edu.umd.cs.findbugs.annotations.NonNull",
@@ -104,6 +106,8 @@ public class HandlerUtil {
 			"javax.annotation.Nonnull",
 			"javax.annotation.Nullable",
 			"lombok.NonNull",
+			"org.jmlspecs.annotation.NonNull",
+			"org.jmlspecs.annotation.Nullable",
 			// To update Checker Framework annotations, run:
 			// grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' $CHECKERFRAMEWORK/checker/src/main/java  $CHECKERFRAMEWORK/framework/src/main/java | grep '\.java$' | sed 's/.*\/java\//\t\t\t"/' | sed 's/\.java$/",/' | sed 's/\//./g' | sort
 			// Only add new annotations, do not remove annotations that have been removed from the lastest version of the Checker Framework.
@@ -304,11 +308,13 @@ public class HandlerUtil {
 			"org.jetbrains.annotations.Nullable",
 			"org.springframework.lang.NonNull",
 			"org.springframework.lang.Nullable",
+			"org.netbeans.api.annotations.common.NonNull",
+			"org.netbeans.api.annotations.common.NullAllowed",
 		}));
 		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
-				"com.fasterxml.jackson.annotation.JsonProperty",
-				"com.fasterxml.jackson.annotation.JsonSetter",
-			}));
+			"com.fasterxml.jackson.annotation.JsonProperty",
+			"com.fasterxml.jackson.annotation.JsonSetter",
+		}));
 	}
 	
 	/** Checks if the given name is a valid identifier.

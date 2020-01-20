@@ -35,6 +35,7 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
@@ -437,7 +438,7 @@ public class EclipseSingularsRecipes {
 			}
 		}
 		
-		protected void nullBehaviorize(SingularData data, List<Statement> statements) {
+		protected void nullBehaviorize(EclipseNode typeNode, SingularData data, List<Statement> statements, Argument arg) {
 			NullCollectionBehavior behavior = data.getNullCollectionBehavior();
 			
 			if (behavior == NullCollectionBehavior.IGNORE) {
@@ -446,8 +447,11 @@ public class EclipseSingularsRecipes {
 				b.statements = statements.toArray(new Statement[statements.size()]);
 				statements.clear();
 				statements.add(new IfStatement(isNotNull, b, 0, 0));
+				EclipseHandlerUtil.createRelevantNullableAnnotation(typeNode, arg);
 				return;
 			}
+			
+			EclipseHandlerUtil.createRelevantNonNullAnnotation(typeNode, arg);
 			
 			String exceptionTypeStr = behavior.getExceptionType();
 			StringLiteral message = new StringLiteral(behavior.toExceptionMessage(new String(data.getPluralName())).toCharArray(), 0, 0, 0);

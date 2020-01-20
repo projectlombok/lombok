@@ -30,6 +30,7 @@ import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
 import lombok.core.configuration.IdentifierName;
 import lombok.core.configuration.LogDeclaration;
+import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
 
@@ -88,6 +89,32 @@ public class ConfigurationKeys {
 	 * NB: If you enable this option, findbugs must be on the source or classpath, or you'll get errors that the type {@code SuppressFBWarnings} cannot be found.
 	 */
 	public static final ConfigurationKey<Boolean> ADD_FINDBUGS_SUPPRESSWARNINGS_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.extern.findbugs.addSuppressFBWarnings", "Generate @edu.umd.cs.findbugs.annotations.SuppressFBWarnings on all generated code (default: false).") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.addNullAnnotations = one of: [{@code none}, {@code javax}, {@code eclipse}, {@code jetbrains}, {@code netbeans}, {@code androidx}, {@code android.support}, {@code checkerframework}, {@code findbugs}, {@code spring}, {@code JML}, or a custom set of fully qualified annotation types].
+	 * 
+	 * Lombok generally copies relevant nullity annotations from your source code to the right places. However, sometimes lombok generates code where the nullability of some node is not dependent on something in your source code. You can configure lombok to add an appropriate nullity annotation in this case.<ul>
+	 * <li>{@code none} (the default) - no annotations are added.</li>
+	 * <li>{@code javax} - The annotations {@code javax.annotation.NonNull} and {@code javax.annotation.Nullable} are used.</li>
+	 * <li>{@code eclipse} - The annotations {@code org.eclipse.jdt.annotation.NonNull} and {@code org.eclipse.jdt.annotation.Nullable} are used.</li>
+	 * <li>{@code jetbrains} - The annotations {@code org.jetbrains.annotations.NotNull} and {@code org.jetbrains.annotations.Nullable} are used.</li>
+	 * <li>{@code netbeans} - The annotations {@code org.netbeans.api.annotations.common.NonNull} and {@code org.netbeans.api.annotations.common.NullAllowed} are used.</li>
+	 * <li>{@code androidx} - The annotations {@code androidx.annotation.NonNull} and {@code androidx.annotation.Nullable} are used.</li>
+	 * <li>{@code android.support} - The annotations {@code android.support.annotation.NonNull} and {@code android.support.annotation.Nullable} are used.</li>
+	 * <li>{@code checkerframework} - The annotations {@code org.checkerframework.checker.nullness.qual.NonNull} and {@code org.checkerframework.checker.nullness.qual.Nullable} are used.</li>
+	 * <li>{@code findbugs} - The annotations {@code edu.umd.cs.findbugs.annotations.NonNull} and {@code edu.umd.cs.findbugs.annotations.Nullable} are used.</li>
+	 * <li>{@code spring} - The annotations {@code org.springframework.lang.NonNull} and {@code org.springframework.lang.Nullable} are used.</li>
+	 * <li>{@code jml} - The annotations {@code org.jmlspecs.annotation.NonNull} and {@code org.jmlspecs.annotation.Nullable} are used.</li>
+	 * <li><code>CUSTOM:<em>fully.qualified.nonnull.annotation</em>:<em>fully.qualified.nullable.annotation</em></code> to configure your own types; the nullable annotation (and the colon) are optional.</li>
+	 * </ul>
+	 * <p>
+	 * Lombok will not put these annotations on the classpath for you; your project must be set up such that these annotations are available.
+	 * <p>
+	 * Current features which use this configuration:<ul>
+	 * <li>{@code @Builder.Singular} makes methods that accept a collection, all of which must be added. The parameter to this 'plural form' method is annotated.</li>
+	 * </ul>
+	 */
+	public static final ConfigurationKey<NullAnnotationLibrary> ADD_NULL_ANNOTATIONS = new ConfigurationKey<NullAnnotationLibrary>("lombok.addNullAnnotations", "Generate some style of null annotation for generated code where this is relevant. (default: none).") {};
 	
 	// ----- *ArgsConstructor -----
 	

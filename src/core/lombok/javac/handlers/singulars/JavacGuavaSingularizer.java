@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 The Project Lombok Authors.
+ * Copyright (C) 2015-2020 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -121,14 +121,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	
 	@Override
 	protected JCExpression getPluralMethodParamType(JavacNode builderType) {
-		JCExpression paramType;
-		String aaTypeName = getAddAllTypeName();
-		if (aaTypeName.startsWith("java.lang.") && aaTypeName.indexOf('.', 11) == -1) {
-			paramType = genJavaLangTypeRef(builderType, aaTypeName.substring(10));
-		} else {
-			paramType = chainDotsString(builderType, aaTypeName);
-		}
-		return paramType;
+		return genTypeRef(builderType, getAddAllTypeName());
 	}
 	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {

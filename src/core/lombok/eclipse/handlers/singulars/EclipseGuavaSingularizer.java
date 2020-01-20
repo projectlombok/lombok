@@ -196,16 +196,18 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		thisDotFieldDotAddAll.selector = (getAddMethodName() + "All").toCharArray();
 		statements.add(thisDotFieldDotAddAll);
 		
-		nullBehaviorize(data, statements);
+		TypeReference paramType;
+		paramType = new QualifiedTypeReference(fromQualifiedName(getAddAllTypeName()), NULL_POSS);
+		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs());
+		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
+		
+		nullBehaviorize(builderType, data, statements, param);
 		
 		if (returnStatement != null) statements.add(returnStatement);
 		
 		md.statements = statements.toArray(new Statement[0]);
 		
-		TypeReference paramType;
-		paramType = new QualifiedTypeReference(fromQualifiedName(getAddAllTypeName()), NULL_POSS);
-		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs());
-		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
+		
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
 		char[] prefixedSelector = data.getSetterPrefix().length == 0 ? data.getPluralName() : HandlerUtil.buildAccessorName(new String(data.getSetterPrefix()), new String(data.getPluralName())).toCharArray();
