@@ -334,6 +334,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<echo file="release-timestamp.txt">${releaseTimestamp}</echo>
 		<zip destfile="dist/lombok-${lombok.version}.jar">
 			<fileset dir="build" includes="changelog.txt, latestchanges.html" />
+			<fileset dir="." includes="README.md" />
 			<fileset dir="." includes="LICENSE" />
 			<fileset dir="." includes="AUTHORS" />
 			<fileset dir="." includes="release-timestamp.txt" />
