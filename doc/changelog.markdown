@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.18.11 "Edgy Guinea Pig"
 * PLATFORM: Support for JDK13 (including `yield` in switch expressions, as well as delombok having a nicer style for arrow-style switch blocks, and text blocks).
+* PLATFORM: Support for JDK14 (including `pattern match` instanceof expressions).
 * FEATURE: In [`lombok.config`](https://projectlombok.org/features/configuration) it is possible to import other config files, even from a `.zip` or `.jar`.
 * FEATURE: You can now configure a builder's 'setter' prefixes via `@Builder(setterPrefix = "set")` for example. We discourage doing this, but if some library you use requires them, have at it. [Pull Request #2174](https://github.com/rzwitserloot/lombok/pull/2174], [Issue #1805](https://github.com/rzwitserloot/lombok/issues/1805).
 * FEATURE: If you use `@Builder`'s `@Singular`, a plural form is also generated, which has the effect of adding all elements in the passed collection. If you pass a null reference, this would result in a message-less `NullPointerException`. Now, it results in that exception but with a useful message attached, and you can choose other behaviors as well via a parameter on the `@Singular` annotation and via `lombok.config`; you can even choose treat them as empty collections; this can be useful when deserializing (e.g. Jackson JSON) and JPA/Hibernate code. [Issue #2221](https://github.com/rzwitserloot/lombok/issues/2221]. [singular documentation](https://projectlombok.org/features/Builder).

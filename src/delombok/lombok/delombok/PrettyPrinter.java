@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019 The Project Lombok Authors.
+ * Copyright (C) 2016-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1071,7 +1071,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 	@Override public void visitTypeTest(JCInstanceOf tree) {
 		print(tree.expr);
 		print(" instanceof ");
-		print(tree.clazz);
+		
+		/** With java14, instead of a type (field 'clazz'), there's now a pattern (field 'pattern', of type JCTree, which is either a JCPattern for new-style instanceof, or if not it's the same as what 'clazz' held) */
+		JCTree c = readObject(tree, "clazz", null); // JDK-13
+		if (c == null) c = readObject(tree, "pattern", null); // JDK14+
+		print(c);
 	}
 	
 	@Override public void visitTypeCast(JCTypeCast tree) {
@@ -1379,6 +1383,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 		println(";", tree);
 	}
 	
+	void printBindingPattern(JCTree tree) {
+		print((JCExpression) readObject(tree, "vartype", null));
+		print(" ");
+		print((Name) readObject(tree, "name", null));
+	}
+	
 	@Override public void visitTry(JCTry tree) {
 		aPrint("try ");
 		List<?> resources = readObject(tree, "resources", List.nil());
@@ -1601,6 +1611,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printSwitchExpression(tree);
 		} else if ("JCYield".equals(simpleName)) { // Introduced as preview feature in JDK13, part of switch expressions.
 			printYieldExpression(tree);
+		} else if ("JCBindingPattern".equals(simpleName)) { // Introduced as preview in JDK14
+			printBindingPattern(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
