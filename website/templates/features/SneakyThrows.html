@@ -14,6 +14,8 @@
 				</li>
 			</ul>
 		</p><p>
+			Being constrained by needlessly strict interfaces is particularly common when using lambda syntax (<code>arg -> action</code>); however, lambdas cannot be annotated, which means it is not so easy to use <code>@SneakyThrows</code> in combination with lambdas.
+		</p><p>
 			Be aware that it is <em>impossible</em> to catch sneakily thrown checked types directly, as javac will not let you write a catch block for an exception type that no method call in the try body declares as thrown. This problem is not relevant in either of the use cases listed above, so let this serve as a warning that you should not use the <code>@SneakyThrows</code> mechanism without some deliberation!
 		</p><p>
 			You can pass any number of exceptions to the <code>@SneakyThrows</code> annotation. If you pass no exceptions, you may throw any exception sneakily.
