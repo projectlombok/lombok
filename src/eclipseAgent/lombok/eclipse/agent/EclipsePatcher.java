@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		String[] args = agentArgs == null ? new String[0] : agentArgs.split(":");
 		boolean forceEcj = false;
 		boolean forceEclipse = false;
+		
 		for (String arg : args) {
 			if (arg.trim().equalsIgnoreCase("ECJ")) forceEcj = true;
 			if (arg.trim().equalsIgnoreCase("ECLIPSE")) forceEclipse = true;
@@ -80,6 +81,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		sm.registerTransformer(instrumentation);
 		sm.setFilter(new Filter() {
 			@Override public boolean shouldTransform(ClassLoader loader, String className, Class<?> classBeingDefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+				if (loader != null && loader.getClass().toString().startsWith("org.sonar.classloader")) return false; // Relevant to bug #2351
 				if (!(loader instanceof URLClassLoader)) return true;
 				ClassLoader parent = loader.getParent();
 				if (parent == null) return true;
