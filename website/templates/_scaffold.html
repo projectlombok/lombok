@@ -76,7 +76,7 @@ ga('send', 'pageview');
 		<div class="navbar navbar-default navbar-fixed-top">
 			<div class="container">
 				<div class="navbar-header">
-					<a href="/" class="navbar-brand">Lombok Project</a>
+					<a href="/" class="navbar-brand">Project Lombok</a>
 					<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
@@ -140,17 +140,29 @@ ga('send', 'pageview');
 </html>
 </#macro>
 
-<#macro h1 title class="">
-<#assign idvalue="*"?no_esc + "${title}"/>
-<h1 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h1>
+<#macro h1 title class="" id="">
+<#if id == "">
+	<#assign idvalue="*"?no_esc + "${title}"/>
+<#else>
+	<#assign idvalue="${id}"?no_esc>
+</#if>
+<h1<#if class != ""> class="${class}"</#if> id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h1>
 </#macro>
 
-<#macro h2 title class="">
-<#assign idvalue="*"?no_esc + "${title}"/>
-<h2 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h2>
+<#macro h2 title class="" id="">
+<#if id == "">
+	<#assign idvalue="*"?no_esc + "${title}"/>
+<#else>
+	<#assign idvalue="${id}"?no_esc>
+</#if>
+<h2<#if class != ""> class="${class}"</#if> id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h2>
 </#macro>
 
-<#macro h3 title class="">
-<#assign idvalue="*"?no_esc + "${title}"/>
-<h3 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h3>
+<#macro h3 title class="" id="">
+<#if id == "">
+	<#assign idvalue="*"?no_esc + "${title}"/>
+<#else>
+	<#assign idvalue="${id}"?no_esc>
+</#if>
+<h3<#if class != ""> class="${class}"</#if> id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h3>
 </#macro>

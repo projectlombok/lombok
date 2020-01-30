@@ -3,7 +3,8 @@
 <@f.scaffold title="Configuration system" logline="Lombok, made to order: Configure lombok features in one place for your entire project or even your workspace.">
 	<@f.history>
 		The configuration system was introduced in lombok 1.14.<br />
-		The <code>import</code> directive was added in lombok 1.18.12.
+		The <a href="#import"><code>import</code> directive</a> was added in lombok 1.20.0.<br />
+		The <a href="#addNullAnnotations"><code>lombok.addNullAnnotations</code> configuration key</a> was added in lombok 1.20.0.<br />
 	</@f.history>
 	
 	<@f.overview>
@@ -72,26 +73,22 @@
 
 	<@f.featureSection>
 		<@f.main.h3 title="Global config keys" />
-
+		
 		<p>
+			These configuration keys have an effect on many or all lombok features, or on the configuration system itself.
+		</p><p>
 			To stop lombok from looking at parent directories for more configuration files, the special key:
 			<ol class="snippet example oneliner">
 				<li><code>config.stopBubbling = true</code></li>
 			</ol>
 			can be included. We suggest you put this in the root of your workspace directory.
-		</p><p>
+		</p><p id="addNullAnnotations">
 			Lombok can add nullity annotations (usually called <code>@NonNull</code> and <code>@Nullable</code>) whenever it makes sense to do so; think of generated <a href="ToString"><code>toString</code></a> and <a href="with"><code>withX</code> methods (these never return null), or the parameter of a generated <a href="EqualsAndHashCode"><code>equals</code></a> method, which is allowed to be null, and requires such an annotation if you've set up your IDE for strict null checks as well as 'parameters are non-null by default'. There are many such libraries; you must tell lombok which one to use. By default, no such annotations are added. Enable this feature with:
-			<div class="snippet example">
-				<code>lombok.addNullAnnotations = <em>flavour</em></code> (flavours: <code>javax</code> (=JSR305; not recommended), <code>eclipse</code>, <code>jetbrains</code>, <code>netbeans</code>, <code>androidx</code>, <code>android.support</code> (deprecated within android), <code>checkerframework</code> (recommended), <code>findbugs</code>, <code>spring</code>, <code>jml</code>, or define your own via <code>CUSTOM:fully.qualified.NonNullAnnotation:fully.qualified.NullableAnnotation</code>.
-			</div>
-			<em>This feature was introduced in lombok v1.20.0</em>.
-		</p><p>
-			Lombok can add <code>@javax.annotation.Generated</code> annotations to all generated nodes where possible. You can enable this with:
-			<ol class="snippet example oneliner">
-				<li><code>lombok.addJavaxGeneratedAnnotation = true</code></li>
+			<ol class="snippet example oneLiner">
+				<li><code>lombok.addNullAnnotations = <em>&lt;flavor&gt;</em></code></li>
 			</ol>
-			We advise against this; JDK9 breaks this annotation, and it's unlikely to ever get fixed.<br />
-			<em>NB:</em> Until Lombok v1.16.20, this setting defaulted to <code>true</code>.
+			Many <em>flavors</em> are available: <code>javax</code> (=JSR305; not recommended), <code>eclipse</code>, <code>jetbrains</code>, <code>netbeans</code>, <code>androidx</code>, <code>android.support</code> (deprecated within android), <code>checkerframework</code> (recommended), <code>findbugs</code>, <code>spring</code>, <code>jml</code>, or define your own via <code>CUSTOM:fully.qualified.NonNullAnnotation:fully.qualified.NullableAnnotation</code>; if your nullity annotation is solely of the type use style (it annotates types, such as eclipse's and checkerframework's offerings, versus annotating methods and parameters), the format is <code>CUSTOM:TYPE_USE:nonnullanno:nullableanno</code>.<br />
+			<em>This feature was introduced in lombok v1.20.0</em>.<br />
 		</p><p>
 			Lombok can be configured to add <code>@lombok.Generated</code> annotations to all generated nodes where possible; useful for JaCoCo (which has built in support),
 			or other style checkers and code coverage tools:
@@ -108,7 +105,7 @@
 
 	<@f.featureSection>
 		<@f.main.h3 title="Config keys that can affect any source file" />
-
+		
 		<p>
 			These config keys can make lombok affect source files even if they have 0 lombok annotations in them.<br />
 			<ol class="snippet example">
@@ -120,15 +117,14 @@
 	</@f.featureSection>
 
 	<@f.featureSection>
-		<@f.main.h3 title="Importing the configuration from a different file" />
+		<@f.main.h3 id="import" title="Importing the configuration from a different file" />
 		<p>
 			At the top of a configuration file it is possible to import other configuration files. Imported files don't have to be called <code>lombok.config</code> and can have any file extension (or even none).<br />
 			<ol class="snippet example">
 				<li><code>import ../configuration/model.config</code></li>
 			</ol>
 			The location of an imported file is resolved relative to the file that imports it.
-		</p>
-		<p>
+		</p><p>
 			For shared projects, it makes sense to always use relative paths. For individuals, it is also possible to use absolute paths.<br />
 			<ol class="snippet example">
 				<li><code># Linux</code></li>
@@ -136,17 +132,14 @@
 				<li><code># Windows</code></li>
 				<li><code>import d:/lombok/model.config</code></li>
 			</ol>
-		</p>
-		<p>
+		</p><p>
 			Configuration files can import multiple configuration files as long as they are specified before any configuration key.
-			The system behaves as if the contents of the imported file is at the location of the <code>import</code> declaration. 
-		</p>
-		<p>
+			The system behaves as if the contents of the imported file are at the location of the <code>import</code> declaration. 
+		</p><p>
 			The way the configuration system works is that duplicate entries are effectively ignored. It is a last-wins. Lombok will only 
 			process a configuration file once when resolving a specific value. This allows you to import the same files from different 
 			configuration files, and even create loops without any problems.
-		</p>
-		<p>
+		</p><p>
 			It is also possible to import files from <code>.jar</code> and <code>.zip</code> files.<br />
 			<ol class="snippet example">
 				<li><code># Use 'lombok.config' from the root of the archive.</code></li>
@@ -155,8 +148,7 @@
 				<li><code>import ../deps/lombok-config.zip!base/model.config</code></li>
 			</ol>
 			Configuration files inside archives can import other configuration files, provided that they are in the same archive.
-		</p>
-		<p>
+		</p><p>
 			When importing files, it is possible to use environment variables.<br />
 			<ol class="snippet example">
 				<li><code># Environment variables are names surrounded by angle brackets (&lt;, &gt;).</code></li>
@@ -166,6 +158,8 @@
 				<li><code>import ~/my.config</code></li>
 			</ol>
 			As with absolute paths, this is more useful for individuals than for shared projects.
+		</p><p>
+			<em>This feature was added in lombok v1.20.0.</em>
 		</p>
 	</@f.featureSection>
 

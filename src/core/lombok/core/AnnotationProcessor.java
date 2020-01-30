@@ -99,7 +99,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		private Processor processor;
 		
 		@Override String getName() {
-			return "sun/apple javac 1.6";
+			return "OpenJDK javac";
 		}
 		
 		@Override boolean want(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
