@@ -81,7 +81,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		sm.registerTransformer(instrumentation);
 		sm.setFilter(new Filter() {
 			@Override public boolean shouldTransform(ClassLoader loader, String className, Class<?> classBeingDefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-				if (loader != null && loader.getClass().toString().startsWith("org.sonar.classloader")) return false; // Relevant to bug #2351
+				if (loader != null && loader.getClass().getName().startsWith("org.sonar.classloader.")) return false; // Relevant to bug #2351
 				if (!(loader instanceof URLClassLoader)) return true;
 				ClassLoader parent = loader.getParent();
 				if (parent == null) return true;
