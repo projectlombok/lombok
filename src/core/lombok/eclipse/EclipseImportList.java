@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,11 @@ public class EclipseImportList implements ImportList {
 	}
 	
 	@Override public String getFullyQualifiedNameForSimpleName(String unqualified) {
+		String q = getFullyQualifiedNameForSimpleNameNoAliasing(unqualified);
+		return q == null ? null : LombokInternalAliasing.processAliases(q);
+	}
+	
+	@Override public String getFullyQualifiedNameForSimpleNameNoAliasing(String unqualified) {
 		if (imports != null) {
 			outer:
 			for (ImportReference imp : imports) {
@@ -54,7 +59,7 @@ public class EclipseImportList implements ImportList {
 				int len = token.length;
 				if (len != unqualified.length()) continue;
 				for (int i = 0; i < len; i++) if (token[i] != unqualified.charAt(i)) continue outer;
-				return LombokInternalAliasing.processAliases(toQualifiedName(tokens));
+				return toQualifiedName(tokens);
 			}
 		}
 		return null;

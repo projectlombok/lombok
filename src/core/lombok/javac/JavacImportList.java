@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 The Project Lombok Authors.
+ * Copyright (C) 2013-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,13 +43,18 @@ public class JavacImportList implements ImportList {
 	}
 	
 	@Override public String getFullyQualifiedNameForSimpleName(String unqualified) {
+		String q = getFullyQualifiedNameForSimpleNameNoAliasing(unqualified);
+		return q == null ? null : LombokInternalAliasing.processAliases(q);
+	}
+	
+	@Override public String getFullyQualifiedNameForSimpleNameNoAliasing(String unqualified) {
 		for (JCTree def : defs) {
 			if (!(def instanceof JCImport)) continue;
 			JCTree qual = ((JCImport) def).qualid;
 			if (!(qual instanceof JCFieldAccess)) continue;
 			String simpleName = ((JCFieldAccess) qual).name.toString();
 			if (simpleName.equals(unqualified)) {
-				return LombokInternalAliasing.processAliases(qual.toString());
+				return qual.toString();
 			}
 		}
 		

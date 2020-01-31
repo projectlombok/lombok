@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,12 @@ public interface ImportList {
 	 * If there is an explicit import of the stated unqualified type name, return that. Otherwise, return null.
 	 */
 	String getFullyQualifiedNameForSimpleName(String unqualified);
+	
+	/**
+	 * If there is an explicit import of the stated unqualified type name, return that. Otherwise, return null.
+	 * Do not translate the produced fully qualified name to the alias.
+	 */
+	String getFullyQualifiedNameForSimpleNameNoAliasing(String unqualified);
 	
 	/**
 	 * Returns true if the package name is explicitly star-imported, OR the packageName refers to this source file's own package name, OR packageName is 'java.lang'.

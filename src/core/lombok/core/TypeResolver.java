@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ public class TypeResolver {
 		int firstDot = typeRef.indexOf('.');
 		if (firstDot == -1) firstDot = typeRef.length();
 		String firstTypeRef = typeRef.substring(0, firstDot);
-		String fromExplicitImport = imports.getFullyQualifiedNameForSimpleName(firstTypeRef);
+		String fromExplicitImport = imports.getFullyQualifiedNameForSimpleNameNoAliasing(firstTypeRef);
 		if (fromExplicitImport != null) {
 			String fqn = fromExplicitImport + typeRef.substring(firstDot);
 			if (qualifieds.contains(fqn)) return LombokInternalAliasing.processAliases(fqn);
