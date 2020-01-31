@@ -260,6 +260,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		method.statements = statements.toArray(new Statement[0]);
 		param.annotations = copyAnnotations(source, copyableAnnotations, onParam.toArray(new Annotation[0]));
 		
+		if (returnType != null && returnStatement != null) createRelevantNonNullAnnotation(sourceNode, method);
+		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		return method;
 	}

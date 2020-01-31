@@ -650,6 +650,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			out.annotations = new Annotation[] {generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__UNIQUE)};
 		}
 		
+		createRelevantNonNullAnnotation(type, out);
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
 	}
@@ -796,6 +797,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			out.annotations = new Annotation[] {generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
 		}
 		out.arguments = generateBuildArgs(cfv, type, builderFields, source);
+		if (staticName == null) createRelevantNonNullAnnotation(type, out);
 		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
 	}
@@ -864,6 +866,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		} else if (sefAnn != null) {
 			out.annotations = new Annotation[] {sefAnn};
 		}
+		createRelevantNonNullAnnotation(type, out);
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
 	}

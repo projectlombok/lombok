@@ -569,7 +569,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCTypeApply returnType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, type, type.toName(builderClassName), false, List.<JCTypeParameter>nil()), typeParameterNames.toList());
 		
 		List<JCAnnotation> annsOnMethod = cfv.generateUnique() ? List.of(maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
-		return maker.MethodDef(maker.Modifiers(modifiers, annsOnMethod), type.toName(builderMethodName), returnType, copyTypeParams(source, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		JCMethodDecl methodDef = maker.MethodDef(maker.Modifiers(modifiers, annsOnMethod), type.toName(builderMethodName), returnType, copyTypeParams(source, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		createRelevantNonNullAnnotation(type, methodDef);
+		return methodDef;
 	}
 	
 	/**
@@ -604,7 +606,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCTypeApply returnType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, type, type.toName(builderClassName), false, List.<JCTypeParameter>nil()), typeParameterNames.toList());
 		
 		List<JCAnnotation> annsOnMethod = cfv.generateUnique() ? List.of(maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
-		return maker.MethodDef(maker.Modifiers(modifiers, annsOnMethod), type.toName(TO_BUILDER_METHOD_NAME), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		JCMethodDecl methodDef = maker.MethodDef(maker.Modifiers(modifiers, annsOnMethod), type.toName(TO_BUILDER_METHOD_NAME), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		createRelevantNonNullAnnotation(type, methodDef);
+		return methodDef;
 	}
 
 	/**
@@ -808,7 +812,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCModifiers modifiers = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
 		
 		List<JCVariableDecl> params = HandleBuilder.generateBuildArgs(cfv, type, builderFields);
-		return maker.MethodDef(modifiers, type.toName(buildName), cloneSelfType(returnType), List.<JCTypeParameter>nil(), params, thrownExceptions, body, null);
+		JCMethodDecl methodDef = maker.MethodDef(modifiers, type.toName(buildName), cloneSelfType(returnType), List.<JCTypeParameter>nil(), params, thrownExceptions, body, null);
+		createRelevantNonNullAnnotation(type, methodDef);
+		return methodDef;
 	}
 	
 	private JCMethodDecl generateCleanMethod(java.util.List<BuilderFieldData> builderFields, JavacNode type, JCTree source) {

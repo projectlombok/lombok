@@ -12,12 +12,14 @@ class BuilderSingularNullBehavior2 {
 		@java.lang.SuppressWarnings("all")
 		BuilderSingularNullBehavior2Builder() {
 		}
+		@org.springframework.lang.NonNull
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularNullBehavior2.BuilderSingularNullBehavior2Builder location(final String location) {
 			if (this.locations == null) this.locations = new java.util.ArrayList<String>();
 			this.locations.add(location);
 			return this;
 		}
+		@org.springframework.lang.NonNull
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularNullBehavior2.BuilderSingularNullBehavior2Builder locations(@org.springframework.lang.NonNull final java.util.Collection<? extends String> locations) {
 			java.util.Objects.requireNonNull(locations, "locations cannot be null");
@@ -25,11 +27,13 @@ class BuilderSingularNullBehavior2 {
 			this.locations.addAll(locations);
 			return this;
 		}
+		@org.springframework.lang.NonNull
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularNullBehavior2.BuilderSingularNullBehavior2Builder clearLocations() {
 			if (this.locations != null) this.locations.clear();
 			return this;
 		}
+		@org.springframework.lang.NonNull
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularNullBehavior2 build() {
 			java.util.List<String> locations;
@@ -52,6 +56,7 @@ class BuilderSingularNullBehavior2 {
 			return "BuilderSingularNullBehavior2.BuilderSingularNullBehavior2Builder(locations=" + this.locations + ")";
 		}
 	}
+	@org.springframework.lang.NonNull
 	@java.lang.SuppressWarnings("all")
 	public static BuilderSingularNullBehavior2.BuilderSingularNullBehavior2Builder builder() {
 		return new BuilderSingularNullBehavior2.BuilderSingularNullBehavior2Builder();

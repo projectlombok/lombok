@@ -1,3 +1,4 @@
+//CONF: lombok.addNullAnnotations = spring
 import lombok.With;
 class WithPlain {
 	@lombok.With int i;

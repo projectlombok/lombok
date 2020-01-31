@@ -288,6 +288,7 @@ public class JavacSingularsRecipes {
 			
 			JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, jcVariableDecls, thrown, body, null);
 			recursiveSetGeneratedBy(method, source, builderType.getContext());
+			if (returnStatement != null) createRelevantNonNullAnnotation(builderType, method);
 			injectMethod(builderType, method);
 		}
 		

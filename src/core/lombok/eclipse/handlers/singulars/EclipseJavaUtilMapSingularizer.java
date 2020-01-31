@@ -191,6 +191,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.returnType = returnType;
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
+		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
@@ -253,6 +254,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.selector = setterName.toCharArray();
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
+		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
 		data.setGeneratedByRecursive(md);
 		HandleNonNull.INSTANCE.fix(injectMethod(builderType, md));
 	}
@@ -326,6 +328,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.selector = setterName.toCharArray();
 		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
 		
+		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}

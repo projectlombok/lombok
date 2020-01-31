@@ -18,31 +18,31 @@ class BuilderSingularNullBehavior1 {
 		BuilderSingularNullBehavior1Builder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder name(final String name) {
+		public BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder name(final String name) {
 			if (this.names == null) this.names = new java.util.ArrayList<String>();
 			this.names.add(name);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder names(final java.util.@org.checkerframework.checker.nullness.qual.NonNull Collection<? extends String> names) {
+		public BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder names(final java.util.@org.checkerframework.checker.nullness.qual.NonNull Collection<? extends String> names) {
 			assert names != null : "names cannot be null";
 			if (this.names == null) this.names = new java.util.ArrayList<String>();
 			this.names.addAll(names);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder clearNames() {
+		public BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder clearNames() {
 			if (this.names != null) this.names.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder location(final String location) {
+		public BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder location(final String location) {
 			if (this.locations == null) this.locations = new java.util.ArrayList<String>();
 			this.locations.add(location);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder locations(final java.util.@org.checkerframework.checker.nullness.qual.Nullable Collection<? extends String> locations) {
+		public BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder locations(final java.util.@org.checkerframework.checker.nullness.qual.Nullable Collection<? extends String> locations) {
 			if (locations != null) {
 				if (this.locations == null) this.locations = new java.util.ArrayList<String>();
 				this.locations.addAll(locations);
@@ -50,10 +50,11 @@ class BuilderSingularNullBehavior1 {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder clearLocations() {
+		public BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder clearLocations() {
 			if (this.locations != null) this.locations.clear();
 			return this;
 		}
+		@org.checkerframework.checker.nullness.qual.NonNull
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularNullBehavior1 build() {
 			java.util.List<String> names;
@@ -87,7 +88,7 @@ class BuilderSingularNullBehavior1 {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder builder() {
+	public static BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder builder() {
 		return new BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder();
 	}
 }

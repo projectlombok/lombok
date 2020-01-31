@@ -562,6 +562,7 @@ public class HandleConstructor {
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[0]);
 		constructor.statements = new Statement[] { new ReturnStatement(statement, (int) (p >> 32), (int)p) };
 		
+		createRelevantNonNullAnnotation(type, constructor);
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDecl.scope);
 		return constructor;
 	}

@@ -8,31 +8,31 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1Builder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder name(final String name) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder name(final String name) {
       if ((this.names == null))
           this.names = new java.util.ArrayList<String>();
       this.names.add(name);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder names(final java.util. @org.checkerframework.checker.nullness.qual.NonNull Collection<? extends String> names) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder names(final java.util. @org.checkerframework.checker.nullness.qual.NonNull Collection<? extends String> names) {
       assert (names != null): "names cannot be null";
       if ((this.names == null))
           this.names = new java.util.ArrayList<String>();
       this.names.addAll(names);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder clearNames() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder clearNames() {
       if ((this.names != null))
           this.names.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder location(final String location) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder location(final String location) {
       if ((this.locations == null))
           this.locations = new java.util.ArrayList<String>();
       this.locations.add(location);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder locations(final java.util. @org.checkerframework.checker.nullness.qual.Nullable Collection<? extends String> locations) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder locations(final java.util. @org.checkerframework.checker.nullness.qual.Nullable Collection<? extends String> locations) {
       if ((locations != null))
           {
             if ((this.locations == null))
@@ -41,12 +41,12 @@ import lombok.Singular;
           }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder clearLocations() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder clearLocations() {
       if ((this.locations != null))
           this.locations.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1 build() {
+    public @org.checkerframework.checker.nullness.qual.NonNull @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1 build() {
       java.util.List<String> names;
       switch (((this.names == null) ? 0 : this.names.size())) {
       case 0 :
@@ -82,7 +82,7 @@ import lombok.Singular;
     this.names = names;
     this.locations = locations;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder builder() {
+  public static @java.lang.SuppressWarnings("all") BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder builder() {
     return new BuilderSingularNullBehavior1.BuilderSingularNullBehavior1Builder();
   }
 }

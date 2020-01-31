@@ -599,6 +599,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		if (cfv.generateUnique()) out.annotations = new Annotation[] {generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__UNIQUE)};
 		
+		createRelevantNonNullAnnotation(type, out);
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
 	}
@@ -633,6 +634,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		if (cfv.generateUnique()) out.annotations = new Annotation[] {generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__UNIQUE)};
 		
+		createRelevantNonNullAnnotation(type, out);
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
 	}
@@ -850,8 +852,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		allocationStatement.arguments = new Expression[] {new ThisReference(0, 0)};
 		statements.add(new ReturnStatement(allocationStatement, 0, 0));
 		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
-		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		out.arguments = HandleBuilder.generateBuildArgs(cfv, builderType, builderFields, source);
+		createRelevantNonNullAnnotation(builderType, out);
+		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
 	}
 	
