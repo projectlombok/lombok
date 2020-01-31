@@ -245,7 +245,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		if (!hasNonNullAnnotations(fieldNode) && !hasNonNullAnnotations(fieldNode, onParam)) {
 			statements.add(assignment);
 		} else {
-			Statement nullCheck = generateNullCheck(field.type, paramName, sourceNode);
+			Statement nullCheck = generateNullCheck(field.type, paramName, sourceNode, null);
 			if (nullCheck != null) statements.add(nullCheck);
 			statements.add(assignment);
 		}

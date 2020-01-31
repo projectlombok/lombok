@@ -22,7 +22,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> cards(final java.lang.Iterable<? extends T> cards) {
       if ((cards == null))
-          throw new java.lang.NullPointerException("cards cannot be null");
+          {
+            throw new java.lang.NullPointerException("cards cannot be null");
+          }
       if ((this.cards == null))
           this.cards = com.google.common.collect.ImmutableList.builder();
       this.cards.addAll(cards);
@@ -40,7 +42,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> frogs(final java.lang.Iterable<? extends Number> frogs) {
       if ((frogs == null))
-          throw new java.lang.NullPointerException("frogs cannot be null");
+          {
+            throw new java.lang.NullPointerException("frogs cannot be null");
+          }
       if ((this.frogs == null))
           this.frogs = com.google.common.collect.ImmutableList.builder();
       this.frogs.addAll(frogs);
@@ -58,7 +62,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> rawSet(final java.lang.Iterable<?> rawSet) {
       if ((rawSet == null))
-          throw new java.lang.NullPointerException("rawSet cannot be null");
+          {
+            throw new java.lang.NullPointerException("rawSet cannot be null");
+          }
       if ((this.rawSet == null))
           this.rawSet = com.google.common.collect.ImmutableSet.builder();
       this.rawSet.addAll(rawSet);
@@ -76,7 +82,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> passes(final java.lang.Iterable<? extends String> passes) {
       if ((passes == null))
-          throw new java.lang.NullPointerException("passes cannot be null");
+          {
+            throw new java.lang.NullPointerException("passes cannot be null");
+          }
       if ((this.passes == null))
           this.passes = com.google.common.collect.ImmutableSortedSet.naturalOrder();
       this.passes.addAll(passes);
@@ -94,7 +102,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> users(final com.google.common.collect.Table<? extends Number, ? extends Number, ? extends String> users) {
       if ((users == null))
-          throw new java.lang.NullPointerException("users cannot be null");
+          {
+            throw new java.lang.NullPointerException("users cannot be null");
+          }
       if ((this.users == null))
           this.users = com.google.common.collect.ImmutableTable.builder();
       this.users.putAll(users);

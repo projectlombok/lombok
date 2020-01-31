@@ -61,7 +61,6 @@ import lombok.Builder;
 import lombok.Builder.ObtainVia;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
-import lombok.Singular.NullCollectionBehavior;
 import lombok.ToString;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
@@ -908,22 +907,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				return null;
 			}
 			
-			NullCollectionBehavior behavior = getNullBehaviorFor(ann, singularInstance, node);
-			
-			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, behavior, setterPrefix);
+			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, singularInstance.ignoreNullCollections(), setterPrefix);
 		}
 		
 		return null;
-	}
-	
-	static NullCollectionBehavior getNullBehaviorFor(AnnotationValues<Singular> ann, Singular singularInstance, JavacNode node) {
-		NullCollectionBehavior behavior;
-		if (ann.isExplicit("nullBehavior")) {
-			behavior = singularInstance.nullBehavior();
-		} else {
-			behavior = node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_NULL_COLLECTIONS);
-		}
-		if (behavior == null) return NullCollectionBehavior.NULL_POINTER_EXCEPTION;
-		return behavior;
 	}
 }

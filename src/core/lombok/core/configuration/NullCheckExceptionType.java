@@ -74,8 +74,9 @@ public enum NullCheckExceptionType {
 	private static final LombokImmutableList<String> METHOD_JDK = LombokImmutableList.of("java", "util", "Objects", "requireNonNull");
 	private static final LombokImmutableList<String> METHOD_GUAVA = LombokImmutableList.of("com", "google", "common", "base", "Preconditions", "checkNotNull");
 	
-	public String toExceptionMessage(String fieldName) {
-		return fieldName + " is marked non-null but is null";
+	public String toExceptionMessage(String fieldName, String customMessage) {
+		if (customMessage == null) return fieldName + " is marked non-null but is null";
+		return customMessage.replace("%s", fieldName);
 	}
 	
 	public abstract String getExceptionType();

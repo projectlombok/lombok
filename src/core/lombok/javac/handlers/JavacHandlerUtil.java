@@ -1537,12 +1537,12 @@ public class JavacHandlerUtil {
 	 * Generates a new statement that checks if the given local is null, and if so, throws a configured exception with the
 	 * local variable name as message. 
 	 */
-	public static JCStatement generateNullCheck(JavacTreeMaker maker, JCExpression typeNode, Name varName, JavacNode source) {
+	public static JCStatement generateNullCheck(JavacTreeMaker maker, JCExpression typeNode, Name varName, JavacNode source, String customMessage) {
 		NullCheckExceptionType exceptionType = source.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
 		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
 		
-		if (isPrimitive(typeNode)) return null;
-		JCLiteral message = maker.Literal(exceptionType.toExceptionMessage(varName.toString()));
+		if (typeNode != null && isPrimitive(typeNode)) return null;
+		JCLiteral message = maker.Literal(exceptionType.toExceptionMessage(varName.toString(), customMessage));
 		
 		LombokImmutableList<String> method = exceptionType.getMethod();
 		if (method != null) {
@@ -1569,7 +1569,7 @@ public class JavacHandlerUtil {
 	 * stripped as a result of @Accessors.prefix.
 	 */
 	public static JCStatement generateNullCheck(JavacTreeMaker maker, JCVariableDecl varDecl, JavacNode source) {
-		return generateNullCheck(maker, varDecl.vartype, varDecl.name, source);
+		return generateNullCheck(maker, varDecl.vartype, varDecl.name, source, null);
 	}
 	
 	/**

@@ -278,7 +278,7 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 			
 			List<Statement> statements = new ArrayList<Statement>(5);
 			if (hasNonNullAnnotations(fieldNode)) {
-				Statement nullCheck = generateNullCheck(field, sourceNode);
+				Statement nullCheck = generateNullCheck(field, sourceNode, null);
 				if (nullCheck != null) statements.add(nullCheck);
 			}
 			statements.add(returnStatement);

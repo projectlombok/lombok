@@ -36,7 +36,9 @@ class BuilderSingularAnnotatedTypes {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder foos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
-			if (foos == null) throw new java.lang.NullPointerException("foos cannot be null");
+			if (foos == null) {
+				throw new java.lang.NullPointerException("foos cannot be null");
+			}
 			if (this.foos == null) this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
 			this.foos.addAll(foos);
 			return this;
@@ -64,7 +66,9 @@ class BuilderSingularAnnotatedTypes {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder bars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
-			if (bars == null) throw new java.lang.NullPointerException("bars cannot be null");
+			if (bars == null) {
+				throw new java.lang.NullPointerException("bars cannot be null");
+			}
 			if (this.bars$key == null) {
 				this.bars$key = new java.util.ArrayList<@MyAnnotation @NonNull String>();
 				this.bars$value = new java.util.ArrayList<@MyAnnotation @NonNull Integer>();

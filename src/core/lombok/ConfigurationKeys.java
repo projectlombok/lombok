@@ -23,7 +23,6 @@ package lombok;
 
 import java.util.List;
 
-import lombok.Singular.NullCollectionBehavior;
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.ConfigurationKey;
@@ -317,18 +316,6 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<Boolean> SINGULAR_AUTO = new ConfigurationKey<Boolean>("lombok.singular.auto", "If true (default): Automatically singularize the assumed-to-be-plural name of your variable/parameter when using @Singular.") {}; 
 	
-	/**
-	 * lombok configuration: {@code lombok.singular.nullCollections} = one of: [{@code NullPointerException}, {@code IllegalArgumentException}, {@code JDK}, {@code Guava}, or {@code ignore}].
-	 * 
-	 * Lombok generates a 'plural form' method, which takes in a collection and will <em>add</em> each element in it to the {@code @Singular} marked target. What should happen if {@code null} is passed instead of a collection instance?<ul>
-	 * <li>If the chosen configuration is {@code NullPointerException} (the default), or {@code IllegalArgumentException}, that exception type is a thrown, with as message <code><em>field-name</em> must not be null</code>.</li>
-	 * <li>If the chosen configuration is {@code JDK}, a call to {@code java.util.Objects.requireNonNull} is generated with the fieldname passed along (which throws {@code NullPointerException}).</li>
-	 * <li>If the chosen configuration is {@code Guava}, a call to {@code com.google.common.base.Preconditions.checkNotNull} is generated with the fieldname passed along (which throws {@code NullPointerException}).</li>
-	 * <li>If the chosen configuration is {@code Ignore}, then no exception occurs, and the call does nothing; it acts as if an empty collection was passed.</li>
-	 * </ul>
-	 */
-	public static final ConfigurationKey<NullCollectionBehavior> SINGULAR_NULL_COLLECTIONS = new ConfigurationKey<NullCollectionBehavior>("lombok.singular.nullCollections", "Lombok generates a method to add all elements in a collection when using @Singular. What should happen if a null ref is passed? default: throw NullPointerException.") {};
-	
 	// ##### Standalones #####
 	
 	// ----- Cleanup -----
@@ -360,6 +347,7 @@ public class ConfigurationKeys {
 	 * <li>If the chosen configuration is {@code JDK}, a call to {@code java.util.Objects.requireNonNull} is generated with the fieldname passed along (which throws {@code NullPointerException}).</li>
 	 * <li>If the chosen configuration is {@code Guava}, a call to {@code com.google.common.base.Preconditions.checkNotNull} is generated with the fieldname passed along (which throws {@code NullPointerException}).</li>
 	 * </ul>
+	 * NB: The chosen nullcheck style is also used by {@code @Builder}'s {@code @Singular} annotation to check any collections passed to a plural-form method.
 	 */
 	public static final ConfigurationKey<NullCheckExceptionType> NON_NULL_EXCEPTION_TYPE = new ConfigurationKey<NullCheckExceptionType>("lombok.nonNull.exceptionType", "The type of the exception to throw if a passed-in argument is null (Default: NullPointerException).") {};
 	

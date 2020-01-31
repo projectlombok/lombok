@@ -46,7 +46,7 @@
 			</ul>
 			Each listed generated element will be silently skipped if that element already exists (disregarding parameter counts and looking only at names). This includes the <em>builder</em> itself: If that class already exists, lombok will simply start injecting fields and methods inside this already existing class, unless of course the fields / methods to be injected already exist. You may not put any other method (or constructor) generating lombok annotation on a builder class though; for example, you can not put <code>@EqualsAndHashCode</code> on the builder class.
 		</p><p>
-			<code>@Builder</code> can generate so-called 'singular' methods for collection parameters/fields. These take 1 element instead of an entire list, and add the element to the list. For example: <code>Person.builder().job("Mythbusters").job("Unchained Reaction").build();</code> would result in the <code>List&lt;String&gt; jobs</code> field to have 2 strings in it. To get this behaviour, the field/parameter needs to be annotated with <code>@Singular</code>. The feature has <a href="#singular">its own documentation</a>.
+			<code>@Builder</code> can generate so-called 'singular' methods for collection parameters/fields. These take 1 element instead of an entire list, and add the element to the list. For example: <code>Person.builder().job("Mythbusters").job("Unchained Reaction").build();</code> would result in the <code>List&lt;String&gt; jobs</code> field to have 2 strings in it. To get this behavior, the field/parameter needs to be annotated with <code>@Singular</code>. The feature has <a href="#singular">its own documentation</a>.
 		</p><p>
 			Now that the "method" mode is clear, putting a <code>@Builder</code> annotation on a constructor functions similarly; effectively, constructors are just static methods that have a special syntax to invoke them: Their 'return type' is the class they construct, and their type parameters are the same as the type parameters of the class itself.
 		</p><p>
@@ -133,11 +133,11 @@
 			If your identifiers are written in common english, lombok assumes that the name of any collection with <code>@Singular</code> on it is an english plural and will attempt to automatically singularize that name. If this is possible, the add-one method will use this name. For example, if your collection is called <code>statuses</code>, then the add-one method will automatically be called <code>status</code>. You can also specify the singular form of your identifier explictly by passing the singular form as argument to the annotation like so: <code>@Singular("axis") List&lt;Line&gt; axes;</code>.<br />
 			If lombok cannot singularize your identifier, or it is ambiguous, lombok will generate an error and force you to explicitly specify the singular name.
 		</p><p>
-				The snippet below does not show what lombok generates for a <code>@Singular</code> field/parameter because it is rather complicated. You can view a snippet <a href="builderSingular">here</a>.
+			The snippet below does not show what lombok generates for a <code>@Singular</code> field/parameter because it is rather complicated. You can view a snippet <a href="builderSingular">here</a>.
 		</p><p>
 			If also using <code>setterPrefix = "with"</code>, the generated names are, for example, <code>withName</code> (add 1 name), <code>withNames</code> (add many names), and <code>clearNames</code> (reset all names).
 		</p><p>
-			Ordinarily, the generated 'plural form' method (which takes in a collection, and adds each element in this collection) will check if a <code>null</code> is passed and throws a <code>NullPointerException</code> with an appropriate message. However, you can configure alternative behaviour. For example, for deserialization classes it can be useful to just do nothing (as if an empty collection was passed) instead: <code>@Singular(nullBehavior = NullCollectionBehavior.IGNORE)</code>. If you want to change the kind of nullcheck lombok generates (for example, if you prefer the non-recommended <code>IllegalArgumentException</code> instead, we suggest you configure this in one central place by making a <code>lombok.config</code> entry instead; the intended use for specifying the behavior on the <code>@Singular</code> annotation directly is to explicitly request the <code>IGNORE</code> behaviour.
+			Ordinarily, the generated 'plural form' method (which takes in a collection, and adds each element in this collection) will check if a <code>null</code> is passed the same way <a href="NonNull"><code>@NonNull</code></a> does (by default, throws a <code>NullPointerException</code> with an appropriate message). However, you can also tell lombok to ignore such collection (so, add nothing, return immediately): <code>@Singular(ignoreNullCollections = true</code>.
 		</p>
 	</@f.featureSection>
 
@@ -181,10 +181,6 @@ public class JacksonExample {
 			<code>lombok.singular.auto</code> = [<code>true</code> | <code>false</code>] (default: true)
 		</dt><dd>
 			If <code>true</code> (which is the default), lombok automatically tries to singularize your identifier name by assuming that it is a common english plural. If <code>false</code>, you must always explicitly specify the singular name, and lombok will generate an error if you don't (useful if you write your code in a language other than english).
-		</dd><dt>
-			<code>lombok.singular.nullCollections</code> = [<code>NullPointerException</code> | <code>IllegalArgumentException</code> | <code>Guava</code> | <code>JDK</code> | <code>ignore</code>] (default: <code>NullPointerException</code>)
-		</dt><dd>
-			What should lombok do when a generated 'plural form' (for singular properties) method is called with a <code>null</code> argument? Normally, lombok does an explicit null check with an appropriate message, but you can use this configuration to pick another flavour of nullcheck. The <code>ignore</code> option makes lombok treat null as an empty collection: Do nothing. An appropriate nullity annotation will be placed on the generated plural form method's parameter if you configured the flavour of nullity annotations you want via <a href="configuration"><code>lombok.config</code></a> key <code>lombok.addNullAnnotations</code>.
 		</dd>
 	</@f.confKeys>
 
@@ -196,7 +192,7 @@ public class JacksonExample {
 		</p><p>
 			The sorted collections (java.util: <code>SortedSet</code>, <code>NavigableSet</code>, <code>SortedMap</code>, <code>NavigableMap</code> and guava: <code>ImmutableSortedSet</code>, <code>ImmutableSortedMap</code>) require that the type argument of the collection has natural order (implements <code>java.util.Comparable</code>). There is no way to pass an explicit <code>Comparator</code> to use in the builder.
 		</p><p>
-			An <code>ArrayList</code> is used to store added elements as call methods of a <code>@Singular</code> marked field, if the target collection is from the <code>java.util</code> package, <em>even if the collection is a set or map</em>. Because lombok ensures that generated collections are compacted, a new backing instance of a set or map must be constructed anyway, and storing the data as an <code>ArrayList</code> during the build process is more efficient that storing it as a map or set. This behaviour is not externally visible, an implementation detail of the current implementation of the <code>java.util</code> recipes for <code>@Singular @Builder</code>.
+			An <code>ArrayList</code> is used to store added elements as call methods of a <code>@Singular</code> marked field, if the target collection is from the <code>java.util</code> package, <em>even if the collection is a set or map</em>. Because lombok ensures that generated collections are compacted, a new backing instance of a set or map must be constructed anyway, and storing the data as an <code>ArrayList</code> during the build process is more efficient that storing it as a map or set. This behavior is not externally visible, an implementation detail of the current implementation of the <code>java.util</code> recipes for <code>@Singular @Builder</code>.
 		</p><p>
 			With <code>toBuilder = true</code> applied to methods, any type parameter of the annotated method itself must also show up in the return type.
 		</p><p>
@@ -216,9 +212,9 @@ public class JacksonExample {
 			Due to a peculiar way javac processes static imports, trying to do a non-star static import of the static <code>builder()</code> method won't work. Either use a star static import: `import static TypeThatHasABuilder.*;` or don't statically import the <code>builder</code> method.
 		</p><p>
 			If setting the access level to <code>PROTECTED</code>, all methods generated inside the builder class are actually generated as <code>public</code>; the meaning of the
-			<code>protected</code> keyword is different inside the inner class, and the precise behaviour that <code>PROTECTED</code> would indicate (access by any source in the same package is allowed, as well as any subclasses <em>from the outer class, marked with <code>@Builder</code></em> is not possible, and marking the inner members <code>public</code> is as close as we can get.
+			<code>protected</code> keyword is different inside the inner class, and the precise behavior that <code>PROTECTED</code> would indicate (access by any source in the same package is allowed, as well as any subclasses <em>from the outer class, marked with <code>@Builder</code></em> is not possible, and marking the inner members <code>public</code> is as close as we can get.
 		</p><p>
-			If you have configured a nullity annotation flavour via <a href="configuration"><code>lombok.config</code></a> key <code>lombok.addNullAnnotations</code>, any plural-form generated builder methods for <code>@Singular</code> marked properties (these plural form methods take a collection of some sort and add all elements) get a nullity annotation on the parameter. You get a non-null one normally, but if you have configured the behaviour on <code>null</code> being passed in as collection to <code>IGNORE</code>, a nullable annotation is generated instead.
+			If you have configured a nullity annotation flavour via <a href="configuration"><code>lombok.config</code></a> key <code>lombok.addNullAnnotations</code>, any plural-form generated builder methods for <code>@Singular</code> marked properties (these plural form methods take a collection of some sort and add all elements) get a nullity annotation on the parameter. You get a non-null one normally, but if you have configured the behavior on <code>null</code> being passed in as collection to <code>IGNORE</code>, a nullable annotation is generated instead.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

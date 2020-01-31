@@ -19,7 +19,9 @@ class BuilderSingularWithPrefixesWithSetterPrefix {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularWithPrefixesWithSetterPrefix.BuilderSingularWithPrefixesWithSetterPrefixBuilder withElems(final java.util.Collection<? extends String> elems) {
-			if (elems == null) throw new java.lang.NullPointerException("elems cannot be null");
+			if (elems == null) {
+				throw new java.lang.NullPointerException("elems cannot be null");
+			}
 			if (this.elems == null) this.elems = new java.util.ArrayList<String>();
 			this.elems.addAll(elems);
 			return this;

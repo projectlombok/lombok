@@ -26,7 +26,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMaps.BuilderSingularMapsBuilder<K, V> women(final java.util.Map<? extends K, ? extends V> women) {
       if ((women == null))
-          throw new java.lang.NullPointerException("women cannot be null");
+          {
+            throw new java.lang.NullPointerException("women cannot be null");
+          }
       if ((this.women$key == null))
           {
             this.women$key = new java.util.ArrayList<K>();
@@ -59,7 +61,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMaps.BuilderSingularMapsBuilder<K, V> men(final java.util.Map<? extends K, ? extends Number> men) {
       if ((men == null))
-          throw new java.lang.NullPointerException("men cannot be null");
+          {
+            throw new java.lang.NullPointerException("men cannot be null");
+          }
       if ((this.men$key == null))
           {
             this.men$key = new java.util.ArrayList<K>();
@@ -92,7 +96,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMaps.BuilderSingularMapsBuilder<K, V> rawMap(final java.util.Map<?, ?> rawMap) {
       if ((rawMap == null))
-          throw new java.lang.NullPointerException("rawMap cannot be null");
+          {
+            throw new java.lang.NullPointerException("rawMap cannot be null");
+          }
       if ((this.rawMap$key == null))
           {
             this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
@@ -125,7 +131,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMaps.BuilderSingularMapsBuilder<K, V> stringMap(final java.util.Map<? extends String, ? extends V> stringMap) {
       if ((stringMap == null))
-          throw new java.lang.NullPointerException("stringMap cannot be null");
+          {
+            throw new java.lang.NullPointerException("stringMap cannot be null");
+          }
       if ((this.stringMap$key == null))
           {
             this.stringMap$key = new java.util.ArrayList<String>();

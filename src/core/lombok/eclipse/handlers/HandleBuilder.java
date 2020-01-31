@@ -79,7 +79,6 @@ import org.mangosdk.spi.ProviderFor;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.ObtainVia;
-import lombok.Singular.NullCollectionBehavior;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
 import lombok.ToString;
@@ -1036,21 +1035,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				return null;
 			}
 			
-			NullCollectionBehavior behavior = getNullBehaviorFor(ann, singularInstance, node);
-			return new SingularData(child, singularName, pluralName, typeArgs == null ? Collections.<TypeReference>emptyList() : Arrays.asList(typeArgs), targetFqn, singularizer, source, behavior, setterPrefix.toCharArray());
+			return new SingularData(child, singularName, pluralName, typeArgs == null ? Collections.<TypeReference>emptyList() : Arrays.asList(typeArgs), targetFqn, singularizer, source, singularInstance.ignoreNullCollections(), setterPrefix.toCharArray());
 		}
 		
 		return null;
-	}
-	
-	static NullCollectionBehavior getNullBehaviorFor(AnnotationValues<Singular> ann, Singular singularInstance, EclipseNode node) {
-		NullCollectionBehavior behavior;
-		if (ann.isExplicit("nullBehavior")) {
-			behavior = singularInstance.nullBehavior();
-		} else {
-			behavior = node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_NULL_COLLECTIONS);
-		}
-		if (behavior == null) return NullCollectionBehavior.NULL_POINTER_EXCEPTION;
-		return behavior;
 	}
 }

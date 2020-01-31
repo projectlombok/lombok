@@ -18,7 +18,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularSets.BuilderSingularSetsBuilder<T> dangerMice(final java.util.Collection<? extends T> dangerMice) {
       if ((dangerMice == null))
-          throw new java.lang.NullPointerException("dangerMice cannot be null");
+          {
+            throw new java.lang.NullPointerException("dangerMice cannot be null");
+          }
       if ((this.dangerMice == null))
           this.dangerMice = new java.util.ArrayList<T>();
       this.dangerMice.addAll(dangerMice);
@@ -37,7 +39,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularSets.BuilderSingularSetsBuilder<T> octopodes(final java.util.Collection<? extends Number> octopodes) {
       if ((octopodes == null))
-          throw new java.lang.NullPointerException("octopodes cannot be null");
+          {
+            throw new java.lang.NullPointerException("octopodes cannot be null");
+          }
       if ((this.octopodes == null))
           this.octopodes = new java.util.ArrayList<Number>();
       this.octopodes.addAll(octopodes);
@@ -56,7 +60,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularSets.BuilderSingularSetsBuilder<T> rawSet(final java.util.Collection<?> rawSet) {
       if ((rawSet == null))
-          throw new java.lang.NullPointerException("rawSet cannot be null");
+          {
+            throw new java.lang.NullPointerException("rawSet cannot be null");
+          }
       if ((this.rawSet == null))
           this.rawSet = new java.util.ArrayList<java.lang.Object>();
       this.rawSet.addAll(rawSet);
@@ -75,7 +81,9 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularSets.BuilderSingularSetsBuilder<T> stringSet(final java.util.Collection<? extends String> stringSet) {
       if ((stringSet == null))
-          throw new java.lang.NullPointerException("stringSet cannot be null");
+          {
+            throw new java.lang.NullPointerException("stringSet cannot be null");
+          }
       if ((this.stringSet == null))
           this.stringSet = new java.util.ArrayList<String>();
       this.stringSet.addAll(stringSet);

@@ -248,7 +248,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		if (!hasNonNullAnnotations(field) && !hasNonNullAnnotations(field, onParam)) {
 			statements.append(treeMaker.Exec(assign));
 		} else {
-			JCStatement nullCheck = generateNullCheck(treeMaker, fieldDecl.vartype, paramName, source);
+			JCStatement nullCheck = generateNullCheck(treeMaker, fieldDecl.vartype, paramName, source, null);
 			if (nullCheck != null) statements.append(nullCheck);
 			statements.append(treeMaker.Exec(assign));
 		}

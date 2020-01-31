@@ -24,7 +24,9 @@ public @Builder class BuilderDefaultsWarnings {
     }
     public @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder items(final java.util.Collection<? extends String> items) {
       if ((items == null))
-          throw new java.lang.NullPointerException("items cannot be null");
+          {
+            throw new java.lang.NullPointerException("items cannot be null");
+          }
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);

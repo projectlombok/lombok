@@ -46,7 +46,9 @@ class BuilderSingularMaps<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMaps.BuilderSingularMapsBuilder<K, V> women(java.util.Map<? extends K, ? extends V> women) {
-			if (women == null) throw new NullPointerException("women cannot be null");
+			if (women == null) {
+				throw new NullPointerException("women cannot be null");
+			}
 			if (this.women$key == null) {
 				this.women$key = new java.util.ArrayList<K>();
 				this.women$value = new java.util.ArrayList<V>();
@@ -77,7 +79,9 @@ class BuilderSingularMaps<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMaps.BuilderSingularMapsBuilder<K, V> men(java.util.Map<? extends K, ? extends Number> men) {
-			if (men == null) throw new NullPointerException("men cannot be null");
+			if (men == null) {
+				throw new NullPointerException("men cannot be null");
+			}
 			if (this.men$key == null) {
 				this.men$key = new java.util.ArrayList<K>();
 				this.men$value = new java.util.ArrayList<Number>();
@@ -108,7 +112,9 @@ class BuilderSingularMaps<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMaps.BuilderSingularMapsBuilder<K, V> rawMap(java.util.Map<?, ?> rawMap) {
-			if (rawMap == null) throw new NullPointerException("rawMap cannot be null");
+			if (rawMap == null) {
+				throw new NullPointerException("rawMap cannot be null");
+			}
 			if (this.rawMap$key == null) {
 				this.rawMap$key = new java.util.ArrayList<Object>();
 				this.rawMap$value = new java.util.ArrayList<Object>();
@@ -139,7 +145,9 @@ class BuilderSingularMaps<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMaps.BuilderSingularMapsBuilder<K, V> stringMap(java.util.Map<? extends String, ? extends V> stringMap) {
-			if (stringMap == null) throw new NullPointerException("stringMap cannot be null");
+			if (stringMap == null) {
+				throw new NullPointerException("stringMap cannot be null");
+			}
 			if (this.stringMap$key == null) {
 				this.stringMap$key = new java.util.ArrayList<String>();
 				this.stringMap$value = new java.util.ArrayList<V>();

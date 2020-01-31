@@ -33,7 +33,6 @@ import java.util.Map;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Block;
@@ -49,16 +48,13 @@ import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Reference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
-import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
@@ -67,12 +63,10 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 import lombok.AccessLevel;
-import lombok.Singular.NullCollectionBehavior;
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.configuration.CheckerFrameworkVersion;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseNode;
 
 public class EclipseSingularsRecipes {
@@ -135,14 +129,14 @@ public class EclipseSingularsRecipes {
 		private final List<TypeReference> typeArgs;
 		private final String targetFqn;
 		private final EclipseSingularizer singularizer;
-		private final NullCollectionBehavior nullCollectionBehavior;
+		private final boolean ignoreNullCollections;
 		private final ASTNode source;
 		
-		public SingularData(EclipseNode annotation, char[] singularName, char[] pluralName, List<TypeReference> typeArgs, String targetFqn, EclipseSingularizer singularizer, ASTNode source, NullCollectionBehavior nullCollectionBehavior) {
-			this(annotation, singularName, pluralName, typeArgs, targetFqn, singularizer, source, nullCollectionBehavior, new char[0]);
+		public SingularData(EclipseNode annotation, char[] singularName, char[] pluralName, List<TypeReference> typeArgs, String targetFqn, EclipseSingularizer singularizer, ASTNode source, boolean ignoreNullCollections) {
+			this(annotation, singularName, pluralName, typeArgs, targetFqn, singularizer, source, ignoreNullCollections, new char[0]);
 		}
 		
-		public SingularData(EclipseNode annotation, char[] singularName, char[] pluralName, List<TypeReference> typeArgs, String targetFqn, EclipseSingularizer singularizer, ASTNode source, NullCollectionBehavior nullCollectionBehavior, char[] setterPrefix) {
+		public SingularData(EclipseNode annotation, char[] singularName, char[] pluralName, List<TypeReference> typeArgs, String targetFqn, EclipseSingularizer singularizer, ASTNode source, boolean ignoreNullCollections, char[] setterPrefix) {
 			this.annotation = annotation;
 			this.singularName = singularName;
 			this.pluralName = pluralName;
@@ -150,7 +144,7 @@ public class EclipseSingularsRecipes {
 			this.targetFqn = targetFqn;
 			this.singularizer = singularizer;
 			this.source = source;
-			this.nullCollectionBehavior = nullCollectionBehavior;
+			this.ignoreNullCollections = ignoreNullCollections;
 			this.setterPrefix = setterPrefix;
 		}
 		
@@ -198,8 +192,8 @@ public class EclipseSingularsRecipes {
 			return singularizer;
 		}
 		
-		public NullCollectionBehavior getNullCollectionBehavior() {
-			return nullCollectionBehavior;
+		public boolean isIgnoreNullCollections() {
+			return ignoreNullCollections;
 		}
 		
 		public String getTargetSimpleType() {
@@ -439,9 +433,9 @@ public class EclipseSingularsRecipes {
 		}
 		
 		protected void nullBehaviorize(EclipseNode typeNode, SingularData data, List<Statement> statements, Argument arg) {
-			NullCollectionBehavior behavior = data.getNullCollectionBehavior();
+			boolean ignoreNullCollections = data.isIgnoreNullCollections();
 			
-			if (behavior == NullCollectionBehavior.IGNORE) {
+			if (ignoreNullCollections) {
 				Expression isNotNull = new EqualExpression(new SingleNameReference(data.getPluralName(), 0L), new NullLiteral(0, 0), OperatorIds.NOT_EQUAL);
 				Block b = new Block(0);
 				b.statements = statements.toArray(new Statement[statements.size()]);
@@ -452,32 +446,8 @@ public class EclipseSingularsRecipes {
 			}
 			
 			EclipseHandlerUtil.createRelevantNonNullAnnotation(typeNode, arg);
-			
-			String exceptionTypeStr = behavior.getExceptionType();
-			StringLiteral message = new StringLiteral(behavior.toExceptionMessage(new String(data.getPluralName())).toCharArray(), 0, 0, 0);
-			if (exceptionTypeStr != null) {
-				Expression isNull = new EqualExpression(new SingleNameReference(data.getPluralName(), 0L), new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
-				int partCount = 1;
-				for (int i = 0; i < exceptionTypeStr.length(); i++) if (exceptionTypeStr.charAt(i) == '.') partCount++;
-				long[] ps = new long[partCount];
-				Arrays.fill(ps, 0L);
-				AllocationExpression alloc = new AllocationExpression();
-				alloc.type = new QualifiedTypeReference(Eclipse.fromQualifiedName(exceptionTypeStr), ps);
-				alloc.arguments = new Expression[] {message};
-				Statement t = new ThrowStatement(alloc, 0, 0);
-				statements.add(0, new IfStatement(isNull, t, 0, 0));
-				return;
-			}
-			
-			MessageSend invoke = new MessageSend();
-			LombokImmutableList<String> method = behavior.getMethod();
-			char[][] utilityTypeName = new char[method.size() - 1][];
-			for (int i = 0; i < method.size() - 1; i++) utilityTypeName[i] = method.get(i).toCharArray();
-			
-			invoke.receiver = new QualifiedNameReference(utilityTypeName, new long[method.size() - 1], 0, 0);
-			invoke.selector = method.get(method.size() - 1).toCharArray();
-			invoke.arguments = new Expression[] {new SingleNameReference(data.getPluralName(), 0L), message};
-			statements.add(0, invoke);
+			Statement nullCheck = EclipseHandlerUtil.generateNullCheck(null, data.getPluralName(), typeNode, "%s cannot be null");
+			statements.add(0, nullCheck);
 		}
 		
 		protected abstract char[][] getEmptyMakerReceiver(String targetFqn);

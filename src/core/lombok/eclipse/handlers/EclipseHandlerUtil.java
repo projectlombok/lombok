@@ -1992,7 +1992,7 @@ public class EclipseHandlerUtil {
 	 * Generates a new statement that checks if the given local variable is null, and if so, throws a specified exception with the
 	 * variable name as message.
 	 */
-	public static Statement generateNullCheck(TypeReference type, char[] variable, EclipseNode sourceNode) {
+	public static Statement generateNullCheck(TypeReference type, char[] variable, EclipseNode sourceNode, String customMessage) {
 		NullCheckExceptionType exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
 		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
 		
@@ -2001,11 +2001,11 @@ public class EclipseHandlerUtil {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
-		if (isPrimitive(type)) return null;
+		if (type != null && isPrimitive(type)) return null;
 		SingleNameReference varName = new SingleNameReference(variable, p);
 		setGeneratedBy(varName, source);
 		
-		StringLiteral message = new StringLiteral(exceptionType.toExceptionMessage(new String(variable)).toCharArray(), pS, pE, 0);
+		StringLiteral message = new StringLiteral(exceptionType.toExceptionMessage(new String(variable), customMessage).toCharArray(), pS, pE, 0);
 		setGeneratedBy(message, source);
 		
 		LombokImmutableList<String> method = exceptionType.getMethod();
@@ -2071,8 +2071,8 @@ public class EclipseHandlerUtil {
 	 * 
 	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
-	public static Statement generateNullCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode) {
-		return generateNullCheck(variable.type, variable.name, sourceNode);
+	public static Statement generateNullCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode, String customMessage) {
+		return generateNullCheck(variable.type, variable.name, sourceNode, customMessage);
 	}
 	
 	/**

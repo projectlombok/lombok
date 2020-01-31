@@ -29,7 +29,9 @@ import lombok.Builder;
     }
     public @java.lang.SuppressWarnings("all") BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> bars(final java.util.Collection<? extends T> bars) {
       if ((bars == null))
-          throw new java.lang.NullPointerException("bars cannot be null");
+          {
+            throw new java.lang.NullPointerException("bars cannot be null");
+          }
       if ((this.bars == null))
           this.bars = new java.util.ArrayList<T>();
       this.bars.addAll(bars);

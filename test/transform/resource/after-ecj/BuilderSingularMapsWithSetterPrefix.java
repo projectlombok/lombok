@@ -25,19 +25,20 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withWomen(final java.util.Map<? extends K, ? extends V> women) {
-      if ((women != null))
+      if ((women == null))
           {
-            if ((this.women$key == null))
-                {
-                  this.women$key = new java.util.ArrayList<K>();
-                  this.women$value = new java.util.ArrayList<V>();
-                }
-            for (java.util.Map.Entry<? extends K, ? extends V> $lombokEntry : women.entrySet()) 
-              {
-                this.women$key.add($lombokEntry.getKey());
-                this.women$value.add($lombokEntry.getValue());
-              }
+            throw new java.lang.NullPointerException("women cannot be null");
           }
+      if ((this.women$key == null))
+          {
+            this.women$key = new java.util.ArrayList<K>();
+            this.women$value = new java.util.ArrayList<V>();
+          }
+      for (java.util.Map.Entry<? extends K, ? extends V> $lombokEntry : women.entrySet()) 
+        {
+          this.women$key.add($lombokEntry.getKey());
+          this.women$value.add($lombokEntry.getValue());
+        }
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearWomen() {
@@ -59,19 +60,20 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withMen(final java.util.Map<? extends K, ? extends Number> men) {
-      if ((men != null))
+      if ((men == null))
           {
-            if ((this.men$key == null))
-                {
-                  this.men$key = new java.util.ArrayList<K>();
-                  this.men$value = new java.util.ArrayList<Number>();
-                }
-            for (java.util.Map.Entry<? extends K, ? extends Number> $lombokEntry : men.entrySet()) 
-              {
-                this.men$key.add($lombokEntry.getKey());
-                this.men$value.add($lombokEntry.getValue());
-              }
+            throw new java.lang.NullPointerException("men cannot be null");
           }
+      if ((this.men$key == null))
+          {
+            this.men$key = new java.util.ArrayList<K>();
+            this.men$value = new java.util.ArrayList<Number>();
+          }
+      for (java.util.Map.Entry<? extends K, ? extends Number> $lombokEntry : men.entrySet()) 
+        {
+          this.men$key.add($lombokEntry.getKey());
+          this.men$value.add($lombokEntry.getValue());
+        }
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearMen() {
@@ -127,19 +129,20 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> withStringMap(final java.util.Map<? extends String, ? extends V> stringMap) {
-      if ((stringMap != null))
+      if ((stringMap == null))
           {
-            if ((this.stringMap$key == null))
-                {
-                  this.stringMap$key = new java.util.ArrayList<String>();
-                  this.stringMap$value = new java.util.ArrayList<V>();
-                }
-            for (java.util.Map.Entry<? extends String, ? extends V> $lombokEntry : stringMap.entrySet()) 
-              {
-                this.stringMap$key.add($lombokEntry.getKey());
-                this.stringMap$value.add($lombokEntry.getValue());
-              }
+            throw new java.lang.NullPointerException("stringMap cannot be null");
           }
+      if ((this.stringMap$key == null))
+          {
+            this.stringMap$key = new java.util.ArrayList<String>();
+            this.stringMap$value = new java.util.ArrayList<V>();
+          }
+      for (java.util.Map.Entry<? extends String, ? extends V> $lombokEntry : stringMap.entrySet()) 
+        {
+          this.stringMap$key.add($lombokEntry.getKey());
+          this.stringMap$value.add($lombokEntry.getValue());
+        }
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearStringMap() {
@@ -206,7 +209,7 @@ import lombok.Singular;
   }
   private @Singular Map<K, V> women;
   private @Singular SortedMap<K, ? extends Number> men;
-  private @SuppressWarnings("all") @Singular("rawMap") Map rawMap;
+  private @SuppressWarnings("all") @Singular(value = "rawMap",ignoreNullCollections = true) Map rawMap;
   private @Singular("stringMap") Map<String, V> stringMap;
   @java.lang.SuppressWarnings("all") BuilderSingularMapsWithSetterPrefix(final Map<K, V> women, final SortedMap<K, ? extends Number> men, final Map rawMap, final Map<String, V> stringMap) {
     super();

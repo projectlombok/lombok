@@ -38,7 +38,9 @@ public class BuilderDefaultsWarnings {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder items(final java.util.Collection<? extends String> items) {
-			if (items == null) throw new java.lang.NullPointerException("items cannot be null");
+			if (items == null) {
+				throw new java.lang.NullPointerException("items cannot be null");
+			}
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.addAll(items);
 			return this;

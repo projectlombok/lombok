@@ -59,7 +59,6 @@ import com.sun.tools.javac.util.Name;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.ObtainVia;
-import lombok.Singular.NullCollectionBehavior;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
 import lombok.ToString;
@@ -976,8 +975,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				return null;
 			}
 			
-			NullCollectionBehavior behavior = HandleBuilder.getNullBehaviorFor(ann, singularInstance, node);
-			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, behavior);
+			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, singularInstance.ignoreNullCollections());
 		}
 		
 		return null;

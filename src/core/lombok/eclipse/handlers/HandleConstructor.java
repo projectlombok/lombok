@@ -411,7 +411,7 @@ public class HandleConstructor {
 			Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
 			Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
 			if (hasNonNullAnnotations(fieldNode)) {
-				Statement nullCheck = generateNullCheck(parameter, sourceNode);
+				Statement nullCheck = generateNullCheck(parameter, sourceNode, null);
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
 			parameter.annotations = copyAnnotations(source, copyableAnnotations);
