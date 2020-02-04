@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2010-2018 The Project Lombok Authors.
+ Copyright (C) 2010-2020 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +81,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="load-ipp" depends="download-ipp">
 		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
-		<ivy:ensureippversion version="1.26" property="ivyplusplus.minimumAvailable" />
+		<ivy:ensureippversion version="1.34" property="ivyplusplus.minimumAvailable" />
 	</target>
 	
 	<target name="redownload-ipp" unless="ivyplusplus.minimumAvailable">
@@ -393,7 +393,8 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 	</target>
 	
 	<target name="intellij" depends="deps, contrib" description="Creates intellij project files and downloads all dependencies. Open this directory as a project in IntelliJ after running this target.">
-		<fail>The core lombok contributors all use eclipse to develop lombok. We have some old work on letting you work on lombok via intellij (see the commented out, below), but this is currently broken. If you want to adopt 'work on lombok via intellij' as a task, we're open to it; this should take the form of both a PR to fix this as well as a commitment to continue to maintain it (fix any bugs and field any questions); if you are no longer capable of maintaining it, no problem – but let us know so we can restore this message.</fail>
+		<echo> ** WARNING ** The core lombok contributors all use eclipse to develop lombok. We have some ability on letting you work on lombok via intellij, but whether the generated project can be used in a modern intellij is currently unknown. Please do continue, but be aware that trying to work on lombok from intellij may run into problems. If you want to adopt 'work on lombok via intellij' as a task, we're open to it!</echo>
+		<input>Press return to continue</input>
 		<ivy:intellijgen>
 			<conf name="build" sources="contrib" />
 			<conf name="test" sources="contrib" />
