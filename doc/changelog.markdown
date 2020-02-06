@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.11 "Edgy Guinea Pig"
+### v1.18.12 (February 1st, 2020)
 * PLATFORM: Support for JDK13 (including `yield` in switch expressions, as well as delombok having a nicer style for arrow-style switch blocks, and text blocks).
 * PLATFORM: Support for JDK14 (including `pattern match` instanceof expressions).
 * FEATURE: In [`lombok.config`](https://projectlombok.org/features/configuration) it is possible to import other config files, even from a `.zip` or `.jar`.
