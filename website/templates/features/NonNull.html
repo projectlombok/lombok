@@ -21,9 +21,9 @@
 
 	<@f.confKeys>
 		<dt>
-			<code>lombok.nonNull.exceptionType</code> = [<code>NullPointerException</code> | <code>IllegalArgumentException</code> | <code>Assertion</code>] (default: <code>NullPointerException</code>).
+			<code>lombok.nonNull.exceptionType</code> = [<code>NullPointerException</code> | <code>IllegalArgumentException</code> | <code>JDK</code> | <code>Guava</code> | <code>Assertion</code>] (default: <code>NullPointerException</code>).
 		</dt><dd>
-			When lombok generates a null-check <code>if</code> statement, by default, a <code>java.lang.NullPointerException</code> will be thrown with '<em>field name</em> is marked non-null but is null' as the exception message. However, you can use <code>IllegalArgumentException</code> in this configuration key to have lombok throw that exception with this message instead. By using <code>Assertion</code>, an <code>assert</code> statement with the same message will be generated.
+			When lombok generates a null-check <code>if</code> statement, by default, a <code>java.lang.NullPointerException</code> will be thrown with '<em>field name</em> is marked non-null but is null' as the exception message. However, you can use <code>IllegalArgumentException</code> in this configuration key to have lombok throw that exception with this message instead. By using <code>Assertion</code>, an <code>assert</code> statement with the same message will be generated. The keys <code>JDK</code> or <code>Guava</code> result in an invocation to the standard nullcheck method of these two frameworks: <code>java.util.Objects.requireNonNull([field name here], "[field name here] is marked non-null but is null");</code> or <code>com.google.common.base.Preconditions.checkNotNull([field name here], "[field name here] is marked non-null but is null");</code> respectively.
 		</dd><dt>
 			<code>lombok.nonNull.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
@@ -33,7 +33,7 @@
 
 	<@f.smallPrint>
 		<p>
-			Lombok's detection scheme for already existing null-checks consists of scanning for if statements or assert statements that look just like lombok's own. Any 'throws' statement as the 'then' part of the if statement, whether in braces or not, counts. The conditional of the if statement <em>must</em> look exactly like <code>PARAMNAME == null</code>; the assert statement <em>must</em> look exactly like <code>PARAMNAME != null</code>. The first statement in your method that is not such a null-check stops the process of inspecting for null-checks.
+			Lombok's detection scheme for already existing null-checks consists of scanning for if statements or assert statements that look just like lombok's own. Any 'throws' statement as the 'then' part of the if statement, whether in braces or not, counts. Any invocation to any method named <code>requireNonNull</code> or <code>checkNotNull</code> counts. The conditional of the if statement <em>must</em> look exactly like <code>PARAMNAME == null</code>; the assert statement <em>must</em> look exactly like <code>PARAMNAME != null</code>. The invocation to a <code>requireNonNull</code>-style method must be on its own (a statement which just invokes that method), or must be the expression of an assignment or variable declaration statement. The first statement in your method that is not such a null-check stops the process of inspecting for null-checks.
 		</p><p>
 			While <code>@Data</code> and other method-generating lombok annotations will trigger on various well-known annotations that signify the field must never be <code>@NonNull</code>, this feature only triggers on lombok's own <code>@NonNull</code> annotation from the <code>lombok</code> package.
 		</p><p>
