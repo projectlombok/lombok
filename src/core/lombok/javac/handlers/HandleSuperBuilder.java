@@ -27,6 +27,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 import javax.lang.model.element.Modifier;
 
@@ -209,12 +210,12 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// <C, B> are the generics for our builder.
 		String classGenericName = "C";
 		String builderGenericName = "B";
-		// If these generics' names collide with any generics on the annotated class, modify them.
+		// We have to make sure that the generics' names do not collide with any generics on the annotated class,
+		// the classname itself, or any member type name of the annotated class.
 		// For instance, if there are generics <B, B2, C> on the annotated class, use "C2" and "B3" for our builder.
-		java.util.List<String> typeParamStrings = new ArrayList<String>();
-		for (JCTypeParameter typeParam : typeParams) typeParamStrings.add(typeParam.getName().toString());
-		classGenericName = generateNonclashingNameFor(classGenericName, typeParamStrings);
-		builderGenericName = generateNonclashingNameFor(builderGenericName, typeParamStrings);
+		java.util.HashSet<String> usedNames = gatherUsedTypeNames(typeParams, td);
+		classGenericName = generateNonclashingNameFor(classGenericName, usedNames);
+		builderGenericName = generateNonclashingNameFor(builderGenericName, usedNames);
 		
 		thrownExceptions = List.nil();
 		
@@ -987,7 +988,29 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return null;
 	}
 	
-	private String generateNonclashingNameFor(String classGenericName, java.util.List<String> typeParamStrings) {
+	private java.util.HashSet<String> gatherUsedTypeNames(List<JCTypeParameter> typeParams, JCClassDecl td) {
+		java.util.HashSet<String> usedNames = new HashSet<String>();
+		
+		// 1. Add type parameter names.
+		for (JCTypeParameter typeParam : typeParams)
+			usedNames.add(typeParam.getName().toString());
+		
+		// 2. Add class name.
+		usedNames.add(td.name.toString());
+		
+		// 3. Add used type names.
+		for (JCTree member : td.getMembers()) {
+			if (member.getKind() == com.sun.source.tree.Tree.Kind.VARIABLE && member instanceof JCVariableDecl) {
+				JCTree type = ((JCVariableDecl)member).getType();
+				if (type instanceof JCIdent)
+					usedNames.add(((JCIdent)type).getName().toString());
+			}
+		}
+		
+		return usedNames;
+	}
+	
+	private String generateNonclashingNameFor(String classGenericName, java.util.HashSet<String> typeParamStrings) {
 		if (!typeParamStrings.contains(classGenericName)) return classGenericName;
 		int counter = 2;
 		while (typeParamStrings.contains(classGenericName + counter)) counter++;

@@ -1,0 +1,3 @@
+3 WARNING The type parameter B is hiding the type SuperBuilderNameClashes.B
+3 WARNING The type parameter C is hiding the type SuperBuilderNameClashes.C
+3 WARNING The type parameter C2 is hiding the type SuperBuilderNameClashes.C2
