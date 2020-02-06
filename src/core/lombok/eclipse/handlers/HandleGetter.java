@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@ import lombok.eclipse.agent.PatchDelegate;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
@@ -66,6 +67,7 @@ import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.SynchronizedStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -241,8 +243,10 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		TypeReference returnType = copyType(((FieldDeclaration) fieldNode.get()).type, source);
 		
 		Statement[] statements;
+		boolean addSuppressWarningsUnchecked = false;
 		if (lazy) {
 			statements = createLazyGetterBody(source, fieldNode);
+			addSuppressWarningsUnchecked = true;
 		} else {
 			statements = createSimpleGetterBody(source, fieldNode);
 		}
@@ -274,6 +278,14 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 				findDelegatesAndMarkAsHandled(fieldNode),
 				checkerFramework,
 				deprecated);
+		}
+		
+		if (addSuppressWarningsUnchecked) {
+			ArrayInitializer arr = new ArrayInitializer();
+			arr.expressions = new Expression[2];
+			arr.expressions[0] = new StringLiteral(ALL, 0, 0, 0);
+			arr.expressions[1] = new StringLiteral(UNCHECKED, 0, 0, 0);
+			method.annotations = addAnnotation(source, method.annotations, TypeConstants.JAVA_LANG_SUPPRESSWARNINGS, arr);
 		}
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);

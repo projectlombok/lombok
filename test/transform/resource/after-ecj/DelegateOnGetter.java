@@ -9,7 +9,7 @@ class DelegateOnGetter {
   DelegateOnGetter() {
     super();
   }
-  public @Delegate @java.lang.SuppressWarnings("all") Bar getBar() {
+  public @Delegate @java.lang.SuppressWarnings({"all", "unchecked"}) Bar getBar() {
     java.lang.Object value = this.bar.get();
     if ((value == null))
         {

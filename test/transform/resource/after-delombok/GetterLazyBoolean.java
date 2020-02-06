@@ -31,7 +31,7 @@ class GetterLazyBoolean {
 	public java.lang.String toString() {
 		return "GetterLazyBoolean(booleanValue=" + this.isBooleanValue() + ")";
 	}
-	@java.lang.SuppressWarnings("all")
+	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public boolean isBooleanValue() {
 		java.lang.Object value = this.booleanValue.get();
 		if (value == null) {
@@ -46,7 +46,7 @@ class GetterLazyBoolean {
 		}
 		return (java.lang.Boolean) value;
 	}
-	@java.lang.SuppressWarnings("all")
+	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public boolean isOtherBooleanValue() {
 		java.lang.Object value = this.otherBooleanValue.get();
 		if (value == null) {

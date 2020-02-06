@@ -4,7 +4,7 @@
   GetterLazyEahcToString() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") String getValue() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) String getValue() {
     java.lang.Object value = this.value.get();
     if ((value == null))
         {

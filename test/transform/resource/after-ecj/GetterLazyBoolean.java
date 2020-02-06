@@ -7,7 +7,7 @@
   private static boolean calculateBoolean() {
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean isBooleanValue() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) boolean isBooleanValue() {
     java.lang.Object value = this.booleanValue.get();
     if ((value == null))
         {
@@ -24,7 +24,7 @@
         }
     return (java.lang.Boolean) value;
   }
-  public @java.lang.SuppressWarnings("all") boolean isOtherBooleanValue() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) boolean isOtherBooleanValue() {
     java.lang.Object value = this.otherBooleanValue.get();
     if ((value == null))
         {

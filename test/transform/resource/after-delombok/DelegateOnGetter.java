@@ -4,7 +4,7 @@ class DelegateOnGetter {
 		void setList(java.util.ArrayList<java.lang.String> list);
 		int getInt();
 	}
-	@java.lang.SuppressWarnings("all")
+	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public Bar getBar() {
 		java.lang.Object value = this.bar.get();
 		if (value == null) {

@@ -1904,7 +1904,8 @@ public class EclipseHandlerUtil {
 		return typeNode.add(type, Kind.TYPE);
 	}
 	
-	private static final char[] ALL = "all".toCharArray();
+	static final char[] ALL = "all".toCharArray();
+	static final char[] UNCHECKED = "unchecked".toCharArray();
 	private static final char[] JUSTIFICATION = "justification".toCharArray();
 	private static final char[] GENERATED_CODE = "generated code".toCharArray();
 	private static final char[] LOMBOK = "lombok".toCharArray();
@@ -1934,7 +1935,7 @@ public class EclipseHandlerUtil {
 		return result;
 	}
 	
-	private static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, ASTNode arg) {
+	static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, ASTNode arg) {
 		char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
 		
 		if (originalAnnotationArray != null) for (Annotation ann : originalAnnotationArray) {

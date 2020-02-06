@@ -5,7 +5,7 @@ class GetterLazyTransient {
   GetterLazyTransient() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") int getNonTransientField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) int getNonTransientField() {
     java.lang.Object value = this.nonTransientField.get();
     if ((value == null))
         {

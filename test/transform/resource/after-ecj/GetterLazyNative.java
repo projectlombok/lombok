@@ -11,7 +11,7 @@ class GetterLazyNative {
   GetterLazyNative() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") boolean isBooleanField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) boolean isBooleanField() {
     java.lang.Object value = this.booleanField.get();
     if ((value == null))
         {
@@ -28,7 +28,7 @@ class GetterLazyNative {
         }
     return (java.lang.Boolean) value;
   }
-  public @java.lang.SuppressWarnings("all") byte getByteField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) byte getByteField() {
     java.lang.Object value = this.byteField.get();
     if ((value == null))
         {
@@ -45,7 +45,7 @@ class GetterLazyNative {
         }
     return (java.lang.Byte) value;
   }
-  public @java.lang.SuppressWarnings("all") short getShortField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) short getShortField() {
     java.lang.Object value = this.shortField.get();
     if ((value == null))
         {
@@ -62,7 +62,7 @@ class GetterLazyNative {
         }
     return (java.lang.Short) value;
   }
-  public @java.lang.SuppressWarnings("all") int getIntField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) int getIntField() {
     java.lang.Object value = this.intField.get();
     if ((value == null))
         {
@@ -79,7 +79,7 @@ class GetterLazyNative {
         }
     return (java.lang.Integer) value;
   }
-  public @java.lang.SuppressWarnings("all") long getLongField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) long getLongField() {
     java.lang.Object value = this.longField.get();
     if ((value == null))
         {
@@ -96,7 +96,7 @@ class GetterLazyNative {
         }
     return (java.lang.Long) value;
   }
-  public @java.lang.SuppressWarnings("all") float getFloatField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) float getFloatField() {
     java.lang.Object value = this.floatField.get();
     if ((value == null))
         {
@@ -113,7 +113,7 @@ class GetterLazyNative {
         }
     return (java.lang.Float) value;
   }
-  public @java.lang.SuppressWarnings("all") double getDoubleField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) double getDoubleField() {
     java.lang.Object value = this.doubleField.get();
     if ((value == null))
         {
@@ -130,7 +130,7 @@ class GetterLazyNative {
         }
     return (java.lang.Double) value;
   }
-  public @java.lang.SuppressWarnings("all") char getCharField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) char getCharField() {
     java.lang.Object value = this.charField.get();
     if ((value == null))
         {
@@ -147,7 +147,7 @@ class GetterLazyNative {
         }
     return (java.lang.Character) value;
   }
-  public @java.lang.SuppressWarnings("all") int[] getIntArrayField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) int[] getIntArrayField() {
     java.lang.Object value = this.intArrayField.get();
     if ((value == null))
         {

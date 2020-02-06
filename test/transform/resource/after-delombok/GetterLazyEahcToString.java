@@ -44,9 +44,7 @@ class GetterLazyEahcToString {
 		return "GetterLazyEahcToString(value=" + this.getValue() + ", value2=" + this.value2 + ")";
 	}
 	
-	@java.lang.SuppressWarnings("all")
-	
-	
+	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public String getValue() {
 		java.lang.Object value = this.value.get();
 		if (value == null) {

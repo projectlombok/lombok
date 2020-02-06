@@ -8,7 +8,7 @@ class GetterLazy {
   GetterLazy() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") ValueType getFieldName() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) ValueType getFieldName() {
     java.lang.Object value = this.fieldName.get();
     if ((value == null))
         {

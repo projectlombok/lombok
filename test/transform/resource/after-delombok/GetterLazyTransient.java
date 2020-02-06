@@ -2,7 +2,7 @@ class GetterLazyTransient {
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> nonTransientField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final transient int transientField = 2;
 	private final transient int nonLazyTransientField = 3;
-	@java.lang.SuppressWarnings("all")
+	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public int getNonTransientField() {
 		java.lang.Object value = this.nonTransientField.get();
 		if (value == null) {
