@@ -1,7 +1,7 @@
 public class SuperBuilderNameClashes {
 	public static class GenericsClash<B, C, C2> {
 		@java.lang.SuppressWarnings("all")
-		public static abstract class GenericsClashBuilder<B, C, C2, C3 extends GenericsClash<B, C, C2>, B2 extends GenericsClashBuilder<B, C, C2, C3, B2>> {
+		public static abstract class GenericsClashBuilder<B, C, C2, C3 extends SuperBuilderNameClashes.GenericsClash<B, C, C2>, B2 extends SuperBuilderNameClashes.GenericsClash.GenericsClashBuilder<B, C, C2, C3, B2>> {
 			@java.lang.SuppressWarnings("all")
 			protected abstract B2 self();
 			@java.lang.SuppressWarnings("all")
@@ -13,32 +13,32 @@ public class SuperBuilderNameClashes {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class GenericsClashBuilderImpl<B, C, C2> extends GenericsClashBuilder<B, C, C2, GenericsClash<B, C, C2>, GenericsClashBuilderImpl<B, C, C2>> {
+		private static final class GenericsClashBuilderImpl<B, C, C2> extends SuperBuilderNameClashes.GenericsClash.GenericsClashBuilder<B, C, C2, SuperBuilderNameClashes.GenericsClash<B, C, C2>, SuperBuilderNameClashes.GenericsClash.GenericsClashBuilderImpl<B, C, C2>> {
 			@java.lang.SuppressWarnings("all")
 			private GenericsClashBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected GenericsClashBuilderImpl<B, C, C2> self() {
+			protected SuperBuilderNameClashes.GenericsClash.GenericsClashBuilderImpl<B, C, C2> self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public GenericsClash<B, C, C2> build() {
-				return new GenericsClash<B, C, C2>(this);
+			public SuperBuilderNameClashes.GenericsClash<B, C, C2> build() {
+				return new SuperBuilderNameClashes.GenericsClash<B, C, C2>(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected GenericsClash(final GenericsClashBuilder<B, C, C2, ?, ?> b) {
+		protected GenericsClash(final SuperBuilderNameClashes.GenericsClash.GenericsClashBuilder<B, C, C2, ?, ?> b) {
 		}
 		@java.lang.SuppressWarnings("all")
-		public static <B, C, C2> GenericsClashBuilder<B, C, C2, ?, ?> builder() {
-			return new GenericsClashBuilderImpl<B, C, C2>();
+		public static <B, C, C2> SuperBuilderNameClashes.GenericsClash.GenericsClashBuilder<B, C, C2, ?, ?> builder() {
+			return new SuperBuilderNameClashes.GenericsClash.GenericsClashBuilderImpl<B, C, C2>();
 		}
 	}
 	public static class B {
 		@java.lang.SuppressWarnings("all")
-		public static abstract class BBuilder<C extends B, B2 extends BBuilder<C, B2>> {
+		public static abstract class BBuilder<C extends SuperBuilderNameClashes.B, B2 extends SuperBuilderNameClashes.B.BBuilder<C, B2>> {
 			@java.lang.SuppressWarnings("all")
 			protected abstract B2 self();
 			@java.lang.SuppressWarnings("all")
@@ -50,27 +50,27 @@ public class SuperBuilderNameClashes {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class BBuilderImpl extends BBuilder<B, BBuilderImpl> {
+		private static final class BBuilderImpl extends SuperBuilderNameClashes.B.BBuilder<SuperBuilderNameClashes.B, SuperBuilderNameClashes.B.BBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private BBuilderImpl() {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected BBuilderImpl self() {
+			protected SuperBuilderNameClashes.B.BBuilderImpl self() {
 				return this;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public B build() {
-				return new B(this);
+			public SuperBuilderNameClashes.B build() {
+				return new SuperBuilderNameClashes.B(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected B(final BBuilder<?, ?> b) {
+		protected B(final SuperBuilderNameClashes.B.BBuilder<?, ?> b) {
 		}
 		@java.lang.SuppressWarnings("all")
-		public static BBuilder<?, ?> builder() {
-			return new BBuilderImpl();
+		public static SuperBuilderNameClashes.B.BBuilder<?, ?> builder() {
+			return new SuperBuilderNameClashes.B.BBuilderImpl();
 		}
 	}
 	public static class C2 {
@@ -78,7 +78,7 @@ public class SuperBuilderNameClashes {
 	public static class C {
 		C2 c2;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class CBuilder<C3 extends C, B extends CBuilder<C3, B>> {
+		public static abstract class CBuilder<C3 extends SuperBuilderNameClashes.C, B extends SuperBuilderNameClashes.C.CBuilder<C3, B>> {
 			@java.lang.SuppressWarnings("all")
 			private C2 c2;
 			@java.lang.SuppressWarnings("all")
@@ -97,30 +97,28 @@ public class SuperBuilderNameClashes {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class CBuilderImpl extends CBuilder<C, CBuilderImpl> {
+		private static final class CBuilderImpl extends SuperBuilderNameClashes.C.CBuilder<SuperBuilderNameClashes.C, SuperBuilderNameClashes.C.CBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			private CBuilderImpl() {
 			}
-
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected CBuilderImpl self() {
+			protected SuperBuilderNameClashes.C.CBuilderImpl self() {
 				return this;
 			}
-
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			public C build() {
-				return new C(this);
+			public SuperBuilderNameClashes.C build() {
+				return new SuperBuilderNameClashes.C(this);
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		protected C(final CBuilder<?, ?> b) {
+		protected C(final SuperBuilderNameClashes.C.CBuilder<?, ?> b) {
 			this.c2 = b.c2;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static CBuilder<?, ?> builder() {
-			return new CBuilderImpl();
+		public static SuperBuilderNameClashes.C.CBuilder<?, ?> builder() {
+			return new SuperBuilderNameClashes.C.CBuilderImpl();
 		}
 	}
 }
