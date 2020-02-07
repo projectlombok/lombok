@@ -117,7 +117,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
 		
 		boolean toBuilder = superbuilderAnnotation.toBuilder();
-
+		
 		JavacNode tdParent = annotationNode.up();
 		
 		java.util.List<BuilderFieldData> builderFields = new ArrayList<BuilderFieldData>();
@@ -148,7 +148,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			bfd.builderFieldName = bfd.name;
 			bfd.annotations = findCopyableAnnotations(fieldNode);
 			bfd.type = fd.vartype;
-			bfd.singularData = getSingularData(fieldNode);
+			bfd.singularData = getSingularData(fieldNode, superbuilderAnnotation.setterPrefix());
 			bfd.originalFieldNode = fieldNode;
 			
 			if (bfd.singularData != null && isDefault != null) {
@@ -281,7 +281,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			recursiveSetGeneratedBy(fvm, ast, annotationNode.getContext());
 			injectMethod(builderType, fvm);
 			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
-			JCMethodDecl sfvm = generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields);
+			JCMethodDecl sfvm = generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields, superbuilderAnnotation.setterPrefix());
 			recursiveSetGeneratedBy(sfvm, ast, annotationNode.getContext());
 			injectMethod(builderType, sfvm);
 		}
@@ -296,7 +296,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : builderFields) {
-			generateSetterMethodsForBuilder(cfv, builderType, bfd, annotationNode, builderGenericName);
+			generateSetterMethodsForBuilder(cfv, builderType, bfd, annotationNode, builderGenericName, superbuilderAnnotation.setterPrefix());
 		}
 		
 		// Create the toString() method for the abstract builder.
@@ -671,8 +671,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 * 	b.field(instance.field);
 	 * }
 	 * </pre>
+	 * @param setterPrefix the prefix for setter methods
 	 */
-	private JCMethodDecl generateStaticFillValuesMethod(JavacNode type, String builderClassname, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields) {
+	private JCMethodDecl generateStaticFillValuesMethod(JavacNode type, String builderClassname, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, String setterPrefix) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		List<JCAnnotation> annotations = List.nil();
 		JCModifiers modifiers = maker.Modifiers(Flags.PRIVATE | Flags.STATIC, annotations);
@@ -697,7 +698,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Call the builder's setter methods to fill the values from the instance.
 		for (BuilderFieldData bfd : builderFields) {
-			JCExpressionStatement exec = createSetterCallWithInstanceValue(bfd, type, maker);
+			JCExpressionStatement exec = createSetterCallWithInstanceValue(bfd, type, maker, setterPrefix);
 			body.append(exec);
 		}
 		
@@ -706,7 +707,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return maker.MethodDef(modifiers, name, returnType, copyTypeParams(type, typeParams), List.of(paramInstance, paramBuilder), List.<JCExpression>nil(), bodyBlock, null);
 	}
 	
-	private JCExpressionStatement createSetterCallWithInstanceValue(BuilderFieldData bfd, JavacNode type, JavacTreeMaker maker) {
+	private JCExpressionStatement createSetterCallWithInstanceValue(BuilderFieldData bfd, JavacNode type, JavacTreeMaker maker, String setterPrefix) {
 		JCExpression[] tgt = new JCExpression[bfd.singularData == null ? 1 : 2];
 		if (bfd.obtainVia == null || !bfd.obtainVia.field().isEmpty()) {
 			for (int i = 0; i < tgt.length; i++) {
@@ -736,7 +737,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			JCExpression emptyCollection = maker.Apply(List.<JCExpression>nil(), chainDots(type, emptyMaker.split("\\.")), List.<JCExpression>nil());
 			arg = maker.Conditional(eqNull, emptyCollection, tgt[1]);
 		}
-		JCMethodInvocation apply = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(type.toName(BUILDER_VARIABLE_NAME)), bfd.name), List.of(arg));
+		
+		String setterName = HandlerUtil.buildAccessorName(setterPrefix, bfd.name.toString());
+		JCMethodInvocation apply = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(type.toName(BUILDER_VARIABLE_NAME)), type.toName(setterName)), List.of(arg));
 		JCExpressionStatement exec = maker.Exec(apply);
 		return exec;
 	}
@@ -872,7 +875,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		for (JCVariableDecl gen : generated)  recursiveSetGeneratedBy(gen, source, builderType.getContext());
 	}
 	
-	private void generateSetterMethodsForBuilder(CheckerFrameworkVersion cfv, final JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, final String builderGenericName) {
+	private void generateSetterMethodsForBuilder(CheckerFrameworkVersion cfv, final JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, final String builderGenericName, String setterPrefix) {
 		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
 		final JavacTreeMaker maker = builderType.getTreeMaker();
 		ExpressionMaker returnTypeMaker = new ExpressionMaker() { @Override public JCExpression make() {
@@ -884,23 +887,22 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}};
 		
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(cfv, builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.name, fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations, fieldNode.originalFieldNode);
+			generateSimpleSetterMethodForBuilder(cfv, builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.name, fieldNode.nameOfSetFlag, source, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations, fieldNode.originalFieldNode, setterPrefix);
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(cfv, fieldNode.singularData, deprecate, builderType, source.get(), true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
 		}
 	}
 	
-	private void generateSimpleSetterMethodForBuilder(CheckerFrameworkVersion cfv, JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode) {
-		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
+	private void generateSimpleSetterMethodForBuilder(CheckerFrameworkVersion cfv, JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JavacNode source, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, String setterPrefix) {
+		String setterName = HandlerUtil.buildAccessorName(setterPrefix, paramName.toString());
+		Name setterName_ = builderType.toName(setterName);
 		
 		for (JavacNode child : builderType.down()) {
 			if (child.getKind() != Kind.METHOD) continue;
 			JCMethodDecl methodDecl = (JCMethodDecl) child.get();
 			Name existingName = methodDecl.name;
-			if (existingName.equals(fieldName) && !isTolerate(fieldNode, methodDecl)) return;
+			if (existingName.equals(setterName_) && !isTolerate(fieldNode, methodDecl)) return;
 		}
-		
-		String setterName = fluent ? paramName.toString() : HandlerUtil.buildAccessorName("set", paramName.toString());
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
@@ -940,8 +942,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 * or parameter), or null if there's no {@code @Singular} annotation on it.
 	 *
 	 * @param node The node (field or method param) to inspect for its name and potential {@code @Singular} annotation.
+	 * @param setterPrefix the prefix for setter methods
 	 */
-	private SingularData getSingularData(JavacNode node) {
+	private SingularData getSingularData(JavacNode node, String setterPrefix) {
 		for (JavacNode child : node.down()) {
 			if (!annotationTypeMatches(Singular.class, child)) continue;
 			Name pluralName = node.getKind() == Kind.FIELD ? removePrefixFromField(node) : ((JCVariableDecl) node.get()).name;
@@ -982,7 +985,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				return null;
 			}
 			
-			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, singularInstance.ignoreNullCollections());
+			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, singularInstance.ignoreNullCollections(), setterPrefix);
 		}
 		
 		return null;

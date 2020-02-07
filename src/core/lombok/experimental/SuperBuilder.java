@@ -62,4 +62,23 @@ public @interface SuperBuilder {
 	 * @return Whether to generate a {@code toBuilder()} method.
 	 */
 	boolean toBuilder() default false;
+
+	/**
+	 * Prefix to prepend to 'set' methods in the generated builder class. By default, generated methods do not include a prefix.
+	 *
+	 * For example, a method normally generated as {@code someField(String someField)} would instead be
+	 * generated as {@code withSomeField(String someField)} if using {@code @SuperBuilder(setterPrefix = "with")}.
+	 *
+	 * Note that using "with" to prefix builder setter methods is strongly discouraged as as "with" normally
+	 * suggests immutable data structures, and builders by definition are mutable objects.
+	 * 
+	 * For {@code @Singular} fields, the generated methods are called {@code withName}, {@code withNames}, and {@code clearNames}, instead of
+	 * the default {@code name}, {@code names}, and {@code clearNames}.
+	 * 
+	 * This prefix only applies to the 'set' methods for the fields of the annotated class. 
+	 * For consistency reasons, you should use the same prefix on all superclasses and subclasses that use {@code @SuperBuilder}.
+	 * 
+	 * @return The prefix to prepend to generated method names.
+	 */
+	String setterPrefix() default "";
 }
