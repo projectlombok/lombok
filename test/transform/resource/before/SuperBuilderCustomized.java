@@ -8,6 +8,10 @@ public class SuperBuilderCustomized {
 				field1 = 0;
 				return self();
 			}
+			public B field1(int field1) {
+				this.field1 = field1 + 1;
+				return self();
+			}
 		}
 		int field1;
 	}

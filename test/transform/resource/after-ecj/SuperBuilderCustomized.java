@@ -10,12 +10,12 @@ public class SuperBuilderCustomized {
         field1 = 0;
         return self();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
-      public @java.lang.SuppressWarnings("all") B field1(final int field1) {
-        this.field1 = field1;
+      public B field1(int field1) {
+        this.field1 = (field1 + 1);
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("SuperBuilderCustomized.Parent.ParentBuilder(field1=" + this.field1) + ")");
       }

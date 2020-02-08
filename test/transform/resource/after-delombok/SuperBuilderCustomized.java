@@ -8,15 +8,14 @@ public class SuperBuilderCustomized {
 				field1 = 0;
 				return self();
 			}
+			public B field1(int field1) {
+				this.field1 = field1 + 1;
+				return self();
+			}
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
-			@java.lang.SuppressWarnings("all")
-			public B field1(final int field1) {
-				this.field1 = field1;
-				return self();
-			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

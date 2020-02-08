@@ -179,7 +179,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			bfd.builderFieldName = bfd.name;
 			bfd.annotations = copyAnnotations(fd, copyableAnnotations);
 			bfd.type = fd.type;
-			bfd.singularData = getSingularData(fieldNode, ast);
+			bfd.singularData = getSingularData(fieldNode, ast, superbuilderAnnotation.setterPrefix());
 			bfd.originalFieldNode = fieldNode;
 			
 			if (bfd.singularData != null && isDefault != null) {
@@ -335,7 +335,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			// Generate $fillValuesFrom() method in the abstract builder.
 			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClass != null, builderGenericName, classGenericName, builderClassName, typeParams));
 			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
-			injectMethod(builderType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields, ast));
+			injectMethod(builderType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields, ast, superbuilderAnnotation.setterPrefix()));
 		}
 
 		// Generate abstract self() and build() methods in the abstract builder.
@@ -344,7 +344,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : builderFields) {
-			generateSetterMethodsForBuilder(cfv, builderType, bfd, annotationNode, builderGenericName);
+			generateSetterMethodsForBuilder(cfv, builderType, bfd, annotationNode, builderGenericName, superbuilderAnnotation.setterPrefix());
 		}
 		
 		// Create the toString() method for the abstract builder.
@@ -701,8 +701,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	 * 	b.field(instance.field);
 	 * }
 	 * </pre>
+	 * @param setterPrefix the prefix for setter methods
 	 */
-	private MethodDeclaration generateStaticFillValuesMethod(EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, java.util.List<BuilderFieldData> builderFields, ASTNode source) {
+	private MethodDeclaration generateStaticFillValuesMethod(EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, java.util.List<BuilderFieldData> builderFields, ASTNode source, String setterPrefix) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
 		out.selector = FILL_VALUES_STATIC_METHOD_NAME;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -731,7 +732,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		// Call the builder's setter methods to fill the values from the instance.
 		for (BuilderFieldData bfd : builderFields) {
-			MessageSend exec = createSetterCallWithInstanceValue(bfd, tdParent, source);
+			MessageSend exec = createSetterCallWithInstanceValue(bfd, tdParent, source, setterPrefix);
 			body.add(exec);
 		}
 		
@@ -740,8 +741,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return out;
 	}
 	
-	private MessageSend createSetterCallWithInstanceValue(BuilderFieldData bfd, EclipseNode type, ASTNode source) {
-		char[] setterName = bfd.name;
+	private MessageSend createSetterCallWithInstanceValue(BuilderFieldData bfd, EclipseNode type, ASTNode source, String setterPrefix) {
+		char[] setterName = HandlerUtil.buildAccessorName(setterPrefix, String.valueOf(bfd.name)).toCharArray();
 		MessageSend ms = new MessageSend();
 		Expression[] tgt = new Expression[bfd.singularData == null ? 1 : 2];
 		
@@ -919,7 +920,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 	}
 	
-	private void generateSetterMethodsForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, final String builderGenericName) {
+	private void generateSetterMethodsForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, final String builderGenericName, String setterPrefix) {
 		boolean deprecate = isFieldDeprecated(bfd.originalFieldNode);
 		
 		TypeReferenceMaker returnTypeMaker = new TypeReferenceMaker() {
@@ -938,28 +939,26 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		};
 		
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(cfv, builderType, deprecate, bfd.createdFields.get(0), bfd.name, bfd.nameOfSetFlag, true, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode, bfd.annotations, bfd.originalFieldNode);
+			generateSimpleSetterMethodForBuilder(cfv, builderType, deprecate, bfd.createdFields.get(0), bfd.name, bfd.nameOfSetFlag, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode, bfd.annotations, bfd.originalFieldNode, setterPrefix);
 		} else {
 			bfd.singularData.getSingularizer().generateMethods(cfv, bfd.singularData, deprecate, builderType, true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
 		}
 	}
 
-	private void generateSimpleSetterMethodForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] paramName, char[] nameOfSetFlag, boolean fluent, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode, Annotation[] annosOnParam, EclipseNode originalFieldNode) {
+	private void generateSimpleSetterMethodForBuilder(CheckerFrameworkVersion cfv, EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] paramName, char[] nameOfSetFlag, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode, Annotation[] annosOnParam, EclipseNode originalFieldNode, String setterPrefix) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		ASTNode source = sourceNode.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY_METHODS;
 		int len = existing.length;
-		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
-		char[] name = fd.name;
+		
+		String setterName = HandlerUtil.buildAccessorName(setterPrefix, new String(paramName));
 		
 		for (int i = 0; i < len; i++) {
 			if (!(existing[i] instanceof MethodDeclaration)) continue;
 			char[] existingName = existing[i].selector;
-			if (Arrays.equals(name, existingName) && !isTolerate(fieldNode, existing[i])) return;
+			if (Arrays.equals(setterName.toCharArray(), existingName) && !isTolerate(fieldNode, existing[i])) return;
 		}
-		
-		String setterName = fluent ? new String(paramName) : HandlerUtil.buildAccessorName("set", new String(paramName));
 		
 		List<Annotation> methodAnnsList = Arrays.asList(EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode));
 		if (cfv.generateReturnsReceiver()) {
@@ -997,8 +996,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	 * or parameter), or null if there's no {@code @Singular} annotation on it.
 	 *
 	 * @param node The node (field or method param) to inspect for its name and potential {@code @Singular} annotation.
+	 * @param setterPrefix the prefix for setter methods 
 	 */
-	private SingularData getSingularData(EclipseNode node, ASTNode source) {
+	private SingularData getSingularData(EclipseNode node, ASTNode source, String setterPrefix) {
 		for (EclipseNode child : node.down()) {
 			if (!annotationTypeMatches(Singular.class, child)) continue;
 			
@@ -1047,7 +1047,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				return null;
 			}
 			
-			return new SingularData(child, singularName, pluralName, typeArgs == null ? Collections.<TypeReference>emptyList() : Arrays.asList(typeArgs), targetFqn, singularizer, source, singularInstance.ignoreNullCollections());
+			return new SingularData(child, singularName, pluralName, typeArgs == null ? Collections.<TypeReference>emptyList() : Arrays.asList(typeArgs), targetFqn, singularizer, source, singularInstance.ignoreNullCollections(), setterPrefix.toCharArray());
 		}
 		
 		return null;
