@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v.18.13 "Edgy Guinea Pig"
 * FEATURE: Similar to `@Builder`, you can now configure a `@SuperBuilder`'s 'setter' prefixes via `@SuperBuilder(setterPrefix = "set")` for example. We still discourage doing this. [Pull Request #2357](https://github.com/rzwitserloot/lombok/pull/2357).
+* BUGFIX: Using `@SuperBuilder` on a class that has some fairly convoluted generics usage would fail with 'Wrong number of type arguments'. [Issue #2359](https://github.com/rzwitserloot/lombok/issues/2359) [Pull Request #2362](https://github.com/rzwitserloot/lombok/pull/2362)
 
 ### v1.18.12 (February 1st, 2020)
 * PLATFORM: Support for JDK13 (including `yield` in switch expressions, as well as delombok having a nicer style for arrow-style switch blocks, and text blocks).
