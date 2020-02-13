@@ -185,7 +185,6 @@ Your current version is:
 		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
 		We re-create the file at the end of this target. -->
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
-		<delete file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor" quiet="true" />
 		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" ecj="true" nowarn="true">
 			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/stubsstubs" />
@@ -262,13 +261,6 @@ Your current version is:
 			<!-- The above is because javac9 warns about 'service interface provided but not exported or used', probably because lombok uses SPI internally, and uses the 'old' classpath discovery system for it. We're fine with this, hence, ignore this warning. -->
 			<src path="src/core9" />
 		</javac>
-		<mkdir dir="build/lombokMapstruct" />
-		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/lombokMapstruct">
-			<src path="src/j9stubs" />
-			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
-		</javac>
-		<mkdir dir="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi" />
-		<move file="build/lombokMapstruct/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" tofile="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.SCL.lombok" />
 		
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true">
 			<bootclasspath location="build/stubs" />
@@ -312,7 +304,6 @@ Your current version is:
 		<mkdir dir="build/lombok/META-INF/services" />
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.launch.AnnotationProcessorHider$AnnotationProcessor
 lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
-		<echo file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.launch.AnnotationProcessorHider$AstModificationNotifier</echo>
 		<mkdir dir="build/lombok/META-INF/gradle" />
 		<echo file="build/lombok/META-INF/gradle/incremental.annotation.processors">lombok.launch.AnnotationProcessorHider$AnnotationProcessor,isolating
 lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
@@ -1071,5 +1062,29 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<compilerarg value="-processor" />
 			<compilerarg value="org.projectlombok.testAp.TestAp,lombok.launch.AnnotationProcessorHider$AnnotationProcessor" />
 		</javac>
+	</target>
+	
+	<target name="mapstructBinding" depends="dist">
+		<mkdir dir="build/mapstruct" />
+		<mkdir dir="build/mapstruct-module-path" />
+		<copy file="dist/lombok.jar" todir="build/mapstruct-module-path" />
+
+		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct">
+			<src path="src/j9stubs" />
+			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
+		</javac>
+		<jar destfile="build/mapstruct-module-path/mapstruct-processor.jar" basedir="build/mapstruct" includes="org/**">
+			<manifest>
+				 <attribute name="Automatic-Module-Name" value="org.mapstruct.processor" />
+			</manifest>
+		</jar>
+
+		<mkdir dir="build/mapstruct-binding" />
+		<echo file="build/mapstruct-binding/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.mapstruct.NotifierHider$AstModificationNotifier</echo>
+		
+		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct-binding" modulepath="build/mapstruct-module-path">
+			<src path="src/bindings/mapstruct" />
+		</javac>
+		<jar destfile="dist/lombok-mapstruct-binding-0.1.0" basedir="build/mapstruct-binding" includes="**" />
 	</target>
 </project>
