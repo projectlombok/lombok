@@ -1085,6 +1085,6 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct-binding" modulepath="build/mapstruct-module-path">
 			<src path="src/bindings/mapstruct" />
 		</javac>
-		<jar destfile="dist/lombok-mapstruct-binding-0.1.0" basedir="build/mapstruct-binding" includes="**" />
+		<jar destfile="dist/lombok-mapstruct-binding-0.1.0.jar" basedir="build/mapstruct-binding" includes="**" />
 	</target>
 </project>
