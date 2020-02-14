@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 import lombok.ConfigurationKeys;
 import lombok.Synchronized;
@@ -34,6 +35,7 @@ import lombok.core.AST.Kind;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ArrayAllocationExpression;
@@ -47,6 +49,7 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.SynchronizedStatement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
@@ -63,31 +66,52 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 	@Override public void preHandle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
 		EclipseNode methodNode = annotationNode.up();
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration)) return;
-		MethodDeclaration method = (MethodDeclaration)methodNode.get();
+		MethodDeclaration method = (MethodDeclaration) methodNode.get();
 		if (method.isAbstract()) return;
 		
-		createLockField(annotation, annotationNode, method.isStatic(), false);
+		createLockField(annotation, annotationNode, new boolean[] {method.isStatic()}, false);
 	}
 	
-	public char[] createLockField(AnnotationValues<Synchronized> annotation, EclipseNode annotationNode, boolean isStatic, boolean reportErrors) {
+	public char[] createLockField(AnnotationValues<Synchronized> annotation, EclipseNode annotationNode, boolean[] isStatic, boolean reportErrors) {
 		char[] lockName = annotation.getInstance().value().toCharArray();
 		Annotation source = (Annotation) annotationNode.get();
 		boolean autoMake = false;
 		if (lockName.length == 0) {
 			autoMake = true;
-			lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+			lockName = isStatic[0] ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		}
 		
-		if (fieldExists(new String(lockName), annotationNode) == MemberExistsResult.NOT_EXISTS) {
+		EclipseNode typeNode = upToTypeNode(annotationNode);
+		MemberExistsResult exists = MemberExistsResult.NOT_EXISTS;
+		
+		if (typeNode != null && typeNode.get() instanceof TypeDeclaration) {
+			TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
+			if (typeDecl.fields != null) for (FieldDeclaration def : typeDecl.fields) {
+				char[] fName = def.name;
+				if (fName == null) continue;
+				if (Arrays.equals(fName, lockName)) {
+					exists = getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+					boolean st = def.isStatic();
+					if (!st && isStatic[0]) {
+						if (reportErrors) annotationNode.addError(String.format("The field %s is non-static and thus cannot be used on this static method", new String(lockName)));
+						return null;
+					}
+					isStatic[0] = st;
+					break;
+				}
+			}
+		}
+		
+		if (exists == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
-				if (reportErrors) annotationNode.addError(String.format("The field %s does not exist.", new String(lockName)));
+				if (reportErrors) annotationNode.addError(String.format("The field %s does not exist", new String(lockName)));
 				return null;
 			}
 			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);
 			setGeneratedBy(fieldDecl, source);
 			fieldDecl.declarationSourceEnd = -1;
 			
-			fieldDecl.modifiers = (isStatic ? Modifier.STATIC : 0) | Modifier.FINAL | Modifier.PRIVATE;
+			fieldDecl.modifiers = (isStatic[0] ? Modifier.STATIC : 0) | Modifier.FINAL | Modifier.PRIVATE;
 			
 			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
 			ArrayAllocationExpression arrayAlloc = new ArrayAllocationExpression();
@@ -111,20 +135,21 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		
 		int p1 = source.sourceStart -1;
 		int p2 = source.sourceStart -2;
-		long pos = (((long)p1) << 32) | p2;
+		long pos = (((long) p1) << 32) | p2;
 		EclipseNode methodNode = annotationNode.up();
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration)) {
 			annotationNode.addError("@Synchronized is legal only on methods.");
 			return;
 		}
 		
-		MethodDeclaration method = (MethodDeclaration)methodNode.get();
+		MethodDeclaration method = (MethodDeclaration) methodNode.get();
 		if (method.isAbstract()) {
 			annotationNode.addError("@Synchronized is legal only on concrete methods.");
 			return;
 		}
 		
-		char[] lockName = createLockField(annotation, annotationNode, method.isStatic(), true);
+		boolean[] isStatic = { method.isStatic() };
+		char[] lockName = createLockField(annotation, annotationNode, isStatic, true);
 		if (lockName == null) return;
 		if (method.statements == null) return;
 		
@@ -137,18 +162,22 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		block.sourceStart = method.bodyStart;
 		
 		Expression lockVariable;
-		if (method.isStatic()) lockVariable = new QualifiedNameReference(new char[][] {
-				methodNode.up().getName().toCharArray(), lockName }, new long[] { pos, pos }, p1, p2);
-		else {
+		if (isStatic[0]) {
+			EclipseNode typeNode = upToTypeNode(annotationNode);
+			char[][] n = getQualifiedInnerName(typeNode, lockName);
+			long[] ps = new long[n.length];
+			Arrays.fill(ps, pos);
+			lockVariable = new QualifiedNameReference(n, ps, p1, p2);
+		} else {
 			lockVariable = new FieldReference(lockName, pos);
 			ThisReference thisReference = new ThisReference(p1, p2);
 			setGeneratedBy(thisReference, source);
-			((FieldReference)lockVariable).receiver = thisReference;
+			((FieldReference) lockVariable).receiver = thisReference;
 		}
 		setGeneratedBy(lockVariable, source);
 		
 		method.statements = new Statement[] {
-				new SynchronizedStatement(lockVariable, block, 0, 0)
+			new SynchronizedStatement(lockVariable, block, 0, 0)
 		};
 		
 		// Positions for in-method generated nodes are special

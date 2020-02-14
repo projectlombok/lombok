@@ -13,7 +13,7 @@ class SynchronizedName {
       }
   }
   @lombok.Synchronized("READ") void test4() {
-    synchronized (this.READ)
+    synchronized (SynchronizedName.READ)
       {
         System.out.println("four");
       }

@@ -7,9 +7,6 @@ class SynchronizedNameStaticToInstanceRef {
     super();
   }
   static @lombok.Synchronized("read") void test3() {
-    synchronized (SynchronizedNameStaticToInstanceRef.read)
-      {
-        System.out.println("three");
-      }
+    System.out.println("three");
   }
 }

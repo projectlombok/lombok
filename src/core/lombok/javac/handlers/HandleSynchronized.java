@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,11 +37,14 @@ import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
@@ -65,7 +68,6 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 		
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof JCMethodDecl)) {
 			annotationNode.addError("@Synchronized is legal only on methods.");
-			
 			return;
 		}
 		
@@ -73,21 +75,41 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 		
 		if ((method.mods.flags & Flags.ABSTRACT) != 0) {
 			annotationNode.addError("@Synchronized is legal only on concrete methods.");
-			
 			return;
 		}
-		boolean isStatic = (method.mods.flags & Flags.STATIC) != 0;
+		
+		boolean[] isStatic = new boolean[] {(method.mods.flags & Flags.STATIC) != 0};
 		String lockName = annotation.getInstance().value();
 		boolean autoMake = false;
 		if (lockName.length() == 0) {
 			autoMake = true;
-			lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+			lockName = isStatic[0] ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		}
 		
 		JavacTreeMaker maker = methodNode.getTreeMaker().at(ast.pos);
 		Context context = methodNode.getContext();
 		
-		if (fieldExists(lockName, methodNode) == MemberExistsResult.NOT_EXISTS) {
+		JavacNode typeNode = upToTypeNode(annotationNode);
+		
+		MemberExistsResult exists = MemberExistsResult.NOT_EXISTS;
+		
+		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
+			for (JCTree def : ((JCClassDecl) typeNode.get()).defs) {
+				if (def instanceof JCVariableDecl) {
+					if (((JCVariableDecl) def).name.contentEquals(lockName)) {
+						exists = getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+						boolean st = ((((JCVariableDecl) def).mods.flags) & Flags.STATIC) != 0;
+						if (isStatic[0] && !st) {
+							annotationNode.addError("The field " + lockName + " is non-static and this cannot be used on this static method");
+							return;
+						}
+						isStatic[0] = st;
+					}
+				}
+			}
+		}
+		
+		if (exists == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
 				annotationNode.addError("The field " + lockName + " does not exist.");
 				return;
@@ -95,18 +117,18 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 			JCExpression objectType = genJavaLangTypeRef(methodNode, ast.pos, "Object");
 			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
 			JCNewArray newObjectArray = maker.NewArray(genJavaLangTypeRef(methodNode, ast.pos, "Object"),
-					List.<JCExpression>of(maker.Literal(CTC_INT, 0)), null);
+				List.<JCExpression>of(maker.Literal(CTC_INT, 0)), null);
 			JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
-					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
-					methodNode.toName(lockName), objectType, newObjectArray), ast, context);
+				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic[0] ? Flags.STATIC : 0)),
+				methodNode.toName(lockName), objectType, newObjectArray), ast, context);
 			injectFieldAndMarkGenerated(methodNode.up(), fieldDecl);
 		}
 		
 		if (method.body == null) return;
 		
 		JCExpression lockNode;
-		if (isStatic) {
-			lockNode = chainDots(methodNode, ast.pos, methodNode.up().getName(), lockName);
+		if (isStatic[0]) {
+			lockNode = namePlusTypeParamsToTypeReference(maker, typeNode, methodNode.toName(lockName), false, List.<JCTypeParameter>nil());
 		} else {
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
 		}

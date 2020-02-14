@@ -992,7 +992,7 @@ public class EclipseHandlerUtil {
 	 * Given for example {@code class Outer { class Inner {} }} this would generate {@code char[][] { "Outer", "Inner" }}.
 	 * For method local and top level types, this generates a size-1 char[][] where the only char[] element is {@code name} itself.
 	 */
-	private static char[][] getQualifiedInnerName(EclipseNode parent, char[] name) {
+	public static char[][] getQualifiedInnerName(EclipseNode parent, char[] name) {
 		int count = 0;
 		
 		EclipseNode n = parent;
@@ -1692,12 +1692,14 @@ public class EclipseHandlerUtil {
 	 */
 	public static MemberExistsResult fieldExists(String fieldName, EclipseNode node) {
 		node = upToTypeNode(node);
+		char[] fieldNameChars = null;
 		if (node != null && node.get() instanceof TypeDeclaration) {
-			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
+			TypeDeclaration typeDecl = (TypeDeclaration) node.get();
 			if (typeDecl.fields != null) for (FieldDeclaration def : typeDecl.fields) {
 				char[] fName = def.name;
 				if (fName == null) continue;
-				if (fieldName.equals(new String(fName))) {
+				if (fieldNameChars == null) fieldNameChars = fieldName.toCharArray();
+				if (Arrays.equals(fName, fieldNameChars)) {
 					return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}

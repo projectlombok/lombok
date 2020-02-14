@@ -1,1 +1,1 @@
-5 non-static variable read cannot be referenced from a static context
+5 The field read is non-static and this cannot be used on this static method

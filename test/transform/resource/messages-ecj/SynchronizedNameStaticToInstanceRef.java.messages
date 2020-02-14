@@ -1,1 +1,1 @@
-5 Cannot make a static reference to the non-static field SynchronizedNameStaticToInstanceRef.read
+5 The field read is non-static and thus cannot be used on this static method
