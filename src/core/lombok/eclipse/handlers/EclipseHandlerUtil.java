@@ -509,7 +509,7 @@ public class EclipseHandlerUtil {
 	
 	public static TypeReference namePlusTypeParamsToTypeReference(EclipseNode type, TypeParameter[] params, long p) {
 		TypeDeclaration td = (TypeDeclaration) type.get();
-		boolean instance = (td.modifiers & ClassFileConstants.AccStatic) == 0;
+		boolean instance = (td.modifiers & MODIFIERS_INDICATING_STATIC) == 0;
 		return namePlusTypeParamsToTypeReference(type.up(), td.name, instance, params, p);
 	}
 	
@@ -891,7 +891,7 @@ public class EclipseHandlerUtil {
 		for (int i = 0; i < tnLen; i++) ps[i] = p;
 		TypeReference[][] rr = new TypeReference[tnLen][];
 		rr[tnLen - 1] = typeParams;
-		boolean instance = (td.modifiers & ClassFileConstants.AccStatic) == 0;
+		boolean instance = (td.modifiers & MODIFIERS_INDICATING_STATIC) == 0;
 		if (instance) fillOuterTypeParams(rr, tnLen - 2, type.up(), p);
 		return new ParameterizedQualifiedTypeReference(tn, rr, 0, ps);
 	}
@@ -908,6 +908,8 @@ public class EclipseHandlerUtil {
 		return new ParameterizedQualifiedTypeReference(tn, rr, 0, ps);
 	}
 	
+	private static final int MODIFIERS_INDICATING_STATIC = ClassFileConstants.AccInterface | ClassFileConstants.AccStatic | ClassFileConstants.AccEnum;
+	
 	/**
 	 * This class will add type params to fully qualified chain of type references for inner types, such as {@code GrandParent.Parent.Child}; this is needed only as long as the chain does not involve static.
 	 * 
@@ -917,6 +919,10 @@ public class EclipseHandlerUtil {
 		if (idx < 0 || node == null || !(node.get() instanceof TypeDeclaration)) return false;
 		boolean filled = false;
 		TypeDeclaration td = (TypeDeclaration) node.get();
+		if (0 != (td.modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccEnum))) {
+			// any class defs inside an enum or interface are static, even if not marked as such.
+			return false;
+		}
 		TypeParameter[] tps = td.typeParameters;
 		if (tps != null && tps.length > 0) {
 			TypeReference[] trs = new TypeReference[tps.length];
@@ -926,7 +932,8 @@ public class EclipseHandlerUtil {
 			rr[idx] = trs;
 			filled = true;
 		}
-		if ((td.modifiers & ClassFileConstants.AccStatic) != 0) return filled; // Once we hit a static class, no further typeparams needed.
+		
+		if ((td.modifiers & MODIFIERS_INDICATING_STATIC) != 0) return filled; // Once we hit a static class, no further typeparams needed.
 		boolean f2 = fillOuterTypeParams(rr, idx - 1, node.up(), p);
 		return f2 || filled;
 	}
@@ -961,7 +968,8 @@ public class EclipseHandlerUtil {
 		long[] ps = new long[tnLen];
 		for (int i = 0; i < tnLen; i++) ps[i] = p;
 		
-		boolean instance = (td.modifiers & ClassFileConstants.AccStatic) == 0 && type.up() != null && type.up().get() instanceof TypeDeclaration;
+		
+		boolean instance = (td.modifiers & MODIFIERS_INDICATING_STATIC) == 0 && type.up() != null && type.up().get() instanceof TypeDeclaration;
 		if (instance) {
 			TypeReference[][] trs = new TypeReference[tn.length][];
 			boolean filled = fillOuterTypeParams(trs, trs.length - 2, type.up(), p);
@@ -2103,7 +2111,7 @@ public class EclipseHandlerUtil {
 			if (list.isEmpty()) break;
 			if (child.getKind() != Kind.FIELD) continue;
 			if (excludeStandard) {
-				if ((((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccStatic) != 0) continue;
+				if ((((FieldDeclaration) child.get()).modifiers & ClassFileConstants.AccStatic) != 0) continue;
 				if (child.getName().startsWith("$")) continue;
 			}
 			if (excludeTransient && (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccTransient) != 0) continue;
