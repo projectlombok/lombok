@@ -459,22 +459,15 @@ public class HandleConstructor {
 		
 		ListBuffer<JCTypeParameter> typeParams = new ListBuffer<JCTypeParameter>();
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
-		ListBuffer<JCExpression> typeArgs1 = new ListBuffer<JCExpression>();
-		ListBuffer<JCExpression> typeArgs2 = new ListBuffer<JCExpression>();
 		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		
 		if (!type.typarams.isEmpty()) {
 			for (JCTypeParameter param : type.typarams) {
-				typeArgs1.append(maker.Ident(param.name));
-				typeArgs2.append(maker.Ident(param.name));
 				typeParams.append(maker.TypeParameter(param.name, param.bounds));
 			}
-			returnType = maker.TypeApply(maker.Ident(type.name), typeArgs1.toList());
-			constructorType = maker.TypeApply(maker.Ident(type.name), typeArgs2.toList());
-		} else {
-			returnType = maker.Ident(type.name);
-			constructorType = maker.Ident(type.name);
 		}
+		returnType = namePlusTypeParamsToTypeReference(maker, typeNode, type.typarams);
+		constructorType = namePlusTypeParamsToTypeReference(maker, typeNode, type.typarams);
 		
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
