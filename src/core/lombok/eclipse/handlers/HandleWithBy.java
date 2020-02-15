@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 The Project Lombok Authors.
+ * Copyright (C) 2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,54 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
-import static lombok.eclipse.Eclipse.*;
+import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
+import static lombok.eclipse.Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.With;
-import lombok.core.AST.Kind;
-import lombok.core.configuration.CheckerFrameworkVersion;
-import lombok.core.AnnotationValues;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
-import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
-import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
+import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
 
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.core.AnnotationValues;
+import lombok.core.AST.Kind;
+import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
+import lombok.experimental.WithBy;
+
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleWith extends EclipseAnnotationHandler<With> {
-	public boolean generateWithForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelWith) {
-		if (checkForTypeLevelWith) {
-			if (hasAnnotation(With.class, typeNode)) {
+public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
+	public boolean generateWithByForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelWithBy) {
+		if (checkForTypeLevelWithBy) {
+			if (hasAnnotation(WithBy.class, typeNode)) {
 				//The annotation will make it happen, so we can skip it.
 				return true;
 			}
@@ -76,7 +81,7 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
 		
 		if (typeDecl == null || notAClass) {
-			pos.addError("@With is only supported on a class or a field.");
+			pos.addError("@WithBy is only supported on a class or a field.");
 			return false;
 		}
 		
@@ -88,28 +93,28 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 			//Skip final fields.
 			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0 && fieldDecl.initialization != null) continue;
 			
-			generateWithForField(field, pos, level);
+			generateWithByForField(field, pos, level);
 		}
 		return true;
 	}
 	
 	
 	/**
-	 * Generates a with on the stated field.
+	 * Generates a withBy on the stated field.
 	 * 
 	 * Used by {@link HandleValue}.
 	 * 
 	 * The difference between this call and the handle method is as follows:
 	 * 
-	 * If there is a {@code lombok.With} annotation on the field, it is used and the
+	 * If there is a {@code lombok.experimental.WithBy} annotation on the field, it is used and the
 	 * same rules apply (e.g. warning if the method already exists, stated access level applies).
 	 * If not, the with method is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateWithForField(EclipseNode fieldNode, EclipseNode sourceNode, AccessLevel level) {
+	public void generateWithByForField(EclipseNode fieldNode, EclipseNode sourceNode, AccessLevel level) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
-				if (annotationTypeMatches(With.class, child)) {
+				if (annotationTypeMatches(WithBy.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -117,49 +122,44 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 		}
 		
 		List<Annotation> empty = Collections.emptyList();
-		createWithForField(level, fieldNode, sourceNode, false, empty, empty);
+		createWithByForField(level, fieldNode, sourceNode, false, empty);
 	}
 	
-	@Override public void handle(AnnotationValues<With> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, ConfigurationKeys.WITH_FLAG_USAGE, "@With");
+	@Override public void handle(AnnotationValues<WithBy> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.WITHBY_FLAG_USAGE, "@WithBy");
 		
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE || node == null) return;
 		
-		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@With(onMethod", annotationNode);
-		List<Annotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@With(onParam", annotationNode);
+		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@WithBy(onMethod", annotationNode);
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createWithForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod, onParam);
+			createWithByForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod);
 			break;
 		case TYPE:
 			if (!onMethod.isEmpty()) {
-				annotationNode.addError("'onMethod' is not supported for @With on a type.");
+				annotationNode.addError("'onMethod' is not supported for @WithBy on a type.");
 			}
-			if (!onParam.isEmpty()) {
-				annotationNode.addError("'onParam' is not supported for @With on a type.");
-			}
-			generateWithForType(node, annotationNode, level, false);
+			generateWithByForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	public void createWithForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
+	public void createWithByForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createWithForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
+			createWithByForField(level, fieldNode, sourceNode, whineIfExists, onMethod);
 		}
 	}
 	
-	public void createWithForField(
+	public void createWithByForField(
 		AccessLevel level, EclipseNode fieldNode, EclipseNode sourceNode,
-		boolean whineIfExists, List<Annotation> onMethod,
-		List<Annotation> onParam) {
+		boolean whineIfExists, List<Annotation> onMethod) {
 		
 		ASTNode source = sourceNode.get();
 		if (fieldNode.getKind() != Kind.FIELD) {
-			sourceNode.addError("@With is only supported on a class or a field.");
+			sourceNode.addError("@WithBy is only supported on a class or a field.");
 			return;
 		}
 		
@@ -169,10 +169,10 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = isBoolean(fieldType);
-		String withName = toWithName(fieldNode, isBoolean);
+		String withName = toWithByName(fieldNode, isBoolean);
 		
 		if (withName == null) {
-			fieldNode.addWarning("Not generating a with method for this field: It does not fit your @Accessors prefix list.");
+			fieldNode.addWarning("Not generating a withXBy method for this field: It does not fit your @Accessors prefix list.");
 			return;
 		}
 		
@@ -191,7 +191,7 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 			return;
 		}
 		
-		for (String altName : toAllWithNames(fieldNode, isBoolean)) {
+		for (String altName : toAllWithByNames(fieldNode, isBoolean)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -211,11 +211,31 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 		
 		int modifier = toEclipseModifier(level);
 		
-		MethodDeclaration method = createWith((TypeDeclaration) fieldNode.up().get(), fieldNode, withName, modifier, sourceNode, onMethod, onParam, makeAbstract);
+		MethodDeclaration method = createWithBy((TypeDeclaration) fieldNode.up().get(), fieldNode, withName, modifier, sourceNode, onMethod, makeAbstract);
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	public MethodDeclaration createWith(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam, boolean makeAbstract) {
+	private static final char[][] NAME_JUF_FUNCTION = Eclipse.fromQualifiedName("java.util.function.Function");
+	private static final char[][] NAME_JUF_OP = Eclipse.fromQualifiedName("java.util.function.UnaryOperator");
+	private static final char[][] NAME_JUF_DOUBLEOP = Eclipse.fromQualifiedName("java.util.function.DoubleUnaryOperator");
+	private static final char[][] NAME_JUF_INTOP = Eclipse.fromQualifiedName("java.util.function.IntUnaryOperator");
+	private static final char[][] NAME_JUF_LONGOP = Eclipse.fromQualifiedName("java.util.function.LongUnaryOperator");
+	private static final char[] NAME_CHAR = {'c', 'h', 'a', 'r'};
+	private static final char[] NAME_SHORT = {'s', 'h', 'o', 'r', 't'};
+	private static final char[] NAME_BYTE = {'b', 'y', 't', 'e'};
+	private static final char[] NAME_INT = {'i', 'n', 't'};
+	private static final char[] NAME_LONG = {'l', 'o', 'n', 'g'};
+	private static final char[] NAME_DOUBLE = {'d', 'o', 'u', 'b', 'l', 'e'};
+	private static final char[] NAME_FLOAT = {'f', 'l', 'o', 'a', 't'};
+	private static final char[] NAME_BOOLEAN = {'b', 'o', 'o', 'l', 'e', 'a', 'n'};
+	private static final char[][] NAME_JAVA_LANG_BOOLEAN = Eclipse.fromQualifiedName("java.lang.Boolean");
+	private static final char[] NAME_APPLY = {'a', 'p', 'p', 'l', 'y'};
+	private static final char[] NAME_APPLY_AS_INT = {'a', 'p', 'p', 'l', 'y', 'A', 's', 'I', 'n', 't'};
+	private static final char[] NAME_APPLY_AS_LONG = {'a', 'p', 'p', 'l', 'y', 'A', 's', 'L', 'o', 'n', 'g'};
+	private static final char[] NAME_APPLY_AS_DOUBLE = {'a', 'p', 'p', 'l', 'y', 'A', 's', 'D', 'o', 'u', 'b', 'l', 'e'};
+	private static final char[] NAME_TRANSFORMER = {'t', 'r', 'a', 'n', 's', 'f', 'o', 'r', 'm', 'e', 'r'};
+
+	public MethodDeclaration createWithBy(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, boolean makeAbstract) {
 		ASTNode source = sourceNode.get();
 		if (name == null) return null;
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
@@ -231,8 +251,71 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 		if (isFieldDeprecated(fieldNode)) deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
 		if (getCheckerFrameworkVersion(fieldNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
 		
+		char[][] functionalInterfaceName = null;
+		int requiredCast = -1;
+		TypeReference parameterizer = null;
+		boolean superExtendsStyle = true;
+		char[] applyMethodName = NAME_APPLY;
+		
+		if (field.type instanceof SingleTypeReference) {
+			char[] token = ((SingleTypeReference) field.type).token;
+			if (Arrays.equals(token, NAME_CHAR)) {
+				requiredCast = TypeIds.T_char;
+				functionalInterfaceName = NAME_JUF_INTOP;
+			} else if (Arrays.equals(token, NAME_SHORT)) {
+				requiredCast = TypeIds.T_short;
+				functionalInterfaceName = NAME_JUF_INTOP;
+			} else if (Arrays.equals(token, NAME_BYTE)) {
+				requiredCast = TypeIds.T_byte;
+				functionalInterfaceName = NAME_JUF_INTOP;
+			} else if (Arrays.equals(token, NAME_INT)) {
+				functionalInterfaceName = NAME_JUF_INTOP;
+			} else if (Arrays.equals(token, NAME_LONG)) {
+				functionalInterfaceName = NAME_JUF_LONGOP;
+			} else if (Arrays.equals(token, NAME_FLOAT)) {
+				requiredCast = TypeIds.T_float;
+				functionalInterfaceName = NAME_JUF_DOUBLEOP;
+			} else if (Arrays.equals(token, NAME_DOUBLE)) {
+				functionalInterfaceName = NAME_JUF_DOUBLEOP;
+			} else if (Arrays.equals(token, NAME_BOOLEAN)) {
+				functionalInterfaceName = NAME_JUF_OP;
+				parameterizer = new QualifiedTypeReference(NAME_JAVA_LANG_BOOLEAN, new long[] {0, 0, 0});
+				superExtendsStyle = false;
+			}
+		}
+		
+		if (functionalInterfaceName == NAME_JUF_INTOP) applyMethodName = NAME_APPLY_AS_INT;
+		if (functionalInterfaceName == NAME_JUF_LONGOP) applyMethodName = NAME_APPLY_AS_LONG;
+		if (functionalInterfaceName == NAME_JUF_DOUBLEOP) applyMethodName = NAME_APPLY_AS_DOUBLE;
+		if (functionalInterfaceName == null) {
+			functionalInterfaceName = NAME_JUF_FUNCTION;
+			parameterizer = copyType(field.type, source);
+		}
+		
 		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), checkerFramework, deprecated);
-		Argument param = new Argument(field.name, p, copyType(field.type, source), ClassFileConstants.AccFinal);
+		TypeReference fType = null;
+		if (parameterizer != null && superExtendsStyle) {
+			Wildcard w1 = new Wildcard(Wildcard.SUPER);
+			w1.bound = parameterizer;
+			Wildcard w2 = new Wildcard(Wildcard.EXTENDS);
+			w2.bound = copyType(field.type, source);
+			TypeReference[][] ta = new TypeReference[functionalInterfaceName.length][];
+			ta[functionalInterfaceName.length - 1] = new TypeReference[] {w1, w2};
+			long[] ps = new long[functionalInterfaceName.length];
+			fType = new ParameterizedQualifiedTypeReference(functionalInterfaceName, ta, 0, ps);
+		}
+		if (parameterizer != null && !superExtendsStyle) {
+			TypeReference[][] ta = new TypeReference[functionalInterfaceName.length][];
+			ta[functionalInterfaceName.length - 1] = new TypeReference[] {parameterizer};
+			long[] ps = new long[functionalInterfaceName.length];
+			fType = new ParameterizedQualifiedTypeReference(functionalInterfaceName, ta, 0, ps);
+		}
+		if (parameterizer == null) {
+			long[] ps = new long[functionalInterfaceName.length];
+			fType = new QualifiedTypeReference(functionalInterfaceName, ps);
+		}
+		
+		Argument param = new Argument(NAME_TRANSFORMER, p, fType, ClassFileConstants.AccFinal);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
@@ -240,8 +323,6 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		
-		Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
 		
 		if (!makeAbstract) {
 			List<Expression> args = new ArrayList<Expression>();
@@ -256,7 +337,15 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 				// Skip initialized final fields.
 				if (((fieldFlags & ClassFileConstants.AccFinal) != 0) && childDecl.initialization != null) continue;
 				if (child.get() == fieldNode.get()) {
-					args.add(new SingleNameReference(field.name, p));
+					MessageSend ms = new MessageSend();
+					ms.receiver = new SingleNameReference(NAME_TRANSFORMER, 0);
+					ms.selector = applyMethodName;
+					ms.arguments = new Expression[] {createFieldAccessor(child, FieldAccess.ALWAYS_FIELD, source)};
+					if (requiredCast != -1) {
+						args.add(makeCastExpression(ms, TypeReference.baseTypeReference(requiredCast, 0), source));
+					} else {
+						args.add(ms);
+					}
 				} else {
 					args.add(createFieldAccessor(child, FieldAccess.ALWAYS_FIELD, source));
 				}
@@ -266,13 +355,7 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 			constructorCall.arguments = args.toArray(new Expression[0]);
 			constructorCall.type = cloneSelfType(fieldNode, source);
 			
-			Expression identityCheck = new EqualExpression(
-					createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source),
-					new SingleNameReference(field.name, p),
-					OperatorIds.EQUAL_EQUAL);
-			ThisReference thisRef = new ThisReference(pS, pE);
-			Expression conditional = new ConditionalExpression(identityCheck, thisRef, constructorCall);
-			Statement returnStatement = new ReturnStatement(conditional, pS, pE);
+			Statement returnStatement = new ReturnStatement(constructorCall, pS, pE);
 			method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 			method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 			
@@ -285,9 +368,9 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 			
 			method.statements = statements.toArray(new Statement[0]);
 		}
-		param.annotations = copyAnnotations(source, copyableAnnotations, onParam.toArray(new Annotation[0]));
 		
-		EclipseHandlerUtil.createRelevantNonNullAnnotation(fieldNode, method);
+		createRelevantNonNullAnnotation(sourceNode, param);
+		createRelevantNonNullAnnotation(fieldNode, method);
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		return method;
