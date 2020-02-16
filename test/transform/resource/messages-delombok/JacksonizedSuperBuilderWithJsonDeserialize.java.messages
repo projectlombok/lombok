@@ -1,0 +1,1 @@
+1 @JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.
