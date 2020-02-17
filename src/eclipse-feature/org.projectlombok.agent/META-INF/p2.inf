@@ -1,0 +1,6 @@
+instructions.install=\
+org.eclipse.equinox.p2.touchpoint.eclipse.addJvmArg(jvmArg:-javaagent:${artifact.location}/lombok.jar);\
+org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/lombok.eclipse.agent.jar);
+
+instructions.uninstall=\
+org.eclipse.equinox.p2.touchpoint.eclipse.removeJvmArg(jvmArg:-javaagent:${artifact.location}/lombok.jar);

@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Lombok Agent
+Bundle-SymbolicName: org.projectlombok.agent
+Bundle-Version: 1.18.12
+Automatic-Module-Name: org.projectlombok.agent

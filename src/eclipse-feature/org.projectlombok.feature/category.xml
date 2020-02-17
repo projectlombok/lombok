@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="org.projectlombok.feature">
+      <category name="org.projectlombok"/>
+   </feature>
+   <category-def name="org.projectlombok" label="Lombok"/>
+</site>
