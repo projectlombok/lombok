@@ -240,6 +240,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.TypeDeclaration"))
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.QualifiedName"))
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
+			// since JDT 3.20
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$ThisQualifierVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.MethodInvocation"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$ThisQualifierVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.FieldAccess"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.MethodInvocation"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.TypeDeclaration"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.QualifiedName"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
 			// if a generated node has children we can just ignore them as well;
 			.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
 			.request(StackRequest.PARAM1)
