@@ -15,12 +15,13 @@
 
 	<@s.section title="Maven">
 		<p>
-			It is possible to <a href="/files/pom.xml">configure</a> <code>maven-compiler-plugin</code> with <code>maven-dependency-plugin</code> and <code>plexus-compiler-eclipse</code>.
+			It is possible to <a href="/setup/ecj-in-maven-pom-example.xml">configure</a> <code>maven-compiler-plugin</code> with <code>maven-dependency-plugin</code> and <code>plexus-compiler-eclipse</code>.
 		</p><p>
 			Before the <code>compile</code> phase, you will have to set your <code>MAVEN_OPTS</code> environment variable to include the <code>javaagent</code> argument. In the example below, <code>target</code> is your <code>${r"${project.build.directory}"}</code>.
 		</p><p>
 			Use the following commands in sequence to enable lombok with ecj in your Maven build:
 <pre>
+# Make sure you've updated your pom as per <a href="/setup/ecj-in-maven-pom-example.xml">this example</a>.
 mvn clean <strong>dependency:copy@get-lombok</strong>
 set MAVEN_OPTS=<strong>-javaagent:target/lombok.jar=ECJ</strong> <em class="note">(or your OS's equivalent)</em>
 mvn install

@@ -310,7 +310,7 @@ public class WebsiteMaker {
 		
 		for (File f : from.listFiles()) {
 			if (f.isDirectory()) convertTemplates_(freemarker, prefix + f.getName() + "/", f, new File(to, f.getName()), depth + 1, dataModel);
-			if (!f.isFile() || !f.getName().endsWith(".html") || f.getName().startsWith("_")) continue;
+			if (!f.isFile() || f.getName().startsWith("_")) continue;
 			to.mkdirs();
 			Template template = freemarker.getTemplate(prefix + f.getName());
 			FileOutputStream fileOut = new FileOutputStream(new File(to, f.getName()));
