@@ -126,11 +126,11 @@ public final class NullAnnotationLibrary implements ConfigurationValueType {
 		int start = typeUse ? 16 : 7;
 		int split = ci.indexOf(':', start);
 		if (split == -1) {
-			String nonNullAnnotation = ci.substring(start);
+			String nonNullAnnotation = in.substring(start);
 			return custom(verifyTypeName(nonNullAnnotation), null, typeUse);
 		}
-		String nonNullAnnotation = ci.substring(start, split);
-		String nullableAnnotation = ci.substring(split + 1);
+		String nonNullAnnotation = in.substring(start, split);
+		String nullableAnnotation = in.substring(split + 1);
 		return custom(verifyTypeName(nonNullAnnotation), verifyTypeName(nullableAnnotation), typeUse);
 	}
 	
