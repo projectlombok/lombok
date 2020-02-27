@@ -24,6 +24,7 @@ package lombok.eclipse.agent;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.createAnnotation;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.experimental.ExtensionMethod;
+import lombok.permit.Permit;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -293,6 +295,13 @@ public class PatchExtensionMethod {
 					methodCall.actualReceiverType = extensionMethod.declaringClass;
 					methodCall.binding = fixedBinding;
 					methodCall.resolvedType = methodCall.binding.returnType;
+					if (Reflection.argumentTypes != null) {
+						try {
+							Reflection.argumentTypes.set(methodCall, argumentTypes.toArray(new TypeBinding[0]));
+						} catch (IllegalAccessException ignore) {
+							// ignore
+						}
+					}
 				}
 				return methodCall.resolvedType;
 			}
@@ -327,6 +336,20 @@ public class PatchExtensionMethod {
 			long[] poss = new long[in.length];
 			Arrays.fill(poss, p);
 			return new QualifiedNameReference(sources, poss, source.sourceStart, source.sourceEnd);
+		}
+	}
+	
+	private static final class Reflection {
+		public static final Field argumentTypes;
+		
+		static {
+			Field a = null;
+			try {
+				a = Permit.getField(MessageSend.class, "argumentTypes");
+			}  catch (Throwable t) {
+				//ignore - old eclipse versions don't know this one
+			}
+			argumentTypes = a;
 		}
 	}
 }
