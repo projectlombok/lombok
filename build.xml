@@ -28,6 +28,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="pattern.jdk9Plus" value="^(9|[1-9][0-9])(\..*)?$" />
 	<property name="pattern.jdkUpto8" value="^(1\.)?[2-8](\..*)?$" />
 	<property name="build.compiler" value="javac1.6" />
+	<property name="mapstruct-binding.version" value="0.1.0" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
 	<property name="rt-openjdk6" location="lib/openJDK6Environment/openjdk6_rt.jar" />
@@ -1063,12 +1064,11 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<compilerarg value="org.projectlombok.testAp.TestAp,lombok.launch.AnnotationProcessorHider$AnnotationProcessor" />
 		</javac>
 	</target>
-	
-	<target name="mapstructBinding" depends="dist">
+
+	<target name="-mapstructBindingPrepare">
 		<mkdir dir="build/mapstruct" />
 		<mkdir dir="build/mapstruct-module-path" />
 		<copy file="dist/lombok.jar" todir="build/mapstruct-module-path" />
-
 		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct">
 			<src path="src/j9stubs" />
 			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
@@ -1079,12 +1079,76 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			</manifest>
 		</jar>
 
-		<mkdir dir="build/mapstruct-binding" />
-		<echo file="build/mapstruct-binding/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.mapstruct.NotifierHider$AstModificationNotifier</echo>
+		<mkdir dir="build/mapstruct-binding/maven" />
+		<copy tofile="build/mapstruct-binding/maven/pom.xml" overwrite="true" file="doc/mapstruct-binding-maven-pom.xml">
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${mapstruct-binding.version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+	</target>
+	
+	<target name="-mapstructBindingDoc" depends="-mapstructBindingPrepare">
+		<mkdir dir="build/mapstruct-binding/api" />
+		<javadoc 
+			Package="true"
+			packagenames="lombok.*"
+			sourcepath="src/bindings/mapstruct"
+			classpath="build/mapstruct"
+			defaultexcludes="yes"
+			destdir="build/mapstruct-binding/api"
+			windowtitle="Lombok Mapstruct Binding"
+			source="1.8" />
 		
-		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct-binding" modulepath="build/mapstruct-module-path">
+		<!-- bugfix for boneheaded javadoc bug where ?is-external=true is inserted before an anchor ref, breaking the anchor ref.
+		is-external=true doesn't actually do anything, so, we'll just get rid of it. -->
+		<replaceregexp match="\?is-external=true#" replace="#" flags="gi">
+			<fileset dir="build/mapstruct-binding/api" includes="**/*.html" />
+		</replaceregexp>
+		
+		<jar destfile="dist/lombok-mapstruct-binding-${mapstruct-binding.version}-javadoc.jar" basedir="build/mapstruct-binding/api" includes="**" />
+	</target>
+	
+	<target name="-mapstructBindingJar" depends="dist,-mapstructBindingPrepare">
+		<mkdir dir="build/mapstruct-binding/classes" />
+		<echo file="build/mapstruct-binding/classes/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.mapstruct.NotifierHider$AstModificationNotifier</echo>
+		
+		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct-binding/classes" modulepath="build/mapstruct-module-path">
 			<src path="src/bindings/mapstruct" />
 		</javac>
-		<jar destfile="dist/lombok-mapstruct-binding-0.1.0.jar" basedir="build/mapstruct-binding" includes="**" />
+		<jar destfile="dist/lombok-mapstruct-binding-${mapstruct-binding.version}.jar" basedir="build/mapstruct-binding/classes" includes="**" />
+	</target>
+	
+	<target name="-mapstructBindingSrc" depends="-mapstructBindingJar">
+		<jar destfile="dist/lombok-mapstruct-binding-${mapstruct-binding.version}-sources.jar" basedir="src/bindings/mapstruct" includes="**" />
+	</target>
+	
+	<target name="mapstructBinding" depends="dist,-mapstructBindingJar,-mapstructBindingDoc,-mapstructBindingSrc">
+	</target>
+	
+	<target name="mapstructMaven" depends="mapstructBinding,-mvn-ext" description="Create a maven repo for mapstruct binding into a build dir.">
+		<property environment="env" />
+		<delete quiet="true" dir="build/mapstruct-binding-maven" />
+		<mkdir dir="build/mapstruct-binding-maven" />
+		<condition property="mvn-exe" value="${env.MAVEN_HOME}/bin/mvn${mvn-ext}" else="mvn${mvn-ext}">
+			<isset property="env.MAVEN_HOME" />
+		</condition>
+		
+		<exec executable="${mvn-exe}" failifexecutionfails="false" resultproperty="mvn-result">
+			<arg value="deploy:deploy-file" />
+			<arg value="-Dfile=dist/lombok-mapstruct-binding-${mapstruct-binding.version}.jar" />
+			<arg value="-Dsources=dist/lombok-mapstruct-binding-${mapstruct-binding.version}-sources.jar" />
+			<arg value="-Djavadoc=dist/lombok-mapstruct-binding-${mapstruct-binding.version}-javadoc.jar" />
+			<arg value="-DgroupId=org.projectlombok" />
+			<arg value="-DartifactId=lombok-mapstruct-binding" />
+			<arg value="-Dversion=${mapstruct-binding.version}" />
+			<arg value="-DpomFile=build/mapstruct-binding/maven/pom.xml" />
+			<arg value="-Durl=file://${basedir}/build/mapstruct-binding-maven" />
+		</exec>
+		<condition property="mvn-notfound" value="true">
+			<not><isset property="mvn-result" /></not>
+		</condition>
+		<fail message="mvn is not on your path and/or MAVEN_HOME is not set. Add mvn to your path or set MAVEN_HOME to continue." if="mvn-notfound" />
 	</target>
 </project>
