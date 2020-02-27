@@ -26,6 +26,10 @@
 			<code>lombok.data.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@Data</code> as a warning or error if configured.
+		</dd><dt>
+			<code>lombok.noArgsConstructor.extraPrivate</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			If <code>true</code>, lombok will generate a private no-args constructor for any <code>@Data</code> annotated class, which sets all fields to default values (null / 0 / false).
 		</dd>
 	</@f.confKeys>
 

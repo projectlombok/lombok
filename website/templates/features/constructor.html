@@ -42,6 +42,10 @@
 			<code>lombok.copyableAnnotations</code> = [<em>A list of fully qualified types</em>] (default: empty list)
 		</dt><dd>
 			Lombok will copy any of these annotations from the field to the constructor parameter, the setter parameter, and the getter method. Note that lombok ships with a bunch of annotations 'out of the box' which are known to be copyable: All popular nullable/nonnull annotations.
+		</dd><dt>
+			<code>lombok.noArgsConstructor.extraPrivate</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			If <code>true</code>, lombok will generate a private no-args constructor for any <code>@Value</code> or <code>@Data</code> annotated class, which sets all fields to default values (null / 0 / false).
 		</dd>
 	</@f.confKeys>
 

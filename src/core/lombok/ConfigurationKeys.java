@@ -166,9 +166,9 @@ public class ConfigurationKeys {
 	/**
 	 * lombok configuration: {@code lombok.noArgsConstructor.extraPrivate} = {@code true} | {@code false}.
 	 * 
-	 * If {@code true} (default), @Data and @Value will also generate a private no-args constructor, if there isn't already one, setting all fields to their default values. 
+	 * If {@code true}, @Data and @Value will also generate a private no-args constructor, if there isn't already one, setting all fields to their default values.
 	 */
-	public static final ConfigurationKey<Boolean> NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE = new ConfigurationKey<Boolean>("lombok.noArgsConstructor.extraPrivate", "Generate a private no-args constructor for @Data and @Value (default: true).") {};
+	public static final ConfigurationKey<Boolean> NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE = new ConfigurationKey<Boolean>("lombok.noArgsConstructor.extraPrivate", "Generate a private no-args constructor for @Data and @Value (default: false).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.requiredArgsConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
