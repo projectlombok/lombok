@@ -1,0 +1,95 @@
+<!--
+  Copyright (C) 2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok-eclipse-p2" basedir=".." xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
+	<description>
+This buildfile is part of projectlombok.org. It is responsible for building the eclipse P2 update site.
+	</description>
+	
+	<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
+	
+	<target name="-p2-clean">
+		<delete dir="build/p2" quiet="true" />
+	</target>
+	
+	<target name="dist-eclipse-p2" depends="build-eclipse-p2">
+		<tar destfile="dist/eclipse-p2.tar.bz2" compression="bzip2">
+			<tarfileset dir="build/p2" />
+		</tar>
+	</target>
+	
+	<target name="build-eclipse-p2" depends="-set-epoch-millis">
+		<property name="lombok.version" value="1.18.99" />
+		<tstamp><format property="dt.year" pattern="yyyy" /></tstamp>
+		<mkdir dir="build/p2" />
+		<mkdir dir="build/p2/features" />
+		<mkdir dir="build/p2/plugins" />
+		
+		<jar destfile="build/p2/plugins/org.projectlombok.agent_${lombok.version}.jar">
+			<manifest>
+				<attribute name="Manifest-Version" value="1.0" />
+				<attribute name="Bundle-ManifestVersion" value="2" />
+				<attribute name="Bundle-Name" value="Lombok Agent" />
+				<attribute name="Bundle-SymbolicName" value="org.projectlombok.agent" />
+				<attribute name="Bundle-Version" value="${lombok.version}" />
+				<attribute name="Automatic-Module-Name" value="org.projectlombok.agent" />
+			</manifest>
+			<zipfileset dir="buildScripts/p2" includes="p2.inf" prefix="META-INF/" />
+			<zipfileset dir="dist" includes="lombok-${lombok.version}.jar" fullpath="lombok.jar" />
+		</jar>
+		
+		<length property="agent.zip.size" file="build/p2/plugins/org.projectlombok.agent_${lombok.version}.jar" />
+		
+		<copy todir="build/p2" overwrite="true">
+			<fileset dir="buildScripts/p2" includes="feature.xml" />
+			<filterset>
+				<filter token="YEAR" value="${dt.year}" />
+				<filter token="EPOCH_MILLIS" value="${dt.epochMillis}" />
+				<filter token="VERSION" value="${lombok.version}" />
+			</filterset>
+		</copy>
+		<zip destfile="build/p2/features/org.projectlombok.feature_${lombok.version}.jar" basedir="build/p2" includes="feature.xml" />
+		<delete file="build/p2/feature.xml" />
+		<length property="feature.zip.size" file="build/p2/features/org.projectlombok.feature_${lombok.version}.jar" />
+		
+		<copy todir="build/p2" overwrite="true">
+			<fileset dir="buildScripts/p2" includes="artifacts.xml,content.xml" />
+			<filterset>
+				<filter token="YEAR" value="${dt.year}" />
+				<filter token="EPOCH_MILLIS" value="${dt.epochMillis}" />
+				<filter token="VERSION" value="${lombok.version}" />
+				<filter token="FEATURE_ZIP_SIZE" value="${feature.zip.size}" />
+				<filter token="AGENT_ZIP_SIZE" value="${agent.zip.size}" />
+			</filterset>
+		</copy>
+		<zip destfile="build/p2/artifacts.jar" basedir="build/p2" includes="artifacts.xml" />
+		<zip destfile="build/p2/content.jar" basedir="build/p2" includes="content.xml" />
+		<delete file="build/p2/artifacts.xml" />
+		<delete file="build/p2/content.xml" />
+	</target>
+	
+	<target name="-set-epoch-millis">
+		<mkdir dir="build/p2-support" />
+		<echo file="build/p2-support/Epoch.java">public class Epoch {public static void main(String[] args) {System.out.print(System.currentTimeMillis());}}</echo>
+		<javac srcdir="build/p2-support" release="8" includeAntRuntime="false" destdir="build/p2-support" />
+		<java classname="Epoch" classpath="build/p2-support" fork="false" outputproperty="dt.epochMillis" />
+	</target>
+</project>

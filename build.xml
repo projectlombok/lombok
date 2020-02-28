@@ -371,6 +371,21 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	
+	<target name="-eclipse-p2-dist" unless="lombok.version">
+		<antcall target="dist" />
+	</target>
+	
+	<target name="eclipse-p2" depends="config-ssh, -eclipse-p2-dist" description="Builds an eclipse p2 update site which allows lombok to be installed as an eclipse plugin">
+		
+		<ant antfile="buildScripts/eclipse-p2.ant.xml" target="dist-eclipse-p2" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
+		<ant antfile="buildScripts/website.ant.xml" target="deploy-p2" inheritAll="false">
+			<property name="ssh.username" value="${ssh.username}" />
+			<property name="ssh.keyfile" value="${ssh.keyfile}" />
+		</ant>
+	</target>
+	
 	<target name="dist-utils" description="Builds lombok-utils.jar, which is a library used by i.e. lombok.ast project." depends="version, compile">
 		<mkdir dir="dist" />
 		<jar destfile="dist/lombok-utils-${lombok.version}.jar">
@@ -637,7 +652,7 @@ ${sourceWarning}</echo>
 	</target>
 	
 	<target name="setupJavaOracle7TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against Oracle JDK7.">
-		<mkdir dir="lib/oracleJDK7Environment" />		
+		<mkdir dir="lib/oracleJDK7Environment" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/oracle-jdk7-tools.jar" dest="lib/oracleJDK7Environment/tools.jar" verbose="true" usetimestamp="true" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/oracle-jdk7-rt.jar" dest="lib/oracleJDK7Environment/rt.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">

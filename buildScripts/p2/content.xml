@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?metadataRepository version='1.2.0'?>
+<repository name='Exported Repository' type='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1'>
+  <properties size='2'>
+    <property name='p2.timestamp' value='@EPOCH_MILLIS@'/>
+    <property name='p2.compressed' value='true'/>
+  </properties>
+  <units size='4'>
+    <unit id='org.projectlombok' version='@VERSION@'>
+      <properties size='2'>
+        <property name='org.eclipse.equinox.p2.name' value='Lombok'/>
+        <property name='org.eclipse.equinox.p2.type.category' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='org.projectlombok' version='@VERSION@'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='org.projectlombok.feature.feature.group' range='[@VERSION@,@VERSION@]'/>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+    </unit>
+    <unit id='org.projectlombok.feature.feature.jar' version='@VERSION@'>
+      <properties size='3'>
+        <property name='org.eclipse.equinox.p2.name' value='Lombok'/>
+        <property name='org.eclipse.equinox.p2.description' value='Project Lombok is a java library that automatically plugs into your editor and build tools, spicing up your java. Never write another getter or equals method again, with one annotation your class has a fully featured builder, automate your logging variables, and much more.'/>
+        <property name='org.eclipse.equinox.p2.description.url' value='https://projectlombok.org'/>
+      </properties>
+      <provides size='3'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='org.projectlombok.feature.feature.jar' version='@VERSION@'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' version='1.0.0'/>
+        <provided namespace='org.eclipse.update.feature' name='org.projectlombok.feature' version='@VERSION@'/>
+      </provides>
+      <filter>
+        (org.eclipse.update.install.features=true)
+      </filter>
+      <artifacts size='1'>
+        <artifact classifier='org.eclipse.update.feature' id='org.projectlombok.feature' version='@VERSION@'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='zipped'>
+            true
+          </instruction>
+        </instructions>
+      </touchpointData>
+      <licenses size='1'>
+        <license uri='https://raw.githubusercontent.com/rzwitserloot/lombok/master/LICENSE' url='https://raw.githubusercontent.com/rzwitserloot/lombok/master/LICENSE'>
+          Copyright (C) 2009-@YEAR@ The Project Lombok Authors.&#xA;&#xA;Permission is hereby granted, free of charge, to any person obtaining a copy&#xA;of this software and associated documentation files (the &quot;Software&quot;), to deal&#xA;in the Software without restriction, including without limitation the rights&#xA;to use, copy, modify, merge, publish, distribute, sublicense, and/or sell&#xA;copies of the Software, and to permit persons to whom the Software is&#xA;furnished to do so, subject to the following conditions:&#xA;&#xA;The above copyright notice and this permission notice shall be included in&#xA;all copies or substantial portions of the Software.&#xA;&#xA;THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR&#xA;IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,&#xA;FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE&#xA;AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER&#xA;LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,&#xA;OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN&#xA;THE SOFTWARE.
+        </license>
+      </licenses>
+    </unit>
+    <unit id='org.projectlombok.agent' version='@VERSION@' singleton='false'>
+      <update id='org.projectlombok.agent' range='[0.0.0,@VERSION@)' severity='0'/>
+      <properties size='1'>
+        <property name='org.eclipse.equinox.p2.name' value='Lombok Agent'/>
+      </properties>
+      <provides size='4'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='org.projectlombok.agent' version='@VERSION@'/>
+        <provided namespace='osgi.bundle' name='org.projectlombok.agent' version='@VERSION@'/>
+        <provided namespace='osgi.identity' name='org.projectlombok.agent' version='@VERSION@'>
+          <properties size='1'>
+            <property name='type' value='osgi.bundle'/>
+          </properties>
+        </provided>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+      </provides>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='org.projectlombok.agent' version='@VERSION@'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='4'>
+          <instruction key='uninstall'>
+            org.eclipse.equinox.p2.touchpoint.eclipse.removeJvmArg(jvmArg:-javaagent:${artifact.location}/lombok.jar);
+          </instruction>
+          <instruction key='zipped'>
+            true
+          </instruction>
+          <instruction key='install'>
+            org.eclipse.equinox.p2.touchpoint.eclipse.addJvmArg(jvmArg:-javaagent:${artifact.location}/lombok.jar);org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/lombok.eclipse.agent.jar);
+          </instruction>
+          <instruction key='manifest'>
+            Bundle-SymbolicName: org.projectlombok.agent&#xA;Bundle-Version: @VERSION@
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='org.projectlombok.feature.feature.group' version='@VERSION@' singleton='false'>
+      <update id='org.projectlombok.feature.feature.group' range='[0.0.0,@VERSION@)' severity='0'/>
+      <properties size='4'>
+        <property name='org.eclipse.equinox.p2.name' value='Lombok'/>
+        <property name='org.eclipse.equinox.p2.description' value='Project Lombok is a java library that automatically plugs into your editor and build tools, spicing up your java. Never write another getter or equals method again, with one annotation your class has a fully featured builder, automate your logging variables, and much more.'/>
+        <property name='org.eclipse.equinox.p2.description.url' value='https://projectlombok.org'/>
+        <property name='org.eclipse.equinox.p2.type.group' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='org.projectlombok.feature.feature.group' version='@VERSION@'/>
+      </provides>
+      <requires size='2'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='org.projectlombok.agent' range='[@VERSION@,@VERSION@]'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='org.projectlombok.feature.feature.jar' range='[@VERSION@,@VERSION@]'>
+          <filter>
+            (org.eclipse.update.install.features=true)
+          </filter>
+        </required>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+      <licenses size='1'>
+        <license uri='https://raw.githubusercontent.com/rzwitserloot/lombok/master/LICENSE' url='https://raw.githubusercontent.com/rzwitserloot/lombok/master/LICENSE'>
+          Copyright (C) 2009-@YEAR@ The Project Lombok Authors.&#xA;&#xA;Permission is hereby granted, free of charge, to any person obtaining a copy&#xA;of this software and associated documentation files (the &quot;Software&quot;), to deal&#xA;in the Software without restriction, including without limitation the rights&#xA;to use, copy, modify, merge, publish, distribute, sublicense, and/or sell&#xA;copies of the Software, and to permit persons to whom the Software is&#xA;furnished to do so, subject to the following conditions:&#xA;&#xA;The above copyright notice and this permission notice shall be included in&#xA;all copies or substantial portions of the Software.&#xA;&#xA;THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR&#xA;IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,&#xA;FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE&#xA;AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER&#xA;LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,&#xA;OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN&#xA;THE SOFTWARE.
+        </license>
+      </licenses>
+    </unit>
+  </units>
+</repository>

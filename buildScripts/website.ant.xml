@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2010-2014 The Project Lombok Authors.
+  Copyright (C) 2010-2020 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@
 This buildfile is part of projectlombok.org. It is responsible for building the website and all website-related aspects,
 such as applying the templates to produce the website, converting the changelog into HTML, and creating javadoc.
 	</description>
+	
+	<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
 	
 	<path id="build.path">
 		<fileset dir="lib/build">
@@ -240,7 +242,23 @@ such as applying the templates to produce the website, converting the changelog 
 	<target name="-requires-ssh" unless="ssh.username">
 		<fail>ssh.username and ssh.keyfile should be set.</fail>
 	</target>
-
+	
+	<target name="deploy-p2" depends="-requires-ssh">
+		<ivy:scpUpload
+			from="dist/eclipse-p2.tar.bz2"
+			to="/data/lombok/staging"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/deployP2"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+	</target>
+	
 	<target name="edgeRelease" depends="-requires-ssh, edgeRelease-build">
 		<ivy:scpUpload
 			from="dist/website-edge.tar.bz2"
