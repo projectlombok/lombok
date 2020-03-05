@@ -1,6 +1,6 @@
 <#import "../_features.html" as f>
 
-<@f.scaffold title="@Jacksonized" logline="Make Jackson use your builders.">
+<@f.scaffold title="@Jacksonized" logline="Bob, meet Jackson. Lets make sure you become fast friends.">
 	<@f.history>
 		<p>
 			<code>@Jacksonized</code> was introduced as experimental feature in lombok v1.18.14.
@@ -22,10 +22,7 @@ public class JacksonExample {
 }
 </pre></div></div>
  		</p><p>
- 			This annotation is especially useful when deserializing into immutable (sub-)classes that only use <code>@SuperBuilder</code> to create instances. 
- 			With <code>@Jacksonized</code>, you do not have to put the complex <code>@SuperBuilder</code> class header into your code just to configure it for Jackson.
- 		</p><p>
-			This annotation does <i>not</i> change the behavior of the generated builder.
+			This annotation does <em>not</em> change the behavior of the generated builder.
 			A <code>@Jacksonized</code> <code>@SuperBuilder</code> remains fully compatible to regular <code>@SuperBuilder</code>s.
 		</p>
 	</@f.overview>
@@ -35,7 +32,7 @@ public class JacksonExample {
 			In particular, the annotation does the following:
 			<ul>
 				<li>
-					Configure Jackson to use the builder for deserialization using <code>@JsonDeserialize(builder=<em>Foobar</em>.<em>Foobar</em>Builder[Impl].class))</code> on the class (where <em>Foobar</em> is the name of the annotated class).
+					Configure Jackson to use the builder for deserialization using <code>@JsonDeserialize(builder=<em>Foobar</em>.<em>Foobar</em>Builder[Impl].class))</code> on the class (where <em>Foobar</em> is the name of the annotated class, and <code>Impl</code> is added for <code>@SuperBuilder</code>).
 					(An error is emitted if such an annotation already exists.)
 				</li><li>
 					Copy Jackson-related configuration annotations (like <code>@JsonIgnoreProperties</code>) from the class to the builder class.
