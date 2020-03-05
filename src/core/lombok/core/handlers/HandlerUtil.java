@@ -76,7 +76,7 @@ public class HandlerUtil {
 		return 43;
 	}
 	
-	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS;
+	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
 	static {
 		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"androidx.annotation.NonNull",
@@ -314,6 +314,18 @@ public class HandlerUtil {
 		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JsonProperty",
 			"com.fasterxml.jackson.annotation.JsonSetter",
+		}));
+		JACKSON_COPY_TO_BUILDER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"com.fasterxml.jackson.annotation.JsonFormat",
+			"com.fasterxml.jackson.annotation.JsonIgnoreProperties",
+			"com.fasterxml.jackson.annotation.JsonIgnoreType",
+			"com.fasterxml.jackson.annotation.JsonPropertyOrder",
+			"com.fasterxml.jackson.annotation.JsonRootName",
+			"com.fasterxml.jackson.annotation.JsonSubTypes",
+			"com.fasterxml.jackson.annotation.JsonTypeInfo",
+			"com.fasterxml.jackson.annotation.JsonTypeName",
+			"com.fasterxml.jackson.annotation.JsonView",
+			"com.fasterxml.jackson.databind.annotation.JsonNaming",
 		}));
 	}
 	

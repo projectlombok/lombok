@@ -1,4 +1,5 @@
 import java.util.List;
+@lombok.Builder(setterPrefix = "with")
 class BuilderSingularNoAutoWithSetterPrefix {
 	private List<String> things;
 	private List<String> widgets;

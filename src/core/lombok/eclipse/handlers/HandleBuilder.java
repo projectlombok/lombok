@@ -376,32 +376,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			thrownExceptions = md.thrownExceptions;
 			nameOfStaticBuilderMethod = md.selector;
 			if (replaceNameInBuilderClassName) {
-				char[] token;
-				if (md.returnType instanceof QualifiedTypeReference) {
-					char[][] tokens = ((QualifiedTypeReference) md.returnType).tokens;
-					token = tokens[tokens.length - 1];
-				} else if (md.returnType instanceof SingleTypeReference) {
-					token = ((SingleTypeReference) md.returnType).token;
-					if (!(md.returnType instanceof ParameterizedSingleTypeReference) && typeParams != null) {
-						for (TypeParameter tp : typeParams) {
-							if (Arrays.equals(tp.name, token)) {
-								annotationNode.addError("@Builder requires specifying 'builderClassName' if used on methods with a type parameter as return type.");
-								return;
-							}
-						}
-					}
-				} else {
-					annotationNode.addError("Unexpected kind of return type on annotated method. Specify 'builderClassName' to solve this problem.");
+				char[] token = returnTypeToBuilderClassName(annotationNode, md, typeParams);
+				if (token == null)
 					return;
-				}
-				
-				if (Character.isLowerCase(token[0])) {
-					char[] newToken = new char[token.length];
-					System.arraycopy(token, 1, newToken, 1, token.length - 1);
-					newToken[0] = Character.toTitleCase(token[0]);
-					token = newToken;
-				}
-				
 				builderClassName = builderClassName.replace("*", new String(token));
 			}
 		} else {
@@ -549,6 +526,35 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
 			}
 		}
+	}
+
+	static char[] returnTypeToBuilderClassName(EclipseNode annotationNode, MethodDeclaration md, TypeParameter[] typeParams) {
+		char[] token;
+		if (md.returnType instanceof QualifiedTypeReference) {
+			char[][] tokens = ((QualifiedTypeReference) md.returnType).tokens;
+			token = tokens[tokens.length - 1];
+		} else if (md.returnType instanceof SingleTypeReference) {
+			token = ((SingleTypeReference) md.returnType).token;
+			if (!(md.returnType instanceof ParameterizedSingleTypeReference) && typeParams != null) {
+				for (TypeParameter tp : typeParams) {
+					if (Arrays.equals(tp.name, token)) {
+						annotationNode.addError("@Builder requires specifying 'builderClassName' if used on methods with a type parameter as return type.");
+						return null;
+					}
+				}
+			}
+		} else {
+			annotationNode.addError("Unexpected kind of return type on annotated method. Specify 'builderClassName' to solve this problem.");
+			return null;
+		}
+		
+		if (Character.isLowerCase(token[0])) {
+			char[] newToken = new char[token.length];
+			System.arraycopy(token, 1, newToken, 1, token.length - 1);
+			newToken[0] = Character.toTitleCase(token[0]);
+			token = newToken;
+		}
+		return token;
 	}
 	
 	private static final char[] BUILDER_TEMP_VAR = {'b', 'u', 'i', 'l', 'd', 'e', 'r'};

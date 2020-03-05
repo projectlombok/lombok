@@ -1957,12 +1957,16 @@ public class EclipseHandlerUtil {
 			result = addAnnotation(source, result, JAVAX_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
 		}
 		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
-			result = addAnnotation(source, result, LOMBOK_GENERATED, null);
+			result = addAnnotation(source, result, LOMBOK_GENERATED);
 		}
 		return result;
 	}
 	
-	static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, ASTNode arg) {
+	static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn) {
+		return addAnnotation(source, originalAnnotationArray, annotationTypeFqn, (ASTNode[]) null);
+	}
+	
+	static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, ASTNode... args) {
 		char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
 		
 		if (originalAnnotationArray != null) for (Annotation ann : originalAnnotationArray) {
@@ -1984,20 +1988,23 @@ public class EclipseHandlerUtil {
 		QualifiedTypeReference qualifiedType = new QualifiedTypeReference(annotationTypeFqn, poss);
 		setGeneratedBy(qualifiedType, source);
 		Annotation ann;
-		if (arg instanceof Expression) {
+		if (args != null && args.length == 1 && args[0] instanceof Expression) {
 			SingleMemberAnnotation sma = new SingleMemberAnnotation(qualifiedType, pS);
 			sma.declarationSourceEnd = pE;
-			arg.sourceStart = pS;
-			arg.sourceEnd = pE;
-			sma.memberValue = (Expression) arg;
+			args[0].sourceStart = pS;
+			args[0].sourceEnd = pE;
+			sma.memberValue = (Expression) args[0];
 			setGeneratedBy(sma.memberValue, source);
 			ann = sma;
-		} else if (arg instanceof MemberValuePair) {
+		} else if (args != null && args.length >= 1 && arrayHasOnlyElementsOfType(args, MemberValuePair.class)) {
 			NormalAnnotation na = new NormalAnnotation(qualifiedType, pS);
 			na.declarationSourceEnd = pE;
-			arg.sourceStart = pS;
-			arg.sourceEnd = pE;
-			na.memberValuePairs = new MemberValuePair[] {(MemberValuePair) arg};
+			na.memberValuePairs = new MemberValuePair[args.length];
+			for (int i = 0; i < args.length; i++) {
+				args[i].sourceStart = pS;
+				args[i].sourceEnd = pE;
+				na.memberValuePairs[i] = (MemberValuePair) args[i];			
+			}
 			setGeneratedBy(na.memberValuePairs[0], source);
 			setGeneratedBy(na.memberValuePairs[0].value, source);
 			na.memberValuePairs[0].value.sourceStart = pS;
@@ -2016,6 +2023,14 @@ public class EclipseHandlerUtil {
 		return newAnnotationArray;
 	}
 	
+	private static boolean arrayHasOnlyElementsOfType(Object[] array, Class<?> clazz) {
+		for (Object element : array) {
+			if (!clazz.isInstance(element))
+				return false;
+		}
+		return true;
+	}
+
 	/**
 	 * Generates a new statement that checks if the given local variable is null, and if so, throws a specified exception with the
 	 * variable name as message.

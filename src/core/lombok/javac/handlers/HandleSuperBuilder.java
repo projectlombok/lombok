@@ -99,7 +99,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
 		CheckerFrameworkVersion cfv = getCheckerFrameworkVersion(annotationNode);
 		SuperBuilder superbuilderAnnotation = annotation.getInstance();
-		deleteAnnotationIfNeccessary(annotationNode, SuperBuilder.class);
+		// Do not delete the SuperBuilder annotation here, we need it for @Jacksonized.
 		
 		String builderMethodName = superbuilderAnnotation.builderMethodName();
 		String buildMethodName = superbuilderAnnotation.buildMethodName();

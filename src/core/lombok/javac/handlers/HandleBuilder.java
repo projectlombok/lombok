@@ -149,7 +149,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
 		}
 		
-		deleteAnnotationIfNeccessary(annotationNode, Builder.class, "lombok.experimental.Builder");
+		// Do not delete the Builder annotation here, we need it for @Jacksonized.
 		
 		JavacNode parent = annotationNode.up();
 		
@@ -257,38 +257,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				returnType = cloneType(tdParent.getTreeMaker(), returnType, ast, annotationNode.getContext());
 			}
 			if (replaceNameInBuilderClassName) {
-				String replStr = null;
-				if (returnType instanceof JCFieldAccess) {
-					replStr = ((JCFieldAccess) returnType).name.toString();
-				} else if (returnType instanceof JCIdent) {
-					Name n = ((JCIdent) returnType).name;
-					
-					for (JCTypeParameter tp : typeParams) {
-						if (tp.name.equals(n)) {
-							annotationNode.addError("@Builder requires specifying 'builderClassName' if used on methods with a type parameter as return type.");
-							return;
-						}
-					}
-					replStr = n.toString();
-				} else if (returnType instanceof JCPrimitiveTypeTree) {
-					replStr = returnType.toString();
-					if (Character.isLowerCase(replStr.charAt(0))) {
-						replStr = Character.toTitleCase(replStr.charAt(0)) + replStr.substring(1);
-					}
-				} else if (returnType instanceof JCTypeApply) {
-					JCExpression clazz = ((JCTypeApply) returnType).clazz;
-					if (clazz instanceof JCFieldAccess) {
-						replStr = ((JCFieldAccess) clazz).name.toString();
-					} else if (clazz instanceof JCIdent) {
-						replStr = ((JCIdent) clazz).name.toString();
-					}
-				}
-				
-				if (replStr == null || replStr.isEmpty()) {
-					// This shouldn't happen.
-					System.err.println("Lombok bug ID#20140614-1651: javac HandleBuilder: return type to name conversion failed: " + returnType.getClass());
-					replStr = td.name.toString();
-				}
+				String replStr = returnTypeToBuilderClassName(annotationNode, td, returnType, typeParams);
+				if (replStr == null)
+					return;
 				builderClassName = builderClassName.replace("*", replStr);
 				replaceNameInBuilderClassName = false;
 			}
@@ -506,6 +477,42 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
 			}
 		}
+	}
+
+	static String returnTypeToBuilderClassName(JavacNode annotationNode, JCClassDecl td, JCExpression returnType, List<JCTypeParameter> typeParams) {
+		String replStr = null;
+		if (returnType instanceof JCFieldAccess) {
+			replStr = ((JCFieldAccess) returnType).name.toString();
+		} else if (returnType instanceof JCIdent) {
+			Name n = ((JCIdent) returnType).name;
+			
+			for (JCTypeParameter tp : typeParams) {
+				if (tp.name.equals(n)) {
+					annotationNode.addError("@Builder requires specifying 'builderClassName' if used on methods with a type parameter as return type.");
+					return null;
+				}
+			}
+			replStr = n.toString();
+		} else if (returnType instanceof JCPrimitiveTypeTree) {
+			replStr = returnType.toString();
+			if (Character.isLowerCase(replStr.charAt(0))) {
+				replStr = Character.toTitleCase(replStr.charAt(0)) + replStr.substring(1);
+			}
+		} else if (returnType instanceof JCTypeApply) {
+			JCExpression clazz = ((JCTypeApply) returnType).clazz;
+			if (clazz instanceof JCFieldAccess) {
+				replStr = ((JCFieldAccess) clazz).name.toString();
+			} else if (clazz instanceof JCIdent) {
+				replStr = ((JCIdent) clazz).name.toString();
+			}
+		}
+		
+		if (replStr == null || replStr.isEmpty()) {
+			// This shouldn't happen.
+			System.err.println("Lombok bug ID#20140614-1651: javac HandleBuilder: return type to name conversion failed: " + returnType.getClass());
+			replStr = td.name.toString();
+		}
+		return replStr;
 	}
 	
 	private static String unpack(JCExpression expr) {

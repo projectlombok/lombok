@@ -651,6 +651,15 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @WithBy} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> WITHBY_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.withBy.flagUsage", "Emit a warning or error if @WithBy is used.") {};
+
+	// ----- Jacksonized -----
+	
+	/**
+	 * lombok configuration: {@code lombok.jacksonized.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Jacksonized} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> JACKSONIZED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.jacksonized.flagUsage", "Emit a warning or error if @Jacksonized is used.") {};
 	
 	// ----- Configuration System -----
 	
