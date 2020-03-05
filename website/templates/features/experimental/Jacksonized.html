@@ -1,0 +1,53 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="@Jacksonized" logline="Make Jackson use your builders.">
+	<@f.history>
+		<p>
+			<code>@Jacksonized</code> was introduced as experimental feature in lombok v1.18.14.
+		</p>
+	</@f.history>
+	
+	<@f.overview>
+		<p>
+			The <code>@Jacksonized</code> annotation is an add-on annotation for <a href="/features/Builder"><code>@Builder</code></a> and <a href="/features/experimental/SuperBuilder"><code>@SuperBuilder</code></a>.
+			It automatically configures the generated builder class to be used by <a href="https://github.com/FasterXML/jackson">Jackson</a>'s deserialization.
+			It only has an effect if present at a context where there is also a <code>@Builder</code> or a <code>@SuperBuilder</code>; a warning is emitted otherwise.
+ 		</p><p>
+			Without <code>@Jacksonized</code>, you would have to customize your builder class(es).
+			With <code>@Jacksonized</code>, you can simply write something like this to let Jackson use the generated builder:<div class="snippet"><div class="java" align="left"><pre>
+@Jacksonized @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class JacksonExample {
+	private List&lt;Foo&gt; foos;
+}
+</pre></div></div>
+ 		</p><p>
+ 			This annotation is especially useful when deserializing into immutable (sub-)classes that only use <code>@SuperBuilder</code> to create instances. 
+ 			With <code>@Jacksonized</code>, you do not have to put the complex <code>@SuperBuilder</code> class header into your code just to configure it for Jackson.
+ 		</p><p>
+			This annotation does <i>not</i> change the behavior of the generated builder.
+			A <code>@Jacksonized</code> <code>@SuperBuilder</code> remains fully compatible to regular <code>@SuperBuilder</code>s.
+		</p>
+	</@f.overview>
+	
+	<@f.smallPrint>
+ 		<p>
+			In particular, the annotation does the following:
+			<ul>
+				<li>
+					Configure Jackson to use the builder for deserialization using <code>@JsonDeserialize(builder=<em>Foobar</em>.<em>Foobar</em>Builder[Impl].class))</code> on the class (where <em>Foobar</em> is the name of the annotated class).
+					(An error is emitted if such an annotation already exists.)
+				</li><li>
+					Copy Jackson-related configuration annotations (like <code>@JsonIgnoreProperties</code>) from the class to the builder class.
+					This is necessary so that Jackson recognizes them when using the builder.
+				</li><li>
+					Insert <code>@JsonPOJOBuilder(withPrefix="")</code> on the generated builder class to override Jackson's default prefix "with".
+					If you configured a different prefix in lombok using <code>setterPrefix</code>, this value is used.
+					If you changed the name of the <code>build()</code> method using using <code>buildMethodName</code>, this is also made known to Jackson.
+				</li><li>
+					For <code>@SuperBuilder</code>, make the builder implementation class package-private.
+				</li>
+			</ul>
+		</p>
+	</@f.smallPrint>
+</@f.scaffold>
