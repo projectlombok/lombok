@@ -52,13 +52,13 @@
 		<dependency org="netbeans.org" name="openide.util" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="modules.java.source" rev="6.8beta" conf="netbeansBuild->build" />
 		
-		<dependency org="org.eclipse.custom" name="core.runtime" rev="3.9.0" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="jdt.core" rev="3.9.1" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="jdt.ui" rev="3.9.1" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="equinox.common" rev="3.6.200" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="osgi" rev="3.9.0" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="core.resources" rev="3.8.100" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="core.jobs" rev="3.5.300" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.17.0" conf="eclipseBuild->default; contrib->sources" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.20.0" conf="eclipseBuild->default; contrib->sources" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.12.2" conf="eclipseBuild->default; contrib->sources" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.common" rev="3.10.600" conf="eclipseBuild->default; contrib->sources" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.15.100" conf="eclipseBuild->default; contrib->sources" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.resources" rev="3.13.600" conf="eclipseBuild->default; contrib->sources" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.10.600" conf="eclipseBuild->default; contrib->sources" transitive="false" />
 		
 		<dependency org="org.eclipse.jgit" name="org.eclipse.jgit.ant" rev="5.2.0.201812061821-r" conf="supporters->default" />
 		<dependency org="org.eclipse.jgit" name="org.eclipse.jgit" rev="5.2.0.201812061821-r" conf="supporters->default" />
