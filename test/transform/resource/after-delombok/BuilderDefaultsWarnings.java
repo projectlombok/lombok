@@ -1,3 +1,4 @@
+//skip-idempotent
 import lombok.Builder;
 @Builder
 public class BuilderDefaultsWarnings {

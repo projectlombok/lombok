@@ -1,3 +1,4 @@
+//skip-idempotent
 import java.util.List;
 @lombok.Builder(setterPrefix = "with")
 class BuilderSingularNoAutoWithSetterPrefix {
