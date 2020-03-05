@@ -2,11 +2,12 @@
 
 [_(general configuration and options)_](../readme.md)
 
-### `ARG gradle=6.0.1`
+### `ARG gradle=6.2.2`
 
 The gradle version to be used. Supported values:
 
-- `6.0.1` (default)
+- `6.2.2` (default)
+- `6.0.1`
 - `5.6`
 - `5.1.1`
 - `4.10.2`
@@ -28,11 +29,11 @@ docker build -t lombok-gradle-jdk13 --build-arg lombokjar=lombok-1.16.20.jar -f 
 ```
 docker run -it lombok-gradle-jdk13
 
-docker run --rm -it -v /<lombokhome>/dist/lombok.jar:/workspace/lombok.jar lombok-gradle-jdk13
+docker run --rm -it -v /<lombokhome>/dist/lombok.jar:/workspace/classpath/lombok.jar lombok-gradle-jdk13
 ```
 
 ## Example container commands:
 
 ```
 gradle assemble
-```
+```cd ...

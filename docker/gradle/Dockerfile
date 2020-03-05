@@ -7,7 +7,7 @@ RUN provision/jdk/java-${jdk}.sh
 ARG lombokjar=lombok.jar
 ADD https://projectlombok.org/downloads/${lombokjar} /lombok.jar
 
-ARG gradle=6.0.1
+ARG gradle=6.2.2
 ADD provision/gradle/gradle-${gradle}.sh provision/gradle/gradle-${gradle}.sh
 RUN provision/gradle/gradle-${gradle}.sh
 
