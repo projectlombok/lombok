@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import org.mangosdk.spi.ProviderFor;
@@ -59,6 +60,8 @@ import lombok.javac.JavacTreeMaker;
 public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	
 	@Override public void handle(AnnotationValues<Jacksonized> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.JACKSONIZED_FLAG_USAGE, "@Jacksonized");
+
 		JavacNode annotatedNode = annotationNode.up();
 		deleteAnnotationIfNeccessary(annotationNode, Jacksonized.class);
 		

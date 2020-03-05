@@ -41,20 +41,20 @@ import lombok.experimental.SuperBuilder;
  * In particular, the annotation does the following:
  * <ul>
  * <li>Configure Jackson to use the builder for deserialization using
- * {@code @JsonDeserialize(builder=MyClass.MyClassBuilder[Impl].class))} on the
- * class. (An error is emitted if such an annotation already exists.)
+ * {@code @JsonDeserialize(builder=Foobar.FoobarBuilder[Impl].class)}
+ * on the class (where <em>Foobar</em> is the name of the annotated class).</li>
  * <li>Copy Jackson-related configuration annotations (like
  * {@code @JsonIgnoreProperties}) from the class to the builder class. This is
- * necessary so that Jackson recognizes them when using the builder.
+ * necessary so that Jackson recognizes them when using the builder.</li>
  * <li>Insert {@code @JsonPOJOBuilder(withPrefix="")} on the generated builder
  * class to override Jackson's default prefix "with". If you configured a
  * different prefix in lombok using {@code setterPrefix}, this value is used. If
  * you changed the name of the {@code build()} method using using
- * {@code buildMethodName}, this is also made known to Jackson.
+ * {@code buildMethodName}, this is also made known to Jackson.</li>
  * <li>For {@code @SuperBuilder}, make the builder implementation class
  * package-private.</li>
  * </ul>
- * This annotation does <i>not</i> change the behavior of the generated builder.
+ * This annotation does <em>not</em> change the behavior of the generated builder.
  * A {@code @Jacksonized} {@code @SuperBuilder} remains fully compatible to
  * regular {@code @SuperBuilder}s.
  */
