@@ -55,6 +55,13 @@ This buildfile is part of projectlombok.org. It is responsible for building the 
 			<zipfileset dir="buildScripts/p2" includes="p2.inf" prefix="META-INF/" />
 			<zipfileset dir="dist" includes="lombok-${lombok.version}.jar" fullpath="lombok.jar" />
 		</jar>
+		<loadfile property="store.pass" srcFile="buildScripts/lombok.jks.password" />
+		<signjar
+			jar="build/p2/plugins/org.projectlombok.agent_${lombok.version}.jar"
+			alias="lombok"
+			storepass="${store.pass}"
+			keystore="buildScripts/lombok.jks"
+		/>
 		
 		<length property="agent.zip.size" file="build/p2/plugins/org.projectlombok.agent_${lombok.version}.jar" />
 		
@@ -67,6 +74,12 @@ This buildfile is part of projectlombok.org. It is responsible for building the 
 			</filterset>
 		</copy>
 		<zip destfile="build/p2/features/org.projectlombok.feature_${lombok.version}.jar" basedir="build/p2" includes="feature.xml" />
+		<signjar
+			jar="build/p2/features/org.projectlombok.feature_${lombok.version}.jar"
+			alias="lombok"
+			storepass="${store.pass}"
+			keystore="buildScripts/lombok.jks"
+		/>
 		<delete file="build/p2/feature.xml" />
 		<length property="feature.zip.size" file="build/p2/features/org.projectlombok.feature_${lombok.version}.jar" />
 		
@@ -81,7 +94,19 @@ This buildfile is part of projectlombok.org. It is responsible for building the 
 			</filterset>
 		</copy>
 		<zip destfile="build/p2/artifacts.jar" basedir="build/p2" includes="artifacts.xml" />
+		<signjar
+			jar="build/p2/artifacts.jar"
+			alias="lombok"
+			storepass="${store.pass}"
+			keystore="buildScripts/lombok.jks"
+		/>
 		<zip destfile="build/p2/content.jar" basedir="build/p2" includes="content.xml" />
+		<signjar
+			jar="build/p2/content.jar"
+			alias="lombok"
+			storepass="${store.pass}"
+			keystore="buildScripts/lombok.jks"
+		/>
 		<delete file="build/p2/artifacts.xml" />
 		<delete file="build/p2/content.xml" />
 	</target>

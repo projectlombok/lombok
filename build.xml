@@ -375,8 +375,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<antcall target="dist" />
 	</target>
 	
-	<target name="eclipse-p2" depends="config-ssh, -eclipse-p2-dist" description="Builds an eclipse p2 update site which allows lombok to be installed as an eclipse plugin">
-		
+	<target name="eclipse-p2" depends="config-ssh, version, -eclipse-p2-dist" description="Builds an eclipse p2 update site which allows lombok to be installed as an eclipse plugin">
 		<ant antfile="buildScripts/eclipse-p2.ant.xml" target="dist-eclipse-p2" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>

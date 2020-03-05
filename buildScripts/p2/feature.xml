@@ -32,8 +32,8 @@ THE SOFTWARE.
 
    <plugin
          id="org.projectlombok.agent"
-         download-size="0"
-         install-size="0"
+         download-size="1158"
+         install-size="1158"
          version="@VERSION@"/>
 
 </feature>
