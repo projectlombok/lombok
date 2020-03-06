@@ -35,16 +35,18 @@
 			You can pass any number of classes to the <code>@ExtensionMethod</code> annotation; they will all be searched for extension methods. These extension methods apply for any code that is in the annotated class.
 		</p><p>
 			Lombok does not (currently) have any runtime dependencies which means lombok does not (currently) ship with any useful extension methods so you'll have to make your own. However, here's one that might spark your imagination: <br />
+		</p>
 			<pre>public class ObjectExtensions {
 	public static &lt;T&gt; T or(T object, T ifNull) {
 		return object != null ? object : ifNull;
 	}
 }</pre><br />
+		<p>
 			With the above class, if you add <code>@ExtensionMethod(ObjectExtensions.class)</code> to your class definition, you can write:<br />
+		</p>
 			<pre>String x = null;
 System.out.println(x.or("Hello, World!"));</pre><br />
 			The above code will not fail with a <code>NullPointerException</code>; it will actually output <code>Hello, World!</code>
-		</p>
 	</@f.overview>
 
 	<@f.snippets name="experimental/ExtensionMethod" />
