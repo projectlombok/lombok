@@ -37,6 +37,7 @@ public class ValWeirdTypes<Z> {
 		final java.util.List<? super java.lang.Number> d = upper;
 		List<?> unbound = lower;
 		final java.util.List<?> e = unbound;
+		final java.lang.Object f = unbound.get(0);
 	}
 	public void testCompound() {
 		final java.util.ArrayList<java.lang.String> a = new ArrayList<String>();

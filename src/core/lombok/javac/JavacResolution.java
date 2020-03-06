@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2018 The Project Lombok Authors.
+ * Copyright (C) 2011-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,6 @@ import java.util.Map;
 import javax.lang.model.type.TypeKind;
 import javax.tools.JavaFileObject;
 
-import lombok.Lombok;
-import lombok.core.debug.AssertionLogger;
-import lombok.permit.Permit;
-
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
@@ -58,10 +54,15 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
+
+import lombok.Lombok;
+import lombok.core.debug.AssertionLogger;
+import lombok.permit.Permit;
 
 public class JavacResolution {
 	private final Attr attr;
@@ -286,7 +287,7 @@ public class JavacResolution {
 	}
 	
 	public static JCExpression typeToJCTree(Type type, JavacAST ast, boolean allowVoid) throws TypeNotConvertibleException {
-		return typeToJCTree(type, ast, false, allowVoid);
+		return typeToJCTree(type, ast, false, allowVoid, false);
 	}
 	
 	public static JCExpression createJavaLangObject(JavacAST ast) {
@@ -297,7 +298,7 @@ public class JavacResolution {
 		return out;
 	}
 	
-	private static JCExpression typeToJCTree(Type type, JavacAST ast, boolean allowCompound, boolean allowVoid) throws TypeNotConvertibleException {
+	private static JCExpression typeToJCTree(Type type, JavacAST ast, boolean allowCompound, boolean allowVoid, boolean allowCapture) throws TypeNotConvertibleException {
 		int dims = 0;
 		Type type0 = type;
 		while (type0 instanceof ArrayType) {
@@ -305,7 +306,7 @@ public class JavacResolution {
 			type0 = ((ArrayType) type0).elemtype;
 		}
 		
-		JCExpression result = typeToJCTree0(type0, ast, allowCompound, allowVoid);
+		JCExpression result = typeToJCTree0(type0, ast, allowCompound, allowVoid, allowCapture);
 		while (dims > 0) {
 			result = ast.getTreeMaker().TypeArray(result);
 			dims--;
@@ -313,7 +314,7 @@ public class JavacResolution {
 		return result;
 	}
 	
-	private static JCExpression typeToJCTree0(Type type, JavacAST ast, boolean allowCompound, boolean allowVoid) throws TypeNotConvertibleException {
+	private static JCExpression typeToJCTree0(Type type, JavacAST ast, boolean allowCompound, boolean allowVoid, boolean allowCapture) throws TypeNotConvertibleException {
 		// NB: There's such a thing as maker.Type(type), but this doesn't work very well; it screws up anonymous classes, captures, and adds an extra prefix dot for some reason too.
 		//  -- so we write our own take on that here.
 		
@@ -337,21 +338,33 @@ public class JavacResolution {
 				List<Type> ifaces = ((ClassType) type).interfaces_field;
 				Type supertype = ((ClassType) type).supertype_field;
 				if (isObject(supertype) && ifaces != null && ifaces.length() > 0) {
-					return typeToJCTree(ifaces.get(0), ast, allowCompound, allowVoid);
+					return typeToJCTree(ifaces.get(0), ast, allowCompound, allowVoid, allowCapture);
 				}
-				if (supertype != null) return typeToJCTree(supertype, ast, allowCompound, allowVoid);
+				if (supertype != null) return typeToJCTree(supertype, ast, allowCompound, allowVoid, allowCapture);
 			}
 			throw new TypeNotConvertibleException("Anonymous inner class");
 		}
 		
-		if (type instanceof CapturedType || type instanceof WildcardType) {
+		if (type instanceof WildcardType || type instanceof CapturedType) {
 			Type lower, upper;
 			if (type instanceof WildcardType) {
-				upper = ((WildcardType)type).getExtendsBound();
-				lower = ((WildcardType)type).getSuperBound();
+				upper = ((WildcardType) type).getExtendsBound();
+				lower = ((WildcardType) type).getSuperBound();
 			} else {
 				lower = type.getLowerBound();
 				upper = type.getUpperBound();
+				if (allowCapture) {
+					BoundKind bk = ((CapturedType) type).wildcard.kind;
+					if (bk == BoundKind.UNBOUND) {
+						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+					} else if (bk == BoundKind.EXTENDS) {
+						lower = null;
+						upper = ((CapturedType) type).wildcard.type;
+					} else if (bk == BoundKind.SUPER) {
+						lower = ((CapturedType) type).wildcard.type;
+						upper = null;
+					}
+				}
 			}
 			if (allowCompound) {
 				if (lower == null || CTC_BOT.equals(typeTag(lower))) {
@@ -361,16 +374,20 @@ public class JavacResolution {
 					if (upper.getTypeArguments().contains(type)) {
 						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 					}
-					return maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS), typeToJCTree(upper, ast, false, false));
+					JCExpression bound = typeToJCTree(upper, ast, false, false, true);
+					if (bound instanceof JCWildcard) return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+					return maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS), bound);
 				} else {
-					return maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER), typeToJCTree(lower, ast, false, false));
+					JCExpression bound = typeToJCTree(lower, ast, false, false, true);
+					if (bound instanceof JCWildcard) return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+					return maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER), bound);
 				}
 			}
 			if (upper != null) {
 				if (upper.getTypeArguments().contains(type)) {
 					return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 				}
-				return typeToJCTree(upper, ast, allowCompound, allowVoid);
+				return typeToJCTree(upper, ast, allowCompound, allowVoid, true);
 			}
 			
 			return createJavaLangObject(ast);
@@ -380,7 +397,7 @@ public class JavacResolution {
 		if (symbol.isLocal()) {
 			qName = symbol.getSimpleName().toString();
 		} else if (symbol.type != null && symbol.type.getEnclosingType() != null && typeTag(symbol.type.getEnclosingType()).equals(typeTag("CLASS"))) {
-			replacement = typeToJCTree0(type.getEnclosingType(), ast, false, false);
+			replacement = typeToJCTree0(type.getEnclosingType(), ast, false, false, false);
 			qName = symbol.getSimpleName().toString();
 		} else {
 			qName = symbol.getQualifiedName().toString();
@@ -409,7 +426,7 @@ public class JavacResolution {
 	private static JCExpression genericsToJCTreeNodes(List<Type> generics, JavacAST ast, JCExpression rawTypeNode) throws TypeNotConvertibleException {
 		if (generics != null && !generics.isEmpty()) {
 			ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
-			for (Type t : generics) args.append(typeToJCTree(t, ast, true, false));
+			for (Type t : generics) args.append(typeToJCTree(t, ast, true, false, true));
 			return ast.getTreeMaker().TypeApply(rawTypeNode, args.toList());
 		}
 		

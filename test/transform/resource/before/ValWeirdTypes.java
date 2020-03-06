@@ -44,6 +44,7 @@ public class ValWeirdTypes<Z> {
 		val d = upper;
 		List<?> unbound = lower;
 		val e = unbound;
+		val f = unbound.get(0);
 	}
 	
 	public void testCompound() {
