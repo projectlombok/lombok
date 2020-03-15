@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,7 +113,7 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		if (typeNode.up().getKind() == Kind.COMPILATION_UNIT) markStatic = false;
 		if (markStatic && typeNode.up().getKind() == Kind.TYPE) {
 			TypeDeclaration typeDecl = (TypeDeclaration) typeNode.up().get();
-			if ((typeDecl.modifiers & ClassFileConstants.AccInterface) != 0) markStatic = false;
+			if ((typeDecl.modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0) markStatic = false;
 		}
 		
 		if (markStatic) classDecl.modifiers |= ClassFileConstants.AccStatic;
