@@ -8,12 +8,12 @@ class CheckerFrameworkBasic {
 		this.x = x;
 		this.y = y;
 	}
-	@org.checkerframework.dataflow.qual.SideEffectFree
+	@org.checkerframework.dataflow.qual.Pure
 	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
 	}
-	@org.checkerframework.dataflow.qual.SideEffectFree
+	@org.checkerframework.dataflow.qual.Pure
 	@java.lang.SuppressWarnings("all")
 	public int getY() {
 		return this.y;
@@ -42,7 +42,7 @@ class CheckerFrameworkBasic {
 		if (this.getZ() != other.getZ()) return false;
 		return true;
 	}
-	@org.checkerframework.dataflow.qual.SideEffectFree
+	@org.checkerframework.dataflow.qual.Pure
 	@java.lang.SuppressWarnings("all")
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof CheckerFrameworkBasic;

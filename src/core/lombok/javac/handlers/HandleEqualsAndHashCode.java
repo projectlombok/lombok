@@ -520,8 +520,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		List<JCAnnotation> annsOnMethod = List.nil();
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(typeNode);
-		if (checkerFramework.generateSideEffectFree()) {
-			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
+		if (checkerFramework.generatePure()) {
+			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()));
 		}
 		JCModifiers mods = maker.Modifiers(Flags.PROTECTED, annsOnMethod);
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);

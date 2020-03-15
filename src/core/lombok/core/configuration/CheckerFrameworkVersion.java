@@ -26,9 +26,11 @@ import java.util.regex.Pattern;
 
 public final class CheckerFrameworkVersion implements ConfigurationValueType {
 	private final int version;
-	private static final int MAX_SUPPORTED = 3000;
+	private static final int DEFAULT = 3200;
+	private static final int MAX_SUPPORTED = 4000;
 	
 	public static final String NAME__SIDE_EFFECT_FREE = "org.checkerframework.dataflow.qual.SideEffectFree";
+	public static final String NAME__PURE = "org.checkerframework.dataflow.qual.Pure";
 	public static final String NAME__UNIQUE = "org.checkerframework.common.aliasing.qual.Unique";
 	public static final String NAME__RETURNS_RECEIVER = "org.checkerframework.checker.builder.qual.ReturnsReceiver";
 	public static final String NAME__NOT_CALLED = "org.checkerframework.checker.builder.qual.NotCalledMethods";
@@ -47,21 +49,25 @@ public final class CheckerFrameworkVersion implements ConfigurationValueType {
 	}
 	
 	public boolean generateUnique() {
+		return version > 2899;
+	}
+	
+	public boolean generatePure() {
 		return version > 0;
 	}
 	
 	public boolean generateReturnsReceiver() {
-		return version > 2999;
+		return version > 3999;
 	}
 	
 	public boolean generateCalledMethods() {
-		return version > 2999;
+		return version > 3999;
 	}
 	
 	public static CheckerFrameworkVersion valueOf(String versionString) {
 		if (versionString != null) versionString = versionString.trim();
 		if (versionString == null || versionString.equalsIgnoreCase("false") || versionString.equals("0")) return new CheckerFrameworkVersion(0);
-		if (versionString.equalsIgnoreCase("true")) return new CheckerFrameworkVersion(MAX_SUPPORTED);
+		if (versionString.equalsIgnoreCase("true")) return new CheckerFrameworkVersion(DEFAULT);
 		Matcher m = VERSION.matcher(versionString);
 		if (!m.matches()) throw new IllegalArgumentException("Expected 'true' or 'false' or a major/minor version, such as '2.9'");
 		int major = Integer.parseInt(m.group(1));
@@ -81,7 +87,7 @@ public final class CheckerFrameworkVersion implements ConfigurationValueType {
 	
 	public static String exampleValue() {
 		String s = (MAX_SUPPORTED / 1000) + "." + (MAX_SUPPORTED % 1000);
-		return "major.minor (example: 2.9 - and no higher than " + s + ") or true or false";
+		return "major.minor (example: 3.2 - and no higher than " + s + ") or true or false";
 	}
 	
 	@Override public boolean equals(Object obj) {

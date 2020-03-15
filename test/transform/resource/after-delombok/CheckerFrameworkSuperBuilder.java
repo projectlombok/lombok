@@ -23,7 +23,7 @@ class CheckerFrameworkSuperBuilder {
 			@java.lang.SuppressWarnings("all")
 			private java.util.ArrayList<String> names;
 			@org.checkerframework.checker.builder.qual.ReturnsReceiver
-			@org.checkerframework.dataflow.qual.SideEffectFree
+			@org.checkerframework.dataflow.qual.Pure
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();
 			@org.checkerframework.dataflow.qual.SideEffectFree
@@ -86,7 +86,7 @@ class CheckerFrameworkSuperBuilder {
 			}
 			@java.lang.Override
 			@org.checkerframework.checker.builder.qual.ReturnsReceiver
-			@org.checkerframework.dataflow.qual.SideEffectFree
+			@org.checkerframework.dataflow.qual.Pure
 			@java.lang.SuppressWarnings("all")
 			protected CheckerFrameworkSuperBuilder.Parent.ParentBuilderImpl self() {
 				return this;
@@ -141,7 +141,7 @@ class CheckerFrameworkSuperBuilder {
 			private int b;
 			@java.lang.Override
 			@org.checkerframework.checker.builder.qual.ReturnsReceiver
-			@org.checkerframework.dataflow.qual.SideEffectFree
+			@org.checkerframework.dataflow.qual.Pure
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();
 			@org.checkerframework.dataflow.qual.SideEffectFree
@@ -176,7 +176,7 @@ class CheckerFrameworkSuperBuilder {
 			}
 			@java.lang.Override
 			@org.checkerframework.checker.builder.qual.ReturnsReceiver
-			@org.checkerframework.dataflow.qual.SideEffectFree
+			@org.checkerframework.dataflow.qual.Pure
 			@java.lang.SuppressWarnings("all")
 			protected CheckerFrameworkSuperBuilder.Child.ChildBuilderImpl self() {
 				return this;

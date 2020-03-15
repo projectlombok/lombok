@@ -1,4 +1,4 @@
-//CONF: checkerframework = true
+//CONF: checkerframework = 4.0
 import java.util.List;
 import lombok.Builder;
 import lombok.Singular;

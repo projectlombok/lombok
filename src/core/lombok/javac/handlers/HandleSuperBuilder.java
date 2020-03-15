@@ -750,7 +750,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		List<JCAnnotation> annotations = List.nil();
 		JCAnnotation overrideAnnotation = override ? maker.Annotation(genJavaLangTypeRef(type, "Override"), List.<JCExpression>nil()) : null;
 		JCAnnotation rrAnnotation = cfv.generateReturnsReceiver() ? maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil()) : null;
-		JCAnnotation sefAnnotation = cfv.generateSideEffectFree() ? maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()) : null;
+		JCAnnotation sefAnnotation = cfv.generatePure() ? maker.Annotation(genTypeRef(type, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()) : null;
 		if (sefAnnotation != null) annotations = annotations.prepend(sefAnnotation);
 		if (rrAnnotation != null) annotations = annotations.prepend(rrAnnotation);
 		if (overrideAnnotation != null) annotations = annotations.prepend(overrideAnnotation);
@@ -766,7 +766,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(builderImplType, "Override"), List.<JCExpression>nil());
 		JCAnnotation rrAnnotation = cfv.generateReturnsReceiver() ? maker.Annotation(genTypeRef(builderImplType, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil()) : null;
-		JCAnnotation sefAnnotation = cfv.generateSideEffectFree() ? maker.Annotation(genTypeRef(builderImplType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()) : null;
+		JCAnnotation sefAnnotation = cfv.generatePure() ? maker.Annotation(genTypeRef(builderImplType, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()) : null;
 		List<JCAnnotation> annsOnMethod = List.nil();
 		if (sefAnnotation != null) annsOnMethod = annsOnMethod.prepend(sefAnnotation);
 		if (rrAnnotation != null) annsOnMethod = annsOnMethod.prepend(rrAnnotation);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -317,6 +317,20 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		JCModifiers mods = getModifiers();
 		if (mods == null) return false;
 		return (mods.flags & Flags.STATIC) != 0;
+	}
+	
+	@Override public boolean isFinal() {
+		if (node instanceof JCVariableDecl) {
+			JavacNode directUp = directUp();
+			if (directUp != null && directUp.get() instanceof JCClassDecl) {
+				JCClassDecl p = (JCClassDecl) directUp.get();
+				long f = p.mods.flags;
+				if (((Flags.INTERFACE | Flags.ENUM) & f) != 0) return true;
+			}
+			
+		}
+		JCModifiers mods = getModifiers();
+		return mods != null && (Flags.FINAL & mods.flags) != 0;
 	}
 	
 	@Override public boolean isEnumMember() {

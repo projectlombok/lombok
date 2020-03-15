@@ -1,4 +1,4 @@
-//CONF: checkerframework = 3.0
+//CONF: checkerframework = 4.0
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.With;

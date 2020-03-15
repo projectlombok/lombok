@@ -824,7 +824,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		setGeneratedBy(returnStatement, source);
 		
 		method.statements = new Statement[] {returnStatement};
-		if (getCheckerFrameworkVersion(type).generateSideEffectFree()) method.annotations = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+		if (getCheckerFrameworkVersion(type).generatePure()) method.annotations = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__PURE) };
 		return method;
 	}
 

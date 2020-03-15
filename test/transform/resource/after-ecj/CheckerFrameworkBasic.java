@@ -8,10 +8,10 @@ import lombok.With;
   public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkBasic withX(final int x) {
     return ((this.x == x) ? this : new CheckerFrameworkBasic(x, this.y, this.z));
   }
-  public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") int getX() {
+  public @org.checkerframework.dataflow.qual.Pure @java.lang.SuppressWarnings("all") int getX() {
     return this.x;
   }
-  public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") int getY() {
+  public @org.checkerframework.dataflow.qual.Pure @java.lang.SuppressWarnings("all") int getY() {
     return this.y;
   }
   public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") int getZ() {
@@ -37,7 +37,7 @@ import lombok.With;
         return false;
     return true;
   }
-  protected @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @org.checkerframework.dataflow.qual.Pure @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof CheckerFrameworkBasic);
   }
   public @java.lang.Override @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") int hashCode() {

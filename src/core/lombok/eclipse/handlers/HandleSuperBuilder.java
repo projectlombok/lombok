@@ -785,7 +785,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.modifiers = ClassFileConstants.AccAbstract | ClassFileConstants.AccProtected | ExtraCompilerModifiers.AccSemicolonBody;
 		Annotation overrideAnn = override ? makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, tdParent.get()) : null;
 		Annotation rrAnn = cfv.generateReturnsReceiver() ? generateNamedAnnotation(tdParent.get(), CheckerFrameworkVersion.NAME__RETURNS_RECEIVER): null;
-		Annotation sefAnn = cfv.generateSideEffectFree() ? generateNamedAnnotation(tdParent.get(), CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE): null;
+		Annotation sefAnn = cfv.generatePure() ? generateNamedAnnotation(tdParent.get(), CheckerFrameworkVersion.NAME__PURE): null;
 		if (overrideAnn != null && rrAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn, sefAnn};
 		else if (overrideAnn != null && rrAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn};
 		else if (overrideAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};
@@ -804,7 +804,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.modifiers = ClassFileConstants.AccProtected;
 		Annotation overrideAnn = makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, builderImplType.get());
 		Annotation rrAnn = cfv.generateReturnsReceiver() ? generateNamedAnnotation(builderImplType.get(), CheckerFrameworkVersion.NAME__RETURNS_RECEIVER): null;
-		Annotation sefAnn = cfv.generateSideEffectFree() ? generateNamedAnnotation(builderImplType.get(), CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE): null;
+		Annotation sefAnn = cfv.generatePure() ? generateNamedAnnotation(builderImplType.get(), CheckerFrameworkVersion.NAME__PURE): null;
 		if (rrAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn, sefAnn};
 		else if (rrAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn};
 		else if (sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};

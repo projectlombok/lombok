@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -246,6 +246,22 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 		if (i == null) return false;
 		int f = i.intValue();
 		return (ClassFileConstants.AccStatic & f) != 0;
+	}
+	
+	@Override public boolean isFinal() {
+		if (node instanceof FieldDeclaration) {
+			EclipseNode directUp = directUp();
+			if (directUp != null && directUp.get() instanceof TypeDeclaration) {
+				TypeDeclaration p = (TypeDeclaration) directUp.get();
+				int f = p.modifiers;
+				if (((ClassFileConstants.AccInterface | ClassFileConstants.AccEnum) & f) != 0) return true;
+			}
+		}
+		
+		Integer i = getModifiers();
+		if (i == null) return false;
+		int f = i.intValue();
+		return (ClassFileConstants.AccFinal & f) != 0;
 	}
 	
 	@Override public boolean isTransient() {
