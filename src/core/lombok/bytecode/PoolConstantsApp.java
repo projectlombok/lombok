@@ -82,15 +82,15 @@ public class PoolConstantsApp extends LombokApp {
 		boolean moreThanOne = filesToProcess.size() > 1;
 		for (File file : filesToProcess) {
 			if (!file.exists() || !file.isFile()) {
-				System.out.printf("Cannot find file '%s'\n", file.getAbsolutePath());
+				System.out.printf("Cannot find file '%s'%n", file.getAbsolutePath());
 				continue;
 			}
 			filesVisited++;
-			if (moreThanOne) System.out.printf("Processing '%s'\n", file.getAbsolutePath());
+			if (moreThanOne) System.out.printf("Processing '%s'%n", file.getAbsolutePath());
 			System.out.println(new ClassFileMetaData(PostCompilerApp.readFile(file)).poolContent());
 		}
 		
-		if (moreThanOne) System.out.printf("Total files visited: %d\n", filesVisited);
+		if (moreThanOne) System.out.printf("Total files visited: %d%n", filesVisited);
 		
 		return filesVisited == 0 ? 1 : 0;
 	}
