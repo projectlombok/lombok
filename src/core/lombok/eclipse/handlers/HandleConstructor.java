@@ -238,14 +238,14 @@ public class HandleConstructor {
 	}
 	
 	public void generate(
-			EclipseNode typeNode, AccessLevel level, List<EclipseNode> fieldsToParam, boolean forceDefaults, String staticName, SkipIfConstructorExists skipIfConstructorExists,
-			List<Annotation> onConstructor, EclipseNode sourceNode, boolean noArgs) {
+		final EclipseNode typeNode, final AccessLevel level,final  List<EclipseNode> fieldsToParam,final  boolean forceDefaults, final String staticName, final SkipIfConstructorExists skipIfConstructorExists,
+		final List<Annotation> onConstructor,final  EclipseNode sourceNode,final  boolean noArgs) {
 			
-		ASTNode source = sourceNode.get();
-		boolean staticConstrRequired = staticName != null && !staticName.equals("");
+		final ASTNode source = sourceNode.get();
+		final boolean staticConstrRequired = staticName != null && !staticName.equals("");
 
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
-			for (EclipseNode child : typeNode.down()) {
+			for (final EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
 					boolean skipGeneration = (annotationTypeMatches(NoArgsConstructor.class, child) ||
 						annotationTypeMatches(AllArgsConstructor.class, child) ||
@@ -274,23 +274,19 @@ public class HandleConstructor {
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
 		
 		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
-			ConstructorDeclaration constr = createConstructor(
+			final ConstructorDeclaration constr = createConstructor(
 				staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fieldsToParam, forceDefaults,
 				sourceNode, onConstructor);
 			injectMethod(typeNode, constr);
 		}
-		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, fieldsToParam, source);
-	}
-	
-	private void generateStaticConstructor(boolean staticConstrRequired, EclipseNode typeNode, String staticName, AccessLevel level, Collection<EclipseNode> fields, ASTNode source) {
-		if (staticConstrRequired) {
-			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
+		if (staticConstrRequired && methodExists(staticName, typeNode, true,fieldsToParam.size()) == MemberExistsResult.NOT_EXISTS) {
+			final MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fieldsToParam, source);
 			injectMethod(typeNode, staticConstr);
 		}
 	}
 	
-	private static boolean noArgsConstructorExists(EclipseNode node) {
-		node = EclipseHandlerUtil.upToTypeNode(node);
+	private static boolean noArgsConstructorExists(final EclipseNode nodeParam) {
+		final EclipseNode node = EclipseHandlerUtil.upToTypeNode(nodeParam);
 		
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
@@ -302,7 +298,7 @@ public class HandleConstructor {
 			}
 		}
 		
-		for (EclipseNode child : node.down()) {
+		for (final EclipseNode child : node.down()) {
 			if (annotationTypeMatches(NoArgsConstructor.class, child)) return true;
 			if (annotationTypeMatches(RequiredArgsConstructor.class, child) && findRequiredFields(node).isEmpty()) return true;
 			if (annotationTypeMatches(AllArgsConstructor.class, child) && findAllFields(node).isEmpty()) return true;

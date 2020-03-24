@@ -55,11 +55,9 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.LombokNode;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.javac.Javac;
-import lombok.javac.JavacAST;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -257,18 +255,14 @@ public class HandleConstructor {
 			}
 			argTypes.append(mirror);
 		}
-		List<Type> argTypes_ = argTypes == null ? null : argTypes.toList();
+		final List<Type> argTypes_ = argTypes == null ? null : argTypes.toList();
 
 		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
-			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
+			final JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
 			injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 		}
-		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source, argTypes_);
-	}
-	
-	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, LombokNode<JavacAST, JavacNode, JCTree> source, List<Type> argTypes_) {
-		if (staticConstrRequired) {
-			ClassSymbol sym = ((JCClassDecl) typeNode.get()).sym;
+		if (staticConstrRequired && methodExists(staticName, typeNode, true,fields.size()) == MemberExistsResult.NOT_EXISTS) {
+			final ClassSymbol sym = ((JCClassDecl) typeNode.get()).sym;
 			Type returnType = sym == null ? null : sym.type;
 			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source.get());
 			injectMethod(typeNode, staticConstr, argTypes_, returnType);
@@ -278,21 +272,22 @@ public class HandleConstructor {
 	private static boolean noArgsConstructorExists(JavacNode node) {
 		node = upToTypeNode(node);
 		
-		if (node != null && node.get() instanceof JCClassDecl) {
-			for (JCTree def : ((JCClassDecl) node.get()).defs) {
-				if (def instanceof JCMethodDecl) {
-					JCMethodDecl md = (JCMethodDecl) def;
-					if (md.name.contentEquals("<init>") && md.params.size() == 0) return true;
+		if (node != null) { 
+			if(node.get() instanceof JCClassDecl) {
+				for (JCTree def : ((JCClassDecl) node.get()).defs) {
+					if (def instanceof JCMethodDecl) {
+						JCMethodDecl md = (JCMethodDecl) def;
+						if (md.name.contentEquals("<init>") && md.params.size() == 0) return true;
+					}
 				}
 			}
-		}
 		
-		for (JavacNode child : node.down()) {
-			if (annotationTypeMatches(NoArgsConstructor.class, child)) return true;
-			if (annotationTypeMatches(RequiredArgsConstructor.class, child) && findRequiredFields(node).isEmpty()) return true;
-			if (annotationTypeMatches(AllArgsConstructor.class, child) && findAllFields(node).isEmpty()) return true;
+			for (JavacNode child : node.down()) {
+				if (annotationTypeMatches(NoArgsConstructor.class, child)) return true;
+				if (annotationTypeMatches(RequiredArgsConstructor.class, child) && findRequiredFields(node).isEmpty()) return true;
+				if (annotationTypeMatches(AllArgsConstructor.class, child) && findAllFields(node).isEmpty()) return true;
+			}
 		}
-		
 		return false;
 	}
 	
@@ -449,17 +444,17 @@ public class HandleConstructor {
 	}
 	
 	public JCMethodDecl createStaticConstructor(String name, AccessLevel level, JavacNode typeNode, List<JavacNode> fields, JCTree source) {
-		JavacTreeMaker maker = typeNode.getTreeMaker();
-		JCClassDecl type = (JCClassDecl) typeNode.get();
+		final JavacTreeMaker maker = typeNode.getTreeMaker();
+		final JCClassDecl type = (JCClassDecl) typeNode.get();
 		
-		JCModifiers mods = maker.Modifiers(Flags.STATIC | toJavacModifier(level));
+		final JCModifiers mods = maker.Modifiers(Flags.STATIC | toJavacModifier(level));
 		if (getCheckerFrameworkVersion(typeNode).generateUnique()) mods.annotations = mods.annotations.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
 		
 		JCExpression returnType, constructorType;
 		
-		ListBuffer<JCTypeParameter> typeParams = new ListBuffer<JCTypeParameter>();
-		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
-		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
+		final ListBuffer<JCTypeParameter> typeParams = new ListBuffer<JCTypeParameter>();
+		final ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
+		final ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		
 		if (!type.typarams.isEmpty()) {
 			for (JCTypeParameter param : type.typarams) {
