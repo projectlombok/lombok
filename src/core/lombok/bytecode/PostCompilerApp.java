@@ -30,10 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.core.DiagnosticsReceiver;
-import lombok.core.LombokApp;
-import lombok.core.PostCompiler;
-
 import org.mangosdk.spi.ProviderFor;
 
 import com.zwitserloot.cmdreader.CmdReader;
@@ -42,6 +38,10 @@ import com.zwitserloot.cmdreader.InvalidCommandLineException;
 import com.zwitserloot.cmdreader.Mandatory;
 import com.zwitserloot.cmdreader.Sequential;
 import com.zwitserloot.cmdreader.Shorthand;
+
+import lombok.core.DiagnosticsReceiver;
+import lombok.core.LombokApp;
+import lombok.core.PostCompiler;
 
 @ProviderFor(LombokApp.class)
 public class PostCompilerApp extends LombokApp {
@@ -90,7 +90,7 @@ public class PostCompilerApp extends LombokApp {
 		int filesVisited = 0, filesTouched = 0;
 		for (File file : cmdArgsToFiles(args.classFiles)) {
 			if (!file.exists() || !file.isFile()) {
-				System.out.printf("Cannot find file '%s'\n", file);
+				System.out.printf("Cannot find file '%s'%n", file);
 				continue;
 			}
 			filesVisited++;
@@ -106,7 +106,7 @@ public class PostCompilerApp extends LombokApp {
 		}
 		
 		if (args.verbose) {
-			System.out.printf("Total files visited: %d total files changed: %d\n", filesVisited, filesTouched);
+			System.out.printf("Total files visited: %d total files changed: %d%n", filesVisited, filesTouched);
 		}
 		
 		return filesVisited == 0 ? 1 : 0;
