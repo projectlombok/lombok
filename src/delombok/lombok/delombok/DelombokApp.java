@@ -80,7 +80,7 @@ public class DelombokApp extends LombokApp {
 				}
 			}
 			
-			System.err.printf("Can't find tools.jar. Rerun delombok as: java -cp lombok.jar%1$s%2$s lombok.launch.Main delombok %3$s\n",
+			System.err.printf("Can't find tools.jar. Rerun delombok as: java -cp lombok.jar%1$s%2$s lombok.launch.Main delombok %3$s%n",
 					File.pathSeparator, examplePath, sb.toString());
 			return null;
 		}

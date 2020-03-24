@@ -221,8 +221,8 @@ public final class EclipseProductLocation extends IdeLocation {
 		
 		if (!lombokJarsForWhichCantDeleteSelf.isEmpty()) {
 			throw new UninstallException(true, String.format(
-					"lombok.jar cannot delete itself on windows.\nHowever, lombok has been uncoupled from your %s.\n" +
-					"You can safely delete this jar file. You can find it at:\n%s",
+					"lombok.jar cannot delete itself on windows.\nHowever, lombok has been uncoupled from your %s.%n" +
+					"You can safely delete this jar file. You can find it at:%n%s",
 					descriptor.getProductName(), lombokJarsForWhichCantDeleteSelf.get(0).getAbsolutePath()), null);
 		}
 	}

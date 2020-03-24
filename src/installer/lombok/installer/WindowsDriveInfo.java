@@ -120,7 +120,7 @@ public class WindowsDriveInfo {
 		WindowsDriveInfo info = new WindowsDriveInfo();
 		
 		for (String letter : info.getLogicalDrives()) {
-			System.out.printf("Drive %s: - %s\n", letter,
+			System.out.printf("Drive %s: - %s%n", letter,
 					info.isFixedDisk(letter) ? "Fixed Disk" : "Not Fixed Disk");
 		}
 	}

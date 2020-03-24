@@ -562,9 +562,9 @@ public class Delombok {
 			else if (extension.equals("class")) skipClass(name);
 			else copy(copy, base, name);
 		} else if (!f.exists()) {
-			feedback.printf("Skipping %s because it does not exist.\n", canonical(f));
+			feedback.printf("Skipping %s because it does not exist.%n", canonical(f));
 		} else if (!f.isDirectory()) {
-			feedback.printf("Skipping %s because it is a special file type.\n", canonical(f));
+			feedback.printf("Skipping %s because it is a special file type.%n", canonical(f));
 		}
 	}
 	
@@ -574,12 +574,12 @@ public class Delombok {
 		if (dir.isDirectory()) {
 			boolean thisDirIsHidden = !inHiddenDir && new File(canonical(dir)).getName().startsWith(".");
 			if (loop >= 100) {
-				feedback.printf("Over 100 subdirectories? I'm guessing there's a loop in your directory structure. Skipping: %s\n", suffix);
+				feedback.printf("Over 100 subdirectories? I'm guessing there's a loop in your directory structure. Skipping: %s%n", suffix);
 			} else {
 				File[] list = dir.listFiles();
 				if (list.length > 0) {
 					if (thisDirIsHidden && !noCopy && output != null) {
-						feedback.printf("Only processing java files (not copying non-java files) in %s because it's a hidden directory.\n", canonical(dir));
+						feedback.printf("Only processing java files (not copying non-java files) in %s because it's a hidden directory.%n", canonical(dir));
 					}
 					for (File f : list) {
 						addDirectory0(inHiddenDir || thisDirIsHidden, base, suffix + (suffix.isEmpty() ? "" : File.separator) + f.getName(), loop + 1);
@@ -588,7 +588,7 @@ public class Delombok {
 					if (!thisDirIsHidden && !noCopy && !inHiddenDir && output != null && !suffix.isEmpty()) {
 						File emptyDir = new File(output, suffix);
 						emptyDir.mkdirs();
-						if (verbose) feedback.printf("Creating empty directory: %s\n", canonical(emptyDir));
+						if (verbose) feedback.printf("Creating empty directory: %s%n", canonical(emptyDir));
 					}
 				}
 			}
@@ -598,7 +598,7 @@ public class Delombok {
 	}
 	
 	private void skipClass(String fileName) {
-		if (verbose) feedback.printf("Skipping class file: %s\n", fileName);
+		if (verbose) feedback.printf("Skipping class file: %s%n", fileName);
 	}
 	
 	private void copy(boolean copy, File base, String fileName) throws IOException {
@@ -608,11 +608,11 @@ public class Delombok {
 		}
 		
 		if (!copy) {
-			if (verbose) feedback.printf("Skipping resource file: %s\n", fileName);
+			if (verbose) feedback.printf("Skipping resource file: %s%n", fileName);
 			return;
 		}
 		
-		if (verbose) feedback.printf("Copying resource file: %s\n", fileName);
+		if (verbose) feedback.printf("Copying resource file: %s%n", fileName);
 		byte[] b = new byte[65536];
 		File inFile = new File(base, fileName);
 		FileInputStream in = new FileInputStream(inFile);
@@ -776,10 +776,10 @@ public class Delombok {
 		for (JCCompilationUnit unit : roots) {
 			DelombokResult result = new DelombokResult(catcher.getComments(unit), catcher.getTextBlockStarts(unit), unit, force || options.isChanged(unit), fps);
 			if (onlyChanged && !result.isChanged() && !options.isChanged(unit)) {
-				if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), "unchanged (skipped)");
+				if (verbose) feedback.printf("File: %s [%s]%n", unit.sourcefile.getName(), "unchanged (skipped)");
 				continue;
 			}
-			if (verbose) feedback.printf("File: %s [%s%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged", force && !options.isChanged(unit) ? " (forced)" : "");
+			if (verbose) feedback.printf("File: %s [%s%s]%n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged", force && !options.isChanged(unit) ? " (forced)" : "");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = createUnicodeEscapeWriter(presetWriter);
 			else if (output == null) rawWriter = createStandardOutWriter();

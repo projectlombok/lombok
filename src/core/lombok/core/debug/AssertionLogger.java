@@ -87,7 +87,7 @@ public class AssertionLogger {
 			version = Version.getVersion();
 		}
 		
-		logToFile(String.format("{%s} [%s -- START %s]\n", PROCESS_ID, new Date(), version));
+		logToFile(String.format("{%s} [%s -- START %s]%n", PROCESS_ID, new Date(), version));
 	}
 	
 	public static <T extends Throwable> T assertLog(String message, T throwable) {
@@ -104,7 +104,7 @@ public class AssertionLogger {
 			pw.close();
 			stackMsg = "\n  " + sw.toString().replace("\r", "").replace("\n", "\n  ").trim();
 		}
-		logToFile(String.format("{%s} [%ty%<tm%<tdT%<tH%<tM%<tS.%<tL] %s%s\n", PROCESS_ID, new Date(), message, stackMsg));
+		logToFile(String.format("{%s} [%ty%<tm%<tdT%<tH%<tM%<tS.%<tL] %s%s%n", PROCESS_ID, new Date(), message, stackMsg));
 		return throwable;
 	}
 	

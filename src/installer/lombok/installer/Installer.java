@@ -262,9 +262,9 @@ public class Installer {
 				System.err.println(e.getMessage());
 			} catch (UninstallException e) {
 				if (e.isWarning()) {
-					System.err.printf("Warning while uninstalling at %s:\n", loc.getName());
+					System.err.printf("Warning while uninstalling at %s:%n", loc.getName());
 				} else {
-					System.err.printf("Uninstall at %s failed:\n", loc.getName());
+					System.err.printf("Uninstall at %s failed:%n", loc.getName());
 					validLocations--;
 				}
 				System.err.println(e.getMessage());
@@ -291,15 +291,15 @@ public class Installer {
 	 * we'll make do with showing some basic info on Lombok as well as instructions for using lombok with javac.
 	 */
 	private static void printHeadlessInfo() {
-		System.out.printf("About lombok v%s\n" +
+		System.out.printf("About lombok v%s%n" +
 				"Lombok makes java better by providing very spicy additions to the Java programming language," +
-				"such as using @Getter to automatically generate a getter method for any field.\n\n" +
+				"such as using @Getter to automatically generate a getter method for any field.%n%n" +
 				"Browse to %s for more information. To install lombok on Eclipse, re-run this jar file on a " +
-				"graphical computer system - this message is being shown because your terminal is not graphics capable.\n" +
-				"Alternatively, use the command line installer (java -jar lombok.jar install --help).\n" +
+				"graphical computer system - this message is being shown because your terminal is not graphics capable.%n" +
+				"Alternatively, use the command line installer (java -jar lombok.jar install --help).%n" +
 				"If you are just using 'javac' or a tool that calls on javac, no installation is neccessary; just " +
-				"make sure lombok.jar is in the classpath when you compile. Example:\n\n" +
-				"   java -cp lombok.jar MyCode.java\n",
+				"make sure lombok.jar is in the classpath when you compile. Example:%n%n" +
+				"   java -cp lombok.jar MyCode.java%n",
 				Version.getVersion(), ABOUT_LOMBOK_URL);
 	}
 }

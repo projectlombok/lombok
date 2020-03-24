@@ -40,7 +40,7 @@ public final class TestAp extends AbstractProcessor {
 	private static final long START = System.currentTimeMillis();
 	
 	private void log(String txt) {
-		System.out.printf("***[%3d]: %s\n", System.currentTimeMillis() - START, txt);
+		System.out.printf("***[%3d]: %s%n", System.currentTimeMillis() - START, txt);
 	}
 	
 	@Override public void init(ProcessingEnvironment processingEnv) {

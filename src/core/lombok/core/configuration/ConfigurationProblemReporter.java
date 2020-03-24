@@ -35,7 +35,7 @@ public interface ConfigurationProblemReporter {
 				// there is a way to see it, vs. System.err, which is completely invisible.
 				EclipseHandlerUtil.warning(String.format("%s (%s:%d)", problem, sourceDescription, lineNumber), null);
 			} catch (Throwable ignore) {}
-			System.err.printf("%s (%s:%d)\n", problem, sourceDescription, lineNumber);
+			System.err.printf("%s (%s:%d)%n", problem, sourceDescription, lineNumber);
 		}
 	};
 }

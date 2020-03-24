@@ -73,7 +73,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		
 		boolean isChanged() throws UnsupportedEncodingException {
 			feedback.flush();
-			return bytes.toString("UTF-8").endsWith("[delomboked]\n");
+			return bytes.toString("UTF-8").endsWith("[delomboked]"+ System.getProperty("line.separator"));
 		}
 	}
 }
