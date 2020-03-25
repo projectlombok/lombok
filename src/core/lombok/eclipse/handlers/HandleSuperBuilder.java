@@ -242,7 +242,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			String superclassBuilderClassName = builderClassNameTemplate.replace("*", superclassClassName);
 			
 			char[][] tokens = Arrays.copyOf(qualifiedTypeReference.tokens, qualifiedTypeReference.tokens.length + 1);
-			tokens[tokens.length] = superclassBuilderClassName.toCharArray();
+			tokens[tokens.length-1] = superclassBuilderClassName.toCharArray();
 			long[] poss = new long[tokens.length];
 			Arrays.fill(poss, p);
 			
