@@ -8,7 +8,7 @@ public class SuperBuilderBasic {
 	}
 	
 	@lombok.experimental.SuperBuilder
-	public static class Child extends Parent {
+	public static class Child extends SuperBuilderBasic.Parent {
 		double field3;
 	}
 	
