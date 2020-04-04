@@ -22,6 +22,7 @@
 package lombok.eclipse.agent;
 
 import static org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants.AccStatic;
+import static org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants.AccVarargs;
 
 import java.util.Arrays;
 
@@ -45,6 +46,10 @@ public class ExtensionMethodCompletionProposal extends InternalCompletionProposa
 		MethodBinding original = method.original();
 		TypeBinding[] parameters = Arrays.copyOf(method.parameters, method.parameters.length);
 		method.parameters = Arrays.copyOfRange(method.parameters, 1, method.parameters.length);
+		// Add proposal parameter names, sometimes its still empty...
+		if (method.parameterNames != null && method.parameterNames.length > 0) {
+			setParameterNames(Arrays.copyOfRange(method.parameterNames, 1, method.parameterNames.length));
+		}
 		TypeBinding[] originalParameters = null;
 		if (original != method) {
 			originalParameters = Arrays.copyOf(method.original().parameters, method.original().parameters.length);
@@ -76,6 +81,10 @@ public class ExtensionMethodCompletionProposal extends InternalCompletionProposa
 		setName(method.selector);
 		setCompletion(completion);
 		setFlags(method.modifiers & (~AccStatic));
+		// Remove varargs flag if it is the only parameter
+		if (method.isVarargs() && length == 0) {
+			setFlags(getFlags() & (~AccVarargs));
+		}
 		int index = node.sourceEnd + 1;
 		if (node instanceof CompletionOnQualifiedNameReference) {
 			index -= ((CompletionOnQualifiedNameReference) node).completionIdentifier.length;

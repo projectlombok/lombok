@@ -47,6 +47,7 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
+import org.eclipse.jdt.internal.compiler.ast.FunctionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
@@ -58,6 +59,7 @@ import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Scope;
@@ -263,12 +265,30 @@ public class PatchExtensionMethod {
 				arguments.add(methodCall.receiver);
 				if (methodCall.arguments != null) arguments.addAll(Arrays.asList(methodCall.arguments));
 				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
-				for (Expression argument : arguments) {
-					if (argument.resolvedType != null) argumentTypes.add(argument.resolvedType);
-					// TODO: Instead of just skipping nulls entirely, there is probably a 'unresolved type' placeholder. THAT is what we ought to be adding here!
+				
+				for (int i = 0; i < arguments.size(); i++) {
+					Expression argument = arguments.get(i);
+					TypeBinding argumentType = argument.resolvedType;
+					if (argumentType == null) {
+						// Copy unresolved lamdba types
+						argumentType = methodCall.argumentTypes.length >= i ? methodCall.argumentTypes[i - 1] : null;
+					}
+					if (argumentType != null) {
+						argumentTypes.add(argumentType);
+					}
 				}
 				Expression[] originalArgs = methodCall.arguments;
 				methodCall.arguments = arguments.toArray(new Expression[0]);
+				
+				// Copy generic information. This one covers a few simple cases, more complex cases are still broken
+				int typeVariables = extensionMethod.typeVariables.length;
+				if (typeVariables > 0 && methodCall.receiver.resolvedType instanceof ParameterizedTypeBinding) {
+					ParameterizedTypeBinding parameterizedTypeBinding = (ParameterizedTypeBinding) methodCall.receiver.resolvedType;
+					if (parameterizedTypeBinding.arguments != null && parameterizedTypeBinding.arguments.length == typeVariables) {
+						methodCall.genericTypeArguments = parameterizedTypeBinding.arguments;
+					}
+				}
+				
 				MethodBinding fixedBinding = scope.getMethod(extensionMethod.declaringClass, methodCall.selector, argumentTypes.toArray(new TypeBinding[0]), methodCall);
 				if (fixedBinding instanceof ProblemMethodBinding) {
 					methodCall.arguments = originalArgs;
@@ -276,18 +296,28 @@ public class PatchExtensionMethod {
 						PostponedInvalidMethodError.invoke(scope.problemReporter(), methodCall, fixedBinding, scope);
 					}
 				} else {
+					// If the extension method uses varargs, the last fixed binding parameter is an array but 
+					// the method arguments are not. Even thought we already know that the method is fine we still
+					// have to compare each parameter with the type of the array to support autoboxing/unboxing.
+					boolean isVararg = false;
 					for (int i = 0, iend = arguments.size(); i < iend; i++) {
 						Expression arg = arguments.get(i);
-						if (fixedBinding.parameters[i].isArrayType() != arg.resolvedType.isArrayType()) break;
-						if (arg instanceof MessageSend) {
-							((MessageSend) arg).valueCast = arg.resolvedType;
+						TypeBinding[] parameters = fixedBinding.parameters;
+						TypeBinding param = isVararg ? parameters[parameters.length - 1].leafComponentType() : parameters[i];
+						// Resolve types for lambdas
+						if (arg instanceof FunctionalExpression) {
+							arg.setExpectedType(param);
+							arg.resolveType(scope);
 						}
-						if (!fixedBinding.parameters[i].isBaseType() && arg.resolvedType.isBaseType()) {
-							int id = arg.resolvedType.id;
-							arg.implicitConversion = TypeIds.BOXING | (id + (id << 4)); // magic see TypeIds
-						} else if (fixedBinding.parameters[i].isBaseType() && !arg.resolvedType.isBaseType()) {
-							int id = fixedBinding.parameters[i].id;
-							arg.implicitConversion = TypeIds.UNBOXING | (id + (id << 4)); // magic see TypeIds
+						if (arg.resolvedType != null) {
+							isVararg |= param.isArrayType() != arg.resolvedType.isArrayType();
+							if (!param.isBaseType() && arg.resolvedType.isBaseType()) {
+								int id = arg.resolvedType.id;
+								arg.implicitConversion = TypeIds.BOXING | (id + (id << 4)); // magic see TypeIds
+							} else if (param.isBaseType() && !arg.resolvedType.isBaseType()) {
+								int id = parameters[i].id;
+								arg.implicitConversion = TypeIds.UNBOXING | (id + (id << 4)); // magic see TypeIds
+							}
 						}
 					}
 					
@@ -295,6 +325,7 @@ public class PatchExtensionMethod {
 					methodCall.actualReceiverType = extensionMethod.declaringClass;
 					methodCall.binding = fixedBinding;
 					methodCall.resolvedType = methodCall.binding.returnType;
+					methodCall.statementEnd = methodCall.sourceEnd;
 					if (Reflection.argumentTypes != null) {
 						try {
 							Reflection.argumentTypes.set(methodCall, argumentTypes.toArray(new TypeBinding[0]));
