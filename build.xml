@@ -496,6 +496,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.equinox.common" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.osgi" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.core" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.core.manipulation" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.ui" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jface.text" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.core.resources" /></antcall>
