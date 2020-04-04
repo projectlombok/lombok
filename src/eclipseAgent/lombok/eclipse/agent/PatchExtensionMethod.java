@@ -252,6 +252,8 @@ public class PatchExtensionMethod {
 			Binding binding = ((NameReference)methodCall.receiver).binding;
 			if (binding instanceof TypeBinding) skip = true;
 		}
+		// It's impossible to resolve the right method without types
+		if (methodCall.argumentsHaveErrors) skip = true;
 		
 		if (!skip) for (Extension extension : extensions) {
 			if (!extension.suppressBaseMethods && !(methodCall.binding instanceof ProblemMethodBinding)) continue;
