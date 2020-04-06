@@ -26,6 +26,7 @@ import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.EclipseAugments.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.EclipseReflectiveMembers.*;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -817,6 +818,20 @@ public class EclipseHandlerUtil {
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
 	 */
 	public static Annotation[] findCopyableToSetterAnnotations(EclipseNode node) {
+		return findAnnotationsInList(node, COPY_TO_SETTER_ANNOTATIONS);
+	}
+
+	/**
+	 * Searches the given field node for annotations that are specifically intentioned to be copied to the builder's singular method.
+	 */
+	public static Annotation[] findCopyableToBuilderSingularSetterAnnotations(EclipseNode node) {
+		return findAnnotationsInList(node, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS);
+	}
+	
+	/**
+	 * Searches the given field node for annotations that are in the given list, and returns those.
+	 */
+	private static Annotation[] findAnnotationsInList(EclipseNode node, java.util.List<String> annotationsToFind) {
 		AbstractVariableDeclaration avd = (AbstractVariableDeclaration) node.get();
 		if (avd.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
 		List<Annotation> result = new ArrayList<Annotation>();
@@ -824,7 +839,7 @@ public class EclipseHandlerUtil {
 		for (Annotation annotation : avd.annotations) {
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName() != null) {
-				for (String bn : COPY_TO_SETTER_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) {
+				for (String bn : annotationsToFind) if (typeMatches(bn, node, typeRef)) {
 					result.add(annotation);
 					break;
 				}
@@ -2416,6 +2431,26 @@ public class EclipseHandlerUtil {
 	
 	private static long[] copy(long[] array) {
 		return array == null ? null : array.clone();
+	}
+	
+	public static <T> T[] concat(T[] first, T[] second, Class<T> type) {
+		if (first == null)
+			return second;
+		if (second == null)
+			return first;
+		if (first.length == 0)
+			return second;
+		if (second.length == 0)
+			return first;
+		T[] result = newArray(type, first.length + second.length);
+		System.arraycopy(first, 0, result, 0, first.length);
+		System.arraycopy(second, 0, result, first.length, second.length);
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T> T[] newArray(Class<T> type, int length) {
+		return (T[]) Array.newInstance(type, length);
 	}
 	
 	public static boolean isDirectDescendantOfObject(EclipseNode typeNode) {

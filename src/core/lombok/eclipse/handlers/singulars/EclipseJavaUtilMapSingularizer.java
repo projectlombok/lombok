@@ -252,7 +252,9 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		String setterName = HandlerUtil.buildAccessorName(setterPrefix, name);
 		
 		md.selector = setterName.toCharArray();
-		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToBuilderSingularSetterAnnotations(data.getAnnotation().up()));
+		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 		
 		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
 		data.setGeneratedByRecursive(md);
@@ -326,7 +328,9 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		String setterName = HandlerUtil.buildAccessorName(setterPrefix, name);
 		
 		md.selector = setterName.toCharArray();
-		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up()));
+		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 		
 		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
 		data.setGeneratedByRecursive(md);
