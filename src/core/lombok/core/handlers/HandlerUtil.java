@@ -314,6 +314,7 @@ public class HandlerUtil {
 		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JsonProperty",
 			"com.fasterxml.jackson.annotation.JsonSetter",
+			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty",
 		}));
 		JACKSON_COPY_TO_BUILDER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JsonFormat",
