@@ -321,8 +321,9 @@ class ShadowClassLoader extends ClassLoader {
 	}
 	
 	private static String urlDecode(String in) {
+		final String plusFixed = in.replaceAll("\\+", "%2B");
 		try {
-			return URLDecoder.decode(in, "UTF-8");
+			return URLDecoder.decode(plusFixed, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalError("UTF-8 not supported");
 		}
