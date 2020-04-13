@@ -182,11 +182,12 @@ public class JavacSingularsRecipes {
 			return this;
 		}
 		
-		protected JCModifiers makeMods(JavacTreeMaker maker, CheckerFrameworkVersion cfv, JavacNode node, boolean deprecate, AccessLevel access) {
+		protected JCModifiers makeMods(JavacTreeMaker maker, CheckerFrameworkVersion cfv, JavacNode node, boolean deprecate, AccessLevel access, List<JCAnnotation> methodAnnotations) {
 			JCAnnotation deprecateAnn = deprecate ? maker.Annotation(genJavaLangTypeRef(node, "Deprecated"), List.<JCExpression>nil()) : null;
 			JCAnnotation rrAnn = cfv.generateReturnsReceiver() ? maker.Annotation(genTypeRef(node, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil()) : null;
 			
 			List<JCAnnotation> annsOnMethod = (deprecateAnn != null && rrAnn != null) ? List.of(deprecateAnn, rrAnn) : deprecateAnn != null ? List.of(deprecateAnn) : rrAnn != null ? List.of(rrAnn) : List.<JCAnnotation>nil();
+			annsOnMethod = mergeAnnotations(annsOnMethod,methodAnnotations);
 			return maker.Modifiers(toJavacModifier(access), annsOnMethod);
 		}
 		
@@ -271,10 +272,10 @@ public class JavacSingularsRecipes {
 			generateClearMethod(cfv, deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, access);
 		}
 		
-		private void finishAndInjectMethod(CheckerFrameworkVersion cfv, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean deprecate, ListBuffer<JCStatement> statements, Name methodName, List<JCVariableDecl> jcVariableDecls, AccessLevel access, Boolean ignoreNullCollections) {
+		private void finishAndInjectMethod(CheckerFrameworkVersion cfv, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean deprecate, ListBuffer<JCStatement> statements, Name methodName, List<JCVariableDecl> jcVariableDecls, List<JCAnnotation> methodAnnotations, AccessLevel access, Boolean ignoreNullCollections) {
 			if (returnStatement != null) statements.append(returnStatement);
 			JCBlock body = maker.Block(0, statements.toList());
-			JCModifiers mods = makeMods(maker, cfv, builderType, deprecate, access);
+			JCModifiers mods = makeMods(maker, cfv, builderType, deprecate, access, methodAnnotations);
 			List<JCTypeParameter> typeParams = List.nil();
 			List<JCExpression> thrown = List.nil();
 			
@@ -298,7 +299,7 @@ public class JavacSingularsRecipes {
 			statements.add(clearStatement);
 			
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil(), access, null);
+			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil(), List.<JCAnnotation>nil(), access, null);
 		}
 		
 		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);
@@ -312,7 +313,8 @@ public class JavacSingularsRecipes {
 			if (!setterPrefix.isEmpty()) name = builderType.toName(HandlerUtil.buildAccessorName(setterPrefix, name.toString()));
 			
 			statements.prepend(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
-			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, params, access, null);
+			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToBuilderSingularSetterAnnotations(data.annotation.up()));
+			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, params, methodAnnotations, access, null);
 		}
 		
 		protected JCVariableDecl generateSingularMethodParameter(int typeIndex, JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, Name name) {
@@ -357,8 +359,10 @@ public class JavacSingularsRecipes {
 			} else {
 				statements.prepend(JavacHandlerUtil.generateNullCheck(maker, null, data.getPluralName(), builderType, "%s cannot be null"));
 			}
+
+			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToSetterAnnotations(data.annotation.up()));
 			
-			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, List.of(param), access, ignoreNullCollections);
+			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, List.of(param), methodAnnotations, access, ignoreNullCollections);
 		}
 		
 		protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {

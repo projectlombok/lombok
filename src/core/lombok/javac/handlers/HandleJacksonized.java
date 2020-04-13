@@ -149,7 +149,6 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		// @SuperBuilder? Make it package-private!
 		if (superBuilderAnnotationNode != null)
 			builderClass.mods.flags = builderClass.mods.flags & ~Flags.PRIVATE;
-		
  	}
 
 	private String getBuilderClassName(JCAnnotation ast, JavacNode annotationNode, JavacNode annotatedNode, JCClassDecl td, AnnotationValues<Builder> builderAnnotation, JavacTreeMaker maker) {
