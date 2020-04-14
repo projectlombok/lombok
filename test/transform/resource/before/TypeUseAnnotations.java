@@ -8,4 +8,6 @@ import java.util.List;
 }
 class TypeUseAnnotations {
 	@lombok.Getter List<@TA(x=5) String> foo;
+	@lombok.Getter List<TypeUseAnnotations.@TA(x=5) Inner> bar;
+	class Inner { }
 }

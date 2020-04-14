@@ -7,8 +7,18 @@ import java.util.List;
 }
 class TypeUseAnnotations {
 	List<@TA(x = 5) String> foo;
+	List<TypeUseAnnotations.@TA(x = 5) Inner> bar;
+
+	class Inner {
+	}
+
 	@java.lang.SuppressWarnings("all")
 	public List<@TA(x = 5) String> getFoo() {
 		return this.foo;
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public List<TypeUseAnnotations.@TA(x = 5) Inner> getBar() {
+		return this.bar;
 	}
 }

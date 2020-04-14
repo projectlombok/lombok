@@ -660,9 +660,11 @@ public class EclipseHandlerUtil {
 		
 		Annotation[][] b = new Annotation[a.length][];
 		for (int i = 0; i < a.length; i++) {
-			b[i] = new Annotation[a[i].length];
-			for (int j = 0 ; j < a[i].length; j++) {
-				b[i][j] = copyAnnotation(a[i][j], a[i][j]);
+			if (a[i] != null) {
+				b[i] = new Annotation[a[i].length];
+				for (int j = 0 ; j < a[i].length; j++) {
+					b[i][j] = copyAnnotation(a[i][j], a[i][j]);
+				}
 			}
 		}
 		
