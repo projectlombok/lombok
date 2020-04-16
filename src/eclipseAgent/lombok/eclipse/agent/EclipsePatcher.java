@@ -103,6 +103,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			patchIdentifierEndReparse(sm);
 			patchRetrieveEllipsisStartPosition(sm);
 			patchRetrieveRightBraceOrSemiColonPosition(sm);
+			patchRetrieveProperRightBracketPosition(sm);
 			patchSetGeneratedFlag(sm);
 			patchDomAstReparseIssues(sm);
 			patchHideGeneratedNodes(sm);
@@ -443,6 +444,16 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 //				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveRightBrace"))
 //				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveRightBraceOrSemiColonPosition", "int", "int", "int"))
 //				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
+	}
+
+	private static void patchRetrieveProperRightBracketPosition(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "extractSubArrayType", "org.eclipse.jdt.core.dom.ArrayType", "org.eclipse.jdt.core.dom.ArrayType", "int", "int"))
+			.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ASTConverter", "retrieveProperRightBracketPosition", "int", "int", "int"))
+			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveProperRightBracketPosition", "int", "int", "org.eclipse.jdt.core.dom.ArrayType"))
+			.requestExtra(StackRequest.PARAM1)
+			.transplant()
+			.build());
 	}
 
 	private static void patchSetGeneratedFlag(ScriptManager sm) {
