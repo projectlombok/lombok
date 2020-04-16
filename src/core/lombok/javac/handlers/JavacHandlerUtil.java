@@ -1520,6 +1520,20 @@ public class JavacHandlerUtil {
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
 	 */
 	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node) {
+		return findAnnotationsInList(node, COPY_TO_SETTER_ANNOTATIONS);
+	}
+
+	/**
+	 * Searches the given field node for annotations that are specifically intentioned to be copied to the builder's singular method.
+	 */
+	public static List<JCAnnotation> findCopyableToBuilderSingularSetterAnnotations(JavacNode node) {
+		return findAnnotationsInList(node, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS);
+	}
+	
+	/**
+	 * Searches the given field node for annotations that are in the given list, and returns those.
+	 */
+	private static List<JCAnnotation> findAnnotationsInList(JavacNode node, java.util.List<String> annotationsToFind) {
 		JCAnnotation anno = null;
 		String annoName = null;
 		for (JavacNode child : node.down()) {
@@ -1537,7 +1551,7 @@ public class JavacHandlerUtil {
 		if (annoName == null) return List.nil();
 		
 		if (!annoName.isEmpty()) {
-			for (String bn : COPY_TO_SETTER_ANNOTATIONS) if (typeMatches(bn, node, anno.annotationType)) return List.of(anno);
+			for (String bn : annotationsToFind) if (typeMatches(bn, node, anno.annotationType)) return List.of(anno);
 		}
 		
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
@@ -1545,7 +1559,7 @@ public class JavacHandlerUtil {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
 				boolean match = false;
-				if (!match) for (String bn : COPY_TO_SETTER_ANNOTATIONS) if (typeMatches(bn, node, annotation.annotationType)) {
+				if (!match) for (String bn : annotationsToFind) if (typeMatches(bn, node, annotation.annotationType)) {
 					result.append(annotation);
 					break;
 				}
