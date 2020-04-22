@@ -95,6 +95,7 @@ public class Permit {
 	
 	static class Fake {
 		boolean override;
+		Object accessCheckCache;
 	}
 	
 	public static Method getMethod(Class<?> c, String mName, Class<?>... parameterTypes) throws NoSuchMethodException {
