@@ -301,18 +301,23 @@ public class PatchExtensionMethod {
 					// If the extension method uses varargs, the last fixed binding parameter is an array but 
 					// the method arguments are not. Even thought we already know that the method is fine we still
 					// have to compare each parameter with the type of the array to support autoboxing/unboxing.
-					boolean isVararg = false;
+					boolean isVarargs = fixedBinding.isVarargs();
 					for (int i = 0, iend = arguments.size(); i < iend; i++) {
 						Expression arg = arguments.get(i);
 						TypeBinding[] parameters = fixedBinding.parameters;
-						TypeBinding param = isVararg ? parameters[parameters.length - 1].leafComponentType() : parameters[i];
+						TypeBinding param;
+						if (isVarargs && i >= parameters.length - 1) {
+							// Extract the array element type for all vararg arguments
+							param = parameters[parameters.length - 1].leafComponentType();
+						} else {
+							param = parameters[i];
+						}
 						// Resolve types for lambdas
 						if (arg instanceof FunctionalExpression) {
 							arg.setExpectedType(param);
 							arg.resolveType(scope);
 						}
 						if (arg.resolvedType != null) {
-							isVararg |= param.isArrayType() != arg.resolvedType.isArrayType();
 							if (!param.isBaseType() && arg.resolvedType.isBaseType()) {
 								int id = arg.resolvedType.id;
 								arg.implicitConversion = TypeIds.BOXING | (id + (id << 4)); // magic see TypeIds
