@@ -316,6 +316,8 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.annotation.JsonSetter",
 			"com.fasterxml.jackson.annotation.JsonDeserialize",
 			"com.fasterxml.jackson.annotation.JsonIgnore",
+			"com.fasterxml.jackson.annotation.JsonAlias",
+			"com.fasterxml.jackson.annotation.JsonView",
 			"com.fasterxml.jackson.annotation.JacksonInject",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty",
 		}));
