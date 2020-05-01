@@ -14,6 +14,16 @@ public class SuperBuilderCustomized {
 			}
 		}
 		int field1;
+		
+		protected Parent(ParentBuilder<?, ?> b) {
+			if (b.field1 == 0)
+				throw new IllegalArgumentException("field1 must be != 0");
+			this.field1 = b.field1;
+		}
+		
+		public static SuperBuilderCustomized.Parent.ParentBuilder<?, ?> builder(int field1) {
+			return new SuperBuilderCustomized.Parent.ParentBuilderImpl().field1(field1);
+		}
 	}
 	
 	@lombok.experimental.SuperBuilder

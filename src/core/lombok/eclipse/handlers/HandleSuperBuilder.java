@@ -274,8 +274,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.
 		// You can use it to check whether to inherit or not.
 		
-		generateBuilderBasedConstructor(cfv, tdParent, typeParams, builderFields, annotationNode, builderClassName,
-			superclassBuilderClass != null);
+		if (!constructorExists(tdParent, builderClassName)) {
+			generateBuilderBasedConstructor(cfv, tdParent, typeParams, builderFields, annotationNode, builderClassName,
+				superclassBuilderClass != null);
+		}
 		
 		// Create the abstract builder class, or reuse an existing one.
 		EclipseNode builderType = findInnerClass(tdParent, builderClassName);
@@ -1158,5 +1160,27 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		System.arraycopy(prefix, 0, out, 0, prefix.length);
 		System.arraycopy(name, 0, out, prefix.length, name.length);
 		return out;
+	}
+	
+	private boolean constructorExists(EclipseNode type, String builderClassName) {
+		if (type != null && type.get() instanceof TypeDeclaration) {
+			TypeDeclaration typeDecl = (TypeDeclaration)type.get();
+			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
+				if (def instanceof ConstructorDeclaration) {
+					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
+					if (!def.isConstructor()) continue;
+					if (isTolerate(type, def)) continue;
+					if (def.arguments.length != 1) continue;
+					
+					// Cannot use typeMatches() here, because the parameter could be fully-qualified, partially-qualified, or not qualified.
+					// A string-compare of the last part should work. If it's a false-positive, users could still @Tolerate it.
+					char[] typeName = def.arguments[0].type.getLastToken();
+					if (builderClassName.equals(String.valueOf(typeName)))
+						return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 }

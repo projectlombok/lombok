@@ -23,6 +23,13 @@ public class SuperBuilderCustomized {
 			}
 		}
 		int field1;
+		protected Parent(ParentBuilder<?, ?> b) {
+			if (b.field1 == 0) throw new IllegalArgumentException("field1 must be != 0");
+			this.field1 = b.field1;
+		}
+		public static SuperBuilderCustomized.Parent.ParentBuilder<?, ?> builder(int field1) {
+			return new SuperBuilderCustomized.Parent.ParentBuilderImpl().field1(field1);
+		}
 		@java.lang.SuppressWarnings("all")
 		private static final class ParentBuilderImpl extends SuperBuilderCustomized.Parent.ParentBuilder<SuperBuilderCustomized.Parent, SuperBuilderCustomized.Parent.ParentBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
@@ -38,14 +45,6 @@ public class SuperBuilderCustomized {
 			public SuperBuilderCustomized.Parent build() {
 				return new SuperBuilderCustomized.Parent(this);
 			}
-		}
-		@java.lang.SuppressWarnings("all")
-		protected Parent(final SuperBuilderCustomized.Parent.ParentBuilder<?, ?> b) {
-			this.field1 = b.field1;
-		}
-		@java.lang.SuppressWarnings("all")
-		public static SuperBuilderCustomized.Parent.ParentBuilder<?, ?> builder() {
-			return new SuperBuilderCustomized.Parent.ParentBuilderImpl();
 		}
 	}
 	public static class Child extends Parent {
