@@ -354,8 +354,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		
 		// Generate a constructor in the annotated class that takes a builder as argument.
-		generateBuilderBasedConstructor(cfv, tdParent, typeParams, builderFields, annotationNode, builderClassName,
-			superclassBuilderClassExpression != null);
+		if (!constructorExists(tdParent, builderClassName)) {
+			generateBuilderBasedConstructor(cfv, tdParent, typeParams, builderFields, annotationNode, builderClassName,
+				superclassBuilderClassExpression != null);
+		}
 		
 		if (isAbstract) {
 			// Only non-abstract classes get the builder() and toBuilder() methods.
@@ -1069,5 +1071,34 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			}
 		}
 		return typeParameter;
+	}
+	
+	/**
+	 * Checks if there is a manual constructor in the given type with a single parameter (builder).
+	 */
+	private boolean constructorExists(JavacNode type, String builderClassName) {
+		if (type != null && type.get() instanceof JCClassDecl) {
+			for (JCTree def : ((JCClassDecl)type.get()).defs) {
+				if (def instanceof JCMethodDecl) {
+					JCMethodDecl md = (JCMethodDecl) def;
+					String name = md.name.toString();
+					boolean matches = name.equals("<init>");
+					if (isTolerate(type, md)) 
+						continue;
+					if (matches && md.params != null && md.params.length() == 1) {
+						// Cannot use typeMatches() here, because the parameter could be fully-qualified, partially-qualified, or not qualified.
+						// A string-compare of the last part should work. If it's a false-positive, users could still @Tolerate it.
+						String typeName = md.params.get(0).getType().toString();
+						int lastIndexOfDot = typeName.lastIndexOf('.');
+						if (lastIndexOfDot >= 0) {
+							typeName = typeName.substring(lastIndexOfDot+1);
+						}
+						if ((builderClassName+"<?, ?>").equals(typeName))
+							return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 }
