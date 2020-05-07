@@ -796,8 +796,15 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(tree.name);
 		}
 		
-		print("(");
 		boolean first = true;
+		print("(");
+		
+		JCVariableDecl recvparam = readObject(tree, "recvparam", null);
+		if (recvparam != null) {
+			printVarDefInline(recvparam);
+			first = false;
+		}
+		
 		for (JCVariableDecl param : tree.params) {
 			if (!first) print(", ");
 			first = false;
