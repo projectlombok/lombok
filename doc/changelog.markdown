@@ -5,6 +5,7 @@ Lombok Changelog
 * BREAKING CHANGE: mapstruct users should now add a dependency to lombok-mapstruct-binding. This solves compiling modules with lombok (and mapstruct).
 * FEATURE: Similar to `@Builder`, you can now configure a `@SuperBuilder`'s 'setter' prefixes via `@SuperBuilder(setterPrefix = "set")` for example. We still discourage doing this. [Pull Request #2357](https://github.com/rzwitserloot/lombok/pull/2357).
 * FEATURE: If using `@Synchronized("lockVar")`, if `lockVar` is referring to a static field, the code lombok generates no longer causes a warning about accessing a static entity incorrectly. [Issue #678](https://github.com/rzwitserloot/lombok/issues/678)
+* BUGFIX: Delombok print the first `this` parameter. [Issue #2444](https://github.com/rzwitserloot/lombok/issues/2444)
 * BUGFIX: Using `val` in combination with values whose generics include wildcards that reference themselves would cause a `StackOverflowError` in javac. [Issue #2358](https://github.com/rzwitserloot/lombok/issues/2358).
 * BUGFIX: Using `@SuperBuilder` on a class that has some fairly convoluted generics usage would fail with 'Wrong number of type arguments'. [Issue #2359](https://github.com/rzwitserloot/lombok/issues/2359) [Pull Request #2362](https://github.com/rzwitserloot/lombok/pull/2362)
 * BUGFIX: Various lombok annotations on classes nested inside enums or interfaces would cause errors in eclipse. [Issue #2369](https://github.com/rzwitserloot/lombok/issues/2369)
