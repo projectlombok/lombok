@@ -377,14 +377,14 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (toBuilder) {
 			switch (methodExists(TO_BUILDER_METHOD_NAME, tdParent, 0)) {
 			case EXISTS_BY_USER:
-				annotationNode.addWarning("Not generating toBuilder() as it already exists.");
-				return;
+				break;
 			case NOT_EXISTS:
 				JCMethodDecl md = generateToBuilderMethod(cfv, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
 				if (md != null) {
 					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 					injectMethod(tdParent, md);
 				}
+				break;
 			default:
 				// Should not happen.
 			}
