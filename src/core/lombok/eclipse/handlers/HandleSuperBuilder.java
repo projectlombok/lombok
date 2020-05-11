@@ -390,10 +390,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			// Add the toBuilder() method to the annotated class.
 			switch (methodExists(TO_BUILDER_METHOD_NAME_STRING, tdParent, 0)) {
 			case EXISTS_BY_USER:
-				annotationNode.addWarning("Not generating toBuilder() as it already exists.");
 				break;
 			case NOT_EXISTS:
 				injectMethod(tdParent, generateToBuilderMethod(cfv, builderClassName, builderImplClassName, tdParent, typeParams, ast));
+				break;
 			default:
 				// Should not happen.
 			}
