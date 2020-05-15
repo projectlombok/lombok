@@ -11,6 +11,7 @@ Lombok Changelog
 * BUGFIX: Using `@SuperBuilder` on a class that has some fairly convoluted generics usage would fail with 'Wrong number of type arguments'. [Issue #2359](https://github.com/rzwitserloot/lombok/issues/2359) [Pull Request #2362](https://github.com/rzwitserloot/lombok/pull/2362)
 * BUGFIX: Various lombok annotations on classes nested inside enums or interfaces would cause errors in eclipse. [Issue #2369](https://github.com/rzwitserloot/lombok/issues/2369)
 * BUGFIX: Trying to add `@ExtensionMethod`s with exactly 2 arguments would fail in eclipse. [Issue #1441](https://github.com/rzwitserloot/lombok/issues/1441) [Pull Request #2376](https://github.com/rzwitserloot/lombok/pull/2376) thanks to __@Rawi01__.
+* BUGFIX: Javac sets incorrect annotated type on with methods. [Issue #2463](https://github.com/rzwitserloot/lombok/issues/2463)
 * FEATURE: `@Jacksonized` on a `@Builder` or `@SuperBuilder` will configure [Jackson](https://github.com/FasterXML/jackson) to use this builder when deserializing. [Pull Request #2387](https://github.com/rzwitserloot/lombok/pull/2387) thanks to __@JanRieke__. [@Jacksonized documentation](https://projectlombok.org/features/experimental/Jacksonized).
 
 ### v1.18.12 (February 1st, 2020)
