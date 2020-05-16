@@ -29,11 +29,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.core.AST.Kind;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
@@ -67,6 +70,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
@@ -214,7 +218,7 @@ public class PatchDelegate {
 						addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), field.name, ann);
 					}
 					
-					Set<String> banList = new HashSet<String>();
+					Set<String> banList = findAlreadyImplementedMethods(decl);
 					for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
 					
 					if (rawTypes.isEmpty()) {
@@ -283,8 +287,8 @@ public class PatchDelegate {
 					for (ClassLiteralAccess cla : excludedRawTypes) {
 						addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), method.selector, ann);
 					}
-					
-					Set<String> banList = new HashSet<String>();
+
+					Set<String> banList = findAlreadyImplementedMethods(decl);
 					for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
 					
 					if (rawTypes.isEmpty()) {
@@ -764,6 +768,21 @@ public class PatchDelegate {
 		}
 	}
 	
+	private static Set<String> findAlreadyImplementedMethods(TypeDeclaration decl) {
+		Set<String> sigs = new HashSet<String>();
+		for (AbstractMethodDeclaration md : decl.methods) {
+			if (md.isStatic()) continue;
+			if ((md.modifiers & ClassFileConstants.AccBridge) != 0) continue;
+			if (md.isConstructor()) continue;
+			if ((md.modifiers & ExtraCompilerModifiers.AccDefaultAbstract) != 0) continue;
+			if ((md.modifiers & ClassFileConstants.AccPublic) == 0) continue;
+			if ((md.modifiers & ClassFileConstants.AccSynthetic) != 0) continue;
+			
+			sigs.add(printSig(md, decl.scope));
+		}
+		return sigs;
+	}
+	
 	private static final char[] STRING_LOMBOK = new char[] {'l', 'o', 'm', 'b', 'o', 'k'};
 	private static final char[] STRING_EXPERIMENTAL = new char[] {'e', 'x', 'p', 'e', 'r', 'i', 'm', 'e', 'n', 't', 'a', 'l'};
 	private static final char[] STRING_DELEGATE = new char[] {'D', 'e', 'l', 'e', 'g', 'a', 't', 'e'};
@@ -837,6 +856,54 @@ public class PatchDelegate {
 		signature.append(")");
 		
 		return signature.toString();
+	}
+	
+	private static String printSig(AbstractMethodDeclaration md, ClassScope scope) {
+		StringBuilder signature = new StringBuilder();
+		
+		signature.append(md.selector);
+		signature.append("(");
+		boolean first = true;
+		if (md.arguments != null) {
+			TypeParameter[] typeParameters = md.typeParameters();
+			Map<String, TypeParameter> typeParametersMap = new HashMap<String, TypeParameter>();
+			if (typeParameters != null) {
+				for (TypeParameter typeParameter : typeParameters) {
+					typeParametersMap.put(new String(typeParameter.name), typeParameter);
+				}
+			}
+			
+			for (Argument argument : md.arguments) {
+				TypeBinding typeBinding = makeTypeBinding(argument.type, typeParametersMap, scope);
+				
+				if (!first) signature.append(", ");
+				first = false;
+				signature.append(typeBindingToSignature(typeBinding));
+			}
+		}
+		signature.append(")");
+		
+		return signature.toString();
+	}
+	
+	private static TypeBinding makeTypeBinding(TypeReference typeReference, Map<String, TypeParameter> typeParametersMap, ClassScope scope) {
+		char[][] typeName = typeReference.getTypeName();
+		String typeNameString = Eclipse.toQualifiedName(typeName);
+		
+		TypeParameter typeParameter = typeParametersMap.get(typeNameString);
+		if (typeParameter != null) {
+			if (typeParameter.type != null) {
+				typeName = typeParameter.type.getTypeName();
+			} else {
+				typeName = TypeConstants.JAVA_LANG_OBJECT;
+			}
+		}
+		
+		TypeBinding typeBinding = scope.getType(typeName, typeName.length);
+		if (typeReference.dimensions() > 0) {
+			typeBinding = scope.createArrayType(typeBinding, typeReference.dimensions());
+		}
+		return typeBinding;
 	}
 	
 	private static String typeBindingToSignature(TypeBinding binding) {
