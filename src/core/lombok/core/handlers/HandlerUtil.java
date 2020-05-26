@@ -323,6 +323,7 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.annotation.JsonAnySetter",
 		}));
 		JACKSON_COPY_TO_BUILDER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"com.fasterxml.jackson.annotation.JsonAutoDetect",
 			"com.fasterxml.jackson.annotation.JsonFormat",
 			"com.fasterxml.jackson.annotation.JsonIgnoreProperties",
 			"com.fasterxml.jackson.annotation.JsonIgnoreType",
