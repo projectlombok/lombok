@@ -36,6 +36,6 @@ public @interface Singular {
 	/** @return The singular name of this field. If it's a normal english plural, lombok will figure it out automatically. Otherwise, this parameter is mandatory. */
 	String value() default "";
 	
-	/** @return If true, the plural variant (which takes a collection and adds each element inside) will treat {@code null} as an empty collection, i.e. do nothing. If {@code false) (the default), it is null checked as if annotated with {@code @lombok.NonNull}. */
+	/** @return If true, the plural variant (which takes a collection and adds each element inside) will treat {@code null} as an empty collection, i.e. do nothing. If {@code false} (the default), it is null checked as if annotated with {@code @lombok.NonNull}. */
 	boolean ignoreNullCollections() default false;
 }
