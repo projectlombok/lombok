@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.13 "Edgy Guinea Pig"
+* PLATFORM: Added support for compiling projects with OpenJ9 [Pull Request #2437](https://github.com/rzwitserloot/lombok/pull/2437)
 * BREAKING CHANGE: mapstruct users should now add a dependency to lombok-mapstruct-binding. This solves compiling modules with lombok (and mapstruct).
 * FEATURE: Similar to `@Builder`, you can now configure a `@SuperBuilder`'s 'setter' prefixes via `@SuperBuilder(setterPrefix = "set")` for example. We still discourage doing this. [Pull Request #2357](https://github.com/rzwitserloot/lombok/pull/2357).
 * FEATURE: If using `@Synchronized("lockVar")`, if `lockVar` is referring to a static field, the code lombok generates no longer causes a warning about accessing a static entity incorrectly. [Issue #678](https://github.com/rzwitserloot/lombok/issues/678)
