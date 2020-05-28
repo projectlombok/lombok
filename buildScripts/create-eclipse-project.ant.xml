@@ -1,0 +1,182 @@
+<!--
+ Copyright (C) 2010-2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok.create-eclipse-project" default="" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" basedir="..">
+	<description>
+This buildfile is part of projectlombok.org. It creates the infrastructure needed to develop lombok on eclipse.
+	</description>
+	
+	<target name="eclipse" depends="eclipse.projectfiles, eclipse.testtarget.default" description="Downloads dependencies, create eclipse project files, as well as debug/run test targets. Open this directory as project in eclipse (via import... existing projects)" />
+	
+	<target name="eclipse.projectfiles" depends="deps">
+		<ivy:eclipsegen source="1.6">
+			<srcdir dir="src/core" />
+			<srcdir dir="src/core8" />
+			<srcdir dir="src/launch" />
+			<srcdir dir="src/utils" />
+			<srcdir dir="src/eclipseAgent" />
+			<srcdir dir="src/installer" />
+			<srcdir dir="src/delombok" />
+			<srcdir dir="src/stubs" />
+			<srcdir dir="src/testAP" />
+			<srcdir dir="src/support" />
+			<srcdir dir="experimental/src" />
+			<srcdir dir="test/transform/src" />
+			<srcdir dir="test/core/src" />
+			<srcdir dir="test/bytecode/src" />
+			<srcdir dir="test/configuration/src" />
+			<srcdir dir="test/stubs" />
+			<conf name="build" sources="sources" />
+			<conf name="javac6" sources="sources" />
+			<conf name="eclipse-oxygen" sources="sources" />
+			<conf name="test" sources="sources" />
+			<conf name="buildtools" sources="sources" />
+			<local org="org.projectlombok" name="lombok.patcher" dir="../lombok.patcher" />
+			<settings>
+				<url url="https://projectlombok.org/downloads/lombok.eclipse.settings" />
+			</settings>
+			<apt location="lib/build/projectlombok.org-spi.jar" />
+		</ivy:eclipsegen>
+	</target>
+	
+	<target name="eclipse.testtarget.default" depends="deps, compile.support">
+		<property name="cp.test" refid="cp.test" />
+		<property name="cp.stripe" refid="cp.stripe" />
+		<property name="cp.eclipse-202006" refid="cp.eclipse-202006" />
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Base" />
+			<arg value="testType=lombok.TestBase" />
+			<arg value="jvmTarget=1.8" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="favorite" />
+		</java>
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Eclipse-202006" />
+			<arg value="testType=lombok.TestEclipse" />
+			<arg value="jvmTarget=1.8" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="conf.eclipse-oxygen=${cp.eclipse-202006}" />
+			<arg value="favorite" />
+		</java>
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Javac14" />
+			<arg value="testType=lombok.TestJavac" />
+			<arg value="jvmTarget=14" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="favorite" />
+		</java>
+	</target>
+	
+	<target name="eclipse.testtarget.javac" depends="compile.support" description="Makes an eclipse launch target for running the tests for javac">
+		<property name="cp.test" refid="cp.test" />
+		<property name="cp.stripe" refid="cp.stripe" />
+		
+		<input message="Which javac do you want to target? Enter a version, such as '11'." validargs="8,11,13,14,15" addproperty="testtarget.jvmTarget.input" />
+		
+		<condition property="testtarget.jvmtarget" value="1.8" else="${testtarget.jvmTarget.input}"><equals arg1="${testtarget.jvmTarget.input}" arg2="8" /></condition>
+		<property name="testtarget.confname" value="javac${testtarget.jvmTarget.input}" />
+		<property name="testtarget.confcp" refid="cp.javac${testtarget.jvmTarget.input}" />
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Javac ${testtarget.jvmTarget.input}" />
+			<arg value="testType=lombok.TestJavac" />
+			<arg value="jvmTarget=${testtarget.jvmTarget}" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="conf.${testtarget.confname}=${testtarget.confcp}" />
+			<arg value="favorite" />
+		</java>
+	</target>
+	
+	<target name="eclipse.testtarget.eclipse" depends="compile.support" description="Makes an eclipse launch target for running the tests for eclipse support">
+		<property name="cp.test" refid="cp.test" />
+		<property name="cp.stripe" refid="cp.stripe" />
+		
+		<input message="Which JDK do you want to target? Enter a version, such as '11'. Suggested (default): 8" validargs="8,11,14" defaultvalue="8" addproperty="testtarget.jvmTarget.input" />
+		<input message="Which eclipse do you want to target? Enter a version, such as 'oxygen'." validargs="oxygen" addproperty="testtarget.eclipseTarget" />
+		
+		<condition property="testtarget.jvmtarget" value="1.8" else="${testtarget.jvmTarget.input}"><equals arg1="${testtarget.jvmTarget.input}" arg2="8" /></condition>
+		<property name="testtarget.confname" value="eclipse-${testtarget.eclipseTarget}" />
+		<property name="testtarget.confcp" refid="cp.eclipse-${testtarget.eclipseTarget}" />
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Eclipse-${testtarget.eclipseTarget}" />
+			<arg value="testType=lombok.TestEclipse" />
+			<arg value="jvmTarget=${testtarget.jvmTarget}" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="conf.${testtarget.confname}=${testtarget.confcp}" />
+			<arg value="favorite" />
+		</java>
+	</target>
+	
+	<target name="eclipse.testtarget.ecj" depends="compile.support" description="Makes an eclipse launch target for running the tests for ecj support">
+		<property name="cp.test" refid="cp.test" />
+		<property name="cp.stripe" refid="cp.stripe" />
+		
+		<input message="Which JDK do you want to target? Enter a version, such as '11'. Suggested (default): 8" validargs="8,11,14" defaultvalue="8" addproperty="testtarget.jvmTarget.input" />
+		<input message="Which ecj do you want to target? Enter a version, such as '8'." validargs="8,11,14" addproperty="testtarget.ecjTarget" />
+		
+		<condition property="testtarget.jvmtarget" value="1.8" else="${testtarget.jvmTarget.input}"><equals arg1="${testtarget.jvmTarget.input}" arg2="8" /></condition>
+		<property name="testtarget.confname" value="ecj${testtarget.ecjTarget}" />
+		<property name="testtarget.confcp" refid="cp.ecj${testtarget.ecjTarget}" />
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test ECJ${testtarget.ecjTarget}" />
+			<arg value="testType=lombok.TestEclipse" />
+			<arg value="jvmTarget=${testtarget.jvmTarget}" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="conf.${testtarget.confname}=${testtarget.confcp}" />
+			<arg value="favorite" />
+		</java>
+	</target>
+</project>

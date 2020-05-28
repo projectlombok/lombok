@@ -1,0 +1,4 @@
+These classes are not part of lombok itself, but used during the build. For example:
+* Code to turn the changelog into HTML ready to ship to projectlombok.org
+* Code to create eclipse debug targets
+

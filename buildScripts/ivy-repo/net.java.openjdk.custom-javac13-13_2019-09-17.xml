@@ -1,0 +1,12 @@
+<ivy-module version="2.0">
+	<info organisation="net.java.openjdk.custom" module="javac13" revision="13_2019-09-17" publication="20200508032346">
+		<license name="GNU General Public License v2 with Classpath Exception" url="https://openjdk.java.net/legal/gplv2+ce.html" />
+		<description homepage="https://openjdk.java.net" />
+	</info>
+	<configurations>
+		<conf name="runtime" />
+	</configurations>
+	<publications>
+		<artifact conf="runtime" url="https://projectlombok.org/ivyrepo/langtools/javac13_2019-09-17.jar" />
+	</publications>
+</ivy-module>
