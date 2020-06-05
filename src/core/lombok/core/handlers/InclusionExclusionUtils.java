@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -207,22 +207,37 @@ public class InclusionExclusionUtils {
 			@Override public int compare(Included<L, ToString.Include> a, Included<L, ToString.Include> b) {
 				int ra = a.getInc() == null ? 0 : a.getInc().rank();
 				int rb = b.getInc() == null ? 0 : b.getInc().rank();
-				if (ra < rb) return +1;
-				if (ra > rb) return -1;
-				
-				int pa = a.getNode().getStartPos();
-				int pb = b.getNode().getStartPos();
-				
-				if (pa < pb) return -1;
-				if (pa > pb) return +1;
-				
-				return 0;
+
+				return compareRankOrPosition(ra, rb, a.getNode(), b.getNode());
 			}
 		});
 		return members;
 	}
 	
 	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> List<Included<L, EqualsAndHashCode.Include>> handleEqualsAndHashCodeMarking(LombokNode<A, L, N> typeNode, AnnotationValues<EqualsAndHashCode> annotation, LombokNode<A, L, N> annotationNode) {
-		return handleIncludeExcludeMarking(EqualsAndHashCode.Include.class, "replaces", EqualsAndHashCode.Exclude.class, typeNode, annotation, annotationNode, false);
+		List<Included<L, EqualsAndHashCode.Include>> members = handleIncludeExcludeMarking(EqualsAndHashCode.Include.class, "replaces", EqualsAndHashCode.Exclude.class, typeNode, annotation, annotationNode, false);
+
+		Collections.sort(members, new Comparator<Included<L, EqualsAndHashCode.Include>>() {
+			@Override public int compare(Included<L, EqualsAndHashCode.Include> a, Included<L, EqualsAndHashCode.Include> b) {
+				int ra = a.getInc() == null ? 0 : a.getInc().rank();
+				int rb = b.getInc() == null ? 0 : b.getInc().rank();
+
+				return compareRankOrPosition(ra, rb, a.getNode(), b.getNode());
+			}
+		});
+		return members;
+	}
+
+	private static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> int compareRankOrPosition(int ra, int rb, LombokNode<A, L, N> nodeA, LombokNode<A, L, N> nodeB) {
+		if (ra < rb) return +1;
+		if (ra > rb) return -1;
+
+		int pa = nodeA.getStartPos();
+		int pb = nodeB.getStartPos();
+
+		if (pa < pb) return -1;
+		if (pa > pb) return +1;
+
+		return 0;
 	}
 }
