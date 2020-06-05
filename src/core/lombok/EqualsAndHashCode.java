@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,5 +122,12 @@ public @interface EqualsAndHashCode {
 		 * @return If present, this method serves as replacement for the named field.
 		 */
 		String replaces() default "";
+
+		/**
+		 * Higher ranks are considered first. Members of the same rank are considered in the order they appear in the source file.
+		 *
+		 * @return ordering within the generating {@code equals} and {@code hashCode} methods; higher numbers are considered first.
+		 */
+		int rank() default 0;
 	}
 }
