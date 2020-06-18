@@ -435,7 +435,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			java.util.List<Included<JavacNode, ToString.Include>> fieldNodes = new ArrayList<Included<JavacNode, ToString.Include>>();
 			for (BuilderFieldData bfd : builderFields) {
 				for (JavacNode f : bfd.createdFields) {
-					fieldNodes.add(new Included<JavacNode, ToString.Include>(f, null, true));
+					fieldNodes.add(new Included<JavacNode, ToString.Include>(f, null, true, false));
 				}
 			}
 			

@@ -76,11 +76,13 @@ public class InclusionExclusionUtils {
 		private final L node;
 		private final I inc;
 		private final boolean defaultInclude;
+		private final boolean explicitRank;
 		
-		public Included(L node, I inc, boolean defaultInclude) {
+		public Included(L node, I inc, boolean defaultInclude, boolean explicitRank) {
 			this.node = node;
 			this.inc = inc;
 			this.defaultInclude = defaultInclude;
+			this.explicitRank = explicitRank;
 		}
 		
 		public L getNode() {
@@ -93,6 +95,10 @@ public class InclusionExclusionUtils {
 		
 		public boolean isDefaultInclude() {
 			return defaultInclude;
+		}
+		
+		public boolean hasExplicitRank() {
+			return explicitRank;
 		}
 	}
 	
@@ -164,13 +170,13 @@ public class InclusionExclusionUtils {
 					if (n.isEmpty()) n = name;
 					namesToAutoExclude.add(n);
 				}
-				members.add(new Included<L, I>(child, inc, false));
+				members.add(new Included<L, I>(child, inc, false, markInclude.isExplicit("rank")));
 				continue;
 			}
 			
 			if (onlyExplicitlyIncluded) continue;
 			if (oldIncludes != null) {
-				if (child.getKind() == Kind.FIELD && oldIncludes.contains(name)) members.add(new Included<L, I>(child, null, false));
+				if (child.getKind() == Kind.FIELD && oldIncludes.contains(name)) members.add(new Included<L, I>(child, null, false, false));
 				continue;
 			}
 			if (child.getKind() != Kind.FIELD) continue;
@@ -178,7 +184,7 @@ public class InclusionExclusionUtils {
 			if (child.isTransient() && !includeTransient) continue;
 			if (name.startsWith("$")) continue;
 			if (child.isEnumMember()) continue;
-			members.add(new Included<L, I>(child, null, true));
+			members.add(new Included<L, I>(child, null, true, false));
 		}
 		
 		/* delete default-included fields with the same name as an explicit inclusion */ {
@@ -219,8 +225,8 @@ public class InclusionExclusionUtils {
 
 		Collections.sort(members, new Comparator<Included<L, EqualsAndHashCode.Include>>() {
 			@Override public int compare(Included<L, EqualsAndHashCode.Include> a, Included<L, EqualsAndHashCode.Include> b) {
-				int ra = a.getInc() == null ? 0 : a.getInc().rank();
-				int rb = b.getInc() == null ? 0 : b.getInc().rank();
+				int ra = a.hasExplicitRank() ? a.getInc().rank() : a.node.isPrimitive() ? 1000 : 0;
+				int rb = b.hasExplicitRank() ? b.getInc().rank() : b.node.isPrimitive() ? 1000 : 0;
 
 				return compareRankOrPosition(ra, rb, a.getNode(), b.getNode());
 			}

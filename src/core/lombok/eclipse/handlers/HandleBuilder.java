@@ -485,7 +485,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			List<Included<EclipseNode, ToString.Include>> fieldNodes = new ArrayList<Included<EclipseNode, ToString.Include>>();
 			for (BuilderFieldData bfd : builderFields) {
 				for (EclipseNode f : bfd.createdFields) {
-					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true));
+					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true, false));
 				}
 			}
 			MethodDeclaration md = HandleToString.createToString(builderType, fieldNodes, true, false, ast, FieldAccess.ALWAYS_FIELD);

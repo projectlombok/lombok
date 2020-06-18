@@ -27,10 +27,6 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic;
 
-import lombok.core.AnnotationValues;
-import lombok.core.AST.Kind;
-import lombok.javac.handlers.JavacHandlerUtil;
-
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacTypes;
@@ -43,8 +39,12 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
+import com.sun.tools.javac.util.Name;
+
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.javac.handlers.JavacHandlerUtil;
 
 /**
  * Javac specific version of the LombokNode class.
@@ -343,6 +343,16 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		if (getKind() != Kind.TYPE) return false;
 		JCModifiers mods = getModifiers();
 		return mods != null && (Flags.ENUM & mods.flags) != 0;
+	}
+	
+	@Override public boolean isPrimitive() {
+		if (node instanceof JCVariableDecl && !isEnumMember()) {
+			return Javac.isPrimitive(((JCVariableDecl) node).vartype);
+		}
+		if (node instanceof JCMethodDecl) {
+			return Javac.isPrimitive(((JCMethodDecl) node).restype);
+		}
+		return false;
 	}
 	
 	@Override public boolean isTransient() {

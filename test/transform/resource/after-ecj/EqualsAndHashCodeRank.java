@@ -7,18 +7,18 @@ public @EqualsAndHashCode class EqualsAndHashCodeRank {
     super();
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
-    if (o == this)
+    if ((o == this))
         return true;
-    if (!(o instanceof EqualsAndHashCodeRank))
+    if ((! (o instanceof EqualsAndHashCodeRank)))
         return false;
     final EqualsAndHashCodeRank other = (EqualsAndHashCodeRank) o;
-    if (!other.canEqual((java.lang.Object) this))
+    if ((! other.canEqual((java.lang.Object) this)))
         return false;
-    if (this.b != other.b)
+    if ((this.a != other.a))
         return false;
-    if (this.a != other.a)
+    if ((this.c != other.c))
         return false;
-    if (this.c != other.c)
+    if ((this.b != other.b))
         return false;
     return true;
   }
@@ -28,9 +28,9 @@ public @EqualsAndHashCode class EqualsAndHashCodeRank {
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 59;
     int result = 1;
-    result = result * PRIME + this.b;
-    result = result * PRIME + this.a;
-    result = result * PRIME + this.c;
+    result = ((result * PRIME) + this.a);
+    result = ((result * PRIME) + this.c);
+    result = ((result * PRIME) + this.b);
     return result;
   }
 }

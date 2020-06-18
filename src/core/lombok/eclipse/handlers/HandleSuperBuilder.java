@@ -354,7 +354,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			List<Included<EclipseNode, ToString.Include>> fieldNodes = new ArrayList<Included<EclipseNode, ToString.Include>>();
 			for (BuilderFieldData bfd : builderFields) {
 				for (EclipseNode f : bfd.createdFields) {
-					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true));
+					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true, false));
 				}
 			}
 			// Let toString() call super.toString() if there is a superclass, so that it also shows fields from the superclass' builder.

@@ -288,6 +288,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	public abstract boolean isStatic();
 	public abstract boolean isFinal();
 	public abstract boolean isTransient();
+	public abstract boolean isPrimitive();
 	public abstract boolean isEnumMember();
 	public abstract boolean isEnumType();
 	
