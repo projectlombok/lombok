@@ -275,6 +275,29 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 		return false;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public String fieldOrMethodBaseType() {
+		TypeReference typeReference = null;
+		if (node instanceof FieldDeclaration && !isEnumMember()) {
+			typeReference = ((FieldDeclaration) node).type;
+		}
+		if (node instanceof MethodDeclaration) {
+			typeReference = ((MethodDeclaration) node).returnType;
+		}
+		if (typeReference == null) return null;
+		
+		String fqn = Eclipse.toQualifiedName(typeReference.getTypeName());
+		if (typeReference.dimensions() == 0) return fqn;
+		StringBuilder result = new StringBuilder(fqn.length() + 2 * typeReference.dimensions());
+		result.append(fqn);
+		for (int i = 0; i < typeReference.dimensions(); i++) {
+			result.append("[]");
+		}
+		return result.toString();
+	}
+	
 	@Override public boolean isTransient() {
 		if (getKind() != Kind.FIELD) return false;
 		Integer i = getModifiers();

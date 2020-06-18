@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.13 "Edgy Guinea Pig"
-* PERFORMANCE: The generated equals method will first compare primitives. Manual re-ordering is possible using `@Include(rank=n)`. [Pull Request #2485](https://github.com/rzwitserloot/lombok/pull/2485), [Issue #1543](https://github.com/rzwitserloot/lombok/issues/1543)
+* PERFORMANCE: The generated equals method will first compare primitives, then primitive wrappers and then reference fields. Manual re-ordering is possible using `@Include(rank=n)`. [Pull Request #2485](https://github.com/rzwitserloot/lombok/pull/2485), [Issue #1543](https://github.com/rzwitserloot/lombok/issues/1543)
 * IMPROBABLE BREAKING CHANGE: The generated hashcode has changed for classes that include both primitive fields and reference fields.
 * PLATFORM: Added support for compiling projects with OpenJ9 [Pull Request #2437](https://github.com/rzwitserloot/lombok/pull/2437)
 * BREAKING CHANGE: mapstruct users should now add a dependency to lombok-mapstruct-binding. This solves compiling modules with lombok (and mapstruct).

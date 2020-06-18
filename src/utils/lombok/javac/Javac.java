@@ -37,12 +37,6 @@ import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVisitor;
 
-import lombok.core.ClassLiteral;
-import lombok.core.FieldSelect;
-import lombok.javac.JavacTreeMaker.TreeTag;
-import lombok.javac.JavacTreeMaker.TypeTag;
-import lombok.permit.Permit;
-
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symtab;
@@ -61,6 +55,13 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
+import lombok.core.ClassLiteral;
+import lombok.core.FieldSelect;
+import lombok.core.handlers.HandlerUtil;
+import lombok.javac.JavacTreeMaker.TreeTag;
+import lombok.javac.JavacTreeMaker.TypeTag;
+import lombok.permit.Permit;
+
 /**
  * Container for static utility methods relevant to lombok's operation on javac.
  */
@@ -68,9 +69,6 @@ public class Javac {
 	private Javac() {
 		// prevent instantiation
 	}
-	
-	/** Matches any of the 8 primitive names, such as {@code boolean}. */
-	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(boolean|byte|short|int|long|float|double|char)$");
 	
 	private static final Pattern VERSION_PARSER = Pattern.compile("^(\\d{1,6})\\.?(\\d{1,6})?.*$");
 	private static final Pattern SOURCE_PARSER = Pattern.compile("^JDK(\\d{1,6})_?(\\d{1,6})?.*$");
@@ -135,8 +133,7 @@ public class Javac {
 	 * expression) represents a primitive type.
 	 */
 	public static boolean isPrimitive(JCExpression ref) {
-		String typeName = ref.toString();
-		return PRIMITIVE_TYPE_NAME_PATTERN.matcher(typeName).matches();
+		return HandlerUtil.isPrimitive(ref.toString());
 	}
 	
 	/**

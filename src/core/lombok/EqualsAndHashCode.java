@@ -126,7 +126,7 @@ public @interface EqualsAndHashCode {
 		/**
 		 * Higher ranks are considered first. Members of the same rank are considered in the order they appear in the source file.
 		 * 
-		 * If not explicitly set, the {@code default} rank for primitives is 1000.
+		 * If not explicitly set, the {@code default} rank for primitives is 1000, and for primitive wrappers 800.
 		 * 
 		 * @return ordering within the generating {@code equals} and {@code hashCode} methods; higher numbers are considered first.
 		 */

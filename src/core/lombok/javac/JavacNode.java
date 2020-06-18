@@ -355,6 +355,19 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		return false;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public String fieldOrMethodBaseType() {
+		if (node instanceof JCVariableDecl && !isEnumMember()) {
+			return (((JCVariableDecl) node).vartype).toString();
+		}
+		if (node instanceof JCMethodDecl) {
+			return (((JCMethodDecl) node).restype).toString();
+		}
+		return null;
+	}
+	
 	@Override public boolean isTransient() {
 		if (getKind() != Kind.FIELD) return false;
 		JCModifiers mods = getModifiers();

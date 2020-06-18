@@ -225,8 +225,8 @@ public class InclusionExclusionUtils {
 
 		Collections.sort(members, new Comparator<Included<L, EqualsAndHashCode.Include>>() {
 			@Override public int compare(Included<L, EqualsAndHashCode.Include> a, Included<L, EqualsAndHashCode.Include> b) {
-				int ra = a.hasExplicitRank() ? a.getInc().rank() : a.node.isPrimitive() ? 1000 : 0;
-				int rb = b.hasExplicitRank() ? b.getInc().rank() : b.node.isPrimitive() ? 1000 : 0;
+				int ra = a.hasExplicitRank() ? a.getInc().rank() : HandlerUtil.defaultEqualsAndHashcodeIncludeRank(a.node.fieldOrMethodBaseType());
+				int rb = b.hasExplicitRank() ? b.getInc().rank() : HandlerUtil.defaultEqualsAndHashcodeIncludeRank(b.node.fieldOrMethodBaseType());
 
 				return compareRankOrPosition(ra, rb, a.getNode(), b.getNode());
 			}
