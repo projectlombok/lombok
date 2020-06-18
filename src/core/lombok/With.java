@@ -26,8 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.AccessLevel;
-
 /**
  * Put on any field to make lombok build a 'with' - a withX method which produces a clone of this object (except for 1 field which gets a new value).
  * <p>
