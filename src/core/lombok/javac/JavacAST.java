@@ -258,7 +258,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		
 		if (typeUse == null) return null;
 		
-		if (typeUse.getClass().getSimpleName().equals("JCAnnotatedType")) {
+		if (typeUse.getClass().getName().equals("com.sun.tools.javac.tree.JCTree$JCAnnotatedType")) {
 			initJcAnnotatedType(typeUse.getClass());
 			Collection<?> anns = Permit.permissiveReadField(Collection.class, JCANNOTATEDTYPE_ANNOTATIONS, typeUse);
 			JCExpression underlying = Permit.permissiveReadField(JCExpression.class, JCANNOTATEDTYPE_UNDERLYINGTYPE, typeUse);
@@ -381,7 +381,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (statement instanceof JCClassDecl) return buildType((JCClassDecl) statement);
 		if (statement instanceof JCVariableDecl) return buildLocalVar((JCVariableDecl) statement, Kind.LOCAL);
 		if (statement instanceof JCTry) return buildTry((JCTry) statement);
-		if (statement.getClass().getSimpleName().equals("JCLambda")) return buildLambda(statement);
+		if (statement.getClass().getName().equals("com.sun.tools.javac.tree.JCTree$JCLambda")) return buildLambda(statement);
 		if (setAndGetAsHandled(statement)) return null;
 		
 		return drill(statement);
