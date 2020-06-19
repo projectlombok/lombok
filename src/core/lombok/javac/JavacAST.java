@@ -79,6 +79,8 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private final Log log;
 	private final ErrorLog errorLogger;
 	private final Context context;
+	private static final URI NOT_CALCULATED_MARKER = URI.create("https://projectlombok.org/not/calculated");
+	private URI memoizedAbsoluteFileLocation = NOT_CALCULATED_MARKER;
 	
 	/**
 	 * Creates a new JavacAST of the provided Compilation Unit.
@@ -102,7 +104,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	}
 	
 	@Override public URI getAbsoluteFileLocation() {
-		return getAbsoluteFileLocation((JCCompilationUnit) top().get());
+		if (memoizedAbsoluteFileLocation == NOT_CALCULATED_MARKER) {
+			memoizedAbsoluteFileLocation = getAbsoluteFileLocation((JCCompilationUnit) top().get());
+		}
+		return memoizedAbsoluteFileLocation;
 	}
 	
 	public static URI getAbsoluteFileLocation(JCCompilationUnit cu) {
