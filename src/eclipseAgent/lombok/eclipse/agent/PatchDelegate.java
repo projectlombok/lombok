@@ -321,6 +321,8 @@ public class PatchDelegate {
 	
 	private static boolean isDelegate(Annotation ann, TypeDeclaration decl) {
 		if (ann.type == null) return false;
+		if (!charArrayEquals("Delegate", ann.type.getLastToken())) return false;
+		
 		TypeBinding tb = ann.type.resolveType(decl.initializerScope);
 		if (tb == null) return false;
 		if (!charArrayEquals("lombok", tb.qualifiedPackageName()) && !charArrayEquals("lombok.experimental", tb.qualifiedPackageName())) return false;
