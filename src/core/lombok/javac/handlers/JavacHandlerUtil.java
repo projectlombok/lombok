@@ -1200,16 +1200,28 @@ public class JavacHandlerUtil {
 		addSuppressWarningsAll(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		addGenerated(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		type.defs = type.defs.append(method);
-		
-		fixMethodMirror(typeNode.getContext(), typeNode.getElement(), method.getModifiers().flags, method.getName(), paramTypes, returnType);
+
+		List<Symbol.VarSymbol> params = null;
+		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
+			ListBuffer<Symbol.VarSymbol> newParams = new ListBuffer<Symbol.VarSymbol>();
+			for (JCTree.JCVariableDecl param : method.getParameters()) {
+				newParams.append(param.sym);
+			}
+			params = newParams.toList();
+		}
+
+		fixMethodMirror(typeNode.getContext(), typeNode.getElement(), method.getModifiers().flags, method.getName(), paramTypes, params, returnType);
 		
 		typeNode.add(method, Kind.METHOD);
 	}
 	
-	private static void fixMethodMirror(Context context, Element typeMirror, long access, Name methodName, List<Type> paramTypes, Type returnType) {
+	private static void fixMethodMirror(Context context, Element typeMirror, long access, Name methodName, List<Type> paramTypes, List<Symbol.VarSymbol> params, Type returnType) {
 		if (typeMirror == null || paramTypes == null || returnType == null) return;
 		ClassSymbol cs = (ClassSymbol) typeMirror;
 		MethodSymbol methodSymbol = new MethodSymbol(access, methodName, new MethodType(paramTypes, returnType, List.<Type>nil(), Symtab.instance(context).methodClass), cs);
+		if (params != null && !params.isEmpty()) {
+			methodSymbol.params = params;
+		}
 		ClassSymbolMembersField.enter(cs, methodSymbol);
 	}
 	

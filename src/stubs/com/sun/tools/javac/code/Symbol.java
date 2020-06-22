@@ -18,6 +18,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
+import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
 public abstract class Symbol implements Element {
@@ -41,6 +42,7 @@ public abstract class Symbol implements Element {
 	public static abstract class TypeSymbol extends Symbol {}
 	
 	public static class MethodSymbol extends Symbol implements ExecutableElement {
+		public List<Symbol.VarSymbol> params = null;
 		public MethodSymbol(long flags, Name name, Type type, Symbol owner) {}
 		@Override public ElementKind getKind() { return null; }
 		@Override public Set<Modifier> getModifiers() { return null; }
