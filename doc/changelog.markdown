@@ -2,6 +2,8 @@ Lombok Changelog
 ----------------
 
 ### v1.18.13 "Edgy Guinea Pig"
+* POTENTIAL FIX: Kotlin incremental compiler on gradle 3.6.1 [Issue #2412](https://github.com/rzwitserloot/lombok/issues/2412)
+* PERFORMANCE: Several performance improvements during parsing/compilation, both using javac and Eclipse. Thanks __@Rawi01__!
 * PERFORMANCE: The generated equals method will first compare primitives, then primitive wrappers and then reference fields. Manual re-ordering is possible using `@Include(rank=n)`. [Pull Request #2485](https://github.com/rzwitserloot/lombok/pull/2485), [Issue #1543](https://github.com/rzwitserloot/lombok/issues/1543)
 * IMPROBABLE BREAKING CHANGE: The generated hashcode has changed for classes that include both primitive fields and reference fields.
 * PLATFORM: Added support for compiling projects with OpenJ9 [Pull Request #2437](https://github.com/rzwitserloot/lombok/pull/2437)
