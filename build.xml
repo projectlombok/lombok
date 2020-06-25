@@ -36,4 +36,5 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<import file="buildScripts/create-intellij-project.ant.xml" />
 	<import file="buildScripts/website.ant.xml" />
 	<import file="buildScripts/eclipse-p2.ant.xml" />
+	<import file="buildScripts/mapstructBinding.ant.xml" />
 </project>

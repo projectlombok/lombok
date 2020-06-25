@@ -36,7 +36,6 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			<srcdir dir="src/installer" />
 			<srcdir dir="src/delombok" />
 			<srcdir dir="src/stubs" />
-			<srcdir dir="src/testAP" />
 			<srcdir dir="src/support" />
 			<srcdir dir="experimental/src" />
 			<srcdir dir="test/transform/src" />
