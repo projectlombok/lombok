@@ -745,13 +745,6 @@ public class HandlerUtil {
 		return b.toString();
 	}
 	
-	/** Matches any of the 8 primitive names, such as {@code boolean}. */
-	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(?:boolean|byte|short|int|long|float|double|char)$");
-
-	public static boolean isPrimitive(String typeName) {
-		return PRIMITIVE_TYPE_NAME_PATTERN.matcher(typeName).matches();
-	}
-
 	/** Matches any of the 8 primitive wrapper names, such as {@code Boolean}. */
 	private static final Pattern PRIMITIVE_WRAPPER_TYPE_NAME_PATTERN = Pattern.compile("^(?:java\\.lang\\.)?(?:Boolean|Byte|Short|Integer|Long|Float|Double|Character)$");
 
@@ -759,7 +752,7 @@ public class HandlerUtil {
 		// Modification in this code should be documented
 		// 1. In the changelog this should be marked as an INPROBABLE BREAKING CHANGE, since the hashcode will change
 		// 2. In the javadoc of EqualsAndHashcode.Include#rank
-		if (isPrimitive(typeName)) return 1000;
+		if (JavaIdentifiers.isPrimitive(typeName)) return 1000;
 		if (PRIMITIVE_WRAPPER_TYPE_NAME_PATTERN.matcher(typeName).matches()) return 800;
 		return 0;
 	}

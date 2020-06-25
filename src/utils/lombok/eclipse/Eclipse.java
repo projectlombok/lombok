@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 import lombok.core.ClassLiteral;
 import lombok.core.FieldSelect;
-import lombok.core.handlers.HandlerUtil;
+import lombok.core.JavaIdentifiers;
 import lombok.permit.Permit;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -164,7 +164,7 @@ public class Eclipse {
 	 */
 	public static boolean isPrimitive(TypeReference ref) {
 		if (ref.dimensions() > 0) return false;
-		return HandlerUtil.isPrimitive(toQualifiedName(ref.getTypeName()));
+		return JavaIdentifiers.isPrimitive(toQualifiedName(ref.getTypeName()));
 	}
 	
 	/**
