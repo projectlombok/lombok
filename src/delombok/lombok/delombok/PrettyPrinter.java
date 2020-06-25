@@ -1323,7 +1323,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 				print(";");
 				needsNewLine = true;
 				needsAlign = true;
-			} else if (tree.stats.head.getClass().getSimpleName().equals("JCYield")) {
+			} else if (tree.stats.head.getClass().getName().endsWith("$JCYield")) {
 				print((JCExpression) readObject(tree.stats.head, "value", null));
 				print(";");
 				needsNewLine = true;
@@ -1600,25 +1600,25 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	@Override public void visitTree(JCTree tree) {
-		String simpleName = tree.getClass().getSimpleName();
-		if ("JCTypeUnion".equals(simpleName)) {
+		String className = tree.getClass().getName();
+		if (className.endsWith("$JCTypeUnion")) {
 			List<JCExpression> types = readObject(tree, "alternatives", List.<JCExpression>nil());
 			print(types, " | ");
-		} else if ("JCTypeIntersection".equals(simpleName)) {
+		} else if (className.endsWith("$JCTypeIntersection")) {
 			print(readObject(tree, "bounds", List.<JCExpression>nil()), " & ");
-		} else if ("JCMemberReference".equals(simpleName)) {
+		} else if (className.endsWith("$JCMemberReference")) {
 			printMemberReference0(tree);
-		} else if ("JCLambda".equals(simpleName)) {
+		} else if (className.endsWith("$JCLambda")) {
 			printLambda0(tree);
-		} else if ("JCAnnotatedType".equals(simpleName)) {
+		} else if (className.endsWith("$JCAnnotatedType")) {
 			printAnnotatedType0(tree);
-		} else if ("JCPackageDecl".equals(simpleName)) {
+		} else if (className.endsWith("$JCPackageDecl")) {
 			// Starting with JDK9, this is inside the import list, but we've already printed it. Just ignore it.
-		} else if ("JCSwitchExpression".equals(simpleName)) { // Introduced as preview feature in JDK12
+		} else if (className.endsWith(".JCSwitchExpression")) { // Introduced as preview feature in JDK12
 			printSwitchExpression(tree);
-		} else if ("JCYield".equals(simpleName)) { // Introduced as preview feature in JDK13, part of switch expressions.
+		} else if (className.endsWith("$JCYield")) { // Introduced as preview feature in JDK13, part of switch expressions.
 			printYieldExpression(tree);
-		} else if ("JCBindingPattern".equals(simpleName)) { // Introduced as preview in JDK14
+		} else if (className.endsWith("$JCBindingPattern")) { // Introduced as preview in JDK14
 			printBindingPattern(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
@@ -1638,7 +1638,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 		if (o == null) return false;
 		if (jcAnnotatedTypeInit) return jcAnnotatedTypeClass == o.getClass();
 		Class<?> c = o.getClass();
-		if (c.getSimpleName().equals("JCAnnotatedType")) {
+		if (c.getName().endsWith("$JCAnnotatedType")) {
 			jcAnnotatedTypeClass = c;
 			jcAnnotatedTypeInit = true;
 			return true;

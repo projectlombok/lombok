@@ -112,7 +112,7 @@ public class InclusionExclusionUtils {
 		return name;
 	}
 	
-	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N, I extends Annotation> List<Included<L, I>> handleIncludeExcludeMarking(Class<I> inclType, String replaceName, Class<? extends Annotation> exclType, LombokNode<A, L, N> typeNode, AnnotationValues<?> annotation, LombokNode<A, L, N> annotationNode, boolean includeTransient) {
+	private static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N, I extends Annotation> List<Included<L, I>> handleIncludeExcludeMarking(Class<I> inclType, String replaceName, Class<? extends Annotation> exclType, LombokNode<A, L, N> typeNode, AnnotationValues<?> annotation, LombokNode<A, L, N> annotationNode, boolean includeTransient) {
 		List<String> oldExcludes = (annotation != null && annotation.isExplicit("exclude")) ? annotation.getAsStringList("exclude") : null;
 		List<String> oldIncludes = (annotation != null && annotation.isExplicit("of")) ? annotation.getAsStringList("of") : null;
 		
@@ -124,9 +124,6 @@ public class InclusionExclusionUtils {
 		if (typeNode == null || typeNode.getKind() != Kind.TYPE) return null;
 		
 		checkForBogusFieldNames(typeNode, annotation, oldExcludes, oldIncludes);
-		String inclTypeName = innerAnnName(inclType);
-		String exclTypeName = innerAnnName(exclType);
-		
 		if (oldExcludes != null && oldIncludes != null) {
 			oldExcludes = null;
 			if (annotation != null) annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
@@ -140,7 +137,7 @@ public class InclusionExclusionUtils {
 			if (markExclude || markInclude != null) memberAnnotationMode = true;
 			
 			if (markInclude != null && markExclude) {
-				child.addError("@" + exclTypeName + " and @" + inclTypeName + " are mutually exclusive; the @Include annotation will be ignored");
+				child.addError("@" + innerAnnName(exclType) + " and @" + innerAnnName(inclType) + " are mutually exclusive; the @Include annotation will be ignored");
 				markInclude = null;
 			}
 			
@@ -163,7 +160,7 @@ public class InclusionExclusionUtils {
 				I inc = markInclude.getInstance();
 				if (child.getKind() == Kind.METHOD) {
 					if (child.countMethodParameters() > 0) {
-						child.addError("Methods included with @" + inclTypeName + " must have no arguments; it will not be included");
+						child.addError("Methods included with @" + innerAnnName(inclType) + " must have no arguments; it will not be included");
 						continue;
 					}
 					String n = replaceName != null ?  markInclude.getAsString(replaceName) : "";

@@ -343,10 +343,7 @@ public class JavacTreeMaker {
 		Method method = getFromCache(m);
 		try {
 			if (m.returnType.isPrimitive()) {
-				Object res = method.invoke(owner, args);
-				String sn = res.getClass().getSimpleName().toLowerCase();
-				if (!sn.startsWith(m.returnType.getSimpleName())) throw new ClassCastException(res.getClass() + " to " + m.returnType);
-				return (J) res;
+				return (J) method.invoke(owner, args);
 			}
 			return m.returnType.cast(method.invoke(owner, args));
 		} catch (InvocationTargetException e) {
