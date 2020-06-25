@@ -76,7 +76,7 @@ import lombok.AccessLevel;
  * but with {@code @WithBy}, you'd write:
  * 
  * <pre>
- *     movie = movie.withDirectorBy(d -> d.withBirthDateBy(bd -> bd.plusDays(1)));
+ *     movie = movie.withDirectorBy(d -&gt; d.withBirthDateBy(bd -&gt; bd.plusDays(1)));
  * </pre>
  */
 @Target({ElementType.FIELD, ElementType.TYPE})

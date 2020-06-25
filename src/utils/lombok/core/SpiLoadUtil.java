@@ -129,9 +129,10 @@ public class SpiLoadUtil {
 	
 	private static void readServicesFromUrl(Collection<String> list, URL url) throws IOException {
 		InputStream in = url.openStream();
+		BufferedReader r = null;
 		try {
 			if (in == null) return;
-			BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+			r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 			while (true) {
 				String line = r.readLine();
 				if (line == null) break;
@@ -143,6 +144,7 @@ public class SpiLoadUtil {
 			}
 		} finally {
 			try {
+				if (r != null) r.close();
 				if (in != null) in.close();
 			} catch (Throwable ignore) {}
 		}

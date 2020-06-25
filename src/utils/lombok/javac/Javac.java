@@ -57,7 +57,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 import lombok.core.ClassLiteral;
 import lombok.core.FieldSelect;
-import lombok.core.handlers.HandlerUtil;
+import lombok.core.JavaIdentifiers;
 import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.permit.Permit;
@@ -133,7 +133,7 @@ public class Javac {
 	 * expression) represents a primitive type.
 	 */
 	public static boolean isPrimitive(JCExpression ref) {
-		return HandlerUtil.isPrimitive(ref.toString());
+		return JavaIdentifiers.isPrimitive(ref.toString());
 	}
 	
 	/**

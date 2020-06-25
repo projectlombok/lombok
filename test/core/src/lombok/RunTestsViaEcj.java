@@ -69,7 +69,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
-		warnings.put(CompilerOptions.OPTION_Source, "1." + Eclipse.getEcjCompilerVersion());
+		int ecjVersion = Eclipse.getEcjCompilerVersion();
+		warnings.put(CompilerOptions.OPTION_Source, (ecjVersion < 9 ? "1." : "") + ecjVersion);
 		options.set(warnings);
 		return options;
 	}
@@ -137,16 +138,13 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		}
 		if (new File("bin").exists()) classpath.add("bin");
 		classpath.add("dist/lombok.jar");
-		classpath.add("lib/oracleJDK8Environment/rt.jar");
-		classpath.add("lib/test/commons-logging-commons-logging.jar");
-		classpath.add("lib/test/org.slf4j-slf4j-api.jar");
-		classpath.add("lib/test/org.slf4j-slf4j-ext.jar");
-		classpath.add("lib/test/log4j-log4j.jar");
-		classpath.add("lib/test/org.apache.logging.log4j-log4j-api.jar");
-		classpath.add("lib/test/org.jboss.logging-jboss-logging.jar");
-		classpath.add("lib/test/com.google.guava-guava.jar");
-		classpath.add("lib/test/com.google.code.findbugs-findbugs.jar");
-		classpath.add("lib/test/com.google.flogger-flogger.jar");
+		classpath.add("lib/openjdk6_rt.jar");
+		for (File f : new File("lib/test").listFiles()) {
+			String fn = f.getName();
+			if (fn.length() < 4) continue;
+			if (!fn.substring(fn.length() - 4).toLowerCase().equals(".jar")) continue;
+			classpath.add("lib/test/" + fn);
+		}
 		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
 	}
 }

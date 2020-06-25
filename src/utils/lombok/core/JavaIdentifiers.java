@@ -21,6 +21,8 @@
  */
 package lombok.core;
 
+import java.util.regex.Pattern;
+
 /**
  * Utility functions for validating potential java verifiers.
  */
@@ -54,4 +56,13 @@ public class JavaIdentifiers {
 	public static boolean isKeyword(String keyword) {
 		return KEYWORDS.contains(keyword);
 	}
+	
+	/** Matches any of the 8 primitive names, such as {@code boolean}. */
+	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(?:boolean|byte|short|int|long|float|double|char)$");
+	
+	public static boolean isPrimitive(String typeName) {
+		return PRIMITIVE_TYPE_NAME_PATTERN.matcher(typeName).matches();
+	}
+
+
 }

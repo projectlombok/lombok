@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 The Project Lombok Authors.
+ * Copyright (C) 2011-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,11 @@
  */
 package lombok;
 
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-/**
- * The singular annotation is used together with {@code @Builder} to create single element 'add' methods in the builder for collections.
- */
-@Target({FIELD, PARAMETER})
-@Retention(SOURCE)
-public @interface Singular {
-	/** @return The singular name of this field. If it's a normal english plural, lombok will figure it out automatically. Otherwise, this parameter is mandatory. */
-	String value() default "";
-	
-	/** @return If true, the plural variant (which takes a collection and adds each element inside) will treat {@code null} as an empty collection, i.e. do nothing. If {@code false} (the default), it is null checked as if annotated with {@code @lombok.NonNull}. */
-	boolean ignoreNullCollections() default false;
+@RunWith(Suite.class)
+@SuiteClasses({lombok.core.configuration.RunConfigurationTests.class, lombok.core.RunCoreTests.class})
+public class TestBase {
 }

@@ -82,8 +82,16 @@ public class DirectoryRunner extends Runner {
 	
 	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {
 		@Override public boolean accept(File file) {
-			return file.isFile() && file.getName().endsWith(".java") &&
-				(DEBUG_FOCUS_ON_FILE.isEmpty() || DEBUG_FOCUS_ON_FILE.contains(file.getName()));
+			if (!file.isFile() || !file.getName().endsWith(".java")) return false;
+			boolean positiveFilter = false;
+			for (String dfof : DEBUG_FOCUS_ON_FILE) {
+				if (!dfof.endsWith(".java")) dfof = dfof + ".java";
+				boolean invert = dfof.startsWith("!");
+				if (invert) dfof = dfof.substring(1);
+				positiveFilter = positiveFilter || !invert;
+				if (file.getName().equals(dfof)) return !invert;
+			}
+			return !positiveFilter;
 		}
 	};
 	
