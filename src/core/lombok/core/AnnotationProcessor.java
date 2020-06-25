@@ -83,7 +83,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 		
 		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
 			try {
-				Field field = Permit.getField(procEnvClass, "delegate");
+				Field field;
+				try {
+					field = Permit.getField(procEnvClass, "delegate");
+				} catch (NoSuchFieldException e) {
+					field = Permit.getField(procEnvClass, "processingEnv");
+				}
 				Object delegate = field.get(procEnv);
 				
 				return tryRecursivelyObtainJavacProcessingEnvironment((ProcessingEnvironment) delegate);
