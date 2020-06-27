@@ -411,6 +411,14 @@ public class AnnotationValues<A extends Annotation> {
 		List<Object> l = getActualExpressions(annotationMethodName);
 		return l.isEmpty() ? null : l.get(0);
 	}
+
+	/**
+	 * Returns the guessed value for the provided {@code annotationMethodName}.
+	 */
+	public Object getValueGuess(String annotationMethodName) {
+		AnnotationValue v = values.get(annotationMethodName);
+		return v == null || v.valueGuesses.isEmpty() ? null : v.valueGuesses.get(0);
+	}
 	
 	/** Generates an error message on the stated annotation value (you should only call this method if you know it's there!) */
 	public void setError(String annotationMethodName, String message) {

@@ -49,6 +49,7 @@ import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ArrayQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.AssertStatement;
+import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.CharLiteral;
@@ -380,7 +381,7 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
-	private static Expression copyAnnotationMemberValue(Expression in) {
+	public static Expression copyAnnotationMemberValue(Expression in) {
 		Expression out = copyAnnotationMemberValue0(in);
 		out.constant = in.constant;
 		return out;
@@ -421,12 +422,11 @@ public class EclipseHandlerUtil {
 		
 		if (in instanceof SingleNameReference) {
 			SingleNameReference snr = (SingleNameReference) in;
-			long p = (long) s << 32 | e;
-			return new SingleNameReference(snr.token, p);
+			return new SingleNameReference(snr.token, pos(in));
 		}
 		if (in instanceof QualifiedNameReference) {
 			QualifiedNameReference qnr = (QualifiedNameReference) in;
-			return new QualifiedNameReference(qnr.tokens, qnr.sourcePositions, s, e);
+			return new QualifiedNameReference(qnr.tokens, poss(in, qnr.tokens.length), s, e);
 		}
 		
 		// class refs
@@ -442,8 +442,19 @@ public class EclipseHandlerUtil {
 			out.sourceEnd = e;
 			out.bits = in.bits;
 			out.implicitConversion = in.implicitConversion;
-			out.statementEnd = in.statementEnd;
+			out.statementEnd = e;
 			out.expressions = copy;
+			return out;
+		}
+		
+		if (in instanceof BinaryExpression) {
+			BinaryExpression be = (BinaryExpression) in;
+			BinaryExpression out = new BinaryExpression(be);
+			out.left = copyAnnotationMemberValue(be.left);
+			out.right = copyAnnotationMemberValue(be.right);
+			out.sourceStart = s;
+			out.sourceEnd = e;
+			out.statementEnd = e;
 			return out;
 		}
 		

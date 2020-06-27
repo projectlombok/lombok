@@ -23,3 +23,12 @@ import lombok.extern.apachecommons.CommonsLog;
     super();
   }
 }
+@CommonsLog(topic = LoggerCommonsWithStaticField.TOPIC) class LoggerCommonsWithStaticField {
+  private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommonsWithStaticField.TOPIC);
+  static final String TOPIC = "StaticField";
+  <clinit>() {
+  }
+  LoggerCommonsWithStaticField() {
+    super();
+  }
+}
