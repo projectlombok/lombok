@@ -56,7 +56,7 @@ public class HandleLog {
 		throw new UnsupportedOperationException();
 	}
 	
-	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode, String loggerTopic) {
+	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, framework.getAnnotationClass());
 		
 		JavacNode typeNode = annotationNode.up();
@@ -76,14 +76,17 @@ public class HandleLog {
 				return;
 			}
 			
-			if (loggerTopic != null && loggerTopic.trim().isEmpty()) loggerTopic = null;
+			Object valueGuess = annotation.getValueGuess("topic");
+			JCExpression loggerTopic = (JCExpression) annotation.getActualExpression("topic");
+
+			if (valueGuess instanceof String && ((String) valueGuess).trim().isEmpty()) loggerTopic = null;
 			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
 				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");
 				loggerTopic = null;
 			}
 			if (framework.getDeclaration().getParametersWithoutTopic() == null && loggerTopic == null) {
 				annotationNode.addError(framework.getAnnotationAsString() + " requires a topic.");
-				loggerTopic = "";
+				loggerTopic = typeNode.getTreeMaker().Literal("");
 			}
 			
 			JCFieldAccess loggingType = selfType(typeNode);
@@ -101,7 +104,7 @@ public class HandleLog {
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic, String loggerTopic) {
+	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic, JCExpression loggerTopic) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		LogDeclaration logDeclaration = framework.getDeclaration();
@@ -121,7 +124,7 @@ public class HandleLog {
 		return true;
 	}
 	
-	private static JCExpression[] createFactoryParameters(JavacNode typeNode, JCFieldAccess loggingType, java.util.List<LogFactoryParameter> parameters, String loggerTopic) {
+	private static JCExpression[] createFactoryParameters(JavacNode typeNode, JCFieldAccess loggingType, java.util.List<LogFactoryParameter> parameters, JCExpression loggerTopic) {
 		JCExpression[] expressions = new JCExpression[parameters.size()];
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
@@ -136,7 +139,7 @@ public class HandleLog {
 				expressions[i] = maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
 				break;
 			case TOPIC:
-				expressions[i] = maker.Literal(loggerTopic);
+				expressions[i] = (JCExpression) loggerTopic.clone();
 				break;
 			case NULL:
 				expressions[i] = maker.Literal(CTC_BOT, null);
@@ -156,7 +159,7 @@ public class HandleLog {
 	public static class HandleCommonsLog extends JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_COMMONS_FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
 		}
 	}
 	
@@ -167,7 +170,7 @@ public class HandleLog {
 	public static class HandleJulLog extends JavacAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JUL_FLAG_USAGE, "@java.Log", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.JUL, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
 		}
 	}
 	
@@ -178,7 +181,7 @@ public class HandleLog {
 	public static class HandleLog4jLog extends JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J_FLAG_USAGE, "@Log4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
 		}
 	}
 	
@@ -189,7 +192,7 @@ public class HandleLog {
 	public static class HandleLog4j2Log extends JavacAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J2_FLAG_USAGE, "@Log4j2", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.LOG4J2, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.LOG4J2, annotation, annotationNode);
 		}
 	}
 	
@@ -200,7 +203,7 @@ public class HandleLog {
 	public static class HandleSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_SLF4J_FLAG_USAGE, "@Slf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
 		}
 	}
 	
@@ -211,7 +214,7 @@ public class HandleLog {
 	public static class HandleXSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_XSLF4J_FLAG_USAGE, "@XSlf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode);
 		}
 	}
 	
@@ -222,7 +225,7 @@ public class HandleLog {
 	public static class HandleJBossLog extends JavacAnnotationHandler<lombok.extern.jbosslog.JBossLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.jbosslog.JBossLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JBOSSLOG_FLAG_USAGE, "@JBossLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.JBOSSLOG, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.JBOSSLOG, annotation, annotationNode);
 		}
 	}
 	
@@ -233,7 +236,7 @@ public class HandleLog {
 	public static class HandleFloggerLog extends JavacAnnotationHandler<lombok.extern.flogger.Flogger> {
 		@Override public void handle(AnnotationValues<lombok.extern.flogger.Flogger> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_FLOGGER_FLAG_USAGE, "@Flogger", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.FLOGGER, annotation, annotationNode, "");
+			processAnnotation(LoggingFramework.FLOGGER, annotation, annotationNode);
 		}
 	}
 	
@@ -250,7 +253,7 @@ public class HandleLog {
 				return;
 			}
 			LoggingFramework framework = new LoggingFramework(lombok.CustomLog.class, logDeclaration);
-			processAnnotation(framework, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(framework, annotation, annotationNode);
 		}
 	}
 }

@@ -18,3 +18,8 @@ class LoggerJBossLogOuter {
 @JBossLog(topic="DifferentLogger")
 class LoggerJBossLogWithDifferentLoggerName {
 }
+
+@JBossLog(topic=LoggerJBossLogWithStaticField.TOPIC)
+class LoggerJBossLogWithStaticField {
+	static final String TOPIC = "StaticField";
+}

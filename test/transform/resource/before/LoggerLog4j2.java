@@ -11,3 +11,8 @@ class LoggerLog4j2WithImport {
 @Log4j2(topic="DifferentName")
 class LoggerLog4j2WithDifferentName {
 }
+
+@Log4j2(topic=LoggerLog4j2WithStaticField.TOPIC)
+class LoggerLog4j2WithStaticField {
+	static final String TOPIC = "StaticField";
+}

@@ -37,3 +37,30 @@ class LoggerSlf4jOuter {
     super();
   }
 }
+
+@Slf4j(topic = LoggerSlf4jWithStaticField.TOPIC) class LoggerSlf4jWithStaticField {
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithStaticField.TOPIC);
+  static final String TOPIC = "StaticField";
+  <clinit>() {
+  }
+  LoggerSlf4jWithStaticField() {
+    super();
+  }
+}
+@Slf4j(topic = (LoggerSlf4jWithTwoStaticFields.TOPIC + LoggerSlf4jWithTwoStaticFields.TOPIC)) class LoggerSlf4jWithTwoStaticFields {
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger((LoggerSlf4jWithTwoStaticFields.TOPIC + LoggerSlf4jWithTwoStaticFields.TOPIC));
+  static final String TOPIC = "StaticField";
+  <clinit>() {
+  }
+  LoggerSlf4jWithTwoStaticFields() {
+    super();
+  }
+}
+@Slf4j(topic = ExtendedStringLiteral{AB}) class LoggerSlf4jWithTwoLiterals {
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger("AB");
+  <clinit>() {
+  }
+  LoggerSlf4jWithTwoLiterals() {
+    super();
+  }
+}

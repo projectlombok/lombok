@@ -36,3 +36,12 @@ class LoggerJBossLogOuter {
     super();
   }
 }
+@JBossLog(topic = LoggerJBossLogWithStaticField.TOPIC) class LoggerJBossLogWithStaticField {
+  private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithStaticField.TOPIC);
+  static final String TOPIC = "StaticField";
+  <clinit>() {
+  }
+  LoggerJBossLogWithStaticField() {
+    super();
+  }
+}

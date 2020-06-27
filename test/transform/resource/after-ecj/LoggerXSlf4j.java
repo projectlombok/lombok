@@ -23,3 +23,12 @@ import lombok.extern.slf4j.XSlf4j;
     super();
   }
 }
+@XSlf4j(topic = LoggerXSlf4jWithStaticField.TOPIC) class LoggerXSlf4jWithStaticField {
+  private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXSlf4jWithStaticField.TOPIC);
+  static final String TOPIC = "StaticField";
+  <clinit>() {
+  }
+  LoggerXSlf4jWithStaticField() {
+    super();
+  }
+}
