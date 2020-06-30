@@ -100,6 +100,11 @@
 			<ol class="snippet example oneliner">
 				<li><code>lombok.extern.findbugs.addSuppressFBWarnings = true</code></li>
 			</ol>
+		</p><p>
+			Lombok adds the <code>@SuppressWarnings("all")</code> annotation to all generated nodes by default. This can be turned off which is useful if you want to use static code analyzers like <a href="https://checkerframework.org/">Checker Framework</a>.
+			<ol class="snippet example oneliner">
+				<li><code>lombok.addSuppressWarnings = false</code></li>
+			</ol>
 		</p>
 	</@f.featureSection>
 
