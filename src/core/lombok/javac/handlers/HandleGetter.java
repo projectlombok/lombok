@@ -265,7 +265,12 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		decl.mods.annotations = decl.mods.annotations.appendList(delegates);
 		
 		if (addSuppressWarningsUnchecked) {
-			addAnnotation(decl.mods, field, source.pos, source, field.getContext(), "java.lang.SuppressWarnings", treeMaker.NewArray(null, List.<JCExpression>nil(), List.<JCExpression>of(treeMaker.Literal("all"), treeMaker.Literal("unchecked"))));
+			ListBuffer<JCExpression> suppressions = new ListBuffer<JCExpression>();
+			if (!Boolean.FALSE.equals(field.getAst().readConfiguration(ConfigurationKeys.ADD_SUPPRESSWARNINGS_ANNOTATIONS))) {
+				suppressions.add(treeMaker.Literal("all"));
+			}
+			suppressions.add(treeMaker.Literal("unchecked"));
+			addAnnotation(decl.mods, field, source.pos, source, field.getContext(), "java.lang.SuppressWarnings", treeMaker.NewArray(null, List.<JCExpression>nil(), suppressions.toList()));
 		}
 		
 		copyJavadoc(field, decl, CopyJavadoc.GETTER);

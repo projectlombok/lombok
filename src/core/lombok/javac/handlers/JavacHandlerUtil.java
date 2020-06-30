@@ -1277,15 +1277,17 @@ public class JavacHandlerUtil {
 	public static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateSuppressWarnings()) return;
 		
-		boolean addJLSuppress = true;
+		boolean addJLSuppress = !Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_SUPPRESSWARNINGS_ANNOTATIONS));
 		
-		for (JCAnnotation ann : mods.annotations) {
-			JCTree type = ann.getAnnotationType();
-			Name n = null;
-			if (type instanceof JCIdent) n = ((JCIdent) type).name;
-			else if (type instanceof JCFieldAccess) n = ((JCFieldAccess) type).name;
-			if (n != null && n.contentEquals("SuppressWarnings")) {
-				addJLSuppress = false;
+		if (addJLSuppress) {
+			for (JCAnnotation ann : mods.annotations) {
+				JCTree type = ann.getAnnotationType();
+				Name n = null;
+				if (type instanceof JCIdent) n = ((JCIdent) type).name;
+				else if (type instanceof JCFieldAccess) n = ((JCFieldAccess) type).name;
+				if (n != null && n.contentEquals("SuppressWarnings")) {
+					addJLSuppress = false;
+				}
 			}
 		}
 		if (addJLSuppress) addAnnotation(mods, node, pos, source, context, "java.lang.SuppressWarnings", node.getTreeMaker().Literal("all"));
