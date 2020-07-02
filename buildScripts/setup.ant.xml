@@ -36,7 +36,7 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	<property name="ssh.configuration.file" location="ssh.configuration" />
 	
 	<target name="-setup.ssh.ask">
-		<propertyfile file="${ssh.configuration.file}" />
+		<property file="${ssh.configuration.file}" />
 		<fail>
 			Your ssh.configuration file is corrupted; delete it and rerun this script.
 			<condition>

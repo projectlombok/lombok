@@ -294,7 +294,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 			</manifest>
 		</jar>
 		<delete file="release-timestamp.txt" />
-		<symlink overwrite="true" link="dist/lombok.jar" resource="lombok-${lombok.version}.jar" />
+		<copy overwrite="true" tofile="dist/lombok.jar" file="lombok-${lombok.version}.jar" />
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	

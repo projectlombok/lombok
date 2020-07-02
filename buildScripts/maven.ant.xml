@@ -37,7 +37,7 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 			<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
 				<fileset dir="doc/api" />
 			</jar>
-		
+			
 			<jar destfile="dist/lombok-${lombok.version}-sources.jar">
 				<fileset dir="src/core" />
 				<fileset dir="src/launch" />
@@ -48,7 +48,7 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 				<fileset dir="test/transform/src" />
 				<fileset dir="test/core/src" />
 			</jar>
-		
+			
 			<copy tofile="build/pom.xml" overwrite="true" file="doc/maven-pom.xml">
 				<filterchain>
 					<replacetokens>
