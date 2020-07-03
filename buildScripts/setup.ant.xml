@@ -141,11 +141,25 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<ivy:retrieve symlink="true" />
 	</target>
 	
-	<target name="-deps.javac" depends="ivy.config">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="javac${javac.wanted}" />
-		<ivy:retrieve symlink="true" />
-		<ivy:cachepath pathid="cp.javac${javac.wanted}" conf="javac${javac.wanted}" />
-	</target>
+	<macrodef name="fetchdep.ecj">
+		<attribute name="version" />
+		<sequential>
+			<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="ecj@{version}" />
+			<ivy:retrieve symlink="true" />
+			<ivy:cachepath pathid="cp.ecj@{version}" conf="ecj@{version}" />
+			<property name="cp.ecj@{version}" refid="cp.ecj@{version}" />
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="fetchdep.eclipse">
+		<attribute name="version" />
+		<sequential>
+			<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="eclipse-@{version}" />
+			<ivy:retrieve symlink="true" />
+			<ivy:cachepath pathid="cp.eclipse-@{version}" conf="eclipse-@{version}" />
+			<property name="cp.eclipse-@{version}" refid="cp.eclipse-@{version}" />
+		</sequential>
+	</macrodef>
 	
 	<target name="deps" depends="ivy.config, deps.jdk-runtime" description="Downloads all dependencies needed for common tasks">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="javac6,javac8,ecj8,build,eclipse-oxygen,mapstruct,sources,stripe,buildtools,test" />
@@ -155,7 +169,6 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<ivy:cachepath pathid="cp.ecj8" conf="ecj8" />
 		<ivy:cachepath pathid="cp.build" conf="build" />
 		<ivy:cachepath pathid="cp.eclipse-oxygen" conf="eclipse-oxygen" />
-		<ivy:cachepath pathid="cp.eclipse-202006" conf="eclipse-202006" />
 		<ivy:cachepath pathid="cp.mapstruct" conf="mapstruct" />
 		<ivy:cachepath pathid="cp.stripe" conf="stripe" />
 		<ivy:cachepath pathid="cp.buildtools" conf="buildtools" />

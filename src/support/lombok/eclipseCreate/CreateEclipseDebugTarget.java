@@ -132,13 +132,13 @@ public class CreateEclipseDebugTarget {
 			if (!entry.getKey().startsWith("conf.")) continue;
 			launchContent.append(File.pathSeparator).append(entry.getValue());
 		}
-		if (bootpath != null) launchContent.append(" -Ddelombok.bootclasspath=" + bootpath + "\"/>\n");
-		launchContent.append("</launchConfiguration>\n");
+		if (bootpath != null) launchContent.append(" -Ddelombok.bootclasspath=" + bootpath);
+		launchContent.append("\"/>\n</launchConfiguration>\n");
 	}
 	
 	private String getBootPath() {
 		String bp = args.get("bootpath");
-		if (bp == null) return null;
+		if (bp == null || bp.isEmpty() || bp.equals("0")) return null;
 		File f = new File(bp);
 		if (!f.isAbsolute()) return bp;
 		String r = new File(".").getAbsolutePath();
