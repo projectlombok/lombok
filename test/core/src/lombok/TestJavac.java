@@ -26,7 +26,6 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-//@SuiteClasses({lombok.bytecode.RunBytecodeTests.class, lombok.transform.TestLombokFilesIdempotent.class, lombok.transform.TestSourceFiles.class, lombok.transform.TestWithDelombok.class})
-@SuiteClasses({lombok.transform.TestLombokFilesIdempotent.class})
+@SuiteClasses({lombok.bytecode.RunBytecodeTests.class, lombok.transform.TestLombokFilesIdempotent.class, lombok.transform.TestSourceFiles.class, lombok.transform.TestWithDelombok.class})
 public class TestJavac {
 }
