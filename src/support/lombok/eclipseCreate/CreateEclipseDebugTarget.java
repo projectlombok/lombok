@@ -93,6 +93,8 @@ public class CreateEclipseDebugTarget {
 			throw new InvalidCommandLineException("Cannot obtain canonical path to parent directory", e);
 		}
 		
+		String bootpath = getBootPath();
+		
 		launchContent.append("\t\t<listEntry value=\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/lombok/bin&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;\"/>\n");
 		for (Map.Entry<String, String> entry : args.entrySet()) {
 			if (!entry.getKey().startsWith("conf.")) continue;
@@ -111,7 +113,7 @@ public class CreateEclipseDebugTarget {
 				}
 			}
 		}
-		launchContent.append("\t\t<listEntry value=\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/lombok/lib/openjdk6_rt.jar&quot; path=&quot;5&quot; type=&quot;2&quot;/&gt;&#10;\"/>\n");
+		if (bootpath != null) launchContent.append("\t\t<listEntry value=\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/lombok/" + bootpath + "&quot; path=&quot;5&quot; type=&quot;2&quot;/&gt;&#10;\"/>\n");
 		launchContent.append("\t</listAttribute>\n");
 	}
 	
@@ -120,6 +122,7 @@ public class CreateEclipseDebugTarget {
 		
 		launchContent.append("\t<booleanAttribute key=\"org.eclipse.jdt.launching.DEFAULT_CLASSPATH\" value=\"false\"/>\n");
 		String jvmTarget = getArgString("jvmTarget");
+		String bootpath = getBootPath();
 		launchContent.append("\t<stringAttribute key=\"org.eclipse.jdt.launching.JRE_CONTAINER\" value=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-").append(jvmTarget).append("\"/>\n");
 		launchContent.append("\t<stringAttribute key=\"org.eclipse.jdt.launching.MAIN_TYPE\" value=\"").append(type).append("\"/>\n");
 		launchContent.append("\t<listAttribute key=\"org.eclipse.jdt.launching.MODULEPATH\"/>\n");
@@ -129,8 +132,19 @@ public class CreateEclipseDebugTarget {
 			if (!entry.getKey().startsWith("conf.")) continue;
 			launchContent.append(File.pathSeparator).append(entry.getValue());
 		}
-		launchContent.append(" -Ddelombok.bootclasspath=lib/openjdk6_rt.jar\"/>\n");
+		if (bootpath != null) launchContent.append(" -Ddelombok.bootclasspath=" + bootpath + "\"/>\n");
 		launchContent.append("</launchConfiguration>\n");
+	}
+	
+	private String getBootPath() {
+		String bp = args.get("bootpath");
+		if (bp == null) return null;
+		File f = new File(bp);
+		if (!f.isAbsolute()) return bp;
+		String r = new File(".").getAbsolutePath();
+		if (r.endsWith(".")) r = r.substring(0, r.length() - 1);
+		if (bp.startsWith(r)) return bp.substring(r.length());
+		throw new IllegalStateException("Cannot reconstruct relative path; base: " + r + " is not a parent of " + bp);
 	}
 	
 	private String getArgString(String key) throws InvalidCommandLineException {

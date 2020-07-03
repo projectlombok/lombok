@@ -93,7 +93,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	}
 	
 	@Override
-	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences) throws Throwable {
+	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences, int minVersion) throws Throwable {
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
 		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
 		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
@@ -105,7 +105,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		String source = readFile(file);
 		final CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), encoding == null ? "UTF-8" : encoding);
 		
-		Compiler ecjCompiler = new Compiler(createFileSystem(file), ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
+		Compiler ecjCompiler = new Compiler(createFileSystem(file, minVersion), ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
 			@Override protected synchronized void addCompilationUnit(ICompilationUnit inUnit, CompilationUnitDeclaration parsedUnit) {
 				if (inUnit == sourceUnit) compilationUnit_.set(parsedUnit);
 				super.addCompilationUnit(inUnit, parsedUnit);
@@ -129,7 +129,9 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		return true;
 	}
 	
-	private FileSystem createFileSystem(File file) {
+	private static final String bootRuntimePath = System.getProperty("delombok.bootclasspath");
+	
+	private FileSystem createFileSystem(File file, int minVersion) {
 		List<String> classpath = new ArrayList<String>();
 		for (Iterator<String> i = classpath.iterator(); i.hasNext();) {
 			if (FileSystem.getClasspath(i.next(), "UTF-8", null) == null) {
@@ -138,7 +140,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		}
 		if (new File("bin").exists()) classpath.add("bin");
 		classpath.add("dist/lombok.jar");
-		classpath.add("lib/openjdk6_rt.jar");
+		if (bootRuntimePath == null || bootRuntimePath.isEmpty()) throw new IllegalStateException("System property delombok.bootclasspath is not set; set it to the rt of java6 or java8");
+		classpath.add(bootRuntimePath);
 		for (File f : new File("lib/test").listFiles()) {
 			String fn = f.getName();
 			if (fn.length() < 4) continue;

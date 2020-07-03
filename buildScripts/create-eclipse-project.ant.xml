@@ -69,6 +69,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			<arg value="name=Lombok-test Base" />
 			<arg value="testType=lombok.TestBase" />
 			<arg value="jvmTarget=1.8" />
+			<arg value="bootpath=${jdk8-rt.loc}" />
 			<arg value="conf.test=${cp.test}" />
 			<arg value="conf.stripe=${cp.stripe}" />
 			<arg value="favorite" />
@@ -82,6 +83,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			<arg value="name=Lombok-test Eclipse-202006" />
 			<arg value="testType=lombok.TestEclipse" />
 			<arg value="jvmTarget=1.8" />
+			<arg value="bootpath=${jdk8-rt.loc}" />
 			<arg value="conf.test=${cp.test}" />
 			<arg value="conf.stripe=${cp.stripe}" />
 			<arg value="conf.eclipse-oxygen=${cp.eclipse-202006}" />

@@ -41,7 +41,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	private static AtomicBoolean compilerVersionReported = new AtomicBoolean();
 	
 	@Override
-	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences) throws Throwable {
+	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version) throws Throwable {
 		if (!compilerVersionReported.getAndSet(true)) System.out.println("Javac version: " + Javac.getJavaCompilerVersion());
 		delombok.setVerbose(true);
 		ChangedChecker cc = new ChangedChecker();

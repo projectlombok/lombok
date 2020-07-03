@@ -29,9 +29,9 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	<property environment="env" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
 	
-	<property name="jdk-rt.loc" location="lib/openjdk6_rt.jar" />
+	<property name="jdk6-rt.loc" location="lib/openjdk6_rt.jar" />
 	<property name="jdk8-rt.loc" location="lib/openjdk8_rt.jar" />
-	<available file="${jdk-rt.loc}" property="jdk-rt.available" />
+	<available file="${jdk6-rt.loc}" property="jdk6-rt.available" />
 	<available file="${jdk8-rt.loc}" property="jdk8-rt.available" />
 	<property name="ssh.configuration.file" location="ssh.configuration" />
 	
@@ -121,10 +121,10 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<property name="ivy.config" value="true" />
 	</target>
 	
-	<target name="deps.jdk6-runtime" unless="jdk-rt.available">
+	<target name="deps.jdk6-runtime" unless="jdk6-rt.available">
 		<echo>To ensure stable builds and avoid accessing API that was not available in JDK6, most of lombok is set up to build against OpenJDK6's runtime, which will now be downloaded...</echo>
 		<mkdir dir="lib" />
-		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="${jdk-rt.loc}" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="${jdk6-rt.loc}" verbose="true" usetimestamp="true" />
 	</target>
 	
 	<target name="deps.jdk8-runtime" unless="jdk8-rt.available">
@@ -133,7 +133,7 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk8.jar" dest="${jdk8-rt.loc}" verbose="true" usetimestamp="true" />
 	</target>
 	
-	<target name="deps.jdk-runtime" depends="deps.jdk6-runtime" />
+	<target name="deps.jdk-runtime" depends="deps.jdk6-runtime, deps.jdk8-runtime" />
 	
 	<target name="deps.custom" depends="ivy.config" description="Download the dependencies that comprise a configuration (from ivy.xml)">
 		<fail unless="deps.conf">Supply ant with -Ddeps.conf=confname to pick the configuration you want to fetch</fail>

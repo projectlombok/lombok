@@ -30,7 +30,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<src path="test/stubs" />
 		</ivy:compile>
 		<ivy:compile destdir="build/tests" source="1.5" target="1.5" ecj="true" nowarn="true">
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.eclipse-oxygen" />
 			<classpath location="build/lombok" />
@@ -77,9 +77,9 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	<target name="test.javac6" depends="test.compile" description="runs the tests on your default VM, using javac6 as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with lowest supported javac: 1.6.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">
-			<jvmarg value="-Xbootclasspath/a:${jdk-rt.loc}" />
+			<jvmarg value="-Xbootclasspath/a:${jdk6-rt.loc}" />
 			<jvmarg line="${test.limitmodules}" />
-			<jvmarg value="-Ddelombok.bootclasspath=${jdk-rt.loc}" />
+			<jvmarg value="-Ddelombok.bootclasspath=${jdk6-rt.loc}" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />

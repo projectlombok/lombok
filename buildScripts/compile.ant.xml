@@ -30,7 +30,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 	<target name="version" depends="ipp.setup, deps.jdk-runtime" description="Shows the version number" unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true">
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="src/core" />
 			<include name="lombok/core/Version.java" />
 		</ivy:compile>
@@ -73,11 +73,11 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 			
 			However, the stubs themselves also have a ton of dependencies; to avoid _that_, we have stubs for stubs, too! -->
 		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" ecj="true">
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="src/stubsstubs" />
 		</ivy:compile>
 		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" ecj="true">
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="src/stubs" />
 			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
@@ -108,19 +108,19 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		
 		<ivy:compile destdir="build/lombok" source="1.4" target="1.4" ecj="true">
 			<bootclasspath location="build/stubs" />
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok/Class50" source="1.4" target="1.6" ecj="true">
 			<bootclasspath location="build/stubs" />
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true">
 			<bootclasspath location="build/stubs" />
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="src/utils" />
 			<exclude name="lombok/javac/**" />
 			<classpath path="build/lombok" />
@@ -129,7 +129,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		</ivy:compile>
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" ecj="true">
 			<bootclasspath location="build/stubs" />
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="src/utils" />
 			<include name="lombok/javac/**" />
 			<classpath location="build/lombok" />
@@ -141,7 +141,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 			use API that didn't exist in those versions yet. -->
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" ecj="true" nowarn="true">
 			<bootclasspath location="build/stubs" />
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="src/launch" />
 			<src path="src/core" />
 			<src path="src/installer" />
@@ -157,7 +157,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		<!-- This is really part of the eclipse agent, but references lombok, so that had to be compiled first -->
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true">
 			<bootclasspath location="build/stubs" />
-			<bootclasspath path="${jdk-rt.loc}" />
+			<bootclasspath path="${jdk6-rt.loc}" />
 			<src path="src/eclipseAgent" />
 			<include name="lombok/launch/PatchFixesHider.java" />
 			<classpath location="build/lombok" />
