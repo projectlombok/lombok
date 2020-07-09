@@ -21,7 +21,6 @@
  */
 package lombok.javac;
 
-import java.util.ArrayList;
 import java.util.SortedSet;
 
 import javax.annotation.processing.Messager;
@@ -68,20 +67,14 @@ public class JavacTransformer {
 			}
 		}
 		
-		java.util.List<JavacAST> asts = new ArrayList<JavacAST>();
-		
 		for (JCCompilationUnit unit : compilationUnits) {
 			if (!Boolean.TRUE.equals(LombokConfiguration.read(ConfigurationKeys.LOMBOK_DISABLE, JavacAST.getAbsoluteFileLocation(unit)))) {
-				asts.add(new JavacAST(messager, context, unit, cleanup));
+				JavacAST ast = new JavacAST(messager, context, unit, cleanup);
+				ast.traverse(new AnnotationVisitor(priority));
+				handlers.callASTVisitors(ast, priority);
+				if (ast.isChanged()) LombokOptions.markChanged(context, (JCCompilationUnit) ast.top().get());
 			}
 		}
-		
-		for (JavacAST ast : asts) {
-			ast.traverse(new AnnotationVisitor(priority));
-			handlers.callASTVisitors(ast, priority);
-		}
-		
-		for (JavacAST ast : asts) if (ast.isChanged()) LombokOptions.markChanged(context, (JCCompilationUnit) ast.top().get());
 	}
 	
 	private class AnnotationVisitor extends JavacASTAdapter {
