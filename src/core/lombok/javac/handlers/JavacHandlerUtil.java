@@ -1205,9 +1205,10 @@ public class JavacHandlerUtil {
 		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
 			ListBuffer<Symbol.VarSymbol> newParams = new ListBuffer<Symbol.VarSymbol>();
 			for (JCTree.JCVariableDecl param : method.getParameters()) {
-				newParams.append(param.sym);
+				if (param.sym != null) newParams.append(param.sym);
 			}
 			params = newParams.toList();
+			if (params.length() != method.getParameters().length()) params = null;
 		}
 
 		fixMethodMirror(typeNode.getContext(), typeNode.getElement(), method.getModifiers().flags, method.getName(), paramTypes, params, returnType);
