@@ -1614,7 +1614,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printAnnotatedType0(tree);
 		} else if (className.endsWith("$JCPackageDecl")) {
 			// Starting with JDK9, this is inside the import list, but we've already printed it. Just ignore it.
-		} else if (className.endsWith(".JCSwitchExpression")) { // Introduced as preview feature in JDK12
+		} else if (className.endsWith("$JCSwitchExpression")) { // Introduced as preview feature in JDK12
 			printSwitchExpression(tree);
 		} else if (className.endsWith("$JCYield")) { // Introduced as preview feature in JDK13, part of switch expressions.
 			printYieldExpression(tree);
