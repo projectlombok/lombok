@@ -77,7 +77,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	private static final String RESULT_NAME = "result";
 	private static final String PRIME_NAME = "PRIME";
 	private static final String HASH_CODE_CACHE_NAME = "$hashCodeCache";
-
+	
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.EQUALS_AND_HASH_CODE_FLAG_USAGE, "@EqualsAndHashCode");
 		
@@ -198,7 +198,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source.get(), onParam);
 			injectMethod(typeNode, canEqualMethod);
 		}
-
+		
 		if (cacheHashCode){
 			if (!isFinal) {
 				String msg = "Not caching the result of hashCode: Annotated type is not final.";
@@ -216,7 +216,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				recursiveSetGeneratedBy(hashCodeCacheField, source.get(), typeNode.getContext());
 			}
 		}
-
+		
 		JCMethodDecl hashCodeMethod = createHashCode(typeNode, members, callSuper, cacheHashCode, fieldAccess, source.get());
 		injectMethod(typeNode, hashCodeMethod);
 	}
@@ -232,7 +232,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
 		JCExpression returnType = maker.TypeIdent(CTC_INT);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-
+		
 		Name cacheHashCodeName = typeNode.toName(HASH_CODE_CACHE_NAME);
 		if (cacheHashCode) {
 			JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, maker.Ident(cacheHashCodeName), maker.Literal(CTC_INT, 0));
@@ -333,7 +333,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				statements.append(createResultCalculation(typeNode, maker.Parens(maker.Conditional(thisEqualsNull, maker.Literal(HandlerUtil.primeForNull()), hcCall))));
 			}
 		}
-
+		
 		if (cacheHashCode) {
 			statements.append(maker.Exec(maker.Assign(maker.Ident(cacheHashCodeName), maker.Ident(resultName))));
 		}
