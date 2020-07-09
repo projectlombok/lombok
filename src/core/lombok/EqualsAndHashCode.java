@@ -71,6 +71,17 @@ public @interface EqualsAndHashCode {
 	 * @return If {@code true}, always use direct field access instead of calling the getter method.
 	 */
 	boolean doNotUseGetters() default false;
+
+	/**
+	 * Enables caching the result of {@code hashCode}.
+	 * This is useful to prevent running expensive calculations of {@code hashCode} multiple times for fully immutable objects, where it would always return the same result.
+	 * It is similar to what {@link java.lang.String#hashCode} does.
+	 * This should only be used for fully immutable classes (classes with all-immutable fields).
+	 * <strong>default: false</strong>
+	 *
+	 * @return If {@code true}, cache the result of {@code hashCode} to avoid recalculating it in future invocations.
+	 */
+	boolean cacheHashCode() default false;
 	
 	/**
 	 * Any annotations listed here are put on the generated parameter of {@code equals} and {@code canEqual}.

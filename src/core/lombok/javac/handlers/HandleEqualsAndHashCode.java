@@ -76,7 +76,8 @@ import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHashCode> {
 	private static final String RESULT_NAME = "result";
 	private static final String PRIME_NAME = "PRIME";
-	
+	private static final String HASH_CODE_CACHE_NAME = "$hashCodeCache";
+
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.EQUALS_AND_HASH_CODE_FLAG_USAGE, "@EqualsAndHashCode");
 		
@@ -92,8 +93,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.EQUALS_AND_HASH_CODE_DO_NOT_USE_GETTERS);
 		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
 		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
-		
-		generateMethods(typeNode, annotationNode, members, callSuper, true, fieldAccess, onParam);
+
+		boolean cacheHashCode = ann.cacheHashCode();
+
+		generateMethods(typeNode, annotationNode, members, callSuper, true, cacheHashCode, fieldAccess, onParam);
 	}
 	
 	public void generateEqualsAndHashCodeForType(JavacNode typeNode, JavacNode source) {
@@ -104,14 +107,14 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		Boolean doNotUseGettersConfiguration = typeNode.getAst().readConfiguration(ConfigurationKeys.EQUALS_AND_HASH_CODE_DO_NOT_USE_GETTERS);
 		FieldAccess access = doNotUseGettersConfiguration == null || !doNotUseGettersConfiguration ? FieldAccess.GETTER : FieldAccess.PREFER_FIELD;
-		
+
 		java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members = InclusionExclusionUtils.handleEqualsAndHashCodeMarking(typeNode, null, null);
 		
-		generateMethods(typeNode, source, members, null, false, access, List.<JCAnnotation>nil());
+		generateMethods(typeNode, source, members, null, false, false, access, List.<JCAnnotation>nil());
 	}
 	
 	public void generateMethods(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members,
-		Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, List<JCAnnotation> onParam) {
+		Boolean callSuper, boolean whineIfExists, boolean cacheHashCode, FieldAccess fieldAccess, List<JCAnnotation> onParam) {
 		
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
@@ -195,21 +198,46 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source.get(), onParam);
 			injectMethod(typeNode, canEqualMethod);
 		}
-		
-		JCMethodDecl hashCodeMethod = createHashCode(typeNode, members, callSuper, fieldAccess, source.get());
+
+		if (cacheHashCode){
+			if (!isFinal) {
+				String msg = "Not caching the result of hashCode: Annotated type is not final.";
+				source.addWarning(msg);
+				cacheHashCode = false;
+			} else if (fieldExists(HASH_CODE_CACHE_NAME, typeNode) != MemberExistsResult.NOT_EXISTS) {
+				String msg = String.format("Not caching the result of hashCode: A field named %s already exists.", HASH_CODE_CACHE_NAME);
+				source.addWarning(msg);
+				cacheHashCode = false;
+			} else {
+				JavacTreeMaker maker = typeNode.getTreeMaker();
+				JCModifiers mods = maker.Modifiers(Flags.PRIVATE | Flags.TRANSIENT);
+				JCVariableDecl hashCodeCacheField = maker.VarDef(mods, typeNode.toName(HASH_CODE_CACHE_NAME), maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
+				injectFieldAndMarkGenerated(typeNode, hashCodeCacheField);
+				recursiveSetGeneratedBy(hashCodeCacheField, source.get(), typeNode.getContext());
+			}
+		}
+
+		JCMethodDecl hashCodeMethod = createHashCode(typeNode, members, callSuper, cacheHashCode, fieldAccess, source.get());
 		injectMethod(typeNode, hashCodeMethod);
 	}
 	
-	public JCMethodDecl createHashCode(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+	public JCMethodDecl createHashCode(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, boolean cacheHashCode, FieldAccess fieldAccess, JCTree source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		List<JCAnnotation> annsOnMethod = List.of(overrideAnnotation);
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(typeNode);
+		// TODO: maybe not add this annotation if cacheHashCode is true because we *do* modify a field
 		if (checkerFramework.generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
 		JCExpression returnType = maker.TypeIdent(CTC_INT);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+
+		Name cacheHashCodeName = typeNode.toName(HASH_CODE_CACHE_NAME);
+		if (cacheHashCode) {
+			JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, maker.Ident(cacheHashCodeName), maker.Literal(CTC_INT, 0));
+			statements.append(maker.If(cacheNotZero, maker.Return(maker.Ident(cacheHashCodeName)), null));
+		}
 		
 		Name primeName = typeNode.toName(PRIME_NAME);
 		Name resultName = typeNode.toName(RESULT_NAME);
@@ -304,6 +332,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				JCExpression thisEqualsNull = maker.Binary(CTC_EQUAL, maker.Ident(dollarFieldName), maker.Literal(CTC_BOT, null));
 				statements.append(createResultCalculation(typeNode, maker.Parens(maker.Conditional(thisEqualsNull, maker.Literal(HandlerUtil.primeForNull()), hcCall))));
 			}
+		}
+
+		if (cacheHashCode) {
+			statements.append(maker.Exec(maker.Assign(maker.Ident(cacheHashCodeName), maker.Ident(resultName))));
 		}
 		
 		/* return result; */ {
