@@ -12,7 +12,7 @@ class CheckerFrameworkSuperBuilder {
 	}
 	
 	@lombok.experimental.SuperBuilder
-	public static class Child extends Parent {
+	public static class ZChild extends Parent {
 		@lombok.Builder.Default int a = 1;
 		int b;
 	}

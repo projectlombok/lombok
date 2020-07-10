@@ -1,3 +1,5 @@
+import java.io.Serializable;
+
 class ValLambda {
   static {
     final @lombok.val java.lang.Runnable foo = ((System.currentTimeMillis() > 0) ? (Runnable) () -> {
@@ -16,8 +18,8 @@ class ValLambda {
     final @lombok.val java.lang.Runnable foo = (Runnable) () -> {
 };
   }
-  public void easyIntersectionLambda() {
-    final @lombok.val java.lang.Runnable foo = (Runnable & java.io.Serializable) () -> {
+  public void intersectionLambda() {
+    final @lombok.val java.io.Serializable foo = (Runnable & Serializable) () -> {
 };
     final @lombok.val java.io.Serializable bar = (java.io.Serializable & Runnable) () -> {
 };
