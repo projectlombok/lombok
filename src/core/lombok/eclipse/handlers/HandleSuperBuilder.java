@@ -145,9 +145,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			generateBuilderMethod = true;
 		}
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
-
+		
 		boolean toBuilder = superbuilderAnnotation.toBuilder();
-
+		
 		EclipseNode tdParent = annotationNode.up();
 		
 		java.util.List<BuilderFieldData> builderFields = new ArrayList<BuilderFieldData>();
@@ -234,7 +234,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		TypeReference extendsClause = td.superclass;
 		TypeReference superclassBuilderClass = null;
 		TypeReference[] typeArguments = new TypeReference[] {
-				new SingleTypeReference(classGenericName.toCharArray(), 0), 
+			new SingleTypeReference(classGenericName.toCharArray(), 0), 
 				new SingleTypeReference(builderGenericName.toCharArray(), 0)
 		};
 		if (extendsClause instanceof QualifiedTypeReference) {
@@ -333,14 +333,14 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			cleanDecl.type = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
 			injectFieldAndMarkGenerated(builderType, cleanDecl);
 		}
-
+		
 		if (toBuilder) {
 			// Generate $fillValuesFrom() method in the abstract builder.
 			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClass != null, builderGenericName, classGenericName, builderClassName, typeParams));
 			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
 			injectMethod(builderType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields, ast, superbuilderAnnotation.setterPrefix()));
 		}
-
+		
 		// Generate abstract self() and build() methods in the abstract builder.
 		injectMethod(builderType, generateAbstractSelfMethod(cfv, tdParent, superclassBuilderClass != null, builderGenericName));
 		injectMethod(builderType, generateAbstractBuildMethod(cfv, builderType, buildMethodName, builderFields, superclassBuilderClass != null, classGenericName, ast));
@@ -386,7 +386,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderImplType, annotationNode);
 		}
-
+		
 		if (toBuilder) {
 			// Add the toBuilder() method to the annotated class.
 			switch (methodExists(TO_BUILDER_METHOD_NAME_STRING, tdParent, 0)) {
@@ -399,9 +399,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				// Should not happen.
 			}
 		}
-
+		
 		// Create the self() and build() methods in the BuilderImpl.
 		injectMethod(builderImplType, generateSelfMethod(cfv, builderImplType, typeParams, p));
+		
 		if (methodExists(buildMethodName, builderImplType, -1) == MemberExistsResult.NOT_EXISTS) {
 			injectMethod(builderImplType, generateBuildMethod(cfv, builderImplType, buildMethodName, returnType, builderFields, ast));
 		}
@@ -419,7 +420,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 		}
 	}
-
+	
 	private EclipseNode generateBuilderAbstractClass(EclipseNode tdParent, String builderClass,
 			TypeReference superclassBuilderClass, TypeParameter[] typeParams,
 			ASTNode source, String classGenericName, String builderGenericName) {
@@ -448,7 +449,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		builder.superclass = copyType(superclassBuilderClass, source);
 		
 		builder.createDefaultConstructor(false, true);
-			
+		
 		builder.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return injectType(tdParent, builder);
 	}
@@ -806,8 +807,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.modifiers = ClassFileConstants.AccProtected;
 		Annotation overrideAnn = makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, builderImplType.get());
-		Annotation rrAnn = cfv.generateReturnsReceiver() ? generateNamedAnnotation(builderImplType.get(), CheckerFrameworkVersion.NAME__RETURNS_RECEIVER): null;
-		Annotation sefAnn = cfv.generatePure() ? generateNamedAnnotation(builderImplType.get(), CheckerFrameworkVersion.NAME__PURE): null;
+		Annotation rrAnn = cfv.generateReturnsReceiver() ? generateNamedAnnotation(builderImplType.get(), CheckerFrameworkVersion.NAME__RETURNS_RECEIVER) : null;
+		Annotation sefAnn = cfv.generatePure() ? generateNamedAnnotation(builderImplType.get(), CheckerFrameworkVersion.NAME__PURE) : null;
 		if (rrAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn, sefAnn};
 		else if (rrAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn};
 		else if (sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};

@@ -47,7 +47,7 @@ public class DirectoryRunner extends Runner {
 			@Override public int getVersion() {
 				return Javac.getJavaCompilerVersion();
 			}
-		}, 
+		},
 		JAVAC {
 			@Override public int getVersion() {
 				return DELOMBOK.getVersion();
@@ -85,11 +85,17 @@ public class DirectoryRunner extends Runner {
 			if (!file.isFile() || !file.getName().endsWith(".java")) return false;
 			boolean positiveFilter = false;
 			for (String dfof : DEBUG_FOCUS_ON_FILE) {
+				if (dfof.isEmpty()) continue;
 				if (!dfof.endsWith(".java")) dfof = dfof + ".java";
 				boolean invert = dfof.startsWith("!");
 				if (invert) dfof = dfof.substring(1);
 				positiveFilter = positiveFilter || !invert;
-				if (file.getName().equals(dfof)) return !invert;
+				int starIdx = dfof.indexOf('*');
+				if (starIdx == -1) {
+					if (file.getName().equals(dfof)) return !invert;
+				} else {
+					if (file.getName().startsWith(dfof.substring(0, starIdx)) && file.getName().endsWith(dfof.substring(starIdx + 1))) return !invert;
+				}
 			}
 			return !positiveFilter;
 		}
