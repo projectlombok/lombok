@@ -232,9 +232,17 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		List<JCStatement> statements;
 		JCTree toClearOfMarkers = null;
+		int[] methodArgPos = null;
 		boolean addSuppressWarningsUnchecked = false;
 		if (lazy && !inNetbeansEditor(field)) {
 			toClearOfMarkers = fieldNode.init;
+			if (toClearOfMarkers instanceof JCMethodInvocation) {
+				List<JCExpression> args = ((JCMethodInvocation) toClearOfMarkers).args;
+				methodArgPos = new int[args.length()];
+				for (int i = 0; i < methodArgPos.length; i++) {
+					methodArgPos[i] = args.get(i).pos;
+				}
+			}
 			statements = createLazyGetterBody(treeMaker, field, source);
 			addSuppressWarningsUnchecked = LombokOptionsFactory.getDelombokOptions(field.getContext()).getFormatPreferences().generateSuppressWarnings();
 		} else {
@@ -262,6 +270,11 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source, field.getContext());
 		
 		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null, null);
+		if (methodArgPos != null) {
+			for (int i = 0; i < methodArgPos.length; i++) {
+				((JCMethodInvocation) toClearOfMarkers).args.get(i).pos = methodArgPos[i];
+			}
+		}
 		decl.mods.annotations = decl.mods.annotations.appendList(delegates);
 		
 		if (addSuppressWarningsUnchecked) {
