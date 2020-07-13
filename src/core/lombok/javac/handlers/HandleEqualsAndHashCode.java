@@ -42,6 +42,8 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -244,11 +246,12 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		boolean isEmpty = members.isEmpty();
 		
-		/* if ($hashCodeCache != 0) return $hashCodeCache; */ {
+		/* if (this.$hashCodeCache != 0) return this.$hashCodeCache; */ {
 			if (cacheHashCode) {
-				Name cacheHashCodeName = typeNode.toName(HASH_CODE_CACHE_NAME);
-				JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, maker.Ident(cacheHashCodeName), maker.Literal(CTC_INT, 0));
-				statements.append(maker.If(cacheNotZero, maker.Return(maker.Ident(cacheHashCodeName)), null));
+				JCIdent receiver = maker.Ident(typeNode.toName("this"));
+				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(receiver, typeNode.toName(HASH_CODE_CACHE_NAME));
+				JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, cacheHashCodeFieldAccess, maker.Literal(CTC_INT, 0));
+				statements.append(maker.If(cacheNotZero, maker.Return(cacheHashCodeFieldAccess), null));
 			}
 		}
 		
@@ -341,10 +344,11 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
-		/* $hashCodeCache = result; */ {
+		/* this.$hashCodeCache = result; */ {
 			if (cacheHashCode) {
-				Name cacheHashCodeName = typeNode.toName(HASH_CODE_CACHE_NAME);
-				statements.append(maker.Exec(maker.Assign(maker.Ident(cacheHashCodeName), maker.Ident(resultName))));
+				JCIdent receiver = maker.Ident(typeNode.toName("this"));
+				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(receiver, typeNode.toName(HASH_CODE_CACHE_NAME));
+				statements.append(maker.Exec(maker.Assign(cacheHashCodeFieldAccess, maker.Ident(resultName))));
 			}
 		}
 		
