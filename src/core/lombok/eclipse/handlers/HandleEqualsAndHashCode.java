@@ -62,6 +62,7 @@ import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.InstanceOfExpression;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
@@ -305,8 +306,10 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		/* if ($hashCodeCache != 0) return $hashCodeCache; */ {
 			if (cacheHashCode) {
-				SingleNameReference hashCodeCacheRef = new SingleNameReference(HASH_CODE_CACHE_NAME_ARR, p);
+				FieldReference hashCodeCacheRef = new FieldReference(HASH_CODE_CACHE_NAME_ARR, p);
+				hashCodeCacheRef.receiver = new ThisReference(pS, pE);
 				setGeneratedBy(hashCodeCacheRef, source);
+				setGeneratedBy(hashCodeCacheRef.receiver, source);
 				EqualExpression cacheNotZero = new EqualExpression(hashCodeCacheRef, makeIntLiteral("0".toCharArray(), source), OperatorIds.NOT_EQUAL);
 				setGeneratedBy(cacheNotZero, source);
 				ReturnStatement returnCache = new ReturnStatement(hashCodeCacheRef, pS, pS);
@@ -448,8 +451,10 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		/* $hashCodeCache = result; */ {
 			if (cacheHashCode) {
-				SingleNameReference hashCodeCacheRef = new SingleNameReference(HASH_CODE_CACHE_NAME_ARR, p);
+				FieldReference hashCodeCacheRef = new FieldReference(HASH_CODE_CACHE_NAME_ARR, p);
+				hashCodeCacheRef.receiver = new ThisReference(pS, pE);
 				setGeneratedBy(hashCodeCacheRef, source);
+				setGeneratedBy(hashCodeCacheRef.receiver, source);
 				SingleNameReference resultRef = new SingleNameReference(RESULT, p);
 				setGeneratedBy(resultRef, source);
 				Assignment cacheResult = new Assignment(hashCodeCacheRef, resultRef, pE);

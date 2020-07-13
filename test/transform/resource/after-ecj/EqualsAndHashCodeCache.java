@@ -48,12 +48,12 @@
   }
 }
 final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode2 {
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
   int x;
   long y;
   float f;
   double d;
   boolean b;
-  private transient int $hashCodeCache = 0;
   EqualsAndHashCode2() {
     super();
   }
@@ -76,8 +76,8 @@ final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheSt
     return true;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-	if ($hashCodeCache != 0) 
-		return $hashCodeCache;
+    if ((this.$hashCodeCache != 0)) 
+        return this.$hashCodeCache;
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
@@ -87,11 +87,12 @@ final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheSt
     final long $d = java.lang.Double.doubleToLongBits(this.d);
     result = ((result * PRIME) + (int) ($d ^ ($d >>> 32)));
     result = ((result * PRIME) + (this.b ? 79 : 97));
-    $hashCodeCache = result;
+    this.$hashCodeCache = result;
     return result;
   }
 }
-final @lombok.EqualsAndHashCode(callSuper=false, cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode3 extends EqualsAndHashCode {
+final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode3 extends EqualsAndHashCode {
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
   EqualsAndHashCode3() {
     super();
   }
@@ -109,11 +110,14 @@ final @lombok.EqualsAndHashCode(callSuper=false, cacheStrategy = lombok.EqualsAn
     return (other instanceof EqualsAndHashCode3);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    if ((this.$hashCodeCache != 0)) 
+        return this.$hashCodeCache;
     final int result = 1;
+    this.$hashCodeCache = result;
     return result;
   }
 }
-@lombok.EqualsAndHashCode(callSuper=true, cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode4 extends EqualsAndHashCode {
+@lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode4 extends EqualsAndHashCode {
   EqualsAndHashCode4() {
     super();
   }
@@ -137,10 +141,10 @@ final @lombok.EqualsAndHashCode(callSuper=false, cacheStrategy = lombok.EqualsAn
     return result;
   }
 }
-@lombok.EqualsAndHashCode(callSuper=true, cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode5 extends EqualsAndHashCode {
-  private transient int $hashCodeCache = 0;
+final @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode5 extends EqualsAndHashCode {
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
   EqualsAndHashCode5() {
-  super();
+    super();
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
@@ -149,19 +153,19 @@ final @lombok.EqualsAndHashCode(callSuper=false, cacheStrategy = lombok.EqualsAn
         return false;
     final EqualsAndHashCode5 other = (EqualsAndHashCode5) o;
     if ((! other.canEqual((java.lang.Object) this)))
-	    return false;
+        return false;
     if ((! super.equals(o)))
-	    return false;
-	return true;
+        return false;
+    return true;
   }
   protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode5);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-	if ($hashCodeCache != 0) 
-		return $hashCodeCache;
+    if ((this.$hashCodeCache != 0)) 
+        return this.$hashCodeCache;
     final int result = super.hashCode();
-    $hashCodeCache = result;
+    this.$hashCodeCache = result;
     return result;
   }
 }

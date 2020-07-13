@@ -42,12 +42,13 @@ class EqualsAndHashCode {
 	}
 }
 final class EqualsAndHashCode2 {
+	@java.lang.SuppressWarnings("all")
+	private transient int $hashCodeCache = 0;
 	int x;
 	long y;
 	float f;
 	double d;
 	boolean b;
-	private transient int $hashCodeCache = 0;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -64,7 +65,7 @@ final class EqualsAndHashCode2 {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		if ($hashCodeCache != 0) return $hashCodeCache;
+		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
 		final int PRIME = 59;
 		int result = 1;
 		result = result * PRIME + this.x;
@@ -74,11 +75,12 @@ final class EqualsAndHashCode2 {
 		final long $d = java.lang.Double.doubleToLongBits(this.d);
 		result = result * PRIME + (int) ($d >>> 32 ^ $d);
 		result = result * PRIME + (this.b ? 79 : 97);
-		$hashCodeCache = result;
+		this.$hashCodeCache = result;
 		return result;
 	}
 }
 final class EqualsAndHashCode3 extends EqualsAndHashCode {
+	@java.lang.SuppressWarnings("all")
 	private transient int $hashCodeCache = 0;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
@@ -96,9 +98,9 @@ final class EqualsAndHashCode3 extends EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		if ($hashCodeCache != 0) return $hashCodeCache;
+		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
 		final int result = 1;
-		$hashCodeCache = result;
+		this.$hashCodeCache = result;
 		return result;
 	}
 }
@@ -125,13 +127,14 @@ class EqualsAndHashCode4 extends EqualsAndHashCode {
 	}
 }
 class EqualsAndHashCode5 extends EqualsAndHashCode {
+	@java.lang.SuppressWarnings("all")
 	private transient int $hashCodeCache = 0;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode5)) return false;
-		final EqualsAndHashCode5 other = (EqualsAndHashCode4) o;
+		final EqualsAndHashCode5 other = (EqualsAndHashCode5) o;
 		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (!super.equals(o)) return false;
 		return true;
@@ -143,9 +146,9 @@ class EqualsAndHashCode5 extends EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		if ($hashCodeCache != 0) return $hashCodeCache;
+		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
 		final int result = super.hashCode();
-		$hashCodeCache = result;
+		this.$hashCodeCache = result;
 		return result;
 	}
 }
