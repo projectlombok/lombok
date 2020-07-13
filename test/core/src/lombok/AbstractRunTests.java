@@ -190,12 +190,30 @@ public abstract class AbstractRunTests {
 				for (CompilerMessage actualMessage : actualMessages) {
 					System.out.println(actualMessage);
 				}
+				System.out.println("****  Actual File  ******");
+				System.out.println(lineNumber(actualFile));
 				System.out.println("*******************");
 			}
 			if (dumpActualFilesHere != null) {
 				dumpToFile(new File(dumpActualFilesHere, name + ".messages"), actualMessages);
 			}
 			throw e;
+		}
+	}
+	
+	private CharSequence lineNumber(String content) {
+		StringBuilder out = new StringBuilder();
+		int pos = 0;
+		int ln = 1;
+		while (true) {
+			out.append(String.format("%4d ", ln));
+			int idx = content.indexOf('\n', pos);
+			if (idx == -1) {
+				return out.append(content.substring(pos));
+			}
+			out.append(content.substring(pos, idx + 1));
+			ln++;
+			pos = idx + 1;
 		}
 	}
 	

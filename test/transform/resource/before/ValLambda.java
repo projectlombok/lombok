@@ -1,4 +1,6 @@
 // version 8:
+import java.io.Serializable;
+
 class ValLambda {
 	
 	static {
@@ -12,8 +14,8 @@ class ValLambda {
 		lombok.val foo = (Runnable)()-> {};
 	}
 	
-	public void easyIntersectionLambda() {
-		lombok.val foo = (Runnable & java.io.Serializable)()-> {};
+	public void intersectionLambda() {
+		lombok.val foo = (Runnable & Serializable)()-> {};
 		lombok.val bar = (java.io.Serializable & Runnable)()-> {};
 	}
 	

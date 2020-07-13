@@ -330,14 +330,16 @@ public class EclipseHandlerUtil {
 		public static final Field STRING_LITERAL__LINE_NUMBER;
 		public static final Field ANNOTATION__MEMBER_VALUE_PAIR_NAME;
 		public static final Field TYPE_REFERENCE__ANNOTATIONS;
-		public static final Class<?> INTERSECTION_BINDING;
-		public static final Field INTERSECTION_BINDING_TYPES;
+		public static final Class<?> INTERSECTION_BINDING1, INTERSECTION_BINDING2;
+		public static final Field INTERSECTION_BINDING_TYPES1, INTERSECTION_BINDING_TYPES2;
 		static {
 			STRING_LITERAL__LINE_NUMBER = getField(StringLiteral.class, "lineNumber");
 			ANNOTATION__MEMBER_VALUE_PAIR_NAME = getField(Annotation.class, "memberValuePairName");
 			TYPE_REFERENCE__ANNOTATIONS = getField(TypeReference.class, "annotations");
-			INTERSECTION_BINDING = getClass("org.eclipse.jdt.internal.compiler.lookup.IntersectionTypeBinding18");
-			INTERSECTION_BINDING_TYPES = INTERSECTION_BINDING == null ? null : getField(INTERSECTION_BINDING, "intersectingTypes");
+			INTERSECTION_BINDING1 = getClass("org.eclipse.jdt.internal.compiler.lookup.IntersectionTypeBinding18");
+			INTERSECTION_BINDING2 = getClass("org.eclipse.jdt.internal.compiler.lookup.IntersectionCastTypeBinding");
+			INTERSECTION_BINDING_TYPES1 = INTERSECTION_BINDING1 == null ? null : getField(INTERSECTION_BINDING1, "intersectingTypes");
+			INTERSECTION_BINDING_TYPES2 = INTERSECTION_BINDING2 == null ? null : getField(INTERSECTION_BINDING2, "intersectingTypes");
 		}
 		
 		public static int reflectInt(Field f, Object o) {
@@ -1045,11 +1047,54 @@ public class EclipseHandlerUtil {
 		
 		return res;
 	}
-
+	
+	private static final char[] OBJECT_SIG = "Ljava/lang/Object;".toCharArray();
+	
+	private static int compare(char[] a, char[] b) {
+		if (a == null) return b == null ? 0 : -1;
+		if (b == null) return +1;
+		int len = Math.min(a.length, b.length);
+		for (int i = 0; i < len; i++) {
+			if (a[i] < b[i]) return -1;
+			if (a[i] > b[i]) return +1;
+		}
+		return a.length < b.length ? -1 : a.length > b.length ? +1 : 0;
+	}
+	
 	public static TypeReference makeType(TypeBinding binding, ASTNode pos, boolean allowCompound) {
-		if (binding.getClass() == EclipseReflectiveMembers.INTERSECTION_BINDING) {
-			Object[] arr = (Object[]) EclipseReflectiveMembers.reflect(EclipseReflectiveMembers.INTERSECTION_BINDING_TYPES, binding);
-			binding = (TypeBinding) arr[0];
+		Object[] arr = null;
+		if (binding.getClass() == EclipseReflectiveMembers.INTERSECTION_BINDING1) {
+			arr = (Object[]) EclipseReflectiveMembers.reflect(EclipseReflectiveMembers.INTERSECTION_BINDING_TYPES1, binding);
+		} else if (binding.getClass() == EclipseReflectiveMembers.INTERSECTION_BINDING2) {
+			arr = (Object[]) EclipseReflectiveMembers.reflect(EclipseReflectiveMembers.INTERSECTION_BINDING_TYPES2, binding);
+		}
+		
+		if (arr != null) {
+			// Is there a class? Alphabetically lowest wins.
+			TypeBinding winner = null;
+			int winLevel = 0; // 100 = array, 50 = class, 20 = typevar, 15 = wildcard, 10 = interface, 1 = Object.
+			for (Object b : arr) {
+				if (b instanceof TypeBinding) {
+					TypeBinding tb = (TypeBinding) b;
+					int level = 0;
+					if (tb.isArrayType()) level = 100;
+					else if (tb.isClass()) level = 50;
+					else if (tb.isTypeVariable()) level = 20;
+					else if (tb.isWildcard()) level = 15;
+					else level = 10;
+					
+					if (level == 50 && compare(tb.signature(), OBJECT_SIG) == 0) level = 1;
+					
+					if (winLevel > level) continue;
+					if (winLevel < level) {
+						winner = tb;
+						winLevel = level;
+						continue;
+					}
+					if (compare(winner.signature(), tb.signature()) > 0) winner = tb;
+				}
+			}
+			binding = winner;
 		}
 		int dims = binding.dimensions();
 		binding = binding.leafComponentType();
