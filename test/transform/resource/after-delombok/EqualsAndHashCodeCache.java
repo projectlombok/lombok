@@ -126,7 +126,7 @@ class EqualsAndHashCode4 extends EqualsAndHashCode {
 		return result;
 	}
 }
-class EqualsAndHashCode5 extends EqualsAndHashCode {
+final class EqualsAndHashCode5 extends EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
 	private transient int $hashCodeCache = 0;
 	@java.lang.Override
