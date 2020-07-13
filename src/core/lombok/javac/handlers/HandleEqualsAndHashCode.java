@@ -56,6 +56,7 @@ import com.sun.tools.javac.util.Name;
 
 import lombok.ConfigurationKeys;
 import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode.CacheStrategy;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CallSuperType;
@@ -94,7 +95,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
 		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 
-		boolean cacheHashCode = ann.cacheHashCode();
+		boolean cacheHashCode = ann.cacheStrategy() == CacheStrategy.LAZY;
 
 		generateMethods(typeNode, annotationNode, members, callSuper, true, cacheHashCode, fieldAccess, onParam);
 	}
@@ -209,16 +210,20 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				source.addWarning(msg);
 				cacheHashCode = false;
 			} else {
-				JavacTreeMaker maker = typeNode.getTreeMaker();
-				JCModifiers mods = maker.Modifiers(Flags.PRIVATE | Flags.TRANSIENT);
-				JCVariableDecl hashCodeCacheField = maker.VarDef(mods, typeNode.toName(HASH_CODE_CACHE_NAME), maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
-				injectFieldAndMarkGenerated(typeNode, hashCodeCacheField);
-				recursiveSetGeneratedBy(hashCodeCacheField, source.get(), typeNode.getContext());
+				createHashCodeCacheField(typeNode, source.get());
 			}
 		}
 		
 		JCMethodDecl hashCodeMethod = createHashCode(typeNode, members, callSuper, cacheHashCode, fieldAccess, source.get());
 		injectMethod(typeNode, hashCodeMethod);
+	}
+
+	private void createHashCodeCacheField(JavacNode typeNode, JCTree source) {
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		JCModifiers mods = maker.Modifiers(Flags.PRIVATE | Flags.TRANSIENT);
+		JCVariableDecl hashCodeCacheField = maker.VarDef(mods, typeNode.toName(HASH_CODE_CACHE_NAME), maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
+		injectFieldAndMarkGenerated(typeNode, hashCodeCacheField);
+		recursiveSetGeneratedBy(hashCodeCacheField, source, typeNode.getContext());
 	}
 	
 	public JCMethodDecl createHashCode(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, boolean cacheHashCode, FieldAccess fieldAccess, JCTree source) {
@@ -233,17 +238,19 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCExpression returnType = maker.TypeIdent(CTC_INT);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
-		Name cacheHashCodeName = typeNode.toName(HASH_CODE_CACHE_NAME);
-		if (cacheHashCode) {
-			JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, maker.Ident(cacheHashCodeName), maker.Literal(CTC_INT, 0));
-			statements.append(maker.If(cacheNotZero, maker.Return(maker.Ident(cacheHashCodeName)), null));
-		}
-		
 		Name primeName = typeNode.toName(PRIME_NAME);
 		Name resultName = typeNode.toName(RESULT_NAME);
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
 		
 		boolean isEmpty = members.isEmpty();
+		
+		/* if ($hashCodeCache != 0) return $hashCodeCache; */ {
+			if (cacheHashCode) {
+				Name cacheHashCodeName = typeNode.toName(HASH_CODE_CACHE_NAME);
+				JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, maker.Ident(cacheHashCodeName), maker.Literal(CTC_INT, 0));
+				statements.append(maker.If(cacheNotZero, maker.Return(maker.Ident(cacheHashCodeName)), null));
+			}
+		}
 		
 		/* final int PRIME = X; */ {
 			if (!isEmpty) {
@@ -334,8 +341,11 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
-		if (cacheHashCode) {
-			statements.append(maker.Exec(maker.Assign(maker.Ident(cacheHashCodeName), maker.Ident(resultName))));
+		/* $hashCodeCache = result; */ {
+			if (cacheHashCode) {
+				Name cacheHashCodeName = typeNode.toName(HASH_CODE_CACHE_NAME);
+				statements.append(maker.Exec(maker.Assign(maker.Ident(cacheHashCodeName), maker.Ident(resultName))));
+			}
 		}
 		
 		/* return result; */ {
