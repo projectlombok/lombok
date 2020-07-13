@@ -148,7 +148,7 @@ public @interface EqualsAndHashCode {
 		NEVER,
 		/**
 		 * Cache the result of the first invocation of {@code hashCode} and use it for subsequent invocations.
-		 * This can improve performance in if all fields used for calculating the {@code hashCode} are immutable
+		 * This can improve performance if all fields used for calculating the {@code hashCode} are immutable
 		 * and thus every invocation of {@code hashCode} will always return the same value.
 		 * <strong>Do not use this if there's <em>any</em> chance that different invocations of {@code hashCode}
 		 * might return different values.</strong>
