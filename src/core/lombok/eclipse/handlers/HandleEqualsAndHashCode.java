@@ -304,7 +304,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				setGeneratedBy(hashCodeCacheRef.receiver, source);
 				EqualExpression cacheNotZero = new EqualExpression(hashCodeCacheRef, makeIntLiteral("0".toCharArray(), source), OperatorIds.NOT_EQUAL);
 				setGeneratedBy(cacheNotZero, source);
-				ReturnStatement returnCache = new ReturnStatement(hashCodeCacheRef, pS, pS);
+				ReturnStatement returnCache = new ReturnStatement(hashCodeCacheRef, pS, pE);
 				setGeneratedBy(returnCache, source);
 				IfStatement ifStatement = new IfStatement(cacheNotZero, returnCache, pS, pE);
 				setGeneratedBy(ifStatement, source);
