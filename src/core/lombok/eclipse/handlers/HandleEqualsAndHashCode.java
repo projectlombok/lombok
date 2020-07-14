@@ -272,8 +272,10 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 		setGeneratedBy(method.returnType, source);
 		Annotation overrideAnnotation = makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source);
-		// TODO: maybe not add this annotation if cacheHashCode is true because we *do* modify a field
-		if (getCheckerFrameworkVersion(type).generateSideEffectFree()) {
+		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(type);
+		if (cacheHashCode && checkerFramework.generatePure()) {
+			method.annotations = new Annotation[] { overrideAnnotation, generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__PURE) };
+		} else if (checkerFramework.generateSideEffectFree()) {
 			method.annotations = new Annotation[] { overrideAnnotation, generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
 		} else {
 			method.annotations = new Annotation[] { overrideAnnotation };
