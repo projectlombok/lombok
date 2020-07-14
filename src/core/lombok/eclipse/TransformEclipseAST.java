@@ -24,6 +24,7 @@ package lombok.eclipse;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Field;
+import java.util.WeakHashMap;
 
 import lombok.ConfigurationKeys;
 import lombok.core.LombokConfiguration;
@@ -63,6 +64,7 @@ public class TransformEclipseAST {
 	
 	public static boolean disableLombok = false;
 	private static final HistogramTracker lombokTracker;
+	private static WeakHashMap<CompilationUnitDeclaration, Boolean> completlyHandled = new WeakHashMap<CompilationUnitDeclaration, Boolean>();
 	
 	static {
 		String v = System.getProperty("lombok.histogram");
@@ -130,6 +132,30 @@ public class TransformEclipseAST {
 	}
 	
 	/**
+	 * Check if lombok already handled the given AST. This method will return
+	 * <code>true</code> once for diet mode and once for full mode.
+	 * 
+	 * The reason for this is that Eclipse invokes the transform method multiple
+	 * times during compilation and it is enough to transform it once and not
+	 * repeat the whole thing over and over again.
+	 * 
+	 * @param ast The AST node belonging to the compilation unit (java speak for a single source file).
+	 * @return <code>true</code> if this AST was already handled by lombok.
+	 */
+	public static boolean alreadyTransformed(CompilationUnitDeclaration ast) {
+		Boolean state = completlyHandled.get(ast);
+		if (state != null) {
+			if (state) return true;
+			if (!EclipseAST.isComplete(ast)) return true;
+			
+			completlyHandled.put(ast, Boolean.TRUE);
+		} else {
+			completlyHandled.put(ast, Boolean.FALSE);
+		}
+		return false;
+	}
+	
+	/**
 	 * This method is called immediately after Eclipse finishes building a CompilationUnitDeclaration, which is
 	 * the top-level AST node when Eclipse parses a source file. The signature is 'magic' - you should not
 	 * change it!
@@ -144,6 +170,7 @@ public class TransformEclipseAST {
 		if (disableLombok) return;
 		
 		if (Symbols.hasSymbol("lombok.disable")) return;
+		if (alreadyTransformed(ast)) return;
 		
 		// Do NOT abort if (ast.bits & ASTNode.HasAllMethodBodies) != 0 - that doesn't work.
 		
