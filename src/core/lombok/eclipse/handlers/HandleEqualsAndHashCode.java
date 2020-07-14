@@ -450,6 +450,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				SingleNameReference resultRef = new SingleNameReference(RESULT, p);
 				setGeneratedBy(resultRef, source);
 				Assignment cacheResult = new Assignment(hashCodeCacheRef, resultRef, pE);
+				cacheResult.sourceStart = pS; cacheResult.statementEnd = cacheResult.sourceEnd = pE;
 				setGeneratedBy(cacheResult, source);
 				statements.add(cacheResult);
 			}
