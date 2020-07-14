@@ -296,7 +296,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			}
 		}
 		
-		/* if ($hashCodeCache != 0) return $hashCodeCache; */ {
+		/* if (this.$hashCodeCache != 0) return this.$hashCodeCache; */ {
 			if (cacheHashCode) {
 				FieldReference hashCodeCacheRef = new FieldReference(HASH_CODE_CACHE_NAME_ARR, p);
 				hashCodeCacheRef.receiver = new ThisReference(pS, pE);
@@ -441,7 +441,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			}
 		}
 		
-		/* $hashCodeCache = result; */ {
+		/* this.$hashCodeCache = result; */ {
 			if (cacheHashCode) {
 				FieldReference hashCodeCacheRef = new FieldReference(HASH_CODE_CACHE_NAME_ARR, p);
 				hashCodeCacheRef.receiver = new ThisReference(pS, pE);
