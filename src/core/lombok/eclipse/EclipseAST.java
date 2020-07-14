@@ -350,7 +350,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		if (!changed) clearChanged();
 	}
 	
-	private static boolean isComplete(CompilationUnitDeclaration unit) {
+	public static boolean isComplete(CompilationUnitDeclaration unit) {
 		return (unit.bits & ASTNode.HasAllMethodBodies) != 0;
 	}
 	
