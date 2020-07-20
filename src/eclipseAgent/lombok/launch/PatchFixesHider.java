@@ -191,14 +191,20 @@ final class PatchFixesHider {
 	/** Contains patch code to support {@code @Delegate} */
 	public static final class Delegate {
 		private static final Method HANDLE_DELEGATE_FOR_TYPE;
+		private static final Method GET_CHILDREN;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegatePortal");
 			HANDLE_DELEGATE_FOR_TYPE = Util.findMethod(shadowed, "handleDelegateForType", Object.class);
+			GET_CHILDREN = Util.findMethod(shadowed, "getChildren", Object.class, Object.class);
 		}
 		
 		public static boolean handleDelegateForType(Object classScope) {
 			return (Boolean) Util.invokeMethod(HANDLE_DELEGATE_FOR_TYPE, classScope);
+		}
+		
+		public static Object[] getChildren(Object returnValue, Object javaElement) {
+			return (Object[]) Util.invokeMethod(GET_CHILDREN, returnValue, javaElement);
 		}
 	}
 	
