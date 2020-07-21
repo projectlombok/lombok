@@ -1,0 +1,3 @@
+4 Cannot find a generated constructor.
+9 @PostGeneratedConstructor is legal only on instance methods.
+14 @PostGeneratedConstructor is legal only on concrete methods.
