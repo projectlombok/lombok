@@ -85,6 +85,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		handleFlagUsage(annotationNode, ConfigurationKeys.EQUALS_AND_HASH_CODE_FLAG_USAGE, "@EqualsAndHashCode");
 		
 		deleteAnnotationIfNeccessary(annotationNode, EqualsAndHashCode.class);
+		deleteImportFromCompilationUnit(annotationNode, CacheStrategy.class.getName());
 		EqualsAndHashCode ann = annotation.getInstance();
 		java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members = InclusionExclusionUtils.handleEqualsAndHashCodeMarking(annotationNode.up(), annotation, annotationNode);
 		JavacNode typeNode = annotationNode.up();
