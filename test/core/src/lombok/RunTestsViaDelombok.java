@@ -29,20 +29,16 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.delombok.Delombok;
 import lombok.javac.CapturingDiagnosticListener;
-import lombok.javac.Javac;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
-	private static AtomicBoolean compilerVersionReported = new AtomicBoolean();
 	
 	@Override
 	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version) throws Throwable {
-		if (!compilerVersionReported.getAndSet(true)) System.out.println("Javac version: " + Javac.getJavaCompilerVersion());
 		delombok.setVerbose(true);
 		ChangedChecker cc = new ChangedChecker();
 		delombok.setFeedback(cc.feedback);
