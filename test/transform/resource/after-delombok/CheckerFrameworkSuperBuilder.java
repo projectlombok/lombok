@@ -132,7 +132,7 @@ class CheckerFrameworkSuperBuilder {
 			return 1;
 		}
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<C extends CheckerFrameworkSuperBuilder.ZChild, B extends CheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+		public static abstract class ZChildBuilder<C extends CheckerFrameworkSuperBuilder.ZChild, B extends CheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private boolean a$set;
 			@java.lang.SuppressWarnings("all")
@@ -169,7 +169,7 @@ class CheckerFrameworkSuperBuilder {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
-		private static final class ZChildBuilderImpl extends CheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<CheckerFrameworkSuperBuilder.ZChild, CheckerFrameworkSuperBuilder.ZChild.ChildBuilderImpl> {
+		private static final class ZChildBuilderImpl extends CheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<CheckerFrameworkSuperBuilder.ZChild, CheckerFrameworkSuperBuilder.ZChild.ZChildBuilderImpl> {
 			@org.checkerframework.common.aliasing.qual.Unique
 			@java.lang.SuppressWarnings("all")
 			private ZChildBuilderImpl() {
