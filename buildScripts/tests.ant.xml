@@ -141,6 +141,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<classpath refid="cp.stripe" />
 			<classpath location="build/lombok" />
 			<classpath location="build/tests" />
+			<classpath location="build/teststubs" />
 			<test name="lombok.TestJavac" />
 		</junit>
 	</target>
