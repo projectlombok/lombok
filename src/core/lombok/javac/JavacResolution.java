@@ -341,6 +341,10 @@ public class JavacResolution {
 						if (wrap == null) throw new NoSuchElementException();
 						return wrap.next();
 					}
+					
+					@Override public void remove() {
+						throw new UnsupportedOperationException();
+					}
 				};
 			}
 		};
