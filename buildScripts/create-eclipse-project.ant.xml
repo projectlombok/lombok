@@ -82,6 +82,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			</classpath>
 			<arg value="name=Lombok-test Eclipse-202006" />
 			<arg value="testType=lombok.TestEclipse" />
+			<arg value="shadowLoaderBased" />
 			<arg value="jvmTarget=1.8" />
 			<arg value="bootpath=${jdk8-rt.loc}" />
 			<arg value="conf.test=${cp.test}" />
@@ -163,6 +164,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			</classpath>
 			<arg value="name=Lombok-test Eclipse-${inputs.eclipsetarget}" />
 			<arg value="testType=lombok.TestEclipse" />
+			<arg value="shadowLoaderBased" />
 			<arg value="jvmTarget=${inputs.jvmtarget}" />
 			<arg value="bootpath=${inputs.bootpath}" />
 			<arg value="conf.test=${cp.test}" />
@@ -198,6 +200,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			</classpath>
 			<arg value="name=Lombok-test ECJ${inputs.ecjtarget}" />
 			<arg value="testType=lombok.TestEclipse" />
+			<arg value="shadowLoaderBased" />
 			<arg value="jvmTarget=${inputs.jvmtarget}" />
 			<arg value="bootpath=${inputs.bootpath}" />
 			<arg value="conf.test=${cp.test}" />

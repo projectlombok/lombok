@@ -127,12 +127,14 @@ public class CreateEclipseDebugTarget {
 		launchContent.append("\t<stringAttribute key=\"org.eclipse.jdt.launching.MAIN_TYPE\" value=\"").append(type).append("\"/>\n");
 		launchContent.append("\t<listAttribute key=\"org.eclipse.jdt.launching.MODULEPATH\"/>\n");
 		launchContent.append("\t<stringAttribute key=\"org.eclipse.jdt.launching.PROJECT_ATTR\" value=\"lombok\"/>\n");
-		launchContent.append("<stringAttribute key=\"org.eclipse.jdt.launching.VM_ARGUMENTS\" value=\"-javaagent:dist/lombok.jar -Dshadow.override.lombok=${project_loc:lombok}/bin");
-		for (Map.Entry<String, String> entry : args.entrySet()) {
-			if (!entry.getKey().startsWith("conf.")) continue;
-			launchContent.append(File.pathSeparator).append(entry.getValue());
+		if (getArgBoolean("shadowLoaderBased")) {
+			launchContent.append("<stringAttribute key=\"org.eclipse.jdt.launching.VM_ARGUMENTS\" value=\"-javaagent:dist/lombok.jar -Dshadow.override.lombok=${project_loc:lombok}/bin");
+			for (Map.Entry<String, String> entry : args.entrySet()) {
+				if (!entry.getKey().startsWith("conf.")) continue;
+				launchContent.append(File.pathSeparator).append(entry.getValue());
+			}
+			if (bootpath != null) launchContent.append(" -Ddelombok.bootclasspath=" + bootpath);
 		}
-		if (bootpath != null) launchContent.append(" -Ddelombok.bootclasspath=" + bootpath);
 		launchContent.append("\"/>\n</launchConfiguration>\n");
 	}
 	
@@ -164,6 +166,7 @@ public class CreateEclipseDebugTarget {
 		System.err.println("CreateEclipseDebugTarget\n" +
 			"   name=Lombok-test BaseJavac 11           # Sets the name of the debug target to make\n" +
 			"   testType=lombok.RunJavacAndBaseTests    # The test class file that this debug target should run\n" +
+			"   shadowLoaderBased                       # Add the VM options to use lombok as an agent and pass the classpath to the shadow loader. Needed for ECJ/Eclipse.\n" +
 			"   conf.test=foo:bar:baz                   # Where 'test' is an ivy conf name, and 'foo' is a path to a jar, relativized vs. current directory.\n" +
 			"   favorite                                # Should the debug target be marked as favourite?\n" +
 			"");
