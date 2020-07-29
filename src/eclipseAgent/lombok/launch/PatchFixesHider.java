@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IField;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
@@ -50,6 +51,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Scope;
@@ -294,6 +296,26 @@ final class PatchFixesHider {
 		
 		public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method, Scope scope) {
 			Util.invokeMethod(INVALID_METHOD2, problemReporter, messageSend, method, scope);
+		}
+	}
+	
+	/** Contains patch code to support Javadoc for generated methods */
+	public static final class Javadoc {
+		private static final Method GET_HTML;
+		private static final Method PRINT_METHOD;
+		
+		static {
+			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchJavadoc");
+			GET_HTML = Util.findMethod(shadowed, "getHTMLContentFromSource", String.class, IJavaElement.class);
+			PRINT_METHOD = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuffer.class, TypeDeclaration.class);
+		}
+		
+		public static String getHTMLContentFromSource(String original, IJavaElement member) {
+			return (String) Util.invokeMethod(GET_HTML, original, member);
+		}
+		
+		public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuffer output, TypeDeclaration type) {
+			return (StringBuffer) Util.invokeMethod(PRINT_METHOD, methodDeclaration, tab, output, type);
 		}
 	}
 	

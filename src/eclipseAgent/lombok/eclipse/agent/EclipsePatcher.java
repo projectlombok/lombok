@@ -126,6 +126,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchExtensionMethod(sm, ecjOnly);
 		patchRenameField(sm);
 		patchNullCheck(sm);
+		patchJavadoc(sm);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
@@ -829,6 +830,38 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.request(StackRequest.PARAM1)
 				.transplant().build());
+	}
+	
+	private static void patchJavadoc(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContent", "java.lang.String", "org.eclipse.jdt.core.IJavaElement", "boolean"))
+				.methodToWrap(new Hook("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContentFromSource", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "getHTMLContentFromSource", "java.lang.String", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
+				.requestExtra(StackRequest.PARAM1)
+				.build());
+		
+		/* This is an older version that uses IMember instead of IJavaElement */
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContent", "java.lang.String", "org.eclipse.jdt.core.IMember", "boolean"))
+				.methodToWrap(new Hook("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContentFromSource", "java.lang.String", "org.eclipse.jdt.core.IMember"))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "getHTMLContentFromSource", "java.lang.String", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
+				.requestExtra(StackRequest.PARAM1)
+				.build());
+		
+		sm.addScript(ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.TypeDeclaration", "printBody", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
+				.methodToReplace(new Hook("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
+				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "printMethod", "java.lang.StringBuffer", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "int", "java.lang.StringBuffer", "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration"))
+				.requestExtra(StackRequest.THIS)
+				.build());
+
+		sm.addScript(ScriptBuilder.addField()
+				.fieldName("$javadoc")
+				.fieldType("Ljava/util/Map;")
+				.setPublic()
+				.setTransient()
+				.targetClass("org.eclipse.jdt.internal.core.CompilationUnit")
+				.build());
 	}
 
 }

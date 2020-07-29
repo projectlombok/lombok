@@ -263,6 +263,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		if (returnType != null && returnStatement != null) createRelevantNonNullAnnotation(sourceNode, method);
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
+		copyJavadoc(fieldNode, method, CopyJavadoc.SETTER, returnStatement != null);
 		return method;
 	}
 }

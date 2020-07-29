@@ -21,8 +21,8 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.*;
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -84,14 +86,16 @@ import lombok.ConfigurationKeys;
 import lombok.Singular;
 import lombok.ToString;
 import lombok.core.AST.Kind;
-import lombok.core.handlers.HandlerUtil;
-import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.core.handlers.HandlerUtil;
+import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.CopyJavadoc;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
@@ -965,9 +969,29 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			typeReference.annotations[0] = new Annotation[] {ann};
 			setter.receiver = new Receiver(new char[] { 't', 'h', 'i', 's' }, 0, typeReference, null, Modifier.FINAL);
 		}
+		if (sourceNode.up().getKind() == Kind.METHOD) {
+			copyJavadocFromParam(originalFieldNode.up(), setter, td, paramName.toString());
+		} else {
+			copyJavadoc(originalFieldNode, setter, td, CopyJavadoc.SETTER, true);
+		}
 		injectMethod(builderType, setter);
 	}
 	
+	private void copyJavadocFromParam(EclipseNode from, MethodDeclaration to, TypeDeclaration type, String param) {
+		try {
+			CompilationUnitDeclaration cud = (CompilationUnitDeclaration) from.top().get();
+			String methodComment = getDocComment(cud, from.get());
+			if (methodComment == null) return;
+			
+			Pattern pattern = Pattern.compile("@param " + param + " (\\S|\\s)+?(?=^ ?@)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(methodComment);
+			if (matcher.find()) {
+				String newJavadoc = addReturnsThisIfNeeded(matcher.group());
+				setDocComment(cud, type, to, newJavadoc);
+			}
+		} catch (Exception ignore) {}
+	}
+
 	public EclipseNode makeBuilderClass(boolean isStatic, EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source, AccessLevel access) {
 		TypeDeclaration parent = (TypeDeclaration) tdParent.get();
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);

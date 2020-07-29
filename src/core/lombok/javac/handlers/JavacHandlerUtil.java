@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.Element;
@@ -1963,47 +1962,6 @@ public class JavacHandlerUtil {
 		return (JCExpression) in;
 	}
 	
-	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER|WITH(?:ER)?)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-	
-	public static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
-		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(javadoc);
-		return m.replaceAll("");
-	}
-	
-	public static String stripSectionsFromJavadoc(String javadoc) {
-		Matcher m = SECTION_FINDER.matcher(javadoc);
-		if (!m.find()) return javadoc;
-		
-		return javadoc.substring(0, m.start());
-	}
-	
-	public static String getJavadocSection(String javadoc, String sectionNameSpec) {
-		String[] sectionNames = sectionNameSpec.split("\\|");
-		Matcher m = SECTION_FINDER.matcher(javadoc);
-		int sectionStart = -1;
-		int sectionEnd = -1;
-		while (m.find()) {
-			boolean found = false;
-			for (String sectionName : sectionNames) if (m.group(1).equalsIgnoreCase(sectionName)) {
-				found = true;
-				break;
-			}
-			if (found) {
-				sectionStart = m.end() + 1;
-			} else if (sectionStart != -1) {
-				sectionEnd = m.start();
-			}
-		}
-		
-		if (sectionStart != -1) {
-			if (sectionEnd != -1) return javadoc.substring(sectionStart, sectionEnd);
-			return javadoc.substring(sectionStart);
-		}
-		
-		return null;
-	}
-	
 	public static enum CopyJavadoc {
 		VERBATIM {
 			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
@@ -2098,24 +2056,6 @@ public class JavacHandlerUtil {
 				Javac.setDocComment(cu, to, newJavadoc);
 			}
 		} catch (Exception ignore) {}
-	}
-	
-	private static final Pattern FIND_RETURN = Pattern.compile("^\\s*\\**\\s*@returns?\\s+.*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-	static String addReturnsThisIfNeeded(String in) {
-		if (FIND_RETURN.matcher(in).find()) return in;
-		
-		return addJavadocLine(in, "@return {@code this}.");
-	}
-	
-	static String addReturnsUpdatedSelfIfNeeded(String in) {
-		if (FIND_RETURN.matcher(in).find()) return in;
-		
-		return addJavadocLine(in, "@return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).");
-	}
-	
-	static String addJavadocLine(String in, String line) {
-		if (in.endsWith("\n")) return in + line + "\n";
-		return in + "\n" + line;
 	}
 	
 	public static boolean isDirectDescendantOfObject(JavacNode typeNode) {

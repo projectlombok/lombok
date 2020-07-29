@@ -36,16 +36,17 @@ import lombok.eclipse.Eclipse;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
+import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.Compiler;
 import org.eclipse.jdt.internal.compiler.ICompilerRequestor;
 import org.eclipse.jdt.internal.compiler.IErrorHandlingPolicy;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.eclipse.jdt.internal.compiler.batch.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
+import org.eclipse.jdt.internal.core.CompilationUnit;
 
 public class RunTestsViaEcj extends AbstractRunTests {
 	protected CompilerOptions ecjCompilerOptions() {
@@ -103,7 +104,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		};
 		
 		String source = readFile(file);
-		final CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), encoding == null ? "UTF-8" : encoding);
+		final CompilationUnit sourceUnit = new TestCompilationUnit(file.getName(), source);
 		
 		Compiler ecjCompiler = new Compiler(createFileSystem(file, minVersion), ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
 			@Override protected synchronized void addCompilationUnit(ICompilationUnit inUnit, CompilationUnitDeclaration parsedUnit) {
@@ -149,5 +150,43 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			classpath.add("lib/test/" + fn);
 		}
 		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
+	}
+	
+	private static final class TestCompilationUnit extends CompilationUnit {
+		private final char[] source;
+		private final char[] mainTypeName;
+		
+		private TestCompilationUnit(String name, String source) {
+			super(null, name, null);
+			this.source = source.toCharArray();
+			
+			char[] fileNameCharArray = getFileName();
+			int start = CharOperation.lastIndexOf(File.separatorChar, fileNameCharArray) + 1;
+			int end = CharOperation.lastIndexOf('.', fileNameCharArray);
+			if (end == -1) {
+				end = fileNameCharArray.length;
+			}
+			mainTypeName = CharOperation.subarray(fileNameCharArray, start, end);
+		}
+		
+		@Override public char[] getContents() {
+			return source;
+		}
+		
+		@Override public char[] getMainTypeName() {
+			return mainTypeName;
+		}
+		
+		@Override public boolean ignoreOptionalProblems() {
+			return false;
+		}
+		
+		@Override public char[][] getPackageName() {
+			return null;
+		}
+		
+		@Override public char[] getModuleName() {
+			return null;
+		}
 	}
 }

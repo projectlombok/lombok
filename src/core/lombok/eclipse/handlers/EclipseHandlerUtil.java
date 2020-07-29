@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.Signature;
+import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -94,6 +96,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.CaptureBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
@@ -103,6 +106,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
+import org.eclipse.jdt.internal.core.CompilationUnit;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -2634,5 +2638,151 @@ public class EclipseHandlerUtil {
 		else ref = new SingleTypeReference(varNames[0], p);
 		setGeneratedBy(ref, source);
 		return ref;
+	}
+	
+	public static String getDocComment(CompilationUnitDeclaration cud, ASTNode node) {
+		ICompilationUnit compilationUnit = cud.compilationResult.compilationUnit;
+		if (node instanceof FieldDeclaration) {
+			FieldDeclaration fieldDeclaration = (FieldDeclaration) node;
+			char[] rawContent = CharOperation.subarray(compilationUnit.getContents(), fieldDeclaration.declarationSourceStart, fieldDeclaration.declarationSourceEnd);
+			String rawContentString = new String(rawContent);
+			int startIndex = rawContentString.indexOf("/**");
+			int endIndex = rawContentString.indexOf("*/");
+			if (startIndex != -1 && endIndex != -1) {
+				/* Remove all leading asterisks */
+				return rawContentString.substring(startIndex + 3, endIndex).replaceAll("(?m)^\\s*\\* ?", "").trim();
+			}
+		}
+		return null;
+	}
+	
+	public static void setDocComment(CompilationUnitDeclaration cud, EclipseNode eclipseNode, String doc) {
+		setDocComment(cud, (TypeDeclaration) upToTypeNode(eclipseNode).get(), eclipseNode.get(), doc);
+	}
+	
+	public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
+		if (cud.compilationResult.compilationUnit instanceof CompilationUnit) {
+			CompilationUnit compilationUnit = (CompilationUnit) cud.compilationResult.compilationUnit;
+			Map<String, String> docs = CompilationUnit_javadoc.setIfAbsent(compilationUnit, new HashMap<String, String>());
+			
+			if (node instanceof AbstractMethodDeclaration) {
+				AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) node;
+				String signature = getSignature(type, methodDeclaration);
+				/* Add javadoc start marker, add leading asterisks to each line, add javadoc end marker */
+				docs.put(signature, String.format("/**%n%s%n */", doc.replaceAll("(?m)^", " * ")));
+			}
+		}
+	}
+
+	public static String getSignature(TypeDeclaration type, AbstractMethodDeclaration methodDeclaration) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(type.name);
+		sb.append(".");
+		sb.append(methodDeclaration.selector);
+		sb.append("(");
+		Argument[] arguments = methodDeclaration.arguments;
+		if (arguments != null) {
+			for (Argument argument : arguments) {
+				String signature = Signature.createTypeSignature(argument.type.getLastToken(), false);
+				sb.append(signature);
+			}
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+	
+	public static enum CopyJavadoc {
+		VERBATIM {
+			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
+				return getDocComment(cu, node.get());
+			}
+		},
+		GETTER {
+			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
+				final ASTNode n = node.get();
+				String javadoc = getDocComment(cu, n);
+				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new method's javadoc.
+				String out = getJavadocSection(javadoc, "GETTER");
+				final boolean sectionBased = out != null;
+				if (!sectionBased) {
+					out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@param(?:eter)?\\s+.*");
+				}
+				return out;
+			}
+		},
+		SETTER {
+			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
+				return applySetter(cu, node, "SETTER");
+			}
+		},
+		WITH {
+			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
+				return addReturnsUpdatedSelfIfNeeded(applySetter(cu, node, "WITH|WITHER"));
+			}
+		},
+		WITH_BY {
+			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
+				return applySetter(cu, node, "WITHBY|WITH_BY");
+			}
+		};
+		
+		public abstract String apply(final CompilationUnitDeclaration cu, final EclipseNode node);
+		
+		private static String applySetter(final CompilationUnitDeclaration cu, EclipseNode node, String sectionName) {
+			final ASTNode n = node.get();
+			String javadoc = getDocComment(cu, n);
+			// step 1: Check if there is a 'SETTER' section. If yes, that becomes the new method's javadoc.
+			String out = getJavadocSection(javadoc, sectionName);
+			final boolean sectionBased = out != null;
+			if (!sectionBased) {
+				out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@returns?\\s+.*");
+			}
+			return shouldReturnThis(node) ? addReturnsThisIfNeeded(out) : out;
+		}
+	}
+	
+	/**
+	 * Copies javadoc on one node to the other.
+	 * 
+	 * This one is a shortcut for {@link EclipseHandlerUtil#copyJavadoc(EclipseNode, ASTNode, TypeDeclaration, CopyJavadoc, boolean)}
+	 * if source and target node are in the same type.
+	 */
+	public static void copyJavadoc(EclipseNode from, ASTNode to, CopyJavadoc copyMode) {
+		copyJavadoc(from, to, (TypeDeclaration) upToTypeNode(from).get(), copyMode, false);
+	}
+	
+	/**
+	 * Copies javadoc on one node to the other.
+	 * 
+	 * This one is a shortcut for {@link EclipseHandlerUtil#copyJavadoc(EclipseNode, ASTNode, TypeDeclaration, CopyJavadoc, boolean)}
+	 * if source and target node are in the same type.
+	 */
+	public static void copyJavadoc(EclipseNode from, ASTNode to, CopyJavadoc copyMode, boolean forceAddReturn) {
+		copyJavadoc(from, to, (TypeDeclaration) upToTypeNode(from).get(), copyMode, forceAddReturn);
+	}
+	
+	public static void copyJavadoc(EclipseNode from, ASTNode to, TypeDeclaration type, CopyJavadoc copyMode) {
+		copyJavadoc(from, to, type, copyMode, false);
+	}
+	
+	/**
+	 * Copies javadoc on one node to the other.
+	 * 
+	 * in 'GETTER' copyMode, first a 'GETTER' segment is searched for. If it exists, that will become the javadoc for the 'to' node, and this section is
+	 * stripped out of the 'from' node. If no 'GETTER' segment is found, then the entire javadoc is taken minus any {@code @param} lines and other sections.
+	 * any {@code @return} lines are stripped from 'from'.
+	 * 
+	 * in 'SETTER' mode, stripping works similarly to 'GETTER' mode, except {@code param} are copied and stripped from the original and {@code @return} are skipped.
+	 */
+	public static void copyJavadoc(EclipseNode from, ASTNode to, TypeDeclaration type, CopyJavadoc copyMode, boolean forceAddReturn) {
+		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
+		try {
+			CompilationUnitDeclaration cud = ((CompilationUnitDeclaration) from.top().get());
+			String newJavadoc = copyMode.apply(cud, from);
+			if (newJavadoc != null) {
+				if (forceAddReturn) newJavadoc = addReturnsThisIfNeeded(newJavadoc);
+				setDocComment(cud, type, to, newJavadoc);
+			}
+		} catch (Exception ignore) {}
 	}
 }
