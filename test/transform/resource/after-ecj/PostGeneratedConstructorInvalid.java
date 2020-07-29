@@ -8,4 +8,6 @@ abstract class PostGeneratedConstructorInvalid {
   private static @PostGeneratedConstructor void staticMethod() {
   }
   public abstract @PostGeneratedConstructor void abstractMethod();
+  private @PostGeneratedConstructor void withArgument(String arg) {
+  }
 }

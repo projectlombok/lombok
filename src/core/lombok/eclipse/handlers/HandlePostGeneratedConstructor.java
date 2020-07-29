@@ -76,6 +76,11 @@ public class HandlePostGeneratedConstructor extends EclipseAnnotationHandler<Pos
 			return;
 		}
 		
+		if (method.arguments != null) {
+			annotationNode.addError("@PostGeneratedConstructor is legal only on methods without parameters.");
+			return;
+		}
+		
 		EclipseNode typeNode = upToTypeNode(annotationNode);
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;

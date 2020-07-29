@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import org.mangosdk.spi.ProviderFor;
@@ -75,6 +75,11 @@ public class HandlePostGeneratedConstructor extends JavacAnnotationHandler<PostG
 		
 		if ((method.mods.flags & Flags.STATIC) != 0) {
 			annotationNode.addError("@PostGeneratedConstructor is legal only on instance methods.");
+			return;
+		}
+		
+		if (method.params.nonEmpty()) {
+			annotationNode.addError("@PostGeneratedConstructor is legal only on methods without parameters.");
 			return;
 		}
 		

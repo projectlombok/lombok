@@ -6,4 +6,7 @@ abstract class PostGeneratedConstructorInvalid {
 	}
 
 	public abstract void abstractMethod();
+	
+	private void withArgument(String arg) {
+	}
 }

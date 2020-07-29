@@ -13,4 +13,9 @@ abstract class PostGeneratedConstructorInvalid {
 	
 	@PostGeneratedConstructor
 	public abstract void abstractMethod();
+	
+	@PostGeneratedConstructor
+	private void withArgument(String arg) {
+
+	}
 }
