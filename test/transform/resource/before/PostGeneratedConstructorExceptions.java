@@ -16,8 +16,7 @@ class PostGeneratedConstructorExceptions {
 	}
 	
 	@lombok.experimental.PostGeneratedConstructor
-	private void post2() throws InterruptedException {
+	private void post2() throws InterruptedException, java.lang.IllegalArgumentException, IllegalArgumentException {
 		
 	}
-	
 }
