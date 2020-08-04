@@ -447,7 +447,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 			atStart = false;
 			aPrint(" *");
 			if (pos < dc.length() && dc.charAt(pos) > ' ') print(" ");
-			println(dc.substring(pos, endpos));
+			char c = dc.charAt(endpos - 1);
+			if(c == 13) {
+				println(dc.substring(pos, endpos - 1));
+			} else {
+				println(dc.substring(pos, endpos));
+			}
 			pos = endpos + 1;
 			endpos = lineEndPos(dc, pos);
 		}
