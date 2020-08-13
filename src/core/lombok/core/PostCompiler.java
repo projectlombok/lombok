@@ -72,10 +72,12 @@ public final class PostCompiler {
 				// no need to call super
 				byte[] original = toByteArray();
 				byte[] copy = null;
-				try {
-					copy = applyTransformations(original, fileName, diagnostics);
-				} catch (Exception e) {
-					diagnostics.addWarning(String.format("Error during the transformation of '%s'; no post-compilation has been applied", fileName));
+				if (original.length > 0) {
+					try {
+						copy = applyTransformations(original, fileName, diagnostics);
+					} catch (Exception e) {
+						diagnostics.addWarning(String.format("Error during the transformation of '%s'; no post-compilation has been applied", fileName));
+					}
 				}
 				
 				if (copy == null) {
