@@ -1964,6 +1964,7 @@ public class JavacHandlerUtil {
 	}
 	
 	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER|WITH(?:ER)?)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+	private static final Pattern LINE_BREAK_FINDER = Pattern.compile("(\\r?\\n)?");
 	
 	public static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
 		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
@@ -1972,27 +1973,29 @@ public class JavacHandlerUtil {
 	}
 	
 	public static String stripSectionsFromJavadoc(String javadoc) {
-		Matcher m = SECTION_FINDER.matcher(javadoc);
-		if (!m.find()) return javadoc;
+		Matcher sectionMatcher = SECTION_FINDER.matcher(javadoc);
+		if (!sectionMatcher.find()) return javadoc;
 		
-		return javadoc.substring(0, m.start());
+		return javadoc.substring(0, sectionMatcher.start());
 	}
 	
 	public static String getJavadocSection(String javadoc, String sectionNameSpec) {
 		String[] sectionNames = sectionNameSpec.split("\\|");
-		Matcher m = SECTION_FINDER.matcher(javadoc);
+		Matcher sectionMatcher = SECTION_FINDER.matcher(javadoc);
+		Matcher lineBreakMatcher = LINE_BREAK_FINDER.matcher(javadoc);
 		int sectionStart = -1;
 		int sectionEnd = -1;
-		while (m.find()) {
+		while (sectionMatcher.find()) {
 			boolean found = false;
-			for (String sectionName : sectionNames) if (m.group(1).equalsIgnoreCase(sectionName)) {
+			for (String sectionName : sectionNames) if (sectionMatcher.group(1).equalsIgnoreCase(sectionName)) {
 				found = true;
 				break;
 			}
 			if (found) {
-				sectionStart = m.end() + 1;
+				lineBreakMatcher.find(sectionMatcher.end());
+				sectionStart = lineBreakMatcher.end();
 			} else if (sectionStart != -1) {
-				sectionEnd = m.start();
+				sectionEnd = sectionMatcher.start();
 			}
 		}
 		
