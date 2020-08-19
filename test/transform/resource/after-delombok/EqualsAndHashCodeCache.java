@@ -1,4 +1,6 @@
 class EqualsAndHashCode {
+	@java.lang.SuppressWarnings("all")
+	private transient int $hashCodeCache = 0;
 	int x;
 	boolean[] y;
 	Object[] z;
@@ -29,6 +31,7 @@ class EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
+		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
 		final int PRIME = 59;
 		int result = 1;
 		result = result * PRIME + this.x;
@@ -38,6 +41,7 @@ class EqualsAndHashCode {
 		result = result * PRIME + ($a == null ? 43 : $a.hashCode());
 		final java.lang.Object $b = this.b;
 		result = result * PRIME + ($b == null ? 43 : $b.hashCode());
+		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
 		return result;
 	}
 }
@@ -75,7 +79,7 @@ final class EqualsAndHashCode2 {
 		final long $d = java.lang.Double.doubleToLongBits(this.d);
 		result = result * PRIME + (int) ($d >>> 32 ^ $d);
 		result = result * PRIME + (this.b ? 79 : 97);
-		this.$hashCodeCache = result;
+		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
 		return result;
 	}
 }
@@ -100,11 +104,13 @@ final class EqualsAndHashCode3 extends EqualsAndHashCode {
 	public int hashCode() {
 		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
 		final int result = 1;
-		this.$hashCodeCache = result;
+		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
 		return result;
 	}
 }
 class EqualsAndHashCode4 extends EqualsAndHashCode {
+	@java.lang.SuppressWarnings("all")
+	private transient int $hashCodeCache = 0;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -122,7 +128,9 @@ class EqualsAndHashCode4 extends EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
+		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
 		final int result = super.hashCode();
+		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
 		return result;
 	}
 }
@@ -148,7 +156,7 @@ final class EqualsAndHashCode5 extends EqualsAndHashCode {
 	public int hashCode() {
 		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
 		final int result = super.hashCode();
-		this.$hashCodeCache = result;
+		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
 		return result;
 	}
 }

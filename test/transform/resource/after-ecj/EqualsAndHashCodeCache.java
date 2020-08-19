@@ -1,4 +1,5 @@
 @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode {
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
   int x;
   boolean[] y;
   Object[] z;
@@ -35,6 +36,8 @@
     return (other instanceof EqualsAndHashCode);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    if ((this.$hashCodeCache != 0)) 
+        return this.$hashCodeCache;
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
@@ -44,6 +47,7 @@
     result = ((result * PRIME) + (($a == null) ? 43 : $a.hashCode()));
     final java.lang.Object $b = this.b;
     result = ((result * PRIME) + (($b == null) ? 43 : $b.hashCode()));
+    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
     return result;
   }
 }
@@ -87,7 +91,7 @@ final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheSt
     final long $d = java.lang.Double.doubleToLongBits(this.d);
     result = ((result * PRIME) + (int) ($d ^ ($d >>> 32)));
     result = ((result * PRIME) + (this.b ? 79 : 97));
-    this.$hashCodeCache = result;
+    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
     return result;
   }
 }
@@ -113,11 +117,12 @@ final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsA
     if ((this.$hashCodeCache != 0)) 
         return this.$hashCodeCache;
     final int result = 1;
-    this.$hashCodeCache = result;
+    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
     return result;
   }
 }
 @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode4 extends EqualsAndHashCode {
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
   EqualsAndHashCode4() {
     super();
   }
@@ -137,7 +142,10 @@ final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsA
     return (other instanceof EqualsAndHashCode4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    if ((this.$hashCodeCache != 0)) 
+        return this.$hashCodeCache;
     final int result = super.hashCode();
+    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
     return result;
   }
 }
@@ -165,7 +173,7 @@ final @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAn
     if ((this.$hashCodeCache != 0)) 
         return this.$hashCodeCache;
     final int result = super.hashCode();
-    this.$hashCodeCache = result;
+    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
     return result;
   }
 }

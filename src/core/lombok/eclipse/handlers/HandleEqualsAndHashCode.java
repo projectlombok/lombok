@@ -231,16 +231,16 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		}
 		
 		if (cacheHashCode){
-			if (!isFinal) {
-				String msg = "Not caching the result of hashCode: Annotated type is not final.";
-				errorNode.addWarning(msg);
-				cacheHashCode = false;
-			} else if (fieldExists(HASH_CODE_CACHE_NAME, typeNode) != MemberExistsResult.NOT_EXISTS) {
+			if (fieldExists(HASH_CODE_CACHE_NAME, typeNode) != MemberExistsResult.NOT_EXISTS) {
 				String msg = String.format("Not caching the result of hashCode: A field named %s already exists.", HASH_CODE_CACHE_NAME);
 				errorNode.addWarning(msg);
 				cacheHashCode = false;
 			} else {
 				createHashCodeCacheField(typeNode, errorNode.get());
+				if (!isFinal) {
+					String msg = "Caching the result of hashCode for non-final type.";
+					errorNode.addWarning(msg);
+				}
 			}
 		}
 		
@@ -444,7 +444,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			}
 		}
 		
-		/* this.$hashCodeCache = result; */ {
+		/* this.$hashCodeCache = result != 0 ? result : Integer.MIN_VALUE; */ {
 			if (cacheHashCode) {
 				FieldReference hashCodeCacheRef = new FieldReference(HASH_CODE_CACHE_NAME_ARR, p);
 				hashCodeCacheRef.receiver = new ThisReference(pS, pE);
@@ -452,7 +452,16 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				setGeneratedBy(hashCodeCacheRef.receiver, source);
 				SingleNameReference resultRef = new SingleNameReference(RESULT, p);
 				setGeneratedBy(resultRef, source);
-				Assignment cacheResult = new Assignment(hashCodeCacheRef, resultRef, pE);
+				EqualExpression resultNotZero = new EqualExpression(resultRef, makeIntLiteral("0".toCharArray(), source), OperatorIds.NOT_EQUAL);
+				setGeneratedBy(resultNotZero, source);
+				FieldReference integerMinValue = new FieldReference("MIN_VALUE".toCharArray(), p);
+				integerMinValue.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_INTEGER);
+				setGeneratedBy(integerMinValue, source);
+				resultRef = new SingleNameReference(RESULT, p);
+				setGeneratedBy(resultRef, source);
+				ConditionalExpression notZeroOrIntegerMin = new ConditionalExpression(resultNotZero, resultRef, integerMinValue);
+				setGeneratedBy(notZeroOrIntegerMin, source);
+				Assignment cacheResult = new Assignment(hashCodeCacheRef, notZeroOrIntegerMin, pE);
 				cacheResult.sourceStart = pS; cacheResult.statementEnd = cacheResult.sourceEnd = pE;
 				setGeneratedBy(cacheResult, source);
 				statements.add(cacheResult);
