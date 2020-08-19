@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 
 import javax.lang.model.element.Element;
 
+import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope;
@@ -1127,7 +1128,25 @@ public class JavacHandlerUtil {
 			}
 		}
 	}
-	
+
+	static class JCAnnotationReflect {
+		private static Field ATTRIBUTE;
+
+		static {
+			try {
+				ATTRIBUTE = Permit.getField(JCAnnotation.class, "attribute");
+			} catch (Exception ignore) {}
+		}
+
+		static Attribute.Compound getAttribute(JCAnnotation jcAnnotation) {
+			try {
+				return (Attribute.Compound) ATTRIBUTE.get(jcAnnotation);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
+
 	// jdk9 support, types have changed, names stay the same
 	static class ClassSymbolMembersField {
 		private static final Field membersField;
@@ -1178,8 +1197,10 @@ public class JavacHandlerUtil {
 	 * Also takes care of updating the JavacAST.
 	 */
 	public static void injectMethod(JavacNode typeNode, JCMethodDecl method, List<Type> paramTypes, Type returnType) {
+		Context context = typeNode.getContext();
+		Symtab symtab = Symtab.instance(context);
 		JCClassDecl type = (JCClassDecl) typeNode.get();
-		
+
 		if (method.getName().contentEquals("<init>")) {
 			//Scan for default constructor, and remove it.
 			int idx = 0;
@@ -1196,7 +1217,7 @@ public class JavacHandlerUtil {
 				idx++;
 			}
 		}
-		
+
 		addSuppressWarningsAll(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		addGenerated(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		type.defs = type.defs.append(method);
@@ -1204,18 +1225,41 @@ public class JavacHandlerUtil {
 		List<Symbol.VarSymbol> params = null;
 		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
 			ListBuffer<Symbol.VarSymbol> newParams = new ListBuffer<Symbol.VarSymbol>();
-			for (JCTree.JCVariableDecl param : method.getParameters()) {
-				if (param.sym != null) newParams.append(param.sym);
+			for (int i = 0; i < method.getParameters().size(); i++) {
+				JCTree.JCVariableDecl param = method.getParameters().get(i);
+				if (param.sym == null) {
+					Type paramType = param.getType().type;
+					if (paramTypes != null) {
+						paramType = paramTypes.get(i);
+					}
+					VarSymbol varSymbol = new VarSymbol(param.mods.flags, param.name, paramType, symtab.noSymbol);
+					List<JCAnnotation> annotations = param.getModifiers().getAnnotations();
+					if (annotations != null && !annotations.isEmpty()) {
+						ListBuffer<Attribute.Compound> newAnnotations = new ListBuffer<Attribute.Compound>();
+						for (JCAnnotation jcAnnotation : annotations) {
+							Attribute.Compound attribute = JCAnnotationReflect.getAttribute(jcAnnotation);
+							if (attribute != null) {
+								newAnnotations.append(attribute);
+							}
+						}
+						if (annotations.length() == newAnnotations.length()) {
+							varSymbol.appendAttributes(newAnnotations.toList());
+						}
+					}
+					newParams.append(varSymbol);
+				} else {
+					newParams.append(param.sym);
+				}
 			}
 			params = newParams.toList();
 			if (params.length() != method.getParameters().length()) params = null;
 		}
 
 		fixMethodMirror(typeNode.getContext(), typeNode.getElement(), method.getModifiers().flags, method.getName(), paramTypes, params, returnType);
-		
+
 		typeNode.add(method, Kind.METHOD);
 	}
-	
+
 	private static void fixMethodMirror(Context context, Element typeMirror, long access, Name methodName, List<Type> paramTypes, List<Symbol.VarSymbol> params, Type returnType) {
 		if (typeMirror == null || paramTypes == null || returnType == null) return;
 		ClassSymbol cs = (ClassSymbol) typeMirror;
