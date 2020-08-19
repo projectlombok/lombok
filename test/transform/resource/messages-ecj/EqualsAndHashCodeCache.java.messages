@@ -1,2 +1,2 @@
-1 Not caching the result of hashCode: Annotated type is not final.
-23 Not caching the result of hashCode: Annotated type is not final.
+1 Caching the result of hashCode for non-final type.
+23 Caching the result of hashCode for non-final type.

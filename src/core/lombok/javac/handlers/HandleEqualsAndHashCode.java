@@ -40,6 +40,7 @@ import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCConditional;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -204,16 +205,16 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		}
 		
 		if (cacheHashCode){
-			if (!isFinal) {
-				String msg = "Not caching the result of hashCode: Annotated type is not final.";
-				source.addWarning(msg);
-				cacheHashCode = false;
-			} else if (fieldExists(HASH_CODE_CACHE_NAME, typeNode) != MemberExistsResult.NOT_EXISTS) {
+			if (fieldExists(HASH_CODE_CACHE_NAME, typeNode) != MemberExistsResult.NOT_EXISTS) {
 				String msg = String.format("Not caching the result of hashCode: A field named %s already exists.", HASH_CODE_CACHE_NAME);
 				source.addWarning(msg);
 				cacheHashCode = false;
 			} else {
 				createHashCodeCacheField(typeNode, source.get());
+				if (!isFinal) {
+					String msg = "Caching the result of hashCode for non-final type.";
+					source.addWarning(msg);
+				}
 			}
 		}
 		
@@ -348,11 +349,14 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
-		/* this.$hashCodeCache = result; */ {
+		/* this.$hashCodeCache = result != 0 ? result : Integer.MIN_VALUE; */ {
 			if (cacheHashCode) {
 				JCIdent receiver = maker.Ident(typeNode.toName("this"));
 				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(receiver, typeNode.toName(HASH_CODE_CACHE_NAME));
-				statements.append(maker.Exec(maker.Assign(cacheHashCodeFieldAccess, maker.Ident(resultName))));
+				JCExpression resultNotZero = maker.Binary(CTC_NOT_EQUAL, maker.Ident(resultName), maker.Literal(CTC_INT, 0));
+				JCExpression integerMinValue = genJavaLangTypeRef(typeNode, "Integer", "MIN_VALUE");
+				JCConditional notZeroOrIntegerMin = maker.Conditional(resultNotZero, maker.Ident(resultName), integerMinValue);
+				statements.append(maker.Exec(maker.Assign(cacheHashCodeFieldAccess, notZeroOrIntegerMin)));
 			}
 		}
 		
