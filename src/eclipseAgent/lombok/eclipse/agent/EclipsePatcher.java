@@ -774,6 +774,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		final String METHOD_BINDING_SIG = "org.eclipse.jdt.internal.compiler.lookup.MethodBinding";
 		final String COMPLETION_PROPOSAL_COLLECTOR_SIG = "org.eclipse.jdt.ui.text.java.CompletionProposalCollector";
 		final String I_JAVA_COMPLETION_PROPOSAL_SIG = "org.eclipse.jdt.ui.text.java.IJavaCompletionProposal[]";
+		final String AST_NODE = "org.eclipse.jdt.internal.compiler.ast.ASTNode";
 		
 		sm.addScript(wrapReturnValue()
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
@@ -800,6 +801,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
 			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "invalidMethod", "void", MESSAGE_SEND_SIG, METHOD_BINDING_SIG, SCOPE_SIG))
 			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "invalidMethod", "void", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG, SCOPE_SIG))
+			.build());
+		
+		sm.addScript(replaceMethodCall()
+			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
+			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "nonStaticAccessToStaticMethod", "void", AST_NODE, METHOD_BINDING_SIG))
+			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "nonStaticAccessToStaticMethod", "void", PROBLEM_REPORTER_SIG, AST_NODE, METHOD_BINDING_SIG, MESSAGE_SEND_SIG))
+			.requestExtra(StackRequest.THIS)
 			.build());
 		
 		if (!ecj) {
