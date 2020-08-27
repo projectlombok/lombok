@@ -258,6 +258,11 @@ build/website.
 'pack' bzips this up, ready to ship to the server.
 'publish' sends this to the server and runs a script to deploy.
 
+  &gt; ant website.open
+  
+  First builds the website, then hosts it locally and opens it in your browser so
+  you can see the website in its full, template-applied form.
+
   &gt; ant latest-changes.build
 
 Makes a changelog variant that lists only the newest changes; it is included
