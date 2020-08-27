@@ -25,7 +25,7 @@ public class BuilderExample {
 		private boolean created$set;
 		private String name;
 		private int age;
-		private Set<String> occupations;
+		private java.util.ArrayList<String> occupations;
 		
 		BuilderExampleBuilder() {
 		}
@@ -48,7 +48,7 @@ public class BuilderExample {
 		
 		public BuilderExampleBuilder occupation(String occupation) {
 			if (this.occupations == null) {
-				this.occupations = new Set<String>();
+				this.occupations = new java.util.ArrayList<String>();
 			}
 			
 			this.occupations.add(occupation);
@@ -57,7 +57,7 @@ public class BuilderExample {
 		
 		public BuilderExampleBuilder occupations(Collection<? extends String> occupations) {
 			if (this.occupations == null) {
-				this.occupations = new Set<String>();
+				this.occupations = new java.util.ArrayList<String>();
 			}
 
 			this.occupations.addAll(occupations);
