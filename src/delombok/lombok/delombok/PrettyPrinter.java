@@ -188,12 +188,6 @@ public class PrettyPrinter extends JCTree.Visitor {
 		return getEndPosition(tree, compilationUnit);
 	}
 	
-	private static int lineEndPos(String s, int start) {
-		int pos = s.indexOf('\n', start);
-		if (pos < 0) pos = s.length();
-		return pos;
-	}
-	
 	private boolean needsAlign, needsNewLine, onNewLine = true, needsSpace, aligned;
 	
 	public static final class UncheckedIOException extends RuntimeException {
@@ -434,23 +428,25 @@ public class PrettyPrinter extends JCTree.Visitor {
 	private void printDocComment(JCTree tree) {
 		String dc = getJavadocFor(tree);
 		if (dc == null) return;
+		
 		aPrintln("/**");
-		int pos = 0;
-		int endpos = lineEndPos(dc, pos);
 		boolean atStart = true;
-		while (pos < dc.length()) {
-			String line = dc.substring(pos, endpos);
-			if (line.trim().isEmpty() && atStart) {
+		
+		for (String line : dc.split("\\r?\\n")) {
+			if (atStart && line.trim().isEmpty()) {
 				atStart = false;
 				continue;
 			}
+			
 			atStart = false;
 			aPrint(" *");
-			if (pos < dc.length() && dc.charAt(pos) > ' ') print(" ");
-			println(dc.substring(pos, endpos));
-			pos = endpos + 1;
-			endpos = lineEndPos(dc, pos);
+			if (!line.isEmpty() && !Character.isWhitespace(line.charAt(0))) {
+				print(" ");
+			}
+			
+			println(line);
 		}
+		
 		aPrintln(" */");
 	}
 	
