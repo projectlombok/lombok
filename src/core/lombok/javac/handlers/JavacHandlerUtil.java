@@ -1228,10 +1228,7 @@ public class JavacHandlerUtil {
 			for (int i = 0; i < method.getParameters().size(); i++) {
 				JCTree.JCVariableDecl param = method.getParameters().get(i);
 				if (param.sym == null) {
-					Type paramType = param.getType().type;
-					if (paramTypes != null) {
-						paramType = paramTypes.get(i);
-					}
+					Type paramType = paramTypes == null ? param.getType().type : paramTypes.get(i);
 					VarSymbol varSymbol = new VarSymbol(param.mods.flags, param.name, paramType, symtab.noSymbol);
 					List<JCAnnotation> annotations = param.getModifiers().getAnnotations();
 					if (annotations != null && !annotations.isEmpty()) {
