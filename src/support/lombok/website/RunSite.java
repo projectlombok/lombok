@@ -3,11 +3,8 @@ package lombok.website;
 import static spark.Spark.*;
 
 import java.awt.Desktop;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +13,6 @@ import java.nio.file.Paths;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import spark.resource.InputStreamResource;
 
 public class RunSite {
 	private static final int DEFAULT_PORT = 4569;
