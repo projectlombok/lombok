@@ -104,6 +104,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			patchRetrieveEllipsisStartPosition(sm);
 			patchRetrieveRightBraceOrSemiColonPosition(sm);
 			patchRetrieveProperRightBracketPosition(sm);
+			patchRetrieveStartBlockPosition(sm);
 			patchSetGeneratedFlag(sm);
 			patchDomAstReparseIssues(sm);
 			patchHideGeneratedNodes(sm);
@@ -414,6 +415,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
 	}
 	
+	private static void patchRetrieveStartBlockPosition(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartBlockPosition"))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveStartBlockPosition", "int", "int", "int"))
+				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
+	}
+	
 	private static void patchRetrieveRightBraceOrSemiColonPosition(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
@@ -450,7 +458,15 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "extractSubArrayType", "org.eclipse.jdt.core.dom.ArrayType", "org.eclipse.jdt.core.dom.ArrayType", "int", "int"))
 			.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ASTConverter", "retrieveProperRightBracketPosition", "int", "int", "int"))
-			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveProperRightBracketPosition", "int", "int", "org.eclipse.jdt.core.dom.ArrayType"))
+			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveProperRightBracketPosition", "int", "int", "org.eclipse.jdt.core.dom.Type"))
+			.requestExtra(StackRequest.PARAM1)
+			.transplant()
+			.build());
+		
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToArray", "org.eclipse.jdt.core.dom.ArrayType", "org.eclipse.jdt.core.dom.Type", "int", "int", "int", "org.eclipse.jdt.internal.compiler.ast.Annotation[][]"))
+			.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ASTConverter", "retrieveProperRightBracketPosition", "int", "int", "int"))
+			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveProperRightBracketPosition", "int", "int", "org.eclipse.jdt.core.dom.Type"))
 			.requestExtra(StackRequest.PARAM1)
 			.transplant()
 			.build());
@@ -507,6 +523,8 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToVariableDeclarationFragment", "org.eclipse.jdt.core.dom.VariableDeclarationFragment", "org.eclipse.jdt.internal.compiler.ast.FieldDeclaration"))
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToVariableDeclarationFragment", "org.eclipse.jdt.core.dom.VariableDeclarationFragment", "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration"))
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToVariableDeclarationStatement", "org.eclipse.jdt.core.dom.VariableDeclarationStatement", "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "createBaseType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference", "long[]", "org.eclipse.jdt.internal.compiler.ast.Annotation[][]", "char[][]", "int", "int", "boolean"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "createQualifiedType", "org.eclipse.jdt.core.dom.QualifiedType", "org.eclipse.jdt.internal.compiler.ast.TypeReference", "long[]", "org.eclipse.jdt.internal.compiler.ast.Annotation[][]", "char[][]", "int", "org.eclipse.jdt.core.dom.Type"))
 /* Targets above are only patched because the resulting dom nodes should be marked if generated. */
 				.request(StackRequest.PARAM1, StackRequest.RETURN_VALUE)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlag", "void",
@@ -542,6 +560,43 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlagForName", "void",
 						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
+		
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.PrimitiveType", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM1)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlag", "void",
+						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.transplant()
+				.build());
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleType", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM1)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlag", "void",
+						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.transplant()
+				.build());
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ParameterizedType", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM1)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlag", "void",
+						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.transplant()
+				.build());
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedType", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM1)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlag", "void",
+						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.transplant()
+				.build());
 
 		/* Set generated flag for QualifiedNames */
 		sm.addScript(ScriptBuilder.wrapMethodCall()
