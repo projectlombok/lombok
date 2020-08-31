@@ -1,0 +1,113 @@
+<!--
+ Copyright (C) 2010-2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok.build-support" default="dist" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" basedir="..">
+	<description>
+This buildfile is part of projectlombok.org. It is responsible for tasks that help with setting up the build infrastructure.
+None of these tasks are normally needed, unless modifying how the build works, such as updating dependencies.
+	</description>
+	
+	<condition property="executable.suffix" value=".exe" else="">
+		<os family="windows" />
+	</condition>
+	
+	<condition property="java_home.exe" value="/usr/libexec/java_home">
+		<os family="mac" />
+	</condition>
+	
+	<target name="-ask.target-jdk.via-javahome" if="java_home.exe" unless="target.jdk">
+		<input addproperty="target.jdk.ver">You need to specify the JDK9+ jdk whose jdk.compiler and java.compiler modules are to be converted. Use -Dtarget.jdk.ver=14 to automate this, or type a version in now (for example: 11):</input>
+		<condition property="target.jdk.ver.missing" value="true">
+			<equals arg1="${target.jdk.ver}" arg2="" trim="true" />
+		</condition>
+		<fail if="target.jdk.ver.missing">Aborted (no version entered)</fail>
+		<exec executable="${java_home.exe}" outputproperty="target.jdk" failonerror="true">
+			<arg value="-v" />
+			<arg value="${target.jdk.ver}" />
+		</exec>
+		<echo>Using VM at: ${target.jdk}</echo>
+	</target>
+	
+	<target name="-ask.target-jdk" depends="-ask.target-jdk.via-javahome" unless="target.jdk">
+		<input addproperty="target.jdk">You need to specify the JDK9+ jdk whose jdk.compiler and java.compiler modules are to be converted. Run ant with -Dtarget.jdk=/full/path/here to automate this, or type the path in now (for example: /Library/JavaVirtualMachines/jdk-14.jdk/Contents/Home):</input>
+	</target>
+	
+	<target name="make.javac-patch-jar" depends="-ask.target-jdk" description="to test javac13 on JDK14, for example, you need a jar (not a jmod), to use with --patch-modules. This task makes those.">
+		<exec executable="${target.jdk}/bin/java${executable.suffix}" outputproperty="target.javac.version.full" errorproperty="target.javac.version.err">
+			<arg value="--version" />
+		</exec>
+		<condition property="target.javac.tooearly" >
+			<contains string="${target.javac.version.err}" substring="Unrecognized option" />
+		</condition>
+		<fail if="target.javac.tooearly">This tool converts javac as stored in jmods of JDK distributions; JDK8 and below doesn't ship like that, and you don't need this for 8 and below.</fail>
+		
+		<delete dir="build/jdk-compiler-jar" quiet="true" />
+		<mkdir dir="build/jdk-compiler-jar" />
+		<echo file="build/jdk-compiler-jar/version.txt">${target.javac.version.full}</echo>
+		<copy file="build/jdk-compiler-jar/version.txt" tofile="build/jdk-compiler-jar/shortversion.txt" />
+		<replaceregexp file="build/jdk-compiler-jar/version.txt" match="^openjdk ([^ ]+) (\d{4}-\d{2}-\d{2}).*$" replace="\1_\2" flags="si" />
+		<replaceregexp file="build/jdk-compiler-jar/shortversion.txt" match="^openjdk ([^ ]+) (\d{4}-\d{2}-\d{2}).*$" replace="\1" flags="si" />
+		<loadfile property="target.javac.version" srcfile="build/jdk-compiler-jar/version.txt" />
+		<loadfile property="target.javac.shortversion" srcfile="build/jdk-compiler-jar/shortversion.txt" />
+		
+		<mkdir dir="build/jdk-compiler-jar/java.compiler" />
+		<exec executable="${target.jdk}/bin/jmod${executable.suffix}">
+			<arg value="--dir" />
+			<arg file="build/jdk-compiler-jar/java.compiler" />
+			<arg value="extract" />
+			<arg file="${target.jdk}/jmods/java.compiler.jmod" />
+		</exec>
+		<jar destfile="build/javac${target.javac.version}-java.compiler.jar" index="true">
+			<fileset dir="build/jdk-compiler-jar/java.compiler/classes" />
+			<fileset dir="build/jdk-compiler-jar/java.compiler/legal" />
+		</jar>
+		
+		<mkdir dir="build/jdk-compiler-jar/jdk.compiler" />
+		<exec executable="${target.jdk}/bin/jmod${executable.suffix}">
+			<arg value="--dir" />
+			<arg file="build/jdk-compiler-jar/jdk.compiler" />
+			<arg value="extract" />
+			<arg file="${target.jdk}/jmods/jdk.compiler.jmod" />
+		</exec>
+		<jar destfile="build/javac${target.javac.version}-jdk.compiler.jar" index="true">
+			<fileset dir="build/jdk-compiler-jar/jdk.compiler/classes" />
+			<fileset dir="build/jdk-compiler-jar/jdk.compiler/legal" />
+		</jar>
+		
+		<tstamp>
+			<format property="target.javac.pubstamp" pattern="yyyyMMddHHmmss" />
+		</tstamp>
+		<echo file="buildScripts/ivy-repo/net.java.openjdk.custom-javac${target.javac.shortversion}-${target.javac.version}.xml">&lt;ivy-module version="2.0"&gt;
+	&lt;info organisation="net.java.openjdk.custom" module="javac${target.javac.shortversion}" revision="${target.javac.version}" publication="${target.javac.pubstamp}"&gt;
+		&lt;license name="GNU General Public License v2 with Classpath Exception" url="https://openjdk.java.net/legal/gplv2+ce.html" /&gt;
+		&lt;description homepage="https://openjdk.java.net" /&gt;
+	&lt;/info&gt;
+	&lt;configurations&gt;
+		&lt;conf name="runtime" /&gt;
+	&lt;/configurations&gt;
+	&lt;publications&gt;
+		&lt;artifact name="javac${target.javac.shortversion}-java.compiler" conf="runtime" url="https://projectlombok.org/ivyrepo/langtools/javac${target.javac.version}-java.compiler.jar" /&gt;
+		&lt;artifact name="javac${target.javac.shortversion}-jdk.compiler" conf="runtime" url="https://projectlombok.org/ivyrepo/langtools/javac${target.javac.version}-jdk.compiler.jar" /&gt;
+	&lt;/publications&gt;
+&lt;/ivy-module&gt;</echo>
+		<echo>File build/javac${target.javac.version}-java.compiler.jar and build/javac${target.javac.version}-jdk.compiler.jar are available for upload; custom ivy target made as GAV net.java.openjdk.custom::javac${target.javac.shortversion}::${target.javac.version}</echo>
+	</target>
+</project>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,33 @@ package lombok;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import lombok.eclipse.Eclipse;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.Compiler;
 import org.eclipse.jdt.internal.compiler.ICompilerRequestor;
 import org.eclipse.jdt.internal.compiler.IErrorHandlingPolicy;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.eclipse.jdt.internal.compiler.batch.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
@@ -69,7 +77,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
-		warnings.put(CompilerOptions.OPTION_Source, "1." + Eclipse.getEcjCompilerVersion());
+		int ecjVersion = Eclipse.getEcjCompilerVersion();
+		warnings.put(CompilerOptions.OPTION_Source, (ecjVersion < 9 ? "1." : "") + ecjVersion);
 		options.set(warnings);
 		return options;
 	}
@@ -92,7 +101,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	}
 	
 	@Override
-	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences) throws Throwable {
+	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences, int minVersion) throws Throwable {
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
 		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
 		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
@@ -102,9 +111,10 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		};
 		
 		String source = readFile(file);
-		final CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), encoding == null ? "UTF-8" : encoding);
+		char[] sourceArray = source.toCharArray();
+		final org.eclipse.jdt.internal.compiler.batch.CompilationUnit sourceUnit = new org.eclipse.jdt.internal.compiler.batch.CompilationUnit(sourceArray, file.getName(), encoding == null ? "UTF-8" : encoding);
 		
-		Compiler ecjCompiler = new Compiler(createFileSystem(file), ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
+		Compiler ecjCompiler = new Compiler(createFileSystem(file, minVersion), ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
 			@Override protected synchronized void addCompilationUnit(ICompilationUnit inUnit, CompilationUnitDeclaration parsedUnit) {
 				if (inUnit == sourceUnit) compilationUnit_.set(parsedUnit);
 				super.addCompilationUnit(inUnit, parsedUnit);
@@ -125,10 +135,76 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		if (cud == null) result.append("---- No CompilationUnit provided by ecj ----");
 		else result.append(cud.toString());
 		
+		if (eclipseAvailable()) {
+			EclipseDomConversion.toDomAst(cud, sourceArray);
+		}
+		
 		return true;
 	}
 	
-	private FileSystem createFileSystem(File file) {
+	private boolean eclipseAvailable() {
+		try {
+			Class.forName("org.eclipse.jdt.core.dom.CompilationUnit");
+		} catch (Throwable t) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private static final String bootRuntimePath = System.getProperty("delombok.bootclasspath");
+	
+	private static class EclipseDomConversion {
+		static CompilationUnit toDomAst(CompilationUnitDeclaration cud, final char[] source) {
+			Map<String, String> options = new HashMap<String, String>();
+			options.put(JavaCore.COMPILER_SOURCE, "11");
+			options.put("org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures", "enabled");
+			try {
+				org.eclipse.jdt.internal.core.CompilationUnit ccu = new org.eclipse.jdt.internal.core.CompilationUnit(null, null, null) {
+					@Override public char[] getContents() {
+						return source;
+					}
+				};
+				return AST.convertCompilationUnit(4, cud, options, false, ccu, 0, null);
+			} catch (SecurityException e) {
+				try {
+					debugClasspathConflicts("org/eclipse/jdt/internal/compiler");
+				} catch (Exception e2) {
+					throw Lombok.sneakyThrow(e2);
+				}
+				throw e;
+			}
+		}
+	}
+	
+	@SuppressWarnings({"all"})
+	private static void debugClasspathConflicts(String prefixToLookFor) throws Exception {
+		String[] paths = System.getProperty("java.class.path").split(":");
+		for (String p : paths) {
+			Path cp = Paths.get(p);
+			if (Files.isDirectory(cp)) {
+				if (Files.isDirectory(cp.resolve(prefixToLookFor))) System.out.println("** DIR-BASED: " + cp);
+			} else if (Files.isRegularFile(cp)) {
+				JarFile jf = new JarFile(cp.toFile());
+				try {
+					Enumeration<JarEntry> jes = jf.entries();
+					while (jes.hasMoreElements()) {
+						JarEntry je = jes.nextElement();
+						if (je.getName().startsWith(prefixToLookFor)) {
+							System.out.println("** JAR-BASED: " + cp);
+							break;
+						}
+					}
+				} finally {
+					jf.close();
+				}
+			} else {
+				System.out.println("** MISSING: " + cp);
+			}
+		}
+	}
+	
+	private FileSystem createFileSystem(File file, int minVersion) {
 		List<String> classpath = new ArrayList<String>();
 		for (Iterator<String> i = classpath.iterator(); i.hasNext();) {
 			if (FileSystem.getClasspath(i.next(), "UTF-8", null) == null) {
@@ -137,16 +213,14 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		}
 		if (new File("bin").exists()) classpath.add("bin");
 		classpath.add("dist/lombok.jar");
-		classpath.add("lib/oracleJDK8Environment/rt.jar");
-		classpath.add("lib/test/commons-logging-commons-logging.jar");
-		classpath.add("lib/test/org.slf4j-slf4j-api.jar");
-		classpath.add("lib/test/org.slf4j-slf4j-ext.jar");
-		classpath.add("lib/test/log4j-log4j.jar");
-		classpath.add("lib/test/org.apache.logging.log4j-log4j-api.jar");
-		classpath.add("lib/test/org.jboss.logging-jboss-logging.jar");
-		classpath.add("lib/test/com.google.guava-guava.jar");
-		classpath.add("lib/test/com.google.code.findbugs-findbugs.jar");
-		classpath.add("lib/test/com.google.flogger-flogger.jar");
+		if (bootRuntimePath == null || bootRuntimePath.isEmpty()) throw new IllegalStateException("System property delombok.bootclasspath is not set; set it to the rt of java6 or java8");
+		classpath.add(bootRuntimePath);
+		for (File f : new File("lib/test").listFiles()) {
+			String fn = f.getName();
+			if (fn.length() < 4) continue;
+			if (!fn.substring(fn.length() - 4).toLowerCase().equals(".jar")) continue;
+			classpath.add("lib/test/" + fn);
+		}
 		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
 	}
 }

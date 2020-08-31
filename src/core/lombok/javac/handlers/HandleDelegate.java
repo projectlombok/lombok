@@ -48,6 +48,7 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
@@ -175,14 +176,14 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		List<MethodSig> signaturesToExclude = new ArrayList<MethodSig>();
 		Set<String> banList = new HashSet<String>();
 		banList.addAll(METHODS_IN_OBJECT);
-		/* To exclude all methods in the class itself, try this:
-		for (Symbol member : ((JCClassDecl)typeNode.get()).sym.getEnclosedElements()) {
-			if (member instanceof MethodSymbol) {
-				MethodSymbol method = (MethodSymbol) member;
-				banList.add(printSig((ExecutableType) method.asType(), method.name, annotationNode.getTypesUtil()));
+		
+		// Add already implemented methods to ban list
+		JavacNode typeNode = upToTypeNode(annotationNode);
+		for (Symbol m : ((JCClassDecl)typeNode.get()).sym.getEnclosedElements()) {
+			if (m instanceof MethodSymbol) {
+				banList.add(printSig((ExecutableType) m.asType(), m.name, annotationNode.getTypesUtil()));
 			}
 		}
-		 */
 		
 		try {
 			for (Type t : toExclude) {
@@ -389,10 +390,11 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			boolean isDeprecated = (member.flags() & DEPRECATED) != 0;
 			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem));
 		}
-		
-		if (ct.supertype_field instanceof ClassType) addMethodBindings(signatures, (ClassType) ct.supertype_field, types, banList);
-		if (ct.interfaces_field != null) for (Type iface : ct.interfaces_field) {
-			if (iface instanceof ClassType) addMethodBindings(signatures, (ClassType) iface, types, banList);
+
+		for (Type type : types.directSupertypes(ct)) {
+			if (type instanceof ClassType) {
+				addMethodBindings(signatures, (ClassType) type, types, banList);
+			}
 		}
 	}
 	

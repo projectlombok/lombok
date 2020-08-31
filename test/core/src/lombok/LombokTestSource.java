@@ -358,4 +358,8 @@ public class LombokTestSource {
 		if (specifiedEncoding == null || specifiedEncoding.equalsIgnoreCase(encoding)) return source;
 		return read0(sourceFolder, messagesFolder, fileName, specifiedEncoding);
 	}
+	
+	public int minVersion() {
+		return Math.max(6, versionLowerLimit);
+	}
 }

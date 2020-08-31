@@ -1,0 +1,58 @@
+<!--
+ Copyright (C) 2010-2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok.create-intellij-project" default="" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" basedir="..">
+	<description>
+This buildfile is part of projectlombok.org. It creates the infrastructure needed to develop lombok on intellij.
+	</description>
+	
+	<target name="intellij" depends="deps" description="Creates intellij project files and downloads all dependencies. Open this directory as a project in IntelliJ after running this target">
+		<echo> ** WARNING ** The core lombok contributors all use eclipse to develop lombok. This script will attempt to set up your lombok directory up as intellij project; whether can be used in a modern intellij is currently unknown. Please do continue, but be aware that trying to work on lombok from intellij may run into problems. If you want to adopt 'work on lombok via intellij' as a task, we're open to it!</echo>
+		<echo>NOT IMPLEMENTED: The project should optimally be configured as a java1.6, using the rt.jar in lib/openjdk6_rt.jar as boot basis, to ensure lombok remains 1.6 compatible.</echo>
+		<echo>NOT IMPLEMENTED: Ability to run tests targeted at a specific jvm/javac/ecj/eclipse release; the relevant entrypoint test classes are lombok.RunBaseAndJavacTests and lombok.RunEclipseTests - you can run the eclipse tests even on intellij; an eclipse installation is not required.</echo>
+		<input>Press return to continue</input>
+		<ivy:intellijgen>
+			<conf name="build" sources="contrib" />
+			<conf name="test" sources="contrib" />
+			<module name="lombok" depends="build, test">
+				<srcdir dir="src/core" />
+				<srcdir dir="src/core8" />
+				<srcdir dir="src/launch" />
+				<srcdir dir="src/utils" />
+				<srcdir dir="src/eclipseAgent" />
+				<srcdir dir="src/installer" />
+				<srcdir dir="src/delombok" />
+				<srcdir dir="src/stubs" />
+				<srcdir dir="src/support" />
+				<srcdir dir="experimental/src" />
+				<srcdir dir="test/transform/src" test="true" />
+				<srcdir dir="test/core/src" test="true" />
+				<srcdir dir="test/bytecode/src" test="true" />
+				<srcdir dir="test/configuration/src" test="true" />
+				<srcdir dir="test/stubs" test="true" />
+			</module>
+			<settings>
+				<url url="https://projectlombok.org/downloads/lombok.intellij.settings" />
+			</settings>
+			<apt enabled="true" />
+		</ivy:intellijgen>
+	</target>
+</project>

@@ -38,6 +38,7 @@ import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.search.SearchMatch;
@@ -514,6 +515,12 @@ final class PatchFixesHider {
 			if (retVal != -1 || fd == null) return retVal;
 			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(fd) != null;
 			if (isGenerated) return fd.declarationSourceEnd;
+			return -1;
+		}
+		
+		public static int fixRetrieveProperRightBracketPosition(int retVal, ArrayType arrayType) {
+			if (retVal != -1 || arrayType == null) return retVal;
+			if (isGenerated(arrayType)) return arrayType.getStartPosition() + arrayType.getLength() - 1;
 			return -1;
 		}
 		

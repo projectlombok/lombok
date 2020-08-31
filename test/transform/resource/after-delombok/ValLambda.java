@@ -1,4 +1,6 @@
 // version 8:
+import java.io.Serializable;
+
 class ValLambda {
 	static {
 		final java.lang.Runnable foo = (System.currentTimeMillis() > 0) ? (Runnable) () -> {
@@ -15,8 +17,8 @@ class ValLambda {
 		};
 	}
 	
-	public void easyIntersectionLambda() {
-		final java.lang.Runnable foo = (Runnable & java.io.Serializable) () -> {
+	public void intersectionLambda() {
+		final java.io.Serializable foo = (Runnable & Serializable) () -> {
 		};
 		final java.io.Serializable bar = (java.io.Serializable & Runnable) () -> {
 		};

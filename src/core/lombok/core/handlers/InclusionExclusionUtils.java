@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,11 +76,13 @@ public class InclusionExclusionUtils {
 		private final L node;
 		private final I inc;
 		private final boolean defaultInclude;
+		private final boolean explicitRank;
 		
-		public Included(L node, I inc, boolean defaultInclude) {
+		public Included(L node, I inc, boolean defaultInclude, boolean explicitRank) {
 			this.node = node;
 			this.inc = inc;
 			this.defaultInclude = defaultInclude;
+			this.explicitRank = explicitRank;
 		}
 		
 		public L getNode() {
@@ -94,6 +96,10 @@ public class InclusionExclusionUtils {
 		public boolean isDefaultInclude() {
 			return defaultInclude;
 		}
+		
+		public boolean hasExplicitRank() {
+			return explicitRank;
+		}
 	}
 	
 	private static String innerAnnName(Class<? extends Annotation> type) {
@@ -106,7 +112,7 @@ public class InclusionExclusionUtils {
 		return name;
 	}
 	
-	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N, I extends Annotation> List<Included<L, I>> handleIncludeExcludeMarking(Class<I> inclType, String replaceName, Class<? extends Annotation> exclType, LombokNode<A, L, N> typeNode, AnnotationValues<?> annotation, LombokNode<A, L, N> annotationNode, boolean includeTransient) {
+	private static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N, I extends Annotation> List<Included<L, I>> handleIncludeExcludeMarking(Class<I> inclType, String replaceName, Class<? extends Annotation> exclType, LombokNode<A, L, N> typeNode, AnnotationValues<?> annotation, LombokNode<A, L, N> annotationNode, boolean includeTransient) {
 		List<String> oldExcludes = (annotation != null && annotation.isExplicit("exclude")) ? annotation.getAsStringList("exclude") : null;
 		List<String> oldIncludes = (annotation != null && annotation.isExplicit("of")) ? annotation.getAsStringList("of") : null;
 		
@@ -118,9 +124,6 @@ public class InclusionExclusionUtils {
 		if (typeNode == null || typeNode.getKind() != Kind.TYPE) return null;
 		
 		checkForBogusFieldNames(typeNode, annotation, oldExcludes, oldIncludes);
-		String inclTypeName = innerAnnName(inclType);
-		String exclTypeName = innerAnnName(exclType);
-		
 		if (oldExcludes != null && oldIncludes != null) {
 			oldExcludes = null;
 			if (annotation != null) annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
@@ -134,7 +137,7 @@ public class InclusionExclusionUtils {
 			if (markExclude || markInclude != null) memberAnnotationMode = true;
 			
 			if (markInclude != null && markExclude) {
-				child.addError("@" + exclTypeName + " and @" + inclTypeName + " are mutually exclusive; the @Include annotation will be ignored");
+				child.addError("@" + innerAnnName(exclType) + " and @" + innerAnnName(inclType) + " are mutually exclusive; the @Include annotation will be ignored");
 				markInclude = null;
 			}
 			
@@ -157,20 +160,20 @@ public class InclusionExclusionUtils {
 				I inc = markInclude.getInstance();
 				if (child.getKind() == Kind.METHOD) {
 					if (child.countMethodParameters() > 0) {
-						child.addError("Methods included with @" + inclTypeName + " must have no arguments; it will not be included");
+						child.addError("Methods included with @" + innerAnnName(inclType) + " must have no arguments; it will not be included");
 						continue;
 					}
 					String n = replaceName != null ?  markInclude.getAsString(replaceName) : "";
 					if (n.isEmpty()) n = name;
 					namesToAutoExclude.add(n);
 				}
-				members.add(new Included<L, I>(child, inc, false));
+				members.add(new Included<L, I>(child, inc, false, markInclude.isExplicit("rank")));
 				continue;
 			}
 			
 			if (onlyExplicitlyIncluded) continue;
 			if (oldIncludes != null) {
-				if (child.getKind() == Kind.FIELD && oldIncludes.contains(name)) members.add(new Included<L, I>(child, null, false));
+				if (child.getKind() == Kind.FIELD && oldIncludes.contains(name)) members.add(new Included<L, I>(child, null, false, false));
 				continue;
 			}
 			if (child.getKind() != Kind.FIELD) continue;
@@ -178,7 +181,7 @@ public class InclusionExclusionUtils {
 			if (child.isTransient() && !includeTransient) continue;
 			if (name.startsWith("$")) continue;
 			if (child.isEnumMember()) continue;
-			members.add(new Included<L, I>(child, null, true));
+			members.add(new Included<L, I>(child, null, true, false));
 		}
 		
 		/* delete default-included fields with the same name as an explicit inclusion */ {
@@ -207,22 +210,37 @@ public class InclusionExclusionUtils {
 			@Override public int compare(Included<L, ToString.Include> a, Included<L, ToString.Include> b) {
 				int ra = a.getInc() == null ? 0 : a.getInc().rank();
 				int rb = b.getInc() == null ? 0 : b.getInc().rank();
-				if (ra < rb) return +1;
-				if (ra > rb) return -1;
-				
-				int pa = a.getNode().getStartPos();
-				int pb = b.getNode().getStartPos();
-				
-				if (pa < pb) return -1;
-				if (pa > pb) return +1;
-				
-				return 0;
+
+				return compareRankOrPosition(ra, rb, a.getNode(), b.getNode());
 			}
 		});
 		return members;
 	}
 	
 	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> List<Included<L, EqualsAndHashCode.Include>> handleEqualsAndHashCodeMarking(LombokNode<A, L, N> typeNode, AnnotationValues<EqualsAndHashCode> annotation, LombokNode<A, L, N> annotationNode) {
-		return handleIncludeExcludeMarking(EqualsAndHashCode.Include.class, "replaces", EqualsAndHashCode.Exclude.class, typeNode, annotation, annotationNode, false);
+		List<Included<L, EqualsAndHashCode.Include>> members = handleIncludeExcludeMarking(EqualsAndHashCode.Include.class, "replaces", EqualsAndHashCode.Exclude.class, typeNode, annotation, annotationNode, false);
+
+		Collections.sort(members, new Comparator<Included<L, EqualsAndHashCode.Include>>() {
+			@Override public int compare(Included<L, EqualsAndHashCode.Include> a, Included<L, EqualsAndHashCode.Include> b) {
+				int ra = a.hasExplicitRank() ? a.getInc().rank() : HandlerUtil.defaultEqualsAndHashcodeIncludeRank(a.node.fieldOrMethodBaseType());
+				int rb = b.hasExplicitRank() ? b.getInc().rank() : HandlerUtil.defaultEqualsAndHashcodeIncludeRank(b.node.fieldOrMethodBaseType());
+
+				return compareRankOrPosition(ra, rb, a.getNode(), b.getNode());
+			}
+		});
+		return members;
+	}
+
+	private static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> int compareRankOrPosition(int ra, int rb, LombokNode<A, L, N> nodeA, LombokNode<A, L, N> nodeB) {
+		if (ra < rb) return +1;
+		if (ra > rb) return -1;
+
+		int pa = nodeA.getStartPos();
+		int pb = nodeB.getStartPos();
+
+		if (pa < pb) return -1;
+		if (pa > pb) return +1;
+
+		return 0;
 	}
 }

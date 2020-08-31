@@ -1,0 +1,212 @@
+<!--
+ Copyright (C) 2010-2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok.create-eclipse-project" default="" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" basedir="..">
+	<description>
+This buildfile is part of projectlombok.org. It creates the infrastructure needed to develop lombok on eclipse.
+	</description>
+	
+	<target name="eclipse" depends="eclipse.projectfiles, eclipse.testtarget.default" description="Downloads dependencies, create eclipse project files, as well as debug/run test targets. Open this directory as project in eclipse (via import... existing projects)" />
+	
+	<target name="eclipse.projectfiles" depends="deps">
+		<ivy:eclipsegen source="1.6">
+			<srcdir dir="src/core" />
+			<srcdir dir="src/core8" />
+			<srcdir dir="src/launch" />
+			<srcdir dir="src/utils" />
+			<srcdir dir="src/eclipseAgent" />
+			<srcdir dir="src/installer" />
+			<srcdir dir="src/delombok" />
+			<srcdir dir="src/stubs" />
+			<srcdir dir="src/support" />
+			<srcdir dir="experimental/src" />
+			<srcdir dir="test/transform/src" />
+			<srcdir dir="test/core/src" />
+			<srcdir dir="test/bytecode/src" />
+			<srcdir dir="test/configuration/src" />
+			<srcdir dir="test/stubs" />
+			<conf name="build" sources="sources" />
+			<conf name="javac6" sources="sources" />
+			<conf name="eclipse-oxygen" sources="sources" />
+			<conf name="test" sources="sources" />
+			<conf name="buildtools" sources="sources" />
+			<local org="org.projectlombok" name="lombok.patcher" dir="../lombok.patcher" />
+			<settings>
+				<url url="https://projectlombok.org/downloads/lombok.eclipse.settings" />
+			</settings>
+			<apt location="lib/build/projectlombok.org-spi.jar" />
+		</ivy:eclipsegen>
+	</target>
+	
+	<target name="eclipse.testtarget.default" depends="deps, compile.support">
+		<property name="cp.test" refid="cp.test" />
+		<property name="cp.stripe" refid="cp.stripe" />
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Base" />
+			<arg value="testType=lombok.TestBase" />
+			<arg value="jvmTarget=1.8" />
+			<arg value="bootpath=${jdk8-rt.loc}" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="favorite" />
+		</java>
+		
+		<fetchdep.eclipse version="202006" />
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Eclipse-202006" />
+			<arg value="testType=lombok.TestEclipse" />
+			<arg value="shadowLoaderBased" />
+			<arg value="jvmTarget=1.8" />
+			<arg value="bootpath=${jdk8-rt.loc}" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="conf.eclipse-202006=${cp.eclipse-202006}" />
+			<arg value="favorite" />
+		</java>
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Javac14" />
+			<arg value="testType=lombok.TestJavac" />
+			<arg value="jvmTarget=14" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="favorite" />
+		</java>
+	</target>
+	
+	<macrodef name="eclipse.testtarget.conf.jvmtarget">
+		<attribute name="question" default="Which JDK do you want to target? Enter a version, such as '11'. Suggested (default): 8" />
+		<attribute name="validargs" default="6,8,11,14" />
+		<sequential>
+			<property name="cp.test" refid="cp.test" />
+			<property name="cp.stripe" refid="cp.stripe" />
+			
+			<input message="@{question}" validargs="@{validargs}" defaultvalue="8" addproperty="inputs.jvmtarget.raw" />
+			
+			<condition property="inputs.jvmtarget" value="1.6"><equals arg1="${inputs.jvmtarget.raw}" arg2="6" /></condition>
+			<condition property="inputs.jvmtarget" value="1.8"><equals arg1="${inputs.jvmtarget.raw}" arg2="8" /></condition>
+			<property name="inputs" value="${inputs.jvmtarget.raw}" />
+			
+			<condition property="inputs.bootpath" value="${jdk6-rt.loc}"><equals arg1="${inputs.jvmtarget.raw}" arg2="6" /></condition>
+			<condition property="inputs.bootpath" value="${jdk8-rt.loc}"><equals arg1="${inputs.jvmtarget.raw}" arg2="8" /></condition>
+			<property name="inputs.bootpath" value="0" />
+		</sequential>
+	</macrodef>
+	
+	<target name="eclipse.testtarget.javac" depends="compile.support" description="Makes an eclipse launch target for running the tests for javac">
+		<eclipse.testtarget.conf.jvmtarget question="Which javac do you want to target? Enter a version, such as '11'." validargs="8,11,13,14,15" />
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Javac ${inputs.jvmtarget.raw}" />
+			<arg value="testType=lombok.TestJavac" />
+			<arg value="jvmTarget=${inputs.jvmtarget}" />
+			<arg value="bootpath=${inputs.bootpath}" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="conf.${inputs.confname}=${inputs.confcp}" />
+			<arg value="favorite" />
+		</java>
+	</target>
+	
+	<target name="eclipse.testtarget.eclipse" depends="compile.support" description="Makes an eclipse launch target for running the tests for eclipse support">
+		<eclipse.testtarget.conf.jvmtarget />
+		
+		<local name="inputs.eclipsetarget" />
+		<input message="Which eclipse do you want to target? Enter a version, such as 'oxygen'." validargs="oxygen" addproperty="inputs.eclipsetarget" />
+		
+		<local name="inputs.confname" />
+		<property name="inputs.confname" value="eclipse-${inputs.eclipsetarget}" />
+		
+		<local name="inputs.confcp" />
+		<property name="inputs.confcp" refid="cp.eclipse-${inputs.eclipsetarget}" />
+		
+		<fetchdep.eclipse version="${inputs.eclipsetarget}" />
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test Eclipse-${inputs.eclipsetarget}" />
+			<arg value="testType=lombok.TestEclipse" />
+			<arg value="shadowLoaderBased" />
+			<arg value="jvmTarget=${inputs.jvmtarget}" />
+			<arg value="bootpath=${inputs.bootpath}" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="conf.${inputs.confname}=${inputs.confcp}" />
+			<arg value="favorite" />
+		</java>
+	</target>
+	
+	<target name="eclipse.testtarget.ecj" depends="compile.support" description="Makes an eclipse launch target for running the tests for ecj support">
+		<eclipse.testtarget.conf.jvmtarget />
+		
+		<local name="inputs.ecjtarget" />
+		<input message="Which ecj do you want to target? Enter a version, such as '8'." validargs="8,11,14" addproperty="inputs.ecjtarget" />
+		
+		<local name="inputs.confname" />
+		<property name="inputs.confname" value="ecj${inputs.ecjtarget}" />
+		
+		<local name="inputs.confcp" />
+		<property name="inputs.confcp" refid="cp.ecj${inputs.ecjtarget}" />
+		
+		<local name="inputs.bootpath" />
+		<condition property="inputs.bootpath" value="${jdk6-rt.loc}"><equals arg1="${inputs.jvmtarget.raw}" arg2="6" /></condition>
+		<condition property="inputs.bootpath" value="${jdk8-rt.loc}"><equals arg1="${inputs.jvmtarget.raw}" arg2="8" /></condition>
+		<property name="inputs.bootpath" value="0" />
+		
+		<fetchdep.ecj version="${inputs.ecjtarget}" />
+		
+		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="name=Lombok-test ECJ${inputs.ecjtarget}" />
+			<arg value="testType=lombok.TestEclipse" />
+			<arg value="shadowLoaderBased" />
+			<arg value="jvmTarget=${inputs.jvmtarget}" />
+			<arg value="bootpath=${inputs.bootpath}" />
+			<arg value="conf.test=${cp.test}" />
+			<arg value="conf.stripe=${cp.stripe}" />
+			<arg value="conf.${inputs.confname}=${inputs.confcp}" />
+			<arg value="favorite" />
+		</java>
+	</target>
+</project>

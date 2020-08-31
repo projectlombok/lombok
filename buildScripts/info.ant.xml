@@ -1,0 +1,311 @@
+<!--
+ Copyright (C) 2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok.info" basedir=".." default="quickstart">
+	<target name="quickstart">
+		<echo>
+Dear contributor,
+
+For full instructions and information on what this project contains, run:
+
+  &gt; ant help
+
+If you want to get started quickly:
+
+1. Run `ant eclipse`.
+2. Start up eclipse (https://www.eclipse.org/).
+3. In the menu: File &gt; Import... &gt; Existing Project Into Workspace
+4. Browse to this directory and import it:
+ (${basedir})
+5. In eclipse: Run &gt; Debug configurations... &gt;
+  then pick one of the configs named `Lombok test`.
+6. Run `ant dist`.
+
+Have fun!</echo>
+	</target>
+	
+	<target name="help" description="Start here!">
+		<echo>
+Just want to get started quickly? Run:
+
+  &gt; ant quickstart
+
+---
+
+Lombok is specced to run on a wide array of underlying platforms:
+
+* Any JVM from 1.6 up to the upcoming next official release.
+* Javac, from 1.6 up to the upcoming next official release.
+* ECJ, from ecj 4.4.2 (2015/java8) up to the upcoming next official release.
+* Eclipse, from eclipse-oxygen up to the upcoming next official release.
+
+The build is a little more complicated to cater to these requirements.
+
+This build script can perform the following tasks:
+* IDE
+  Create project files so that you can work on lombok in eclipse or intellij.
+  Includes creating debuggable test targets.
+* compile
+  Turn java files into class files.
+* test
+  Run the tests against the various combinations of VM, Javac, eclipse and ecj
+  we support, including finding suitable VMs to run them on.
+* packaging
+  Create the lombok 'everything' jar, that can serve as eclipse agent, as
+  installer, as library you include on the classpath with javac, and which
+  does not inject its transitive dependencies into your project namespace.
+* website
+  Builds the website and documentation (projectlombok.org) from templates,
+  including creating the version history page and changelog, and deploying
+  builds to the website (and the maven repo hosted there).
+* p2
+  We host an experimental eclipse marketplace installer.
+
+For more info on any of these sections, run for example `ant help.IDE`.
+
+If you're new to lombok, you should start with `ant help.IDE`,
+then move on to `ant help.test`.</echo>
+	</target>
+	
+	<target name="help.IDE">
+		<echo>
+We strongly suggest you use eclipse to develop lombok.
+Experimentally, developing with intellij is possible as well.
+
+IDE support consists of two features:
+1. Generate project files so that this directory can be imported as project.
+2. Generate debug/run launch files so you can debug lombok in your IDE.
+
+  &gt; ant eclipse
+  &gt; ant intellij
+
+These commands generate project files and download all dependencies required
+to develop Project Lombok in the named IDE. Run these commands first, then
+import this directory as project in your IDE.
+
+  &gt; ant eclipse.testtarget.eclipse
+  &gt; ant eclipse.testtarget.ecj
+  &gt; ant eclipse.testtarget.javac
+
+These 3 commands generate launch targets (these appear in your debug menu),
+for testing the stated platform (eclipse, ecj, or javac) and will ask you
+which version of the VM and the relevant platform are to be targeted by
+these tests. Note that `ant eclipse` already generates  default test targets,
+you don't need these unless you're specifically testing lombok behaviour on
+some specific version of the JVM or a target platform.
+
+NB: No debug/launch targets are currently generated for intellij.
+Got the know how? We'd love a contribution!</echo>
+	</target>
+	
+	<target name="help.compile">
+		<echo>
+The build compilation system is self contained and generally invoked by the
+other jobs this build script can do; you rarely need to mess with it.
+
+The compilation is quite complicated; parts of lombok are injected into
+for example eclipse at runtime via an agent mechanism. To produce the bytecode
+that is to be injected, we need to compile against various different versions
+of the core java libraries as well as eclipse/ecj. To make this process smooth
+and fast, lombok has a 'stubs' concept: We have signature-only versions of
+various classes of other libraries. We compile these first, then we compile
+the rest of lombok with these stub classes on the classpath, and then we
+package lombok without the stubs.
+
+Various bits of lombok are targeted at different versions, and therefore,
+different parts of lombok are compiled with different `-release` targets.
+
+  &gt; ant compile
+
+Compiles lombok itself
+
+  &gt; ant compile.support
+
+Compiles code that isn't part of the lombok distribution, but which is used
+for other jobs; For example, eclipse debug target generation, and fetching
+the current lombok stable release version number on offer at
+the projectlombok.org website involve java code.</echo>
+	</target>
+	
+	<target name="help.packaging">
+		<echo>
+Lombok is shipped as an 'everything' jar; it is a stand-alone java app,
+with both a GUI and a command line interface, it's an agent, it's an
+annotation processor, and it's a module.
+
+In addition, lombok is a compile-time only dependency, designed to be included
+in every project a lombok user has. Therefore, we don't want any of the
+lombok classes that you aren't meant to use directly to be visible,
+showing up in auto-complete dialogs. Starting with JDK9, the module system's
+'export' feature does a lot of this, but we also want to avoid contaminating
+things on JDK8 and below. As a consequence, lombok uses a classloader system,
+and most classes are included in the jar with a different name, not as
+.class files, thus avoiding contaminating the namespace.
+
+The packaging targets take care of setting up the file rename as well as
+registering all the various manifest and file entries needed so that lombok
+can be an everything jar.
+
+  &gt; ant dist
+
+packages the lombok build into a single jar.
+
+  &gt; ant maven
+  &gt; ant maven.publish
+
+'maven' packages the lombok build ready to upload to mavencentral (sonatype).
+'maven.publish' also sends this via the lombok server to oss.sonatype.org.
+
+</echo>
+	</target>
+	
+	<target name="help.test">
+		<echo>
+Lombok tests need to be run against a targeted platform.
+
+  &gt; ant test.javacCurrent
+  &gt; ant test.javac6
+  &gt; ant test.javac8
+  &gt; ant test.javac11
+  &gt; ant test.javac14
+
+This runs the test suite that tests lombok on javac, as well as testing
+the delombok feature.
+
+`javacCurrent` runs the tests on the JVM running this build: ${ant.java.version}
+
+`javac6` and `javac8` are run on the JVM running this build, by downloading
+the complete java runtime classes from those versions, including javac, and
+using module limits to exclude your VM's own javac.
+
+You _DO NOT_ need an installed JDK1.6 or JDK1.8 to run these.
+
+`javac11`, `javac14`, etc require that you have a JDK of that version
+installed on your system. The build will automatically find such a JDK in most
+cases; alternatively, the system will ask you to provide a path to them.
+The tests are then run by invoking that VM to run them.
+
+You can force a particular VM by making a file named `jvm.locations`, and putting
+in it, for example:
+
+   j11 = /Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home
+
+Or just enter the path your VM installation when prompted, and the build will
+automatically create this file for you to remember your choice.
+
+  &gt; ant test.eclipse-oxygen
+  &gt; ant test.eclipse-202006
+
+This runs the test suite that tests lombok on eclipse/ecj.
+
+The tests are run on your current VM (${ant.java.version}), fetching
+the relevant bits of the chosen eclipse release to test against.
+
+  &gt; ant test
+
+Runs the 'default' targets for all supported platforms. This should catch
+most problems.
+
+  &gt; ant test.broad
+
+Runs tests against a selection of versions designed to catch virtually all
+problems. Doesn't quite test _every_ supported combination.
+
+  &gt; ant test.compile
+
+Compiles the test suite; generally invoked by the other test targets;
+you don't need to explicitly invoke this yourself.</echo>
+	</target>
+	
+	<target name="help.website">
+		<echo>
+This build also builds the website, which is a static site generated via
+freemarker templates. Parts of the site build also involve other custom
+software, such as building the 'all available versions' page by checking
+the available versions on the live website, compiling markdown
+(as used by the changelog) into html, and generated color-coded syntax
+in HTML for the example snippets.
+
+  &gt; ant changelog.build
+
+Turns the changelog at doc/changelog.markdown into
+build/website/changelog.html.
+
+  &gt; ant website.build
+  &gt; ant website.pack
+  &gt; ant website.publish
+
+'build' Builds the website (by for example applying freemarker templates) into
+build/website.
+'pack' bzips this up, ready to ship to the server.
+'publish' sends this to the server and runs a script to deploy.
+
+  &gt; ant website.open
+  
+  First builds the website, then hosts it locally and opens it in your browser so
+  you can see the website in its full, template-applied form.
+
+  &gt; ant latest-changes.build
+
+Makes a changelog variant that lists only the newest changes; it is included
+in the distribution for convenience.
+
+  &gt; ant javadoc.build
+  &gt; ant javadoc.pack
+  &gt; ant javadoc.publish
+
+'build' Builds the javadoc into build/api.
+'pack' bzips this up, ready to ship to the server.
+'publish' sends this to the server and runs a script to deploy.
+
+  &gt; ant edge.pack
+  &gt; ant edge.publish
+
+'pack' creates a bzip with all relevant files needed to deploy a new edge
+release to the server: A fresh build of the lombok everything jar, plus the
+maven repo update so that the edge release can be fetched as a maven dep,
+and an update to the download-edge page listing the latest changes included
+in the edge release.
+
+'publish' sends this to the server, runs a script server-side to deploy the
+content, and updates a git tag on success.</echo>
+	</target>
+	
+	<target name="help.p2">
+		<echo>
+This is still an experimental feature.
+
+We ship lombok as an eclipse plugin. The plugin isn't much of a plugin; the
+install script of the plugin fulfills the same role as lombok's installer
+(which is: add a line configuring lombok as an agent during eclipse bootup),
+and the uninstall script removes it.
+
+  &gt; ant eclipsep2.build
+  &gt; ant eclipsep2.pack
+  &gt; ant eclipsep2.publish
+
+'build' generates the various files required to appear as an eclipse plugin,
+and makes the jar(s).
+'pack' makes a bzip ready to ship to a server.
+'publish' ships it and runs a script server-side to put these files in the
+right place; requires SSH access to the server.</echo>
+	</target>
+</project>

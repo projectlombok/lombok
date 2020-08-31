@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
 import lombok.ConfigurationKeys;
@@ -76,7 +77,7 @@ public class HandlerUtil {
 		return 43;
 	}
 	
-	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
+	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
 	static {
 		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"androidx.annotation.NonNull",
@@ -312,10 +313,24 @@ public class HandlerUtil {
 			"org.netbeans.api.annotations.common.NullAllowed",
 		}));
 		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"com.fasterxml.jackson.annotation.JacksonInject",
+			"com.fasterxml.jackson.annotation.JsonAlias",
+			"com.fasterxml.jackson.annotation.JsonFormat",
+			"com.fasterxml.jackson.annotation.JsonIgnore",
+			"com.fasterxml.jackson.annotation.JsonIgnoreProperties",
 			"com.fasterxml.jackson.annotation.JsonProperty",
 			"com.fasterxml.jackson.annotation.JsonSetter",
+			"com.fasterxml.jackson.annotation.JsonSubTypes",
+			"com.fasterxml.jackson.annotation.JsonTypeInfo",
+			"com.fasterxml.jackson.annotation.JsonView",
+			"com.fasterxml.jackson.databind.annotation.JsonDeserialize",
+			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty",
+		}));
+		COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"com.fasterxml.jackson.annotation.JsonAnySetter",
 		}));
 		JACKSON_COPY_TO_BUILDER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"com.fasterxml.jackson.annotation.JsonAutoDetect",
 			"com.fasterxml.jackson.annotation.JsonFormat",
 			"com.fasterxml.jackson.annotation.JsonIgnoreProperties",
 			"com.fasterxml.jackson.annotation.JsonIgnoreType",
@@ -351,6 +366,7 @@ public class HandlerUtil {
 	public static String autoSingularize(String plural) {
 		return Singulars.autoSingularize(plural);
 	}
+	
 	public static void handleFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
 		FlagUsageType fut = node.getAst().readConfiguration(key);
 		
@@ -727,5 +743,17 @@ public class HandlerUtil {
 			b.append(Character.toUpperCase(c));
 		}
 		return b.toString();
+	}
+	
+	/** Matches any of the 8 primitive wrapper names, such as {@code Boolean}. */
+	private static final Pattern PRIMITIVE_WRAPPER_TYPE_NAME_PATTERN = Pattern.compile("^(?:java\\.lang\\.)?(?:Boolean|Byte|Short|Integer|Long|Float|Double|Character)$");
+
+	public static int defaultEqualsAndHashcodeIncludeRank(String typeName) {
+		// Modification in this code should be documented
+		// 1. In the changelog this should be marked as an INPROBABLE BREAKING CHANGE, since the hashcode will change
+		// 2. In the javadoc of EqualsAndHashcode.Include#rank
+		if (JavaIdentifiers.isPrimitive(typeName)) return 1000;
+		if (PRIMITIVE_WRAPPER_TYPE_NAME_PATTERN.matcher(typeName).matches()) return 800;
+		return 0;
 	}
 }

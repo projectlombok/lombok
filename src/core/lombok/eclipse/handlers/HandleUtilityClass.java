@@ -113,7 +113,7 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		if (typeNode.up().getKind() == Kind.COMPILATION_UNIT) markStatic = false;
 		if (markStatic && typeNode.up().getKind() == Kind.TYPE) {
 			TypeDeclaration typeDecl = (TypeDeclaration) typeNode.up().get();
-			if ((typeDecl.modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0) markStatic = false;
+			if ((typeDecl.modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0) markStatic = false;
 		}
 		
 		if (markStatic) classDecl.modifiers |= ClassFileConstants.AccStatic;

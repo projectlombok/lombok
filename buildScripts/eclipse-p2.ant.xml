@@ -19,25 +19,23 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="lombok-eclipse-p2" basedir=".." xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
+<project name="lombok.eclipsep2" basedir=".." xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
 	<description>
 This buildfile is part of projectlombok.org. It is responsible for building the eclipse P2 update site.
 	</description>
 	
-	<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
-	
-	<target name="-p2-clean">
+	<target name="eclipsep2.clean">
 		<delete dir="build/p2" quiet="true" />
 	</target>
 	
-	<target name="dist-eclipse-p2" depends="build-eclipse-p2">
-		<tar destfile="dist/eclipse-p2.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/p2" />
-		</tar>
+	<target name="-eclipsep2.get-epoch">
+		<mkdir dir="build/p2-support" />
+		<echo file="build/p2-support/Epoch.java">public class Epoch {public static void main(String[] args) {System.out.print(System.currentTimeMillis());}}</echo>
+		<javac srcdir="build/p2-support" release="8" includeAntRuntime="false" destdir="build/p2-support" />
+		<java classname="Epoch" classpath="build/p2-support" fork="false" outputproperty="dt.epochMillis" />
 	</target>
 	
-	<target name="build-eclipse-p2" depends="-set-epoch-millis">
-		<property name="lombok.version" value="1.18.99" />
+	<target name="eclipsep2.build" depends="version, -eclipsep2.get-epoch">
 		<tstamp><format property="dt.year" pattern="yyyy" /></tstamp>
 		<mkdir dir="build/p2" />
 		<mkdir dir="build/p2/features" />
@@ -111,10 +109,25 @@ This buildfile is part of projectlombok.org. It is responsible for building the 
 		<delete file="build/p2/content.xml" />
 	</target>
 	
-	<target name="-set-epoch-millis">
-		<mkdir dir="build/p2-support" />
-		<echo file="build/p2-support/Epoch.java">public class Epoch {public static void main(String[] args) {System.out.print(System.currentTimeMillis());}}</echo>
-		<javac srcdir="build/p2-support" release="8" includeAntRuntime="false" destdir="build/p2-support" />
-		<java classname="Epoch" classpath="build/p2-support" fork="false" outputproperty="dt.epochMillis" />
+	<target name="eclipsep2.pack" depends="eclipsep2.build">
+		<tar destfile="dist/eclipse-p2.tar.bz2" compression="bzip2">
+			<tarfileset dir="build/p2" />
+		</tar>
+	</target>
+	
+	<target name="eclipsep2.publish" depends="setup.ssh, eclipsep2.pack">
+		<ivy:scpUpload
+			from="dist/eclipse-p2.tar.bz2"
+			to="/data/lombok/staging"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/deployP2"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
 	</target>
 </project>

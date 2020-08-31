@@ -5,6 +5,7 @@ package com.sun.tools.javac.code;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.ModuleSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.util.Context;
 
 public class Symtab {
@@ -14,6 +15,7 @@ public class Symtab {
 	public Type objectType;
 	public static Symtab instance(Context context) {return null;}
 	public Type unknownType;
+	public TypeSymbol noSymbol;
 	
 	// JDK 9
 	public ModuleSymbol unnamedModule;

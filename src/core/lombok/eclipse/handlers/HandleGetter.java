@@ -285,10 +285,13 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		if (addSuppressWarningsUnchecked) {
+			List<Expression> suppressions = new ArrayList<Expression>(2);
+			if (!Boolean.FALSE.equals(fieldNode.getAst().readConfiguration(ConfigurationKeys.ADD_SUPPRESSWARNINGS_ANNOTATIONS))) {
+				suppressions.add(new StringLiteral(ALL, 0, 0, 0));
+			}
+			suppressions.add(new StringLiteral(UNCHECKED, 0, 0, 0));
 			ArrayInitializer arr = new ArrayInitializer();
-			arr.expressions = new Expression[2];
-			arr.expressions[0] = new StringLiteral(ALL, 0, 0, 0);
-			arr.expressions[1] = new StringLiteral(UNCHECKED, 0, 0, 0);
+			arr.expressions = suppressions.toArray(new Expression[0]);
 			method.annotations = addAnnotation(source, method.annotations, TypeConstants.JAVA_LANG_SUPPRESSWARNINGS, arr);
 		}
 		

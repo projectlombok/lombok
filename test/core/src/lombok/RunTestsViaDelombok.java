@@ -38,7 +38,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences) throws Throwable {
+	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version) throws Throwable {
 		delombok.setVerbose(true);
 		ChangedChecker cc = new ChangedChecker();
 		delombok.setFeedback(cc.feedback);

@@ -40,7 +40,6 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
-import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.SynchronizedStatement;
@@ -232,11 +231,11 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 			Expression cond = isIf ? ((IfStatement) stat).condition : ((AssertStatement) stat).assertExpression;
 			if (!(cond instanceof EqualExpression)) return null;
 			EqualExpression bin = (EqualExpression) cond;
-			int operatorId = ((bin.bits & ASTNode.OperatorMASK) >> ASTNode.OperatorSHIFT);
+			String op = bin.operatorToString();
 			if (isIf) {
-				if (operatorId != OperatorIds.EQUAL_EQUAL) return null;
+				if (!"==".equals(op)) return null;
 			} else {
-				if (operatorId != OperatorIds.NOT_EQUAL) return null;
+				if (!"!=".equals(op)) return null;
 			}
 			if (!(bin.left instanceof SingleNameReference)) return null;
 			if (!(bin.right instanceof NullLiteral)) return null;

@@ -57,6 +57,7 @@ import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedThisReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Receiver;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -485,7 +486,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			List<Included<EclipseNode, ToString.Include>> fieldNodes = new ArrayList<Included<EclipseNode, ToString.Include>>();
 			for (BuilderFieldData bfd : builderFields) {
 				for (EclipseNode f : bfd.createdFields) {
-					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true));
+					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true, false));
 				}
 			}
 			MethodDeclaration md = HandleToString.createToString(builderType, fieldNodes, true, false, ast, FieldAccess.ALWAYS_FIELD);
@@ -683,7 +684,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return decl;
 	}
 	
-	static Argument[] generateBuildArgs(CheckerFrameworkVersion cfv, EclipseNode type, List<BuilderFieldData> builderFields, ASTNode source) {
+	static Receiver generateBuildReceiver(CheckerFrameworkVersion cfv, EclipseNode type, List<BuilderFieldData> builderFields, ASTNode source) {
 		if (!cfv.generateCalledMethods()) return null;
 		
 		List<char[]> mandatories = new ArrayList<char[]>();
@@ -706,9 +707,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 			ann.memberValue = arr;
 		}
-		Argument arg = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, generateTypeReference(type, source.sourceStart), Modifier.FINAL);
-		arg.annotations = new Annotation[] {ann};
-		return new Argument[] {arg};
+
+		QualifiedTypeReference typeReference = (QualifiedTypeReference) generateTypeReference(type, source.sourceStart);
+		typeReference.annotations = new Annotation[typeReference.tokens.length][];
+		typeReference.annotations[0] = new Annotation[] {ann};
+		return new Receiver(new char[] { 't', 'h', 'i', 's' }, 0, typeReference, null, Modifier.FINAL);
 	}
 	
 	public MethodDeclaration generateBuildMethod(CheckerFrameworkVersion cfv, EclipseNode tdParent, boolean isStatic, String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source, AccessLevel access) {
@@ -802,7 +805,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (cfv.generateSideEffectFree()) {
 			out.annotations = new Annotation[] {generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
 		}
-		out.arguments = generateBuildArgs(cfv, type, builderFields, source);
+		out.receiver = generateBuildReceiver(cfv, type, builderFields, source);
 		if (staticName == null) createRelevantNonNullAnnotation(type, out);
 		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
@@ -953,16 +956,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, paramName, nameOfSetFlag, chain, toEclipseModifier(access),
 			sourceNode, methodAnnsList, annotations != null ? Arrays.asList(copyAnnotations(source, annotations)) : Collections.<Annotation>emptyList());
 		if (cfv.generateCalledMethods()) {
-			Argument[] arr = setter.arguments == null ? new Argument[0] : setter.arguments;
-			Argument[] newArr = new Argument[arr.length + 1];
-			System.arraycopy(arr, 0, newArr, 1, arr.length);
-			newArr[0] = new Argument(new char[] { 't', 'h', 'i', 's' }, 0, generateTypeReference(builderType, 0), Modifier.FINAL);
 			char[][] nameNotCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__NOT_CALLED);
-			SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameNotCalled, poss(
-					source, nameNotCalled.length)), source.sourceStart);
+			SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameNotCalled, poss(source, nameNotCalled.length)), source.sourceStart);
 			ann.memberValue = new StringLiteral(setterName.toCharArray(), 0, 0, 0);
-			newArr[0].annotations = new Annotation[] {ann};
-			setter.arguments = newArr;
+			
+			QualifiedTypeReference typeReference = (QualifiedTypeReference) generateTypeReference(builderType, 0);
+			typeReference.annotations = new Annotation[typeReference.tokens.length][];
+			typeReference.annotations[0] = new Annotation[] {ann};
+			setter.receiver = new Receiver(new char[] { 't', 'h', 'i', 's' }, 0, typeReference, null, Modifier.FINAL);
 		}
 		injectMethod(builderType, setter);
 	}

@@ -81,10 +81,10 @@ public class SuperBuilderBasic {
 			return new SuperBuilderBasic.Parent.ParentBuilderImpl();
 		}
 	}
-	public static class Child extends Parent {
+	public static class Child extends SuperBuilderBasic.Parent {
 		double field3;
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ChildBuilder<C extends SuperBuilderBasic.Child, B extends SuperBuilderBasic.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+		public static abstract class ChildBuilder<C extends SuperBuilderBasic.Child, B extends SuperBuilderBasic.Child.ChildBuilder<C, B>> extends SuperBuilderBasic.Parent.ParentBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private double field3;
 			@java.lang.Override

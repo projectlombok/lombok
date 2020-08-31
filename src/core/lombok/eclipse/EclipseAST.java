@@ -318,6 +318,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 			Field f = EcjReflectionCheck.typeReferenceAnnotations;
 			if (f == null) return null;
 			annss = (Annotation[][]) f.get(tr);
+			if (annss == null) return null;
 			return annss[annss.length - 1];
 		} catch (Throwable t) {
 			return null;
@@ -349,7 +350,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		if (!changed) clearChanged();
 	}
 	
-	private static boolean isComplete(CompilationUnitDeclaration unit) {
+	public static boolean isComplete(CompilationUnitDeclaration unit) {
 		return (unit.bits & ASTNode.HasAllMethodBodies) != 0;
 	}
 	

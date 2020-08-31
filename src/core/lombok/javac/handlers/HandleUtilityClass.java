@@ -110,7 +110,7 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 		if (typeNode.up().getKind() == Kind.COMPILATION_UNIT) markStatic = false;
 		if (markStatic && typeNode.up().getKind() == Kind.TYPE) {
 			JCClassDecl typeDecl = (JCClassDecl) typeNode.up().get();
-			if ((typeDecl.mods.flags & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0) markStatic = false;
+			if ((typeDecl.mods.flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0) markStatic = false;
 		}
 		
 		if (markStatic) classDecl.mods.flags |= Flags.STATIC;

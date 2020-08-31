@@ -1,0 +1,191 @@
+<!--
+ Copyright (C) 2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok.vm-finder" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" basedir="..">
+	<description>
+This buildfile is part of projectlombok.org. It contains platform specific code to find installed JVMs.
+	</description>
+	
+	<available property="exe.java_home" value="/usr/libexec/java_home" file="/usr/libexec/java_home" />
+	<property name="env.SystemRoot" value="C:\Windows" />
+	<available property="exe.reg" value="${env.SystemRoot}/System32/reg.exe" file="${env.SystemRoot}/System32/reg.exe" />
+	<condition property="exe.java" value="java.exe" else="java">
+		<os family="windows" />
+	</condition>
+	
+	<property name="jvm.locations.file" location="jvm.locations" />
+	<property prefix="jvm.locations" file="${jvm.locations.file}" />
+	
+	<target name="-find.vm.property">
+		<condition property="jvm.loc" value="${jvm.loc.force}">
+			<and>
+				<isset property="jvm.loc.force" />
+				<not><matches string="${jvm.loc.force}" pattern="^\$\{jvm[0-9\.]+\.loc\}$" /></not>
+			</and>
+		</condition>
+		<condition property="jvm.loc.invalid">
+			<and>
+				<isset property="jvm.loc" />
+				<not><available file="${jvm.loc}/bin/${exe.java}" type="file" /></not>
+			</and>
+		</condition>
+		<fail if="jvm.loc.invalid">
+			.
+			
+ERROR: You explicitly specified the home of JVM${find-vm.version} as: ${jvm.loc} in the ${jvm.locations.file} file.
+However, ${jvm.loc}/bin/${exe.java} does not exist or is not executable. Please fix the entry in jvm.locations, or delete it
+and rerun the build; this build is capable of finding VMs automatically on many platforms.
+		</fail>
+	</target>
+	
+	<target name="-find.vm.java_home" if="exe.java_home" unless="jvm.loc">
+		<fail unless="find-vm.version">Set property find-vm.version first</fail>
+		<local name="java_home.answer" />
+		<local name="java_home.result" />
+		<exec executable="${exe.java_home}" errorproperty="discard" outputproperty="java_home.answer" failifexecutionfails="false" resultproperty="java_home.result">
+			<arg value="-v" />
+			<arg value="${find-vm.version}" />
+		</exec>
+		<condition property="jvm.loc" value="${java_home.answer}">
+			<equals arg1="0" arg2="${java_home.result}" />
+		</condition>
+	</target>
+	
+	<target name="-find.vm.reg" if="exe.reg" unless="jvm.loc">
+		<fail unless="find-vm.version">Set property find-vm.version first</fail>
+		
+		<macrodef name="findkey">
+			<attribute name="idx" />
+			<attribute name="key" />
+			<attribute name="regex" />
+			<attribute name="value" />
+			<sequential>
+				<local name="reg.answer1.@{idx}" />
+				<local name="reg.result1.@{idx}" />
+				<local name="reg.first.@{idx}" />
+				<local name="reg.answer2.@{idx}" />
+				<local name="reg.result2.@{idx}" />
+				<exec executable="${exe.reg}" errorproperty="discard" outputproperty="reg.answer1.@{idx}" failifexecutionfails="false" resultproperty="reg.result1.@{idx}">
+					<arg value="query" />
+					<arg value="@{key}" />
+					<arg value="/f" />
+					<arg value="${find-vm.version}"/>
+					<arg value="/k" />
+				</exec>
+				
+				<loadresource property="reg.first.@{idx}">
+					<propertyresource name="reg.answer1.@{idx}" />
+					<filterchain>
+						<tokenfilter>
+							<containsregex flags="i" pattern="@{regex}" replace="\1" />
+							<trim />
+							<ignoreblank />
+						</tokenfilter>
+						<headfilter lines="1" />
+						<striplinebreaks />
+					</filterchain>
+				</loadresource>
+				<exec executable="${exe.reg}" errorproperty="discard" outputproperty="reg.answer2.@{idx}" failifexecutionfails="false" resultproperty="reg.result2.@{idx}">
+					<arg value="query" />
+					<arg value="${reg.first.@{idx}}" />
+					<arg value="/s" />
+					<arg value="/f" />
+					<arg value="@{value}" />
+					<arg value="/v" />
+					<arg value="@{value}" />
+				</exec>
+				<loadresource property="jvm.loc">
+					<propertyresource name="reg.answer2.@{idx}" />
+					<filterchain>
+						<tokenfilter>
+							<trim />
+							<containsregex flags="i" pattern="\s*@{value}\s*REG_SZ\s*(.*)$" replace="\1" />
+							<ignoreblank />
+						</tokenfilter>
+						<headfilter lines="1" />
+						<striplinebreaks />
+					</filterchain>
+				</loadresource>
+			</sequential>
+		</macrodef>
+		
+		<findkey idx="1" key="hklm\Software\AdoptOpenJDK\JDK" value="Path"
+			regex="\s*(HKEY.*\\AdoptOpenJDK\\JDK\\${find-vm.version}(?:\.\S*)?)\s*$" />
+		<findkey idx="2" key="hklm\Software\JavaSoft\Java Development Kit" value="JavaHome"
+			regex="\s*(HKEY.*\\JavaSoft\\Java Development Kit\\${find-vm.version}(?:\.\S*)?)\s*$" />
+	</target>
+	
+	<target name="-find.vm.ask" unless="jvm.loc">
+		<fail unless="find-vm.version">Set property find-vm.version first</fail>
+		<echo>A JVM${find-vm.version} is required to run the request tests.</echo>
+		<echo>this script can automatically find VMs on mac and windows but did not find a suitable VM.</echo>
+		<input message="Enter the full path to JVM${find-vm.version}:" addproperty="jvm.loc" />
+		<condition property="jvm.loc.aborted">
+			<matches pattern="^\s*$" string="${jvm.loc}" />
+		</condition>
+		<fail if="jvm.loc.aborted">aborted</fail>
+		<fail if="jvm.loc.invalid">.
+
+ERROR: That does not appear to be a valid location; ${jvm.loc}/bin/${exe.java} should exist.
+			<condition>
+				<not><available file="${jvm.loc}/bin/${exe.java}" type="file" /></not>
+			</condition>
+		</fail>
+		<exec executable="${jvm.loc}/bin/${exe.java}" errorproperty="jvm.versioncheck.answer" failifexecutionfails="false" resultproperty="jvm.versioncheck.result">
+			<arg value="-version" />
+		</exec>
+		<fail>
+			That does not appear to be a valid JVM${find-vm.version} - perhaps it isn't the right version?
+			<condition>
+				<not><and>
+					<equals arg1="${jvm.versioncheck.result}" arg2="0" />
+					<contains string="${jvm.versioncheck.answer}" substring="version &quot;${find-vm.version}" />
+				</and></not>
+			</condition>
+		</fail>
+		<propertyfile file="${jvm.locations.file}" comment="Locations of various JVMs to be used to run lombok tests if targeting specific versions.">
+			<entry key="j${find-vm.version}" value="${jvm.loc}" />
+		</propertyfile>
+		<echo>Your choice of VM has been written to ${jvm.locations.file} and will be remembered for future invocations.</echo>
+	</target>
+	
+	<target name="-find.vm.save" if="jvm.loc">
+		<mkdir dir="build" />
+		<echo file="build/vmloc.${find-vm.version}.tmp" message="${jvm.loc}" />
+	</target>
+	
+	<target name="-find.vm" depends="-find.vm.property, -find.vm.java_home, -find.vm.reg, -find.vm.ask, -find.vm.save">
+		<fail unless="jvm.loc">JVM ${find-vm.version} cannot be found</fail>
+	</target>
+	
+	<macrodef name="find-vm">
+		<attribute name="version" />
+		<sequential>
+			<delete quiet="true" file="build/vmloc.@{version}.tmp" />
+			<antcall target="-find.vm">
+				<param name="find-vm.version" value="@{version}" />
+				<param name="jvm.loc.force" value="${jvm.locations.j@{version}}" />
+			</antcall>
+			<loadfile property="jvm.loc.@{version}" failonerror="true" srcFile="build/vmloc.@{version}.tmp" />
+			<delete quiet="true" file="build/vmloc.@{version}.tmp" />
+		</sequential>
+	</macrodef>
+</project>

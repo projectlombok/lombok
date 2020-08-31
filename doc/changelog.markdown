@@ -2,14 +2,21 @@ Lombok Changelog
 ----------------
 
 ### v1.18.13 "Edgy Guinea Pig"
+* PERFORMANCE: Several performance improvements during parsing/compilation, both using javac and Eclipse. Thanks __@Rawi01__!
+* PERFORMANCE: The generated equals method will first compare primitives, then primitive wrappers and then reference fields. Manual re-ordering is possible using `@Include(rank=n)`. [Pull Request #2485](https://github.com/rzwitserloot/lombok/pull/2485), [Issue #1543](https://github.com/rzwitserloot/lombok/issues/1543)
+* IMPROBABLE BREAKING CHANGE: The generated hashcode has changed for classes that include both primitive fields and reference fields.
+* PLATFORM: Added support for compiling projects with OpenJ9 [Pull Request #2437](https://github.com/rzwitserloot/lombok/pull/2437)
 * BREAKING CHANGE: mapstruct users should now add a dependency to lombok-mapstruct-binding. This solves compiling modules with lombok (and mapstruct).
 * FEATURE: Similar to `@Builder`, you can now configure a `@SuperBuilder`'s 'setter' prefixes via `@SuperBuilder(setterPrefix = "set")` for example. We still discourage doing this. [Pull Request #2357](https://github.com/rzwitserloot/lombok/pull/2357).
 * FEATURE: If using `@Synchronized("lockVar")`, if `lockVar` is referring to a static field, the code lombok generates no longer causes a warning about accessing a static entity incorrectly. [Issue #678](https://github.com/rzwitserloot/lombok/issues/678)
+* BUGFIX: Delombok print the first `this` parameter. [Issue #2444](https://github.com/rzwitserloot/lombok/issues/2444)
 * BUGFIX: Using `val` in combination with values whose generics include wildcards that reference themselves would cause a `StackOverflowError` in javac. [Issue #2358](https://github.com/rzwitserloot/lombok/issues/2358).
 * BUGFIX: Using `@SuperBuilder` on a class that has some fairly convoluted generics usage would fail with 'Wrong number of type arguments'. [Issue #2359](https://github.com/rzwitserloot/lombok/issues/2359) [Pull Request #2362](https://github.com/rzwitserloot/lombok/pull/2362)
 * BUGFIX: Various lombok annotations on classes nested inside enums or interfaces would cause errors in eclipse. [Issue #2369](https://github.com/rzwitserloot/lombok/issues/2369)
 * BUGFIX: Trying to add `@ExtensionMethod`s with exactly 2 arguments would fail in eclipse. [Issue #1441](https://github.com/rzwitserloot/lombok/issues/1441) [Pull Request #2376](https://github.com/rzwitserloot/lombok/pull/2376) thanks to __@Rawi01__.
+* BUGFIX: Javac sets incorrect annotated type on with methods. [Issue #2463](https://github.com/rzwitserloot/lombok/issues/2463)
 * FEATURE: `@Jacksonized` on a `@Builder` or `@SuperBuilder` will configure [Jackson](https://github.com/FasterXML/jackson) to use this builder when deserializing. [Pull Request #2387](https://github.com/rzwitserloot/lombok/pull/2387) thanks to __@JanRieke__. [@Jacksonized documentation](https://projectlombok.org/features/experimental/Jacksonized).
+
 
 ### v1.18.12 (February 1st, 2020)
 * PLATFORM: Support for JDK13 (including `yield` in switch expressions, as well as delombok having a nicer style for arrow-style switch blocks, and text blocks).

@@ -32,12 +32,14 @@ public class SuperBuilderCustomized {
       }
     }
     int field1;
-    protected @java.lang.SuppressWarnings("all") Parent(final SuperBuilderCustomized.Parent.ParentBuilder<?, ?> b) {
+    protected Parent(ParentBuilder<?, ?> b) {
       super();
+      if ((b.field1 == 0))
+          throw new IllegalArgumentException("field1 must be != 0");
       this.field1 = b.field1;
     }
-    public static @java.lang.SuppressWarnings("all") SuperBuilderCustomized.Parent.ParentBuilder<?, ?> builder() {
-      return new SuperBuilderCustomized.Parent.ParentBuilderImpl();
+    public static SuperBuilderCustomized.Parent.ParentBuilder<?, ?> builder(int field1) {
+      return new SuperBuilderCustomized.Parent.ParentBuilderImpl().field1(field1);
     }
   }
   public static @lombok.experimental.SuperBuilder class Child extends Parent {

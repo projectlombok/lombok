@@ -27,6 +27,8 @@ import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.lang.model.element.Modifier;
 
@@ -38,6 +40,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -432,7 +435,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			java.util.List<Included<JavacNode, ToString.Include>> fieldNodes = new ArrayList<Included<JavacNode, ToString.Include>>();
 			for (BuilderFieldData bfd : builderFields) {
 				for (JavacNode f : bfd.createdFields) {
-					fieldNodes.add(new Included<JavacNode, ToString.Include>(f, null, true));
+					fieldNodes.add(new Included<JavacNode, ToString.Include>(f, null, true, false));
 				}
 			}
 			
@@ -845,11 +848,30 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			newMethod.params = List.of(recv, newMethod.params.get(0));
 		}
 		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
-		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER, true);
+		if (source.up().getKind() == Kind.METHOD) {
+			copyJavadocFromParam(originalFieldNode.up(), newMethod, paramName.toString());
+		} else {
+			copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER, true);
+		}
 		
 		injectMethod(builderType, newMethod);
 	}
 	
+	private void copyJavadocFromParam(JavacNode from, JCMethodDecl to, String param) {
+		try {
+			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
+			String methodComment = Javac.getDocComment(cu, from.get());
+			if (methodComment == null) return;
+			
+			Pattern pattern = Pattern.compile("@param " + param + " (\\S|\\s)+?(?=^ ?@)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(methodComment);
+			if (matcher.find()) {
+				String newJavadoc = addReturnsThisIfNeeded(matcher.group());
+				Javac.setDocComment(cu, to, newJavadoc);
+			}
+		} catch (Exception ignore) {}
+	}
+
 	public JavacNode makeBuilderClass(boolean isStatic, JavacNode source, JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast, AccessLevel access) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		int modifiers = toJavacModifier(access);

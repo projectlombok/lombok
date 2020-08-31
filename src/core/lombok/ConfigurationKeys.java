@@ -90,6 +90,13 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<Boolean> ADD_FINDBUGS_SUPPRESSWARNINGS_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.extern.findbugs.addSuppressFBWarnings", "Generate @edu.umd.cs.findbugs.annotations.SuppressFBWarnings on all generated code (default: false).") {};
 	
 	/**
+	 * lombok configuration: {@code lombok.addSuppressWarnings} = {@code true} | {@code false}.
+	 * 
+	 * If {@code true}, lombok generates {@code @java.lang.SuppressWarnings("all")} on all fields, methods, and types that are generated.
+	 */
+	public static final ConfigurationKey<Boolean> ADD_SUPPRESSWARNINGS_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addSuppressWarnings", "Generate @java.lang.SuppressWarnings(\"all\") on all generated code (default: true).") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.addNullAnnotations = }one of: [{@code none}, {@code javax}, {@code eclipse}, {@code jetbrains}, {@code netbeans}, {@code androidx}, {@code android.support}, {@code checkerframework}, {@code findbugs}, {@code spring}, {@code JML}, or a custom set of fully qualified annotation types].
 	 * 
 	 * Lombok generally copies relevant nullity annotations from your source code to the right places. However, sometimes lombok generates code where the nullability of some node is not dependent on something in your source code. You can configure lombok to add an appropriate nullity annotation in this case.<ul>
@@ -133,7 +140,7 @@ public class ConfigurationKeys {
 	 * NB: GWT projects, and probably android projects, should explicitly set this key to {@code true} for the entire project.
 	 * 
 	 * <br>
-	 * <em>BREAKING CHANGE</em>: Starting with lombok v1.16.20, defaults to {@code false} instead of {@code true}, as {@code @ConstructorProperties} requires extra modules in JDK9.
+	 * <em>BREAKING CHANGE</em>: Starting with lombok v1.16.20, defaults to {@code true} instead of {@code false}, as {@code @ConstructorProperties} requires extra modules in JDK9.
 	 * 
 	 * @see ConfigurationKeys#ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES
 	 * @deprecated Since version 2.0, use {@link #ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES} instead.

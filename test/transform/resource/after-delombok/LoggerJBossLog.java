@@ -17,3 +17,9 @@ class LoggerJBossLogWithDifferentLoggerName {
 	@java.lang.SuppressWarnings("all")
 	private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger("DifferentLogger");
 }
+
+class LoggerJBossLogWithStaticField {
+	@java.lang.SuppressWarnings("all")
+	private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithStaticField.TOPIC);
+	static final String TOPIC = "StaticField";
+}

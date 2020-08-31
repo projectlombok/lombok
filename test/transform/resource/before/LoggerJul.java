@@ -11,3 +11,8 @@ class LoggerJulWithImport {
 @Log(topic="DifferentName")
 class LoggerJulWithDifferentName {
 }
+
+@Log(topic=LoggerJulWithStaticField.TOPIC)
+class LoggerJulWithStaticField {
+	static final String TOPIC = "StaticField";
+}

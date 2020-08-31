@@ -23,10 +23,6 @@ package lombok.eclipse;
 
 import java.util.List;
 
-import lombok.core.AnnotationValues;
-import lombok.core.AST.Kind;
-import lombok.eclipse.handlers.EclipseHandlerUtil;
-
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -36,10 +32,15 @@ import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.eclipse.handlers.EclipseHandlerUtil;
 
 /**
  * Eclipse specific version of the LombokNode class.
@@ -262,6 +263,39 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 		if (i == null) return false;
 		int f = i.intValue();
 		return (ClassFileConstants.AccFinal & f) != 0;
+	}
+	
+	@Override public boolean isPrimitive() {
+		if (node instanceof FieldDeclaration && !isEnumMember()) {
+			return Eclipse.isPrimitive(((FieldDeclaration) node).type);
+		}
+		if (node instanceof MethodDeclaration) {
+			return Eclipse.isPrimitive(((MethodDeclaration) node).returnType);
+		}
+		return false;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public String fieldOrMethodBaseType() {
+		TypeReference typeReference = null;
+		if (node instanceof FieldDeclaration && !isEnumMember()) {
+			typeReference = ((FieldDeclaration) node).type;
+		}
+		if (node instanceof MethodDeclaration) {
+			typeReference = ((MethodDeclaration) node).returnType;
+		}
+		if (typeReference == null) return null;
+		
+		String fqn = Eclipse.toQualifiedName(typeReference.getTypeName());
+		if (typeReference.dimensions() == 0) return fqn;
+		StringBuilder result = new StringBuilder(fqn.length() + 2 * typeReference.dimensions());
+		result.append(fqn);
+		for (int i = 0; i < typeReference.dimensions(); i++) {
+			result.append("[]");
+		}
+		return result.toString();
 	}
 	
 	@Override public boolean isTransient() {

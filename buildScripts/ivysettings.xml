@@ -4,6 +4,7 @@
 			<filesystem name="projectLocalRepo">
 				<ivy pattern="${ivy.settings.dir}/ivy-repo/[organization]-[module]-[revision].xml" />
 			</filesystem>
+			<ibiblio name="eclipse-staging-repo" m2compatible="true" root="https://repo.eclipse.org/content/repositories/eclipse-staging" />
 			<ibiblio name="maven-repo2" m2compatible="true" root="https://repo1.maven.org/maven2" />
 		</chain>
 	</resolvers>

@@ -288,8 +288,22 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	public abstract boolean isStatic();
 	public abstract boolean isFinal();
 	public abstract boolean isTransient();
+	public abstract boolean isPrimitive();
 	public abstract boolean isEnumMember();
 	public abstract boolean isEnumType();
+	
+	/**
+	 * The 'type' of the field or method, or {@code null} if this node is neither.
+	 * 
+	 * The type is as it is written in the code (no resolution), includes array dimensions, 
+	 * but not necessarily generics.
+	 * 
+	 * The main purpose of this method is to verify this type against a list of known types,
+	 * like primitives or primitive wrappers.
+	 * 
+	 * @return The 'type' of the field or method, or {@code null} if this node is neither.
+	 */
+	public abstract String fieldOrMethodBaseType();
 	
 	public abstract int countMethodParameters();
 	

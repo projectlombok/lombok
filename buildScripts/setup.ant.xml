@@ -1,0 +1,188 @@
+<!--
+ Copyright (C) 2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok.setup" default="deps" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" basedir="..">
+	<description>
+This buildfile is part of projectlombok.org. It sets up the build itself.
+	</description>
+	
+	<property name="pattern.jdk11plus" value="^(\d\d\d+|1[1-9]|[2-9]\d)(\..*)?$" />
+	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
+	<property environment="env" />
+	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
+	
+	<property name="jdk6-rt.loc" location="lib/openjdk6_rt.jar" />
+	<property name="jdk8-rt.loc" location="lib/openjdk8_rt.jar" />
+	<available file="${jdk6-rt.loc}" property="jdk6-rt.available" />
+	<available file="${jdk8-rt.loc}" property="jdk8-rt.available" />
+	<property name="ssh.configuration.file" location="ssh.configuration" />
+	
+	<target name="-setup.ssh.ask">
+		<property file="${ssh.configuration.file}" />
+		<fail>
+			Your ssh.configuration file is corrupted; delete it and rerun this script.
+			<condition>
+				<or>
+					<and>
+						<isset property="ssh.username" />
+						<equals arg1="" arg2="${ssh.username}" />
+					</and>
+					<and>
+						<isset property="ssh.keyfile" />
+						<equals arg1="" arg2="${ssh.keyfile}" />
+					</and>
+				</or>
+			</condition>
+		</fail>
+		<fail>
+			The keyfile configured in your ${ssh.configuration.file} file does not exist.
+			<condition>
+				<and>
+					<isset property="ssh.keyfile" />
+					<not><available file="${ssh.keyfile}" /></not>
+				</and>
+			</condition>
+		</fail>
+		
+		<condition property="ssh.configuration.write">
+			<or>
+				<not><isset property="ssh.username" /></not>
+				<not><isset property="ssh.keyfile" /></not>
+			</or>
+		</condition>
+		<input message="What is your SSH username on the projectlombok.org server? (Enter to abort)." addproperty="ssh.username" />
+		<fail>Aborted<condition><equals arg1="" arg2="${ssh.username}" /></condition></fail>
+		<input message="Where is your ssh keyfile located? (Enter to abort)." addproperty="ssh.keyfile" defaultvalue="${user.home}/.ssh/id_rsa" />
+		<fail>File ${ssh.keyfile} does not exist<condition><not><available file="${ssh.keyfile}" /></not></condition></fail>
+	</target>
+	
+	<target name="-setup.ssh.save" if="ssh.configuration.write">
+		<propertyfile file="${ssh.configuration.file}" comment="SSH connect info for projectlombok.org.">
+			<entry key="ssh.username" value="${ssh.username}" />
+			<entry key="ssh.keyfile" value="${ssh.keyfile}" />
+		</propertyfile>
+		<echo>Your connection info has been written to ${ssh.configuration.file} and will be remembered for future invocations.</echo>
+	</target>
+	
+	<target name="setup.ssh" depends="-setup.ssh.ask, -setup.ssh.save" />
+	
+	<target name="clean" description="Removes all generated files.">
+		<delete dir="build" quiet="true" />
+	</target>
+	
+	<target name="clean.dist" depends="clean" description="Deletes everything that this build script has ever generated.">
+		<delete dir="lib" quiet="true" />
+		<delete dir="dist" quiet="true" />
+		<delete file=".project" quiet="true" />
+		<delete file=".classpath" quiet="true" />
+		<delete dir=".settings" quiet="true" />
+		<delete dir=".idea" quiet="true" />
+		<delete file="lombok.iml" quiet="true" />
+		<delete dir="ivyCache" quiet="true" />
+	</target>
+	
+	<target name="-ipp.download" unless="ivyplusplus.available">
+		<mkdir dir="lib" />
+		<get src="https://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" usetimestamp="true" />
+	</target>
+	
+	<target name="-ipp.load" depends="-ipp.download">
+		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
+		<ivy:ensureippversion version="1.36" property="ivyplusplus.minimumAvailable" />
+	</target>
+	
+	<target name="-ipp.redownload" unless="ivyplusplus.minimumAvailable">
+		<get src="https://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
+		<fail>A new version of ivyplusplus was required and has been downloaded. Rerun the script to continue.</fail>
+	</target>
+	
+	<target name="ipp.setup" depends="-ipp.load, -ipp.redownload" />
+	
+	<target name="ivy.config" depends="ipp.setup" unless="ivy.config">
+		<ivy:configure file="buildScripts/ivysettings.xml" />
+		<property name="ivy.config" value="true" />
+	</target>
+	
+	<target name="deps.jdk6-runtime" unless="jdk6-rt.available">
+		<echo>To ensure stable builds and avoid accessing API that was not available in JDK6, most of lombok is set up to build against OpenJDK6's runtime, which will now be downloaded...</echo>
+		<mkdir dir="lib" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="${jdk6-rt.loc}" verbose="true" usetimestamp="true" />
+	</target>
+	
+	<target name="deps.jdk8-runtime" unless="jdk8-rt.available">
+		<echo>To test java8, we need a java8 runtime, which will now be downloaded...</echo>
+		<mkdir dir="lib" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk8.jar" dest="${jdk8-rt.loc}" verbose="true" usetimestamp="true" />
+	</target>
+	
+	<target name="deps.jdk-runtime" depends="deps.jdk6-runtime, deps.jdk8-runtime" />
+	
+	<target name="deps.custom" depends="ivy.config" description="Download the dependencies that comprise a configuration (from ivy.xml)">
+		<fail unless="deps.conf">Supply ant with -Ddeps.conf=confname to pick the configuration you want to fetch</fail>
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="${deps.conf}" />
+		<ivy:retrieve symlink="true" />
+	</target>
+	
+	<macrodef name="fetchdep.ecj">
+		<attribute name="version" />
+		<sequential>
+			<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="ecj@{version}" />
+			<ivy:retrieve symlink="true" />
+			<ivy:cachepath pathid="cp.ecj@{version}" conf="ecj@{version}" />
+			<property name="cp.ecj@{version}" refid="cp.ecj@{version}" />
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="fetchdep.eclipse">
+		<attribute name="version" />
+		<sequential>
+			<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="eclipse-@{version}" />
+			<ivy:retrieve symlink="true" />
+			<ivy:cachepath pathid="cp.eclipse-@{version}" conf="eclipse-@{version}" />
+			<property name="cp.eclipse-@{version}" refid="cp.eclipse-@{version}" />
+		</sequential>
+	</macrodef>
+	
+	<target name="deps" depends="ivy.config, deps.jdk-runtime" description="Downloads all dependencies needed for common tasks">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="javac6,javac8,ecj8,build,eclipse-oxygen,mapstruct,sources,stripe,buildtools,test" />
+		<ivy:retrieve symlink="true" />
+		<ivy:cachepath pathid="cp.javac6" conf="javac6" />
+		<ivy:cachepath pathid="cp.javac8" conf="javac8" />
+		<ivy:cachepath pathid="cp.ecj8" conf="ecj8" />
+		<ivy:cachepath pathid="cp.build" conf="build" />
+		<ivy:cachepath pathid="cp.eclipse-oxygen" conf="eclipse-oxygen" />
+		<ivy:cachepath pathid="cp.mapstruct" conf="mapstruct" />
+		<ivy:cachepath pathid="cp.stripe" conf="stripe" />
+		<ivy:cachepath pathid="cp.buildtools" conf="buildtools" />
+		<ivy:cachepath pathid="cp.test" conf="test" />
+	</target>
+	
+	<fail>ant needs to be at least v1.10.0 or higher to build lombok. Your version is: ${ant.version}
+		<condition>
+			<not><antversion atleast="1.10.0" /></not>
+		</condition>
+	</fail>
+	<fail>lombok must be compiled on jdk11 or later. Your version is: ${ant.java.version}
+		<condition>
+			<not><matches string="${ant.java.version}" pattern="${pattern.jdk11plus}" /></not>
+		</condition>
+	</fail>
+</project>

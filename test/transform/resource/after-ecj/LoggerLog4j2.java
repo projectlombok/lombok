@@ -23,3 +23,12 @@ import lombok.extern.log4j.Log4j2;
     super();
   }
 }
+@Log4j2(topic = LoggerLog4j2WithStaticField.TOPIC) class LoggerLog4j2WithStaticField {
+  private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(LoggerLog4j2WithStaticField.TOPIC);
+  static final String TOPIC = "StaticField";
+  <clinit>() {
+  }
+  LoggerLog4j2WithStaticField() {
+    super();
+  }
+}

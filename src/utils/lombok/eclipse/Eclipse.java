@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import lombok.core.ClassLiteral;
 import lombok.core.FieldSelect;
+import lombok.core.JavaIdentifiers;
 import lombok.permit.Permit;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -158,16 +159,12 @@ public class Eclipse {
 		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
 	}
 	
-	/** Matches any of the 8 primitive names, such as {@code boolean}. */
-	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile(
-			"^(boolean|byte|short|int|long|float|double|char)$");
-	
 	/**
 	 * Checks if the given type reference represents a primitive type.
 	 */
 	public static boolean isPrimitive(TypeReference ref) {
 		if (ref.dimensions() > 0) return false;
-		return PRIMITIVE_TYPE_NAME_PATTERN.matcher(toQualifiedName(ref.getTypeName())).matches();
+		return JavaIdentifiers.isPrimitive(toQualifiedName(ref.getTypeName()));
 	}
 	
 	/**

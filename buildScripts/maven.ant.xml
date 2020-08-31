@@ -1,0 +1,126 @@
+<!--
+ Copyright (C) 2020 The Project Lombok Authors.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok.maven" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" basedir="..">
+	<description>
+This buildfile is part of projectlombok.org. It makes maven-compatible repositories.
+	</description>
+	
+	<condition property="exe.mvn.base" value="mvn.cmd" else="mvn">
+		<os family="windows" />
+	</condition>
+	<condition property="exe.mvn" value="${env.MAVEN_HOME}/bin/${exe.mvn.base}" else="${exe.mvn.base}">
+		<isset property="env.MAVEN_HOME" />
+	</condition>
+	
+	<macrodef name="maven.make">
+		<attribute name="version-name" />
+		<sequential>
+			<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
+				<fileset dir="doc/api" />
+			</jar>
+			
+			<jar destfile="dist/lombok-${lombok.version}-sources.jar">
+				<fileset dir="src/core" />
+				<fileset dir="src/launch" />
+				<fileset dir="src/utils" />
+				<fileset dir="src/eclipseAgent" />
+				<fileset dir="src/installer" />
+				<fileset dir="src/delombok" />
+				<fileset dir="test/transform/src" />
+				<fileset dir="test/core/src" />
+			</jar>
+			
+			<copy tofile="build/pom.xml" overwrite="true" file="doc/maven-pom.xml">
+				<filterchain>
+					<replacetokens>
+						<token key="VERSION" value="@{version-name}" />
+					</replacetokens>
+				</filterchain>
+			</copy>
+		</sequential>
+	</macrodef>
+	
+	<target name="maven" depends="version, dist, javadoc.build" description="Creates a maven repo for the current release into a build dir. The intent is for you to put that on a server someplace. Will invoke your local mvn installation.">
+		<mkdir dir="build" />
+		<mkdir dir="dist" />
+		
+		<maven.make version-name="${lombok.version}" />
+		<tar destfile="dist/mavenPublish.tar.bz2" compression="bzip2">
+			<tarfileset dir="dist">
+				<include name="lombok-${lombok.version}.jar" />
+				<include name="lombok-${lombok.version}-sources.jar" />
+				<include name="lombok-${lombok.version}-javadoc.jar" />
+			</tarfileset>
+			<tarfileset dir="build" includes="pom.xml" />
+		</tar>
+	</target>
+	
+	<target name="maven.publish" depends="maven, setup.ssh">
+		<ivy:scpUpload
+			from="dist/mavenPublish.tar.bz2"
+			to="/data/lombok/staging"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/publishToMavenCentral"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<echo>The artifact has been published to staging. Now go to https://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/showMavenCentralPassword"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+	</target>
+	
+	<target name="maven.edge" depends="version, dist, javadoc.build" description="Create a maven repo for the current snapshot into a build dir. The intent is for you to put that on a server someplace. Will invoke your local mvn installation.">
+		<delete quiet="true" dir="build/edge-releases" />
+		<mkdir dir="build/edge-releases" />
+		
+		<maven.make version-name="edge-SNAPSHOT" />
+		
+		<local name="mvn.result" />
+		<exec executable="${exe.mvn}" failifexecutionfails="false" resultproperty="mvn.result">
+			<arg value="deploy:deploy-file" />
+			<arg value="-Dfile=dist/lombok-${lombok.version}.jar" />
+			<arg value="-Dsources=dist/lombok-${lombok.version}-sources.jar" />
+			<arg value="-Djavadoc=dist/lombok-${lombok.version}-javadoc.jar" />
+			<arg value="-DgroupId=org.projectlombok" />
+			<arg value="-DartifactId=lombok" />
+			<arg value="-Dversion=edge-SNAPSHOT" />
+			<arg value="-DpomFile=build/pom.xml" />
+			<arg value="-Durl=file://${basedir}/build/edge-releases" />
+		</exec>
+		
+		<fail>
+			mvn is not on your path and/or MAVEN_HOME is not set. Add mvn to your path or set MAVEN_HOME to continue.
+			<condition>
+				<not><isset property="mvn.result" /></not>
+			</condition>
+		</fail>
+	</target>
+</project>

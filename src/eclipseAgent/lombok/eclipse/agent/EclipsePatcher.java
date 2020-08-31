@@ -103,6 +103,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			patchIdentifierEndReparse(sm);
 			patchRetrieveEllipsisStartPosition(sm);
 			patchRetrieveRightBraceOrSemiColonPosition(sm);
+			patchRetrieveProperRightBracketPosition(sm);
 			patchSetGeneratedFlag(sm);
 			patchDomAstReparseIssues(sm);
 			patchHideGeneratedNodes(sm);
@@ -445,6 +446,16 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 //				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
 	}
 
+	private static void patchRetrieveProperRightBracketPosition(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "extractSubArrayType", "org.eclipse.jdt.core.dom.ArrayType", "org.eclipse.jdt.core.dom.ArrayType", "int", "int"))
+			.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ASTConverter", "retrieveProperRightBracketPosition", "int", "int", "int"))
+			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveProperRightBracketPosition", "int", "int", "org.eclipse.jdt.core.dom.ArrayType"))
+			.requestExtra(StackRequest.PARAM1)
+			.transplant()
+			.build());
+	}
+
 	private static void patchSetGeneratedFlag(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.ASTNode")
@@ -561,6 +572,22 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM3)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlagForName", "void",
+						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
+				.transplant().build());
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setTypeNameForAnnotation", "void", "org.eclipse.jdt.internal.compiler.ast.Annotation", "org.eclipse.jdt.core.dom.Annotation"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM1)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlagForName", "void",
+						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
+				.transplant().build());
+		
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setTypeNameForAnnotation", "void", "org.eclipse.jdt.internal.compiler.ast.Annotation", "org.eclipse.jdt.core.dom.Annotation"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM1)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlagForName", "void",
 						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());

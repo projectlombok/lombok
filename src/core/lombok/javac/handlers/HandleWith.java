@@ -234,7 +234,8 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(copyableAnnotations);
 		
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
+		JCExpression pType = cloneType(maker, fieldDecl.vartype, source.get(), source.getContext());
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, pType, null);
 		
 		if (!makeAbstract) {
 			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();

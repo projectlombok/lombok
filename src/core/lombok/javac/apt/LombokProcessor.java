@@ -24,6 +24,7 @@ package lombok.javac.apt;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -42,7 +43,6 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager;
@@ -371,7 +371,7 @@ public class LombokProcessor extends AbstractProcessor {
 	
 	private String getModuleNameFor(Element element) {
 		while (element != null) {
-			if (element.getKind().name().equals("MODULE")) return ModuleNameOracle.getModuleName(element);
+			if (element.getKind().name().equals("MODULE")) return getModuleName(element);
 			Element n = element.getEnclosingElement();
 			if (n == element) return null;
 			element = n;
@@ -379,12 +379,24 @@ public class LombokProcessor extends AbstractProcessor {
 		return null;
 	}
 	
-	// QualifiedNameable is a java7 thing, so to remain compatible with java6, shove this into an inner class to avoid the ClassNotFoundError.
-	private static class ModuleNameOracle {
-		static String getModuleName(Element element) {
-			if (!(element instanceof QualifiedNameable)) return null;
-			String name = ((QualifiedNameable) element).getQualifiedName().toString().trim();
+	private static Class<?> qualifiedNamableClass = null;
+	private static Method qualifiedNamableQualifiedNameMethod = null;
+	// QualifiedNameable isn't in java 6, so to remain compatible with java6, use reflection.
+	private static String getModuleName(Element element) {
+		try {
+			if (qualifiedNamableClass == null) qualifiedNamableClass = Class.forName("javax.lang.model.element.QualifiedNamable");
+			if (!qualifiedNamableClass.isInstance(element)) return null;
+			if (qualifiedNamableQualifiedNameMethod == null) qualifiedNamableQualifiedNameMethod = qualifiedNamableClass.getMethod("getQualifiedName");
+			String name = qualifiedNamableQualifiedNameMethod.invoke(element).toString().trim();
 			return name.isEmpty() ? null : name;
+		} catch (ClassNotFoundException e) {
+			return null;
+		} catch (NoSuchMethodException e) {
+			return null;
+		} catch (InvocationTargetException e) {
+			return null;
+		} catch (IllegalAccessException e) {
+			return null;
 		}
 	}
 	
