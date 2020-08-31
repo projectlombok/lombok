@@ -285,7 +285,7 @@ public abstract class AbstractRunTests {
 			endIdx--;
 		}
 		
-		return in.substring(0, endIdx);
+		return in.substring(0, endIdx + 1);
 	}
 	
 	private static String[] removeBlanks(String[] in) {

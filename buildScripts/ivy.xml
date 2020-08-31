@@ -58,6 +58,7 @@
 		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="buildtools->build" />
 		<dependency org="de.java2html" name="java2html" rev="5.0" conf="buildtools->default" />
 		<dependency org="org.freemarker" name="freemarker" rev="2.3.28" conf="buildtools->default" />
+		<dependency org="com.sparkjava" name="spark-core" rev="2.9.2" conf="buildtools->default" />
 		
 		<dependency org="org.eclipse.jgit" name="org.eclipse.jgit.ant" rev="5.2.0.201812061821-r" conf="supporters->default" />
 		<dependency org="org.eclipse.jgit" name="org.eclipse.jgit" rev="5.2.0.201812061821-r" conf="supporters->default" />
@@ -93,6 +94,7 @@
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.22.0" conf="eclipse-202006->default" transitive="false" />
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.21.100" conf="eclipse-202006->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.common" rev="3.12.0" conf="eclipse-202006->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.preferences" rev="3.8.0" conf="eclipse-202006->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.resources" rev="3.13.700" conf="eclipse-202006->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.10.800" conf="eclipse-202006->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.15.300" conf="eclipse-202006->default" transitive="false" />

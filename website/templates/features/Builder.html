@@ -132,7 +132,7 @@
 				</li>
 			</ul>
 		</p><p>
-			If your identifiers are written in common english, lombok assumes that the name of any collection with <code>@Singular</code> on it is an english plural and will attempt to automatically singularize that name. If this is possible, the add-one method will use this name. For example, if your collection is called <code>statuses</code>, then the add-one method will automatically be called <code>status</code>. You can also specify the singular form of your identifier explictly by passing the singular form as argument to the annotation like so: <code>@Singular("axis") List&lt;Line&gt; axes;</code>.<br />
+			If your identifiers are written in common english, lombok assumes that the name of any collection with <code>@Singular</code> on it is an english plural and will attempt to automatically singularize that name. If this is possible, the add-one method will use this name. For example, if your collection is called <code>statuses</code>, then the add-one method will automatically be called <code>status</code>. You can also specify the singular form of your identifier explicitly by passing the singular form as argument to the annotation like so: <code>@Singular("axis") List&lt;Line&gt; axes;</code>.<br />
 			If lombok cannot singularize your identifier, or it is ambiguous, lombok will generate an error and force you to explicitly specify the singular name.
 		</p><p>
 			The snippet below does not show what lombok generates for a <code>@Singular</code> field/parameter because it is rather complicated. You can view a snippet <a href="builderSingular">here</a>.

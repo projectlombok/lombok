@@ -171,10 +171,10 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 			injectMethod(fieldsType, constructor);
 		}
 		
+		Clinit cli = null;
 		if (genClinit) {
-			Clinit cli = new Clinit(parent.compilationResult);
+			cli = new Clinit(parent.compilationResult);
 			injectMethod(fieldsType, cli);
-			cli.traverse(generatedByVisitor, ((TypeDeclaration) fieldsType.get()).scope);
 		}
 		
 		for (EclipseNode fieldNode : fields) {
@@ -201,6 +201,10 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 			}
 			injectField(fieldsType, constantField);
 			constantField.traverse(generatedByVisitor, ((TypeDeclaration) fieldsType.get()).initializerScope);
+		}
+		
+		if (genClinit) {
+			cli.traverse(generatedByVisitor, ((TypeDeclaration) fieldsType.get()).scope);
 		}
 	}
 }
