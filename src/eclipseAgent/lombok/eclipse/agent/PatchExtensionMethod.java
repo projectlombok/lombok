@@ -24,6 +24,7 @@ package lombok.eclipse.agent;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.createAnnotation;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,7 +48,6 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
-import org.eclipse.jdt.internal.compiler.ast.FunctionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
@@ -253,7 +253,13 @@ public class PatchExtensionMethod {
 			if (binding instanceof TypeBinding) skip = true;
 		}
 		// It's impossible to resolve the right method without types
-		if (methodCall.argumentsHaveErrors) skip = true;
+		if (Reflection.argumentsHaveErrors != null) {
+			try {
+				if ((Boolean) Reflection.argumentsHaveErrors.get(methodCall)) skip = true;
+			} catch (IllegalAccessException ignore) {
+				// ignore
+			}
+		}
 		
 		if (!skip) for (Extension extension : extensions) {
 			if (!extension.suppressBaseMethods && !(methodCall.binding instanceof ProblemMethodBinding)) continue;
@@ -266,21 +272,20 @@ public class PatchExtensionMethod {
 				List<Expression> arguments = new ArrayList<Expression>();
 				arguments.add(methodCall.receiver);
 				if (methodCall.arguments != null) arguments.addAll(Arrays.asList(methodCall.arguments));
-				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
-				
-				for (int i = 0; i < arguments.size(); i++) {
-					Expression argument = arguments.get(i);
-					TypeBinding argumentType = argument.resolvedType;
-					if (argumentType == null) {
-						// Copy unresolved lamdba types
-						argumentType = methodCall.argumentTypes.length >= i ? methodCall.argumentTypes[i - 1] : null;
-					}
-					if (argumentType != null) {
-						argumentTypes.add(argumentType);
-					}
-				}
 				Expression[] originalArgs = methodCall.arguments;
 				methodCall.arguments = arguments.toArray(new Expression[0]);
+				
+				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
+				for (Expression argument : arguments) {
+					TypeBinding argumentType = argument.resolvedType;
+					if (argumentType == null && Reflection.isFunctionalExpression(argument)) {
+						argumentType = Reflection.getPolyTypeBinding(argument);
+					}
+					if (argumentType == null) {
+						argumentType = TypeBinding.NULL;
+					}					
+					argumentTypes.add(argumentType);
+				}
 				
 				// Copy generic information. This one covers a few simple cases, more complex cases are still broken
 				int typeVariables = extensionMethod.typeVariables.length;
@@ -313,7 +318,7 @@ public class PatchExtensionMethod {
 							param = parameters[i];
 						}
 						// Resolve types for lambdas
-						if (arg instanceof FunctionalExpression) {
+						if (Reflection.isFunctionalExpression(arg)) {
 							arg.setExpectedType(param);
 							arg.resolveType(scope);
 						}
@@ -378,16 +383,41 @@ public class PatchExtensionMethod {
 	}
 	
 	private static final class Reflection {
-		public static final Field argumentTypes;
+		public static final Field argumentTypes = Permit.permissiveGetField(MessageSend.class, "argumentTypes");
+		public static final Field argumentsHaveErrors = Permit.permissiveGetField(MessageSend.class, "argumentsHaveErrors");
+		private static final Class<?> functionalExpression;
+		private static final Constructor<?> polyTypeBindingConstructor;
 		
 		static {
-			Field a = null;
+			Class<?> a = null;
+			Constructor<?> b = null;
 			try {
-				a = Permit.getField(MessageSend.class, "argumentTypes");
-			}  catch (Throwable t) {
-				//ignore - old eclipse versions don't know this one
+				a = Class.forName("org.eclipse.jdt.internal.compiler.ast.FunctionalExpression");
+			} catch (Exception e) {
+				// Ignore
 			}
-			argumentTypes = a;
+			try {
+				b = Permit.getConstructor(Class.forName("org.eclipse.jdt.internal.compiler.lookup.PolyTypeBinding"), Expression.class);
+			} catch (Exception e) {
+				// Ignore
+			}
+			functionalExpression = a;
+			polyTypeBindingConstructor = b;
+		}
+		
+		public static boolean isFunctionalExpression(Expression expression) {
+			if (functionalExpression == null) return false;
+			return functionalExpression.isInstance(expression);
+		}
+		
+		public static TypeBinding getPolyTypeBinding(Expression expression) {
+			if (polyTypeBindingConstructor == null) return null;
+			try {
+				return (TypeBinding) polyTypeBindingConstructor.newInstance(expression);
+			} catch (Exception e) {
+				// Ignore
+			}
+			return null;
 		}
 	}
 }
