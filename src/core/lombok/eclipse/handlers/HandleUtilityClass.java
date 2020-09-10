@@ -70,13 +70,8 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 	}
 	
 	private static boolean checkLegality(EclipseNode typeNode, EclipseNode errorNode) {
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
-		
-		if (typeDecl == null || notAClass) {
-			errorNode.addError("@UtilityClass is only supported on a class (can't be an interface, enum, or annotation).");
+		if (!isClass(typeNode)) {
+			errorNode.addError("@UtilityClass is only supported on a class (can't be an interface, enum, annotation, or record).");
 			return false;
 		}
 		

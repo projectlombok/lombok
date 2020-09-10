@@ -107,13 +107,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	public void generateToString(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, ToString.Include>> members,
 		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		
-		boolean notAClass = true;
-		if (typeNode.get() instanceof JCClassDecl) {
-			long flags = ((JCClassDecl) typeNode.get()).mods.flags;
-			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
-		}
-		
-		if (notAClass) {
+		if (!isClassOrEnum(typeNode)) {
 			source.addError("@ToString is only supported on a class or enum.");
 			return;
 		}

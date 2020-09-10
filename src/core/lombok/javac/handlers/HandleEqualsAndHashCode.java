@@ -113,13 +113,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	public void generateMethods(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members,
 		Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, List<JCAnnotation> onParam) {
 		
-		boolean notAClass = true;
-		if (typeNode.get() instanceof JCClassDecl) {
-			long flags = ((JCClassDecl) typeNode.get()).mods.flags;
-			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-		}
-		
-		if (notAClass) {
+		if (!isClass(typeNode)) {
 			source.addError("@EqualsAndHashCode is only supported on a class.");
 			return;
 		}

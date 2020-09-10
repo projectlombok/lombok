@@ -70,12 +70,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			}
 		}
 		
-		JCClassDecl typeDecl = null;
-		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
-		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-		
-		if (typeDecl == null || notAClass) {
+		if (!isClass(typeNode)) {
 			errorNode.addError("@Setter is only supported on a class or a field.");
 			return;
 		}

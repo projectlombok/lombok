@@ -223,7 +223,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				allFields.append(fieldNode);
 			}
 			
-			handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+			if (!isRecord(tdParent)) {
+				handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+			}
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), tdParent, td.typarams);
 			typeParams = td.typarams;

@@ -85,6 +85,10 @@ public class HandleLog {
 				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
+			if (isRecord(owner) && !useStatic) {
+				annotationNode.addError("Logger fields must be static in records.");
+				return;
+			}
 
 			Object valueGuess = annotation.getValueGuess("topic");
 			Expression loggerTopic = (Expression) annotation.getActualExpression("topic");

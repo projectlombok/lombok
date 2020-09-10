@@ -77,6 +77,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
+		warnings.put("org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures", "enabled");
+		warnings.put("org.eclipse.jdt.core.compiler.problem.reportPreviewFeatures", "ignore");
 		int ecjVersion = Eclipse.getEcjCompilerVersion();
 		warnings.put(CompilerOptions.OPTION_Source, (ecjVersion < 9 ? "1." : "") + ecjVersion);
 		options.set(warnings);

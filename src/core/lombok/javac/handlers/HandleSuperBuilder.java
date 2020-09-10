@@ -128,7 +128,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		boolean addCleaning = false;
 		
-		if (!(tdParent.get() instanceof JCClassDecl)) {
+		if (!isClass(tdParent)) {
 			annotationNode.addError("@SuperBuilder is only supported on types.");
 			return;
 		}

@@ -239,8 +239,17 @@ public class Eclipse {
 		
 		for (Field f : CompilerOptions.class.getDeclaredFields()) {
 			try {
-				if (f.getName().startsWith("VERSION_1_")) {
-					ecjCompilerVersionCached = Math.max(ecjCompilerVersionCached, Integer.parseInt(f.getName().substring("VERSION_1_".length())));
+				if (f.getName().startsWith("VERSION_")) {
+					String version = f.getName().substring("VERSION_".length());
+					Integer versionNumber = null;
+					if (version.startsWith("1_")) {
+						versionNumber = Integer.parseInt(version.substring("1_".length()));
+					} else if (version.length() <= 2) {
+						versionNumber = Integer.parseInt(version);
+					}
+					if (versionNumber != null) {
+						ecjCompilerVersionCached = Math.max(ecjCompilerVersionCached, versionNumber);
+					}
 				}
 			} catch (Exception ignore) {}
 		}

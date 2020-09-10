@@ -50,7 +50,6 @@ import org.eclipse.jdt.internal.compiler.ast.SuperReference;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
@@ -116,14 +115,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	public void generateToString(EclipseNode typeNode, EclipseNode errorNode, List<Included<EclipseNode, ToString.Include>> members,
 		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		
-		TypeDeclaration typeDecl = null;
-		
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
-		
-		if (typeDecl == null || notAClass) {
+		if (!isClassOrEnum(typeNode)) {
 			errorNode.addError("@ToString is only supported on a class or enum.");
 			return;
 		}

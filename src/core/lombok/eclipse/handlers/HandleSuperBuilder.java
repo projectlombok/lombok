@@ -156,7 +156,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		boolean addCleaning = false;
 		
-		if (!(tdParent.get() instanceof TypeDeclaration)) {
+		if (!isClass(tdParent)) {
 			annotationNode.addError("@SuperBuilder is only supported on types.");
 			return;
 		}

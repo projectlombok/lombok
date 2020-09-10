@@ -29,7 +29,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -136,7 +138,10 @@ public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createWithByForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod);
+			Set<EclipseNode> fields = new LinkedHashSet<EclipseNode>();
+			fields.add(node);
+			fields.addAll(annotationNode.upFromAnnotationToFields());
+			createWithByForFields(level, fields, annotationNode, true, onMethod);
 			break;
 		case TYPE:
 			if (!onMethod.isEmpty()) {

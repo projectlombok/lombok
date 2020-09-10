@@ -78,6 +78,12 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 			return;
 		}
 		
+		JavacNode typeNode = upToTypeNode(annotationNode);
+		if (!isClassOrEnum(typeNode)) {
+			annotationNode.addError("@Synchronized is legal only on methods in classes and enums.");
+			return;
+		}
+		
 		boolean[] isStatic = new boolean[] {(method.mods.flags & Flags.STATIC) != 0};
 		String lockName = annotation.getInstance().value();
 		boolean autoMake = false;
@@ -88,8 +94,6 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 		
 		JavacTreeMaker maker = methodNode.getTreeMaker().at(ast.pos);
 		Context context = methodNode.getContext();
-		
-		JavacNode typeNode = upToTypeNode(annotationNode);
 		
 		MemberExistsResult exists = MemberExistsResult.NOT_EXISTS;
 		

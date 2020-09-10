@@ -75,6 +75,10 @@ public class HandleLog {
 				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
+			if (isRecord(typeNode) && !useStatic) {
+				annotationNode.addError("Logger fields must be static in records.");
+				return;
+			}
 			
 			Object valueGuess = annotation.getValueGuess("topic");
 			JCExpression loggerTopic = (JCExpression) annotation.getActualExpression("topic");
@@ -120,10 +124,15 @@ public class HandleLog {
 			maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
 			typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
 		
-		injectFieldAndMarkGenerated(typeNode, fieldDecl);
+		// This is a workaround for https://bugs.openjdk.java.net/browse/JDK-8243057
+		if (isRecord(typeNode)) {
+			injectField(typeNode, fieldDecl);
+		} else {
+			injectFieldAndMarkGenerated(typeNode, fieldDecl);
+		}
 		return true;
 	}
-	
+
 	private static JCExpression[] createFactoryParameters(JavacNode typeNode, JCFieldAccess loggingType, java.util.List<LogFactoryParameter> parameters, JCExpression loggerTopic) {
 		JCExpression[] expressions = new JCExpression[parameters.size()];
 		JavacTreeMaker maker = typeNode.getTreeMaker();

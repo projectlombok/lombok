@@ -97,6 +97,7 @@ import lombok.javac.PackageName;
 import lombok.permit.Permit;
 import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
+import lombok.javac.Java14Flags;
 import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
 
@@ -516,10 +517,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 		boolean isInterface = (tree.mods.flags & INTERFACE) != 0;
 		boolean isAnnotationInterface = isInterface && (tree.mods.flags & ANNOTATION) != 0;
 		boolean isEnum = (tree.mods.flags & ENUM) != 0;
+		boolean isRecord = (tree.mods.flags & Java14Flags.RECORD) != 0;
 		
 		if (isAnnotationInterface) print("@interface ");
 		else if (isInterface) print("interface ");
 		else if (isEnum) print("enum ");
+		else if (isRecord) print("record ");
 		else print("class ");
 		
 		print(tree.name);
@@ -542,6 +545,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(tree.implementing, ", ");
 		}
 		
+		if (isRecord) {
+			printRecordConstructor(tree.defs);
+		}
+		
 		println(" {");
 		indent++;
 		printClassMembers(tree.defs, isEnum, isInterface);
@@ -551,6 +558,23 @@ public class PrettyPrinter extends JCTree.Visitor {
 		currentTypeName = prevTypeName;
 	}
 	
+	private void printRecordConstructor(List<JCTree> members) {
+		boolean first = true;
+		print("(");
+		for (JCTree member : members) {
+			if (member instanceof JCVariableDecl) {
+			JCVariableDecl variableDecl = (JCVariableDecl) member;
+				if ((variableDecl.mods.flags & Java14Flags.GENERATED_MEMBER) != 0) {
+					if (!first) print(", ");
+					first = false;
+					printAnnotations(variableDecl.mods.annotations, false);
+					printVarDef0(variableDecl);
+				}
+			}
+		}
+		print(")");
+	}
+
 	private void printClassMembers(List<JCTree> members, boolean isEnum, boolean isInterface) {
 		Class<?> prefType = null;
 		int typeOfPrevEnumMember = isEnum ? 3 : 0; // 1 = normal, 2 = with body, 3 = no enum field yet.
@@ -580,6 +604,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 				JCTree init = ((JCVariableDecl) member).init;
 				typeOfPrevEnumMember = init instanceof JCNewClass && ((JCNewClass) init).def != null ? 2 : 1;
 			} else if (member instanceof JCVariableDecl) {
+				if ((((JCVariableDecl) member).mods.flags & Java14Flags.GENERATED_MEMBER) != 0) continue;
 				if (prefType != null && prefType != JCVariableDecl.class) println();
 				if (isInterface) flagMod = -1L & ~(PUBLIC | STATIC | FINAL);
 				print(member);

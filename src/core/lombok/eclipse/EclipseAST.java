@@ -21,6 +21,8 @@
  */
 package lombok.eclipse;
 
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -34,7 +36,6 @@ import java.util.List;
 import lombok.Lombok;
 import lombok.core.AST;
 import lombok.core.LombokImmutableList;
-import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.permit.Permit;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -117,7 +118,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 				try {
 					return EclipseWorkspaceBasedFileResolver.resolve(fileName);
 				} catch (IllegalArgumentException e) {
-					EclipseHandlerUtil.warning("Finding 'lombok.config' file failed for '" + fileName + "'", e);
+					warning("Finding 'lombok.config' file failed for '" + fileName + "'", e);
 //					String msg = e.getMessage();
 //					if (msg != null && msg.startsWith("Path must include project and resource name")) {
 //						// We shouldn't throw an exception at all, but we can't reproduce this so we need help from our users to figure this out.
@@ -362,7 +363,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		case TYPE:
 			return buildType((TypeDeclaration) node);
 		case FIELD:
-			return buildField((FieldDeclaration) node);
+			return buildField((FieldDeclaration) node, null);
 		case INITIALIZER:
 			return buildInitializer((Initializer) node);
 		case METHOD:
@@ -401,16 +402,16 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	private EclipseNode buildType(TypeDeclaration type) {
 		if (setAndGetAsHandled(type)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
-		childNodes.addAll(buildFields(type.fields));
+		childNodes.addAll(buildFields(type.fields, getRecordFieldAnnotations(type)));
 		childNodes.addAll(buildTypes(type.memberTypes));
 		childNodes.addAll(buildMethods(type.methods));
 		childNodes.addAll(buildAnnotations(type.annotations, false));
 		return putInMap(new EclipseNode(this, type, childNodes, Kind.TYPE));
 	}
 	
-	private Collection<EclipseNode> buildFields(FieldDeclaration[] children) {
+	private Collection<EclipseNode> buildFields(FieldDeclaration[] children, Annotation[][] annotations) {
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
-		if (children != null) for (FieldDeclaration child : children) addIfNotNull(childNodes, buildField(child));
+		if (children != null) for (int i = 0; i < children.length; i++) addIfNotNull(childNodes, buildField(children[i], annotations[i]));
 		return childNodes;
 	}
 	
@@ -420,13 +421,13 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		return list;
 	}
 	
-	private EclipseNode buildField(FieldDeclaration field) {
+	private EclipseNode buildField(FieldDeclaration field, Annotation[] annotations) {
 		if (field instanceof Initializer) return buildInitializer((Initializer)field);
 		if (setAndGetAsHandled(field)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		addIfNotNull(childNodes, buildTypeUse(field.type));
 		addIfNotNull(childNodes, buildStatement(field.initialization));
-		childNodes.addAll(buildAnnotations(field.annotations, true));
+		childNodes.addAll(buildAnnotations(annotations != null ? annotations : field.annotations, true));
 		return putInMap(new EclipseNode(this, field, childNodes, Kind.FIELD));
 	}
 	

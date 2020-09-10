@@ -68,13 +68,8 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 	}
 	
 	private static boolean checkLegality(JavacNode typeNode, JavacNode errorNode) {
-		JCClassDecl typeDecl = null;
-		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
-		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-		
-		if (typeDecl == null || notAClass) {
-			errorNode.addError("@UtilityClass is only supported on a class (can't be an interface, enum, or annotation).");
+		if (!isClass(typeNode)) {
+			errorNode.addError("@UtilityClass is only supported on a class (can't be an interface, enum, annotation, or record).");
 			return false;
 		}
 		

@@ -272,8 +272,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				allFields.add(fieldNode);
 			}
 			
-			handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
-				Collections.<Annotation>emptyList(), annotationNode);
+			if (!isRecord(tdParent)) {
+				handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
+					Collections.<Annotation>emptyList(), annotationNode);
+			}
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent, td.typeParameters, p);
 			typeParams = td.typeParameters;
