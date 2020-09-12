@@ -2,5 +2,6 @@
 
 import lombok.experimental.WithBy;
 
-record WithByOnRecord(@WithBy String a, String b) {
+@WithBy
+record WithByOnRecord(String a, String b) {
 }

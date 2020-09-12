@@ -160,16 +160,14 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		List<L> fields = new ArrayList<L>();
 		for (L potentialField : type.down()) {
 			if (potentialField.getKind() != Kind.FIELD) continue;
-			if (fieldContainsAnnotation(potentialField.get(), get())) fields.add(potentialField);
+			for (L child : potentialField.down()) {
+				if (child.getKind() != Kind.ANNOTATION) continue;
+				if (child.get() == get()) fields.add(potentialField);
+			}
 		}
 		
 		return fields;
 	}
-	
-	/**
-	 * Return {@code true} if the annotation is attached to the field.
-	 */
-	protected abstract boolean fieldContainsAnnotation(N field, N annotation);
 	
 	/**
 	 * Returns the direct parent node in the AST tree of this node. For example, a local variable declaration's

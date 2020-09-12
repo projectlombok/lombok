@@ -186,16 +186,6 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		return false;
 	}
 	
-	@Override protected boolean fieldContainsAnnotation(JCTree field, JCTree annotation) {
-		if (!(field instanceof JCVariableDecl)) return false;
-		JCVariableDecl f = (JCVariableDecl) field;
-		if (f.mods.annotations == null) return false;
-		for (JCAnnotation childAnnotation : f.mods.annotations) {
-			if (childAnnotation == annotation) return true;
-		}
-		return false;
-	}
-	
 	/**
 	 * Convenient shortcut to the owning JavacAST object's getTreeMaker method.
 	 * 
