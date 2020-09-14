@@ -211,10 +211,6 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				cacheHashCode = false;
 			} else {
 				createHashCodeCacheField(typeNode, source.get());
-				if (!isFinal) {
-					String msg = "Caching the result of hashCode for non-final type.";
-					source.addWarning(msg);
-				}
 			}
 		}
 		
