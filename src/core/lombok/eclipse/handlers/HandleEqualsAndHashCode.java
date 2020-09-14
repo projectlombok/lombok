@@ -237,10 +237,6 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				cacheHashCode = false;
 			} else {
 				createHashCodeCacheField(typeNode, errorNode.get());
-				if (!isFinal) {
-					String msg = "Caching the result of hashCode for non-final type.";
-					errorNode.addWarning(msg);
-				}
 			}
 		}
 		
