@@ -23,20 +23,14 @@ package lombok;
 
 import java.io.File;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import lombok.eclipse.Eclipse;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
@@ -159,48 +153,13 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			Map<String, String> options = new HashMap<String, String>();
 			options.put(JavaCore.COMPILER_SOURCE, "11");
 			options.put("org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures", "enabled");
-			try {
-				org.eclipse.jdt.internal.core.CompilationUnit ccu = new org.eclipse.jdt.internal.core.CompilationUnit(null, null, null) {
-					@Override public char[] getContents() {
-						return source;
-					}
-				};
-				return AST.convertCompilationUnit(4, cud, options, false, ccu, 0, null);
-			} catch (SecurityException e) {
-				try {
-					debugClasspathConflicts("org/eclipse/jdt/internal/compiler");
-				} catch (Exception e2) {
-					throw Lombok.sneakyThrow(e2);
+			
+			org.eclipse.jdt.internal.core.CompilationUnit ccu = new org.eclipse.jdt.internal.core.CompilationUnit(null, null, null) {
+				@Override public char[] getContents() {
+					return source;
 				}
-				throw e;
-			}
-		}
-	}
-	
-	@SuppressWarnings({"all"})
-	private static void debugClasspathConflicts(String prefixToLookFor) throws Exception {
-		String[] paths = System.getProperty("java.class.path").split(":");
-		for (String p : paths) {
-			Path cp = Paths.get(p);
-			if (Files.isDirectory(cp)) {
-				if (Files.isDirectory(cp.resolve(prefixToLookFor))) System.out.println("** DIR-BASED: " + cp);
-			} else if (Files.isRegularFile(cp)) {
-				JarFile jf = new JarFile(cp.toFile());
-				try {
-					Enumeration<JarEntry> jes = jf.entries();
-					while (jes.hasMoreElements()) {
-						JarEntry je = jes.nextElement();
-						if (je.getName().startsWith(prefixToLookFor)) {
-							System.out.println("** JAR-BASED: " + cp);
-							break;
-						}
-					}
-				} finally {
-					jf.close();
-				}
-			} else {
-				System.out.println("** MISSING: " + cp);
-			}
+			};
+			return AST.convertCompilationUnit(4, cud, options, false, ccu, 0, null);
 		}
 	}
 	
