@@ -56,11 +56,3 @@ class LoggerSlf4jOuter {
     super();
   }
 }
-@Slf4j(topic = ExtendedStringLiteral{AB}) class LoggerSlf4jWithTwoLiterals {
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger("AB");
-  <clinit>() {
-  }
-  LoggerSlf4jWithTwoLiterals() {
-    super();
-  }
-}

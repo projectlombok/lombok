@@ -28,7 +28,3 @@ class LoggerSlf4jWithStaticField {
 class LoggerSlf4jWithTwoStaticFields {
 	static final String TOPIC = "StaticField";
 }
-
-@Slf4j(topic="A"+"B")
-class LoggerSlf4jWithTwoLiterals {
-}
