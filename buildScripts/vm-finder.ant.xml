@@ -38,7 +38,7 @@ This buildfile is part of projectlombok.org. It contains platform specific code 
 		<condition property="jvm.loc" value="${jvm.loc.force}">
 			<and>
 				<isset property="jvm.loc.force" />
-				<not><matches string="${jvm.loc.force}" pattern="^\$\{jvm[0-9\.]+\.loc\}$" /></not>
+				<not><matches string="${jvm.loc.force}" pattern="^\$\{jvm\.locations\.j[0-9\.]+\}$" /></not>
 			</and>
 		</condition>
 		<condition property="jvm.loc.invalid">

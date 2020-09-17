@@ -95,10 +95,12 @@ public class CreateEclipseDebugTarget {
 		
 		String bootpath = getBootPath();
 		
-		launchContent.append("\t\t<listEntry value=\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/lombok/bin&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;\"/>\n");
+		launchContent.append("\t\t<listEntry value=\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/lombok/bin/main&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;\"/>\n");
 		for (Map.Entry<String, String> entry : args.entrySet()) {
 			if (!entry.getKey().startsWith("conf.")) continue;
-			String[] files = entry.getValue().split(Pattern.quote(File.pathSeparator));
+			String v = entry.getValue();
+			if (v.equals("NONE")) continue;
+			String[] files = v.split(Pattern.quote(File.pathSeparator));
 			for (String file : files) {
 				String n;
 				try {
@@ -128,7 +130,7 @@ public class CreateEclipseDebugTarget {
 		launchContent.append("\t<listAttribute key=\"org.eclipse.jdt.launching.MODULEPATH\"/>\n");
 		launchContent.append("\t<stringAttribute key=\"org.eclipse.jdt.launching.PROJECT_ATTR\" value=\"lombok\"/>\n");
 		if (getArgBoolean("shadowLoaderBased")) {
-			launchContent.append("<stringAttribute key=\"org.eclipse.jdt.launching.VM_ARGUMENTS\" value=\"-javaagent:dist/lombok.jar -Dshadow.override.lombok=${project_loc:lombok}/bin");
+			launchContent.append("<stringAttribute key=\"org.eclipse.jdt.launching.VM_ARGUMENTS\" value=\"-javaagent:dist/lombok.jar -Dshadow.override.lombok=${project_loc:lombok}/bin/main");
 			for (Map.Entry<String, String> entry : args.entrySet()) {
 				if (!entry.getKey().startsWith("conf.")) continue;
 				launchContent.append(File.pathSeparator).append(entry.getValue());
