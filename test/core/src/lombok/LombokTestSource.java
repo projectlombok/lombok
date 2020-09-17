@@ -113,10 +113,10 @@ public class LombokTestSource {
 		return formatPreferences;
 	}
 	
-	private static final Pattern VERSION_STYLE_1 = Pattern.compile("^(\\d+)$");
-	private static final Pattern VERSION_STYLE_2 = Pattern.compile("^\\:(\\d+)$");
-	private static final Pattern VERSION_STYLE_3 = Pattern.compile("^(\\d+):$");
-	private static final Pattern VERSION_STYLE_4 = Pattern.compile("^(\\d+):(\\d+)$");
+	private static final Pattern VERSION_STYLE_1 = Pattern.compile("^(\\d+)(?:\\s+.*)?$");
+	private static final Pattern VERSION_STYLE_2 = Pattern.compile("^\\:(\\d+)(?:\\s+.*)?$");
+	private static final Pattern VERSION_STYLE_3 = Pattern.compile("^(\\d+):(?:\\s+.*)?$");
+	private static final Pattern VERSION_STYLE_4 = Pattern.compile("^(\\d+):(\\d+)(?:\\s+.*)?$");
 	
 	private int[] parseVersionLimit(String spec) {
 		/* Single version: '5' */ {
