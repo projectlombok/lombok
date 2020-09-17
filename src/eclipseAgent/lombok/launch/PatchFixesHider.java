@@ -38,9 +38,9 @@ import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -497,6 +497,10 @@ final class PatchFixesHider {
 			return original == -1 ? end : original;
 		}
 		
+		public static int fixRetrieveStartBlockPosition(int original, int start) {
+			return original == -1 ? start : original;
+		}
+		
 		public static int fixRetrieveRightBraceOrSemiColonPosition(int original, int end) {
 //			if (original == -1) {
 //				Thread.dumpStack();
@@ -518,9 +522,9 @@ final class PatchFixesHider {
 			return -1;
 		}
 		
-		public static int fixRetrieveProperRightBracketPosition(int retVal, ArrayType arrayType) {
-			if (retVal != -1 || arrayType == null) return retVal;
-			if (isGenerated(arrayType)) return arrayType.getStartPosition() + arrayType.getLength() - 1;
+		public static int fixRetrieveProperRightBracketPosition(int retVal, Type type) {
+			if (retVal != -1 || type == null) return retVal;
+			if (isGenerated(type)) return type.getStartPosition() + type.getLength() - 1;
 			return -1;
 		}
 		

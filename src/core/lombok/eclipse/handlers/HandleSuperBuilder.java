@@ -741,6 +741,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 		
 		out.statements = body.isEmpty() ? null : body.toArray(new Statement[0]);
+		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		
 		return out;
 	}

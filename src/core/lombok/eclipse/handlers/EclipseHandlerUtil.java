@@ -2470,18 +2470,7 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static NameReference createNameReference(String name, Annotation source) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-		
-		char[][] nameTokens = fromQualifiedName(name);
-		long[] pos = new long[nameTokens.length];
-		Arrays.fill(pos, p);
-		
-		QualifiedNameReference nameReference = new QualifiedNameReference(nameTokens, pos, pS, pE);
-		nameReference.statementEnd = pE;
-		
-		setGeneratedBy(nameReference, source);
-		return nameReference;
+		return generateQualifiedNameRef(source, fromQualifiedName(name));
 	}
 	
 	private static long[] copy(long[] array) {
@@ -2634,5 +2623,9 @@ public class EclipseHandlerUtil {
 		else ref = new SingleTypeReference(varNames[0], p);
 		setGeneratedBy(ref, source);
 		return ref;
+	}
+	
+	public static TypeReference createTypeReference(String typeName, ASTNode source) {
+		return generateQualifiedTypeRef(source, fromQualifiedName(typeName));
 	}
 }
