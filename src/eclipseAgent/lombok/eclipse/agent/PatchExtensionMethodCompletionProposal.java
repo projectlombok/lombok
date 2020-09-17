@@ -65,13 +65,14 @@ public class PatchExtensionMethodCompletionProposal {
 			CompletionProposalCollector completionProposalCollector) {
 		
 		List<IJavaCompletionProposal> proposals = new ArrayList<IJavaCompletionProposal>(Arrays.asList(javaCompletionProposals));
-		if (canExtendCodeAssist(proposals)) {
-			IJavaCompletionProposal firstProposal = proposals.get(0);
-			int replacementOffset = getReplacementOffset(firstProposal);
+		if (canExtendCodeAssist()) {
 			for (Extension extension : getExtensionMethods(completionProposalCollector)) {
 				for (MethodBinding method : extension.extensionMethods) {
-					ExtensionMethodCompletionProposal newProposal = new ExtensionMethodCompletionProposal(replacementOffset);
-					copyNameLookupAndCompletionEngine(completionProposalCollector, firstProposal, newProposal);
+					if (!isMatchingProposal(method, completionProposalCollector)) {
+						continue;
+					}
+					ExtensionMethodCompletionProposal newProposal = new ExtensionMethodCompletionProposal(0);
+					copyNameLookupAndCompletionEngine(completionProposalCollector, newProposal);
 					ASTNode node = getAssistNode(completionProposalCollector);
 					newProposal.setMethodBinding(method, node);
 					createAndAddJavaCompletionProposal(completionProposalCollector, newProposal, proposals);
@@ -80,7 +81,6 @@ public class PatchExtensionMethodCompletionProposal {
 		}
 		return proposals.toArray(new IJavaCompletionProposal[0]);
 	}
-	
 	
 	private static List<Extension> getExtensionMethods(CompletionProposalCollector completionProposalCollector) {
 		List<Extension> extensions = new ArrayList<Extension>();
@@ -94,6 +94,17 @@ public class PatchExtensionMethodCompletionProposal {
 			}
 		}
 		return extensions;
+	}
+	
+	private static boolean isMatchingProposal(MethodBinding method, CompletionProposalCollector completionProposalCollector) {
+		try {
+			InternalCompletionContext context = (InternalCompletionContext) Reflection.contextField.get(completionProposalCollector);
+			String searchToken = new String(context.getToken());
+			String extensionMethodName = new String(method.selector);
+			return extensionMethodName.contains(searchToken);
+		} catch (IllegalAccessException e) {
+			return true;
+		}
 	}
 	
 	static TypeBinding getFirstParameterType(TypeDeclaration decl, CompletionProposalCollector completionProposalCollector) {
@@ -149,8 +160,7 @@ public class PatchExtensionMethodCompletionProposal {
 		return scope;
 	}
 	
-	private static void copyNameLookupAndCompletionEngine(CompletionProposalCollector completionProposalCollector, IJavaCompletionProposal proposal,
-			InternalCompletionProposal newProposal) {
+	private static void copyNameLookupAndCompletionEngine(CompletionProposalCollector completionProposalCollector, InternalCompletionProposal newProposal) {
 		
 		try {
 			InternalCompletionContext context = (InternalCompletionContext) Reflection.contextField.get(completionProposalCollector);
@@ -173,17 +183,10 @@ public class PatchExtensionMethodCompletionProposal {
 		}
 	}
 	
-	private static boolean canExtendCodeAssist(List<IJavaCompletionProposal> proposals) {
-		return !proposals.isEmpty() && Reflection.isComplete();
+	private static boolean canExtendCodeAssist() {
+		return Reflection.isComplete();
 	}
-	
-	private static int getReplacementOffset(Object proposal) {
-		try {
-			return Reflection.replacementOffsetField.getInt(proposal);
-		} catch (Exception ignore) {
-			return 0;
-		}
-	}
+
 	
 	static class Reflection {
 		public static final Field replacementOffsetField;
