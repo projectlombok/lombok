@@ -43,6 +43,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -279,6 +280,7 @@ final class PatchFixesHider {
 		private static final Method RESOLVE_TYPE;
 		private static final Method ERROR_NO_METHOD_FOR;
 		private static final Method INVALID_METHOD, INVALID_METHOD2;
+		private static final Method NON_STATIC_ACCESS_TO_STATIC_METHOD;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchExtensionMethod");
@@ -286,6 +288,7 @@ final class PatchFixesHider {
 			ERROR_NO_METHOD_FOR = Util.findMethod(shadowed, "errorNoMethodFor", ProblemReporter.class, MessageSend.class, TypeBinding.class, TypeBinding[].class);
 			INVALID_METHOD = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class);
 			INVALID_METHOD2 = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class, Scope.class);
+			NON_STATIC_ACCESS_TO_STATIC_METHOD = Util.findMethod(shadowed, "nonStaticAccessToStaticMethod", ProblemReporter.class, ASTNode.class, MethodBinding.class, MessageSend.class);
 		}
 		
 		public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
@@ -302,6 +305,10 @@ final class PatchFixesHider {
 		
 		public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method, Scope scope) {
 			Util.invokeMethod(INVALID_METHOD2, problemReporter, messageSend, method, scope);
+		}
+		
+		public static void nonStaticAccessToStaticMethod(ProblemReporter problemReporter, ASTNode location, MethodBinding method, MessageSend messageSend) {
+			Util.invokeMethod(NON_STATIC_ACCESS_TO_STATIC_METHOD, problemReporter, location, method, messageSend);
 		}
 	}
 	

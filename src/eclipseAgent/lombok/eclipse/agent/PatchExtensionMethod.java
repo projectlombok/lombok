@@ -57,7 +57,6 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
-import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
@@ -140,6 +139,22 @@ public class PatchExtensionMethod {
 		}
 	}
 	
+	private static class PostponedNonStaticAccessToStaticMethodError implements PostponedError {
+		private final ProblemReporter problemReporter;
+		private ASTNode location;
+		private MethodBinding method;
+		
+		PostponedNonStaticAccessToStaticMethodError(ProblemReporter problemReporter, ASTNode location, MethodBinding method) {
+			this.problemReporter = problemReporter;
+			this.location = location;
+			this.method = method;
+		}
+
+		public void fire() {
+			problemReporter.nonStaticAccessToStaticMethod(location, method);
+		}
+	}
+	
 	private static interface PostponedError {
 		public void fire();
 	}
@@ -202,15 +217,12 @@ public class PatchExtensionMethod {
 			TypeBinding receiverType) {
 		
 		List<MethodBinding> extensionMethods = new ArrayList<MethodBinding>();
-		CompilationUnitScope cuScope = ((CompilationUnitDeclaration) typeNode.top().get()).scope;
 		for (MethodBinding method : extensionMethodProviderBinding.methods()) {
 			if (!method.isStatic()) continue;
 			if (!method.isPublic()) continue;
 			if (method.parameters == null || method.parameters.length == 0) continue;
 			TypeBinding firstArgType = method.parameters[0];
 			if (receiverType.isProvablyDistinct(firstArgType) && !receiverType.isCompatibleWith(firstArgType.erasure())) continue;
-			TypeBinding[] argumentTypes = Arrays.copyOfRange(method.parameters, 1, method.parameters.length);
-			if ((receiverType instanceof ReferenceBinding) && ((ReferenceBinding) receiverType).getExactMethod(method.selector, argumentTypes, cuScope) != null) continue;
 			extensionMethods.add(method);
 		}
 		return extensionMethods;
@@ -228,6 +240,10 @@ public class PatchExtensionMethod {
 	
 	public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method, Scope scope) {
 		MessageSend_postponedErrors.set(messageSend, new PostponedInvalidMethodError(problemReporter, messageSend, method, scope));
+	}
+	
+	public static void nonStaticAccessToStaticMethod(ProblemReporter problemReporter, ASTNode location, MethodBinding method, MessageSend messageSend) {
+		MessageSend_postponedErrors.set(messageSend, new PostponedNonStaticAccessToStaticMethodError(problemReporter, location, method));
 	}
 	
 	public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
