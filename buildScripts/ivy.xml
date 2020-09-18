@@ -10,7 +10,7 @@
 		<!-- test: base dependencies required to run the tests. Does not include javac or ecj. -->
 		<conf name="test" />
 		
-		<!-- stripe: dependencies that need to be on the classpath during builds -->
+		<!-- build: dependencies that need to be on the classpath during builds -->
 		<conf name="build" />
 		
 		<!-- stripe: dependencies that need to be striped into lombok.jar itself, and are required for both build and test/run purposes -->

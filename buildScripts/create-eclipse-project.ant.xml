@@ -96,7 +96,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 				<path refid="cp.buildtools" />
 				<pathelement location="build/support" />
 			</classpath>
-			<arg value="name=Lombok-test Javac14" />
+			<arg value="name=Lombok-test Javac 14" />
 			<arg value="testType=lombok.TestJavac" />
 			<arg value="jvmTarget=14" />
 			<arg value="conf.test=${cp.test}" />
