@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
@@ -755,5 +756,68 @@ public class HandlerUtil {
 		if (JavaIdentifiers.isPrimitive(typeName)) return 1000;
 		if (PRIMITIVE_WRAPPER_TYPE_NAME_PATTERN.matcher(typeName).matches()) return 800;
 		return 0;
+	}
+	
+	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER|WITH(?:ER)?)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+	private static final Pattern LINE_BREAK_FINDER = Pattern.compile("(\\r?\\n)?");
+	
+	public static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
+		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		Matcher m = p.matcher(javadoc);
+		return m.replaceAll("");
+	}
+	
+	public static String stripSectionsFromJavadoc(String javadoc) {
+		Matcher sectionMatcher = SECTION_FINDER.matcher(javadoc);
+		if (!sectionMatcher.find()) return javadoc;
+		
+		return javadoc.substring(0, sectionMatcher.start());
+	}
+	
+	public static String getJavadocSection(String javadoc, String sectionNameSpec) {
+		String[] sectionNames = sectionNameSpec.split("\\|");
+		Matcher sectionMatcher = SECTION_FINDER.matcher(javadoc);
+		Matcher lineBreakMatcher = LINE_BREAK_FINDER.matcher(javadoc);
+		int sectionStart = -1;
+		int sectionEnd = -1;
+		while (sectionMatcher.find()) {
+			boolean found = false;
+			for (String sectionName : sectionNames) if (sectionMatcher.group(1).equalsIgnoreCase(sectionName)) {
+				found = true;
+				break;
+			}
+			if (found) {
+				lineBreakMatcher.find(sectionMatcher.end());
+				sectionStart = lineBreakMatcher.end();
+			} else if (sectionStart != -1) {
+				sectionEnd = sectionMatcher.start();
+			}
+		}
+		
+		if (sectionStart != -1) {
+			if (sectionEnd != -1) return javadoc.substring(sectionStart, sectionEnd);
+			return javadoc.substring(sectionStart);
+		}
+		
+		return null;
+	}
+	
+	private static final Pattern FIND_RETURN = Pattern.compile("^\\s*\\**\\s*@returns?\\s+.*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+	
+	public static String addReturnsThisIfNeeded(String in) {
+		if (FIND_RETURN.matcher(in).find()) return in;
+		
+		return addJavadocLine(in, "@return {@code this}.");
+	}
+	
+	public static String addReturnsUpdatedSelfIfNeeded(String in) {
+		if (FIND_RETURN.matcher(in).find()) return in;
+		
+		return addJavadocLine(in, "@return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).");
+	}
+	
+	public static String addJavadocLine(String in, String line) {
+		if (in.endsWith("\n")) return in + line + "\n";
+		return in + "\n" + line;
 	}
 }

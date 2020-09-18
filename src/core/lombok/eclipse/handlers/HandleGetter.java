@@ -296,6 +296,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
+		copyJavadoc(fieldNode, method, CopyJavadoc.GETTER);
 		return method;
 	}
 

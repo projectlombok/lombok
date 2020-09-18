@@ -373,6 +373,7 @@ public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
 		createRelevantNonNullAnnotation(fieldNode, method);
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
+		copyJavadoc(fieldNode, method, CopyJavadoc.WITH_BY);
 		return method;
 	}
 }

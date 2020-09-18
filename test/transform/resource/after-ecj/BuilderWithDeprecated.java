@@ -10,6 +10,10 @@ public @Builder class BuilderWithDeprecated {
     @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder() {
       super();
     }
+    /**
+     * @deprecated since always
+     * @return {@code this}.
+     */
     public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecated.BuilderWithDeprecatedBuilder dep1(final String dep1) {
       this.dep1 = dep1;
       return this;
