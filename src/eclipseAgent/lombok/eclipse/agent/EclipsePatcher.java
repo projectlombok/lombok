@@ -711,6 +711,26 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.request(StackRequest.THIS)
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "handleDelegateForType", "boolean", "java.lang.Object"))
 				.build());
+		
+		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
+		        .target(new MethodTarget("org.eclipse.jdt.internal.core.SelectionRequestor", "acceptSourceMethod"))
+		        .callToWrap(new Hook("org.eclipse.jdt.core.IType", "getMethods", "org.eclipse.jdt.core.IMethod[]"))
+		        .symbol("lombok.skipdelegates")
+		        .build());
+		
+		sm.addScript(ScriptBuilder.addField()
+				.fieldName("$delegateMethods")
+				.fieldType("Ljava/util/Map;")
+				.setPublic()
+				.setTransient()
+				.targetClass("org.eclipse.jdt.internal.core.CompilationUnit")
+				.build());
+		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.SourceTypeElementInfo", "getChildren", "org.eclipse.jdt.core.IJavaElement[]"))
+				.request(StackRequest.RETURN_VALUE, StackRequest.THIS)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "getChildren", "java.lang.Object[]", "java.lang.Object", "java.lang.Object"))
+				.build());
 	}
 	
 	private static void addPatchesForValEclipse(ScriptManager sm) {
