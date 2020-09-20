@@ -68,6 +68,7 @@ import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.HandleBuilder.BuilderJob;
 
 public class EclipseSingularsRecipes {
 	public interface TypeReferenceMaker {
@@ -258,20 +259,20 @@ public class EclipseSingularsRecipes {
 		 * If you need more control over the return type and value, use
 		 * {@link #generateMethods(SingularData, boolean, EclipseNode, boolean, TypeReferenceMaker, StatementMaker)}.
 		 */
-		public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, final EclipseNode builderType, boolean fluent, final boolean chain, AccessLevel access) {
+		public void generateMethods(final BuilderJob job, SingularData data, boolean deprecate) {
 			TypeReferenceMaker returnTypeMaker = new TypeReferenceMaker() {
 				@Override public TypeReference make() {
-					return chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
+					return job.oldChain ? cloneSelfType(job.builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 				}
 			};
 			
 			StatementMaker returnStatementMaker = new StatementMaker() {
 				@Override public ReturnStatement make() {
-					return chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
+					return job.oldChain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
 				}
 			};
 			
-			generateMethods(cfv, data, deprecate, builderType, fluent, returnTypeMaker, returnStatementMaker, access);
+			generateMethods(job.checkerFramework, data, deprecate, job.builderType, job.oldFluent, returnTypeMaker, returnStatementMaker, job.accessInners);
 		}
 		
 		/**
