@@ -701,8 +701,12 @@ public class Delombok {
 			
 			if (!disablePreview && Javac.getJavaCompilerVersion() >= 11) argsList.add("--enable-preview");
 			
-			String[] argv = argsList.toArray(new String[0]);
-			args.init("javac", argv);
+			if (Javac.getJavaCompilerVersion() < 15) {
+				String[] argv = argsList.toArray(new String[0]);
+				args.init("javac", argv);
+			} else {
+				args.init("javac", argsList);
+			}
 			options.put("diags.legacy", "TRUE");
 			options.put("allowStringFolding", "FALSE");
 		} else {
