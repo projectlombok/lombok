@@ -1,6 +1,6 @@
 class EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
-	private transient int $hashCodeCache = 0;
+	private transient int $hashCodeCache;
 	int x;
 	boolean[] y;
 	Object[] z;
@@ -41,13 +41,14 @@ class EqualsAndHashCode {
 		result = result * PRIME + ($a == null ? 43 : $a.hashCode());
 		final java.lang.Object $b = this.b;
 		result = result * PRIME + ($b == null ? 43 : $b.hashCode());
-		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
+		if (result == 0) result = java.lang.Integer.MIN_VALUE;
+		this.$hashCodeCache = result;
 		return result;
 	}
 }
 final class EqualsAndHashCode2 {
 	@java.lang.SuppressWarnings("all")
-	private transient int $hashCodeCache = 0;
+	private transient int $hashCodeCache;
 	int x;
 	long y;
 	float f;
@@ -79,13 +80,14 @@ final class EqualsAndHashCode2 {
 		final long $d = java.lang.Double.doubleToLongBits(this.d);
 		result = result * PRIME + (int) ($d >>> 32 ^ $d);
 		result = result * PRIME + (this.b ? 79 : 97);
-		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
+		if (result == 0) result = java.lang.Integer.MIN_VALUE;
+		this.$hashCodeCache = result;
 		return result;
 	}
 }
 final class EqualsAndHashCode3 extends EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
-	private transient int $hashCodeCache = 0;
+	private transient int $hashCodeCache;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -103,14 +105,15 @@ final class EqualsAndHashCode3 extends EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
 		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
-		final int result = 1;
-		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
+		int result = 1;
+		if (result == 0) result = java.lang.Integer.MIN_VALUE;
+		this.$hashCodeCache = result;
 		return result;
 	}
 }
 class EqualsAndHashCode4 extends EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
-	private transient int $hashCodeCache = 0;
+	private transient int $hashCodeCache;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -129,14 +132,15 @@ class EqualsAndHashCode4 extends EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
 		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
-		final int result = super.hashCode();
-		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
+		int result = super.hashCode();
+		if (result == 0) result = java.lang.Integer.MIN_VALUE;
+		this.$hashCodeCache = result;
 		return result;
 	}
 }
 final class EqualsAndHashCode5 extends EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
-	private transient int $hashCodeCache = 0;
+	private transient int $hashCodeCache;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -155,8 +159,9 @@ final class EqualsAndHashCode5 extends EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
 		if (this.$hashCodeCache != 0) return this.$hashCodeCache;
-		final int result = super.hashCode();
-		this.$hashCodeCache = result != 0 ? result : java.lang.Integer.MIN_VALUE;
+		int result = super.hashCode();
+		if (result == 0) result = java.lang.Integer.MIN_VALUE;
+		this.$hashCodeCache = result;
 		return result;
 	}
 }

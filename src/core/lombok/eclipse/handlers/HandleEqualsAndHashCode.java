@@ -246,12 +246,11 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	}
 
 	private void createHashCodeCacheField(EclipseNode typeNode, ASTNode source) {
-		FieldDeclaration hashCodeCacheDecl = new FieldDeclaration(HASH_CODE_CACHE_NAME_ARR, 0, -1);
+		FieldDeclaration hashCodeCacheDecl = new FieldDeclaration(HASH_CODE_CACHE_NAME_ARR, 0, 0);
 		hashCodeCacheDecl.modifiers = ClassFileConstants.AccPrivate | ClassFileConstants.AccTransient;
 		hashCodeCacheDecl.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		hashCodeCacheDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 		hashCodeCacheDecl.declarationSourceEnd = -1;
-		hashCodeCacheDecl.initialization = makeIntLiteral("0".toCharArray(), source);
 		injectFieldAndMarkGenerated(typeNode, hashCodeCacheDecl);
 		setGeneratedBy(hashCodeCacheDecl, source);
 		setGeneratedBy(hashCodeCacheDecl.type, source);
@@ -345,7 +344,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			resultDecl.initialization = init;
 			resultDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 			resultDecl.type.sourceStart = pS; resultDecl.type.sourceEnd = pE;
-			if (isEmpty) resultDecl.modifiers |= Modifier.FINAL;
+			if (isEmpty && !cacheHashCode) resultDecl.modifiers |= Modifier.FINAL;
 			setGeneratedBy(resultDecl.type, source);
 			statements.add(resultDecl);
 		}
@@ -440,24 +439,43 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			}
 		}
 		
-		/* this.$hashCodeCache = result != 0 ? result : Integer.MIN_VALUE; */ {
+		/* 
+		 * if (result == 0) result = Integer.MIN_VALUE;
+		 * this.$hashCodeCache = result;
+		 * 
+		 */ {
 			if (cacheHashCode) {
+				SingleNameReference resultRef = new SingleNameReference(RESULT, p);
+				setGeneratedBy(resultRef, source);
+				
+				EqualExpression resultIsZero = new EqualExpression(resultRef, makeIntLiteral("0".toCharArray(), source), OperatorIds.EQUAL_EQUAL);
+				setGeneratedBy(resultIsZero, source);
+				
+				resultRef = new SingleNameReference(RESULT, p);
+				setGeneratedBy(resultRef, source);
+				
+				FieldReference integerMinValue = new FieldReference("MIN_VALUE".toCharArray(), p);
+				integerMinValue.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_INTEGER);
+				setGeneratedBy(integerMinValue, source);
+				
+				Assignment newResult = new Assignment(resultRef, integerMinValue, pE);
+				newResult.sourceStart = pS; newResult.statementEnd = newResult.sourceEnd = pE;
+				setGeneratedBy(newResult, source);
+				
+				IfStatement ifStatement = new IfStatement(resultIsZero, newResult, pS, pE);
+				setGeneratedBy(ifStatement, source);
+				statements.add(ifStatement);
+				
+				
 				FieldReference hashCodeCacheRef = new FieldReference(HASH_CODE_CACHE_NAME_ARR, p);
 				hashCodeCacheRef.receiver = new ThisReference(pS, pE);
 				setGeneratedBy(hashCodeCacheRef, source);
 				setGeneratedBy(hashCodeCacheRef.receiver, source);
-				SingleNameReference resultRef = new SingleNameReference(RESULT, p);
-				setGeneratedBy(resultRef, source);
-				EqualExpression resultNotZero = new EqualExpression(resultRef, makeIntLiteral("0".toCharArray(), source), OperatorIds.NOT_EQUAL);
-				setGeneratedBy(resultNotZero, source);
-				FieldReference integerMinValue = new FieldReference("MIN_VALUE".toCharArray(), p);
-				integerMinValue.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_INTEGER);
-				setGeneratedBy(integerMinValue, source);
+				
 				resultRef = new SingleNameReference(RESULT, p);
 				setGeneratedBy(resultRef, source);
-				ConditionalExpression notZeroOrIntegerMin = new ConditionalExpression(resultNotZero, resultRef, integerMinValue);
-				setGeneratedBy(notZeroOrIntegerMin, source);
-				Assignment cacheResult = new Assignment(hashCodeCacheRef, notZeroOrIntegerMin, pE);
+				
+				Assignment cacheResult = new Assignment(hashCodeCacheRef, resultRef, pE);
 				cacheResult.sourceStart = pS; cacheResult.statementEnd = cacheResult.sourceEnd = pE;
 				setGeneratedBy(cacheResult, source);
 				statements.add(cacheResult);

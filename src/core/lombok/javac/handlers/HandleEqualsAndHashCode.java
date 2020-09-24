@@ -40,7 +40,6 @@ import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCConditional;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -221,7 +220,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	private void createHashCodeCacheField(JavacNode typeNode, JCTree source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.PRIVATE | Flags.TRANSIENT);
-		JCVariableDecl hashCodeCacheField = maker.VarDef(mods, typeNode.toName(HASH_CODE_CACHE_NAME), maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
+		JCVariableDecl hashCodeCacheField = maker.VarDef(mods, typeNode.toName(HASH_CODE_CACHE_NAME), maker.TypeIdent(CTC_INT), null);
 		injectFieldAndMarkGenerated(typeNode, hashCodeCacheField);
 		recursiveSetGeneratedBy(hashCodeCacheField, source, typeNode.getContext());
 	}
@@ -273,7 +272,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				/* ... 1; */
 				init = maker.Literal(1);
 			}
-			statements.append(maker.VarDef(maker.Modifiers(isEmpty ? finalFlag : 0), resultName, maker.TypeIdent(CTC_INT), init));
+			statements.append(maker.VarDef(maker.Modifiers(isEmpty && !cacheHashCode ? finalFlag : 0), resultName, maker.TypeIdent(CTC_INT), init));
 		}
 		
 		for (Included<JavacNode, EqualsAndHashCode.Include> member : members) {
@@ -345,14 +344,17 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
-		/* this.$hashCodeCache = result != 0 ? result : Integer.MIN_VALUE; */ {
+		/* 
+		 * if (result == 0) result = Integer.MIN_VALUE;
+		 * this.$hashCodeCache = result;
+		 * 
+		 */ {
 			if (cacheHashCode) {
-				JCIdent receiver = maker.Ident(typeNode.toName("this"));
-				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(receiver, typeNode.toName(HASH_CODE_CACHE_NAME));
-				JCExpression resultNotZero = maker.Binary(CTC_NOT_EQUAL, maker.Ident(resultName), maker.Literal(CTC_INT, 0));
-				JCExpression integerMinValue = genJavaLangTypeRef(typeNode, "Integer", "MIN_VALUE");
-				JCConditional notZeroOrIntegerMin = maker.Conditional(resultNotZero, maker.Ident(resultName), integerMinValue);
-				statements.append(maker.Exec(maker.Assign(cacheHashCodeFieldAccess, notZeroOrIntegerMin)));
+				statements.append(maker.If(maker.Binary(CTC_EQUAL, maker.Ident(resultName), maker.Literal(CTC_INT, 0)), 
+					maker.Exec(maker.Assign(maker.Ident(resultName), genJavaLangTypeRef(typeNode, "Integer", "MIN_VALUE"))), null));
+				
+				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(maker.Ident(typeNode.toName("this")), typeNode.toName(HASH_CODE_CACHE_NAME));
+				statements.append(maker.Exec(maker.Assign(cacheHashCodeFieldAccess, maker.Ident(resultName))));
 			}
 		}
 		

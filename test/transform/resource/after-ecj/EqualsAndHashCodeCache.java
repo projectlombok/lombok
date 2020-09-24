@@ -1,5 +1,5 @@
 @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
   int x;
   boolean[] y;
   Object[] z;
@@ -47,12 +47,14 @@
     result = ((result * PRIME) + (($a == null) ? 43 : $a.hashCode()));
     final java.lang.Object $b = this.b;
     result = ((result * PRIME) + (($b == null) ? 43 : $b.hashCode()));
-    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
+    if ((result == 0))
+        result = java.lang.Integer.MIN_VALUE;
+    this.$hashCodeCache = result;
     return result;
   }
 }
 final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode2 {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
   int x;
   long y;
   float f;
@@ -91,12 +93,14 @@ final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheSt
     final long $d = java.lang.Double.doubleToLongBits(this.d);
     result = ((result * PRIME) + (int) ($d ^ ($d >>> 32)));
     result = ((result * PRIME) + (this.b ? 79 : 97));
-    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
+    if ((result == 0))
+        result = java.lang.Integer.MIN_VALUE;
+    this.$hashCodeCache = result;
     return result;
   }
 }
 final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode3 extends EqualsAndHashCode {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
   EqualsAndHashCode3() {
     super();
   }
@@ -116,13 +120,15 @@ final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsA
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     if ((this.$hashCodeCache != 0)) 
         return this.$hashCodeCache;
-    final int result = 1;
-    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
+    int result = 1;
+    if ((result == 0))
+        result = java.lang.Integer.MIN_VALUE;
+    this.$hashCodeCache = result;
     return result;
   }
 }
 @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode4 extends EqualsAndHashCode {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
   EqualsAndHashCode4() {
     super();
   }
@@ -144,13 +150,15 @@ final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsA
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     if ((this.$hashCodeCache != 0)) 
         return this.$hashCodeCache;
-    final int result = super.hashCode();
-    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
+    int result = super.hashCode();
+    if ((result == 0))
+        result = java.lang.Integer.MIN_VALUE;
+    this.$hashCodeCache = result;
     return result;
   }
 }
 final @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode5 extends EqualsAndHashCode {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache = 0;
+  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
   EqualsAndHashCode5() {
     super();
   }
@@ -172,8 +180,10 @@ final @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAn
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     if ((this.$hashCodeCache != 0)) 
         return this.$hashCodeCache;
-    final int result = super.hashCode();
-    this.$hashCodeCache = ((result != 0) ? result : java.lang.Integer.MIN_VALUE);
+    int result = super.hashCode();
+    if ((result == 0))
+        result = java.lang.Integer.MIN_VALUE;
+    this.$hashCodeCache = result;
     return result;
   }
 }
