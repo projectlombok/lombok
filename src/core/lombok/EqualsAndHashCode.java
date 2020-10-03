@@ -71,6 +71,14 @@ public @interface EqualsAndHashCode {
 	 * @return If {@code true}, always use direct field access instead of calling the getter method.
 	 */
 	boolean doNotUseGetters() default false;
+
+	/**
+	 * Determines how the result of the {@code hashCode} method will be cached.
+	 * <strong>default: {@link CacheStrategy#NEVER}</strong>
+	 *
+	 * @return The {@code hashCode} cache strategy to be used.
+	 */
+	CacheStrategy cacheStrategy() default CacheStrategy.NEVER;
 	
 	/**
 	 * Any annotations listed here are put on the generated parameter of {@code equals} and {@code canEqual}.
@@ -131,5 +139,20 @@ public @interface EqualsAndHashCode {
 		 * @return ordering within the generating {@code equals} and {@code hashCode} methods; higher numbers are considered first.
 		 */
 		int rank() default 0;
+	}
+
+	public enum CacheStrategy {
+		/**
+		 * Never cache. Perform the calculation every time the method is called.
+		 */
+		NEVER,
+		/**
+		 * Cache the result of the first invocation of {@code hashCode} and use it for subsequent invocations.
+		 * This can improve performance if all fields used for calculating the {@code hashCode} are immutable
+		 * and thus every invocation of {@code hashCode} will always return the same value.
+		 * <strong>Do not use this if there's <em>any</em> chance that different invocations of {@code hashCode}
+		 * might return different values.</strong>
+		 */
+		LAZY
 	}
 }

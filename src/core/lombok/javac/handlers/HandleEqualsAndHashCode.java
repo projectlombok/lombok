@@ -42,6 +42,8 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -56,6 +58,7 @@ import com.sun.tools.javac.util.Name;
 
 import lombok.ConfigurationKeys;
 import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode.CacheStrategy;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CallSuperType;
@@ -76,11 +79,13 @@ import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHashCode> {
 	private static final String RESULT_NAME = "result";
 	private static final String PRIME_NAME = "PRIME";
+	private static final String HASH_CODE_CACHE_NAME = "$hashCodeCache";
 	
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.EQUALS_AND_HASH_CODE_FLAG_USAGE, "@EqualsAndHashCode");
 		
 		deleteAnnotationIfNeccessary(annotationNode, EqualsAndHashCode.class);
+		deleteImportFromCompilationUnit(annotationNode, CacheStrategy.class.getName());
 		EqualsAndHashCode ann = annotation.getInstance();
 		java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members = InclusionExclusionUtils.handleEqualsAndHashCodeMarking(annotationNode.up(), annotation, annotationNode);
 		JavacNode typeNode = annotationNode.up();
@@ -92,8 +97,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.EQUALS_AND_HASH_CODE_DO_NOT_USE_GETTERS);
 		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
 		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
-		
-		generateMethods(typeNode, annotationNode, members, callSuper, true, fieldAccess, onParam);
+
+		boolean cacheHashCode = ann.cacheStrategy() == CacheStrategy.LAZY;
+
+		generateMethods(typeNode, annotationNode, members, callSuper, true, cacheHashCode, fieldAccess, onParam);
 	}
 	
 	public void generateEqualsAndHashCodeForType(JavacNode typeNode, JavacNode source) {
@@ -107,11 +114,11 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members = InclusionExclusionUtils.handleEqualsAndHashCodeMarking(typeNode, null, null);
 		
-		generateMethods(typeNode, source, members, null, false, access, List.<JCAnnotation>nil());
+		generateMethods(typeNode, source, members, null, false, false, access, List.<JCAnnotation>nil());
 	}
 	
 	public void generateMethods(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members,
-		Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, List<JCAnnotation> onParam) {
+		Boolean callSuper, boolean whineIfExists, boolean cacheHashCode, FieldAccess fieldAccess, List<JCAnnotation> onParam) {
 		
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
@@ -196,17 +203,39 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			injectMethod(typeNode, canEqualMethod);
 		}
 		
-		JCMethodDecl hashCodeMethod = createHashCode(typeNode, members, callSuper, fieldAccess, source.get());
+		if (cacheHashCode){
+			if (fieldExists(HASH_CODE_CACHE_NAME, typeNode) != MemberExistsResult.NOT_EXISTS) {
+				String msg = String.format("Not caching the result of hashCode: A field named %s already exists.", HASH_CODE_CACHE_NAME);
+				source.addWarning(msg);
+				cacheHashCode = false;
+			} else {
+				createHashCodeCacheField(typeNode, source.get());
+			}
+		}
+		
+		JCMethodDecl hashCodeMethod = createHashCode(typeNode, members, callSuper, cacheHashCode, fieldAccess, source.get());
 		injectMethod(typeNode, hashCodeMethod);
 	}
+
+	private void createHashCodeCacheField(JavacNode typeNode, JCTree source) {
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		JCModifiers mods = maker.Modifiers(Flags.PRIVATE | Flags.TRANSIENT);
+		JCVariableDecl hashCodeCacheField = maker.VarDef(mods, typeNode.toName(HASH_CODE_CACHE_NAME), maker.TypeIdent(CTC_INT), null);
+		injectFieldAndMarkGenerated(typeNode, hashCodeCacheField);
+		recursiveSetGeneratedBy(hashCodeCacheField, source, typeNode.getContext());
+	}
 	
-	public JCMethodDecl createHashCode(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+	public JCMethodDecl createHashCode(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, boolean cacheHashCode, FieldAccess fieldAccess, JCTree source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		List<JCAnnotation> annsOnMethod = List.of(overrideAnnotation);
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(typeNode);
-		if (checkerFramework.generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
+		if (cacheHashCode && checkerFramework.generatePure()) {
+			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()));
+		} else if (checkerFramework.generateSideEffectFree()) { 
+			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
+		}
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
 		JCExpression returnType = maker.TypeIdent(CTC_INT);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
@@ -216,6 +245,15 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
 		
 		boolean isEmpty = members.isEmpty();
+		
+		/* if (this.$hashCodeCache != 0) return this.$hashCodeCache; */ {
+			if (cacheHashCode) {
+				JCIdent receiver = maker.Ident(typeNode.toName("this"));
+				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(receiver, typeNode.toName(HASH_CODE_CACHE_NAME));
+				JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, cacheHashCodeFieldAccess, maker.Literal(CTC_INT, 0));
+				statements.append(maker.If(cacheNotZero, maker.Return(cacheHashCodeFieldAccess), null));
+			}
+		}
 		
 		/* final int PRIME = X; */ {
 			if (!isEmpty) {
@@ -234,7 +272,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				/* ... 1; */
 				init = maker.Literal(1);
 			}
-			statements.append(maker.VarDef(maker.Modifiers(isEmpty ? finalFlag : 0L), resultName, maker.TypeIdent(CTC_INT), init));
+			statements.append(maker.VarDef(maker.Modifiers(isEmpty && !cacheHashCode ? finalFlag : 0L), resultName, maker.TypeIdent(CTC_INT), init));
 		}
 		
 		for (Included<JavacNode, EqualsAndHashCode.Include> member : members) {
@@ -303,6 +341,20 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 					List.<JCExpression>nil());
 				JCExpression thisEqualsNull = maker.Binary(CTC_EQUAL, maker.Ident(dollarFieldName), maker.Literal(CTC_BOT, null));
 				statements.append(createResultCalculation(typeNode, maker.Parens(maker.Conditional(thisEqualsNull, maker.Literal(HandlerUtil.primeForNull()), hcCall))));
+			}
+		}
+		
+		/* 
+		 * if (result == 0) result = Integer.MIN_VALUE;
+		 * this.$hashCodeCache = result;
+		 * 
+		 */ {
+			if (cacheHashCode) {
+				statements.append(maker.If(maker.Binary(CTC_EQUAL, maker.Ident(resultName), maker.Literal(CTC_INT, 0)), 
+					maker.Exec(maker.Assign(maker.Ident(resultName), genJavaLangTypeRef(typeNode, "Integer", "MIN_VALUE"))), null));
+				
+				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(maker.Ident(typeNode.toName("this")), typeNode.toName(HASH_CODE_CACHE_NAME));
+				statements.append(maker.Exec(maker.Assign(cacheHashCodeFieldAccess, maker.Ident(resultName))));
 			}
 		}
 		
