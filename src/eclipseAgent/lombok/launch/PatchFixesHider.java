@@ -66,7 +66,7 @@ import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
 import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 
-import lombok.eclipse.EclipseAugments;
+import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
 
 /** These contain a mix of the following:
  * <ul>
@@ -545,14 +545,14 @@ final class PatchFixesHider {
 		
 		public static int fixRetrieveRightBraceOrSemiColonPosition(int retVal, AbstractMethodDeclaration amd) {
 			if (retVal != -1 || amd == null) return retVal;
-			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(amd) != null;
+			boolean isGenerated = ASTNode_generatedBy.get(amd) != null;
 			if (isGenerated) return amd.declarationSourceEnd;
 			return -1;
 		}
 		
 		public static int fixRetrieveRightBraceOrSemiColonPosition(int retVal, FieldDeclaration fd) {
 			if (retVal != -1 || fd == null) return retVal;
-			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(fd) != null;
+			boolean isGenerated = ASTNode_generatedBy.get(fd) != null;
 			if (isGenerated) return fd.declarationSourceEnd;
 			return -1;
 		}
@@ -578,13 +578,13 @@ final class PatchFixesHider {
 				org.eclipse.jdt.internal.compiler.ast.ASTNode internalNode) throws Exception {
 			
 			if (internalNode == null || domNode == null) return;
-			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(internalNode) != null;
+			boolean isGenerated = ASTNode_generatedBy.get(internalNode) != null;
 			if (isGenerated) domNode.getClass().getField("$isGenerated").set(domNode, true);
 		}
 		
 		public static void setIsGeneratedFlagForName(org.eclipse.jdt.core.dom.Name name, Object internalNode) throws Exception {
 			if (internalNode instanceof org.eclipse.jdt.internal.compiler.ast.ASTNode) {
-				boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get((org.eclipse.jdt.internal.compiler.ast.ASTNode) internalNode) != null;
+				boolean isGenerated = ASTNode_generatedBy.get((org.eclipse.jdt.internal.compiler.ast.ASTNode) internalNode) != null;
 				if (isGenerated) name.getClass().getField("$isGenerated").set(name, true);
 			}
 		}

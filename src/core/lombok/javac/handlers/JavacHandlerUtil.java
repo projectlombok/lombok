@@ -144,12 +144,12 @@ public class JavacHandlerUtil {
 		Options options = Options.instance(context);
 		return (options.keySet().contains("ide") && !options.keySet().contains("backgroundCompilation"));
 	}
-
+	
 	public static boolean inNetbeansCompileOnSave(Context context) {
 		Options options = Options.instance(context);
 		return (options.keySet().contains("ide") && options.keySet().contains("backgroundCompilation"));
 	}
-
+	
 	public static JCTree getGeneratedBy(JCTree node) {
 		return JCTree_generatedNode.get(node);
 	}
@@ -1026,7 +1026,7 @@ public class JavacHandlerUtil {
 	public static JavacNode injectField(JavacNode typeNode, JCVariableDecl field) {
 		return injectField(typeNode, field, false);
 	}
-
+	
 	public static JavacNode injectField(JavacNode typeNode, JCVariableDecl field, boolean addGenerated) {
 		return injectField(typeNode, field, addGenerated, false);
 	}
@@ -1076,6 +1076,17 @@ public class JavacHandlerUtil {
 		private static Constructor<?> CONSTRUCTOR;
 		private static Field ANNOTATIONS, UNDERLYING_TYPE;
 		
+		private static void initByLoader(ClassLoader classLoader) {
+			if (TYPE != null) return;
+			Class<?> c;
+			try {
+				c = classLoader.loadClass("com.sun.tools.javac.tree.JCTree$JCAnnotatedType");
+			} catch (Exception e) {
+				return;
+			}
+			init(c);
+		}
+		
 		private static void init(Class<?> in) {
 			if (TYPE != null) return;
 			if (!in.getName().equals("com.sun.tools.javac.tree.JCTree$JCAnnotatedType")) return;
@@ -1120,17 +1131,18 @@ public class JavacHandlerUtil {
 		}
 		
 		static JCExpression create(List<JCAnnotation> annotations, JCExpression underlyingType) {
+			initByLoader(underlyingType.getClass().getClassLoader());
 			try {
 				return (JCExpression) CONSTRUCTOR.newInstance(annotations, underlyingType);
 			} catch (Exception e) {
-				return null;
+				return underlyingType;
 			}
 		}
 	}
-
+	
 	static class JCAnnotationReflect {
 		private static Field ATTRIBUTE;
-
+		
 		static {
 			try {
 				ATTRIBUTE = Permit.getField(JCAnnotation.class, "attribute");
@@ -1199,7 +1211,7 @@ public class JavacHandlerUtil {
 		Context context = typeNode.getContext();
 		Symtab symtab = Symtab.instance(context);
 		JCClassDecl type = (JCClassDecl) typeNode.get();
-
+		
 		if (method.getName().contentEquals("<init>")) {
 			//Scan for default constructor, and remove it.
 			int idx = 0;
@@ -1216,11 +1228,11 @@ public class JavacHandlerUtil {
 				idx++;
 			}
 		}
-
+		
 		addSuppressWarningsAll(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		addGenerated(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		type.defs = type.defs.append(method);
-
+		
 		List<Symbol.VarSymbol> params = null;
 		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
 			ListBuffer<Symbol.VarSymbol> newParams = new ListBuffer<Symbol.VarSymbol>();
@@ -1250,12 +1262,12 @@ public class JavacHandlerUtil {
 			params = newParams.toList();
 			if (params.length() != method.getParameters().length()) params = null;
 		}
-
+		
 		fixMethodMirror(typeNode.getContext(), typeNode.getElement(), method.getModifiers().flags, method.getName(), paramTypes, params, returnType);
-
+		
 		typeNode.add(method, Kind.METHOD);
 	}
-
+	
 	private static void fixMethodMirror(Context context, Element typeMirror, long access, Name methodName, List<Type> paramTypes, List<Symbol.VarSymbol> params, Type returnType) {
 		if (typeMirror == null || paramTypes == null || returnType == null) return;
 		ClassSymbol cs = (ClassSymbol) typeMirror;
@@ -1428,6 +1440,7 @@ public class JavacHandlerUtil {
 		}
 		return e;
 	}
+	
 	/**
 	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
 	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
@@ -1831,20 +1844,30 @@ public class JavacHandlerUtil {
 	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode type, List<JCTypeParameter> params) {
 		JCClassDecl td = (JCClassDecl) type.get();
 		boolean instance = (td.mods.flags & Flags.STATIC) == 0;
-		return namePlusTypeParamsToTypeReference(maker, type.up(), td.name, instance, params);
+		return namePlusTypeParamsToTypeReference(maker, type.up(), td.name, instance, params, List.<JCAnnotation>nil());
+	}
+	
+	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode type, List<JCTypeParameter> params, List<JCAnnotation> annotations) {
+		JCClassDecl td = (JCClassDecl) type.get();
+		boolean instance = (td.mods.flags & Flags.STATIC) == 0;
+		return namePlusTypeParamsToTypeReference(maker, type.up(), td.name, instance, params, annotations);
 	}
 	
 	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode parentType, Name typeName, boolean instance, List<JCTypeParameter> params) {
+		return namePlusTypeParamsToTypeReference(maker, parentType, typeName, instance, params, List.<JCAnnotation>nil());
+	}
+	
+	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode parentType, Name typeName, boolean instance, List<JCTypeParameter> params, List<JCAnnotation> annotations) {
 		JCExpression r = null;
-		
 		if (parentType != null && parentType.getKind() == Kind.TYPE) {
 			JCClassDecl td = (JCClassDecl) parentType.get();
 			boolean outerInstance = instance && ((td.mods.flags & Flags.STATIC) == 0);
 			List<JCTypeParameter> outerParams = instance ? td.typarams : List.<JCTypeParameter>nil();
-			r = namePlusTypeParamsToTypeReference(maker, parentType.up(), td.name, outerInstance, outerParams);
+			r = namePlusTypeParamsToTypeReference(maker, parentType.up(), td.name, outerInstance, outerParams, List.<JCAnnotation>nil());
 		}
 		
 		r = r == null ? maker.Ident(typeName) : maker.Select(r, typeName);
+		if (!annotations.isEmpty()) r = JCAnnotatedTypeReflect.create(annotations, r);
 		if (!params.isEmpty()) r = maker.TypeApply(r, typeParameterNames(maker, params));
 		return r;
 	}
@@ -2078,6 +2101,7 @@ public class JavacHandlerUtil {
 	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
 		copyJavadoc(from, to, copyMode, false);
 	}
+	
 	/**
 	 * Copies javadoc on one node to the other.
 	 * 

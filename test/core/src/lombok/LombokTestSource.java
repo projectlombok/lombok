@@ -65,7 +65,10 @@ public class LombokTestSource {
 
 	public boolean runOnPlatform(String platform) {
 		if (platforms == null || platforms.isEmpty()) return true;
-		for (String pl : platforms) if (pl.equalsIgnoreCase(platform)) return true;
+		for (String pl : platforms) {
+			if (pl.startsWith("!") && pl.regionMatches(true, 1, platform, 0, platform.length())) return false;
+			if (pl.equalsIgnoreCase(platform)) return true;
+		}
 		return false;
 	}
 	

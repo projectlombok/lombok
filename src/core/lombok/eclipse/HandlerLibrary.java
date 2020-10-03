@@ -23,7 +23,7 @@ package lombok.eclipse;
 
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
-import static lombok.eclipse.EclipseAugments.ASTNode_handled;
+import static lombok.eclipse.EcjAugments.ASTNode_handled;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;

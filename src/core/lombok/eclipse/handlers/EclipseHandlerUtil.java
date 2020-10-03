@@ -23,7 +23,7 @@ package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
-import static lombok.eclipse.EclipseAugments.*;
+import static lombok.eclipse.EcjAugments.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.EclipseReflectiveMembers.*;
 
 import java.lang.reflect.Array;
@@ -2649,22 +2649,42 @@ public class EclipseHandlerUtil {
 		return null;
 	}
 	
-	public static void setDocComment(CompilationUnitDeclaration cud, EclipseNode eclipseNode, String doc) {
-		setDocComment(cud, (TypeDeclaration) upToTypeNode(eclipseNode).get(), eclipseNode.get(), doc);
-	}
-	
-	public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
-		if (cud.compilationResult.compilationUnit instanceof CompilationUnit) {
-			CompilationUnit compilationUnit = (CompilationUnit) cud.compilationResult.compilationUnit;
-			Map<String, String> docs = CompilationUnit_javadoc.setIfAbsent(compilationUnit, new HashMap<String, String>());
-			
-			if (node instanceof AbstractMethodDeclaration) {
-				AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) node;
-				String signature = getSignature(type, methodDeclaration);
-				/* Add javadoc start marker, add leading asterisks to each line, add javadoc end marker */
-				docs.put(signature, String.format("/**%n%s%n */", doc.replaceAll("(?m)^", " * ")));
+	private static class EclipseOnlyUtil {
+		public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
+			if (cud.compilationResult.compilationUnit instanceof CompilationUnit) {
+				CompilationUnit compilationUnit = (CompilationUnit) cud.compilationResult.compilationUnit;
+				Map<String, String> docs = EclipseAugments.CompilationUnit_javadoc.setIfAbsent(compilationUnit, new HashMap<String, String>());
+				
+				if (node instanceof AbstractMethodDeclaration) {
+					AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) node;
+					String signature = getSignature(type, methodDeclaration);
+					/* Add javadoc start marker, add leading asterisks to each line, add javadoc end marker */
+					docs.put(signature, String.format("/**%n%s%n */", doc.replaceAll("(?m)^", " * ")));
+				}
 			}
 		}
+	}
+	
+	private static Boolean eclipseMode;
+	private static boolean eclipseMode() {
+		if (eclipseMode != null) return eclipseMode.booleanValue();
+		try {
+			Class.forName("org.eclipse.jdt.internal.core.CompilationUnit");
+			eclipseMode = true;
+		} catch (Exception e) {
+			eclipseMode = false;
+		}
+		return eclipseMode;
+	}
+	
+	public static void setDocComment(CompilationUnitDeclaration cud, EclipseNode eclipseNode, String doc) {
+		if (!eclipseMode()) return;
+		setDocComment(cud, (TypeDeclaration) upToTypeNode(eclipseNode).get(), eclipseNode.get(), doc);
+	}
+	 
+	public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
+		if (!eclipseMode()) return;
+		EclipseOnlyUtil.setDocComment(cud, type, node, doc);
 	}
 	
 	public static String getSignature(TypeDeclaration type, AbstractMethodDeclaration methodDeclaration) {

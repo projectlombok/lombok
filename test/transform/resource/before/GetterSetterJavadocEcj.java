@@ -1,4 +1,4 @@
-//platform !ecj: Javadoc copying not supported on ecj
+//platform ecj: Javadoc copying not supported on ecj - testing that the javadoc doesnt cause any crashes
 @lombok.Data
 class GetterSetterJavadoc1 {
 	/**

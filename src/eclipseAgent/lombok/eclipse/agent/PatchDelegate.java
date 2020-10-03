@@ -22,7 +22,7 @@
 package lombok.eclipse.agent;
 
 import static lombok.eclipse.Eclipse.*;
-import static lombok.eclipse.EclipseAugments.*;
+import static lombok.eclipse.EcjAugments.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Method;
@@ -724,7 +724,7 @@ public class PatchDelegate {
 	private static void cleanupDelegateMethods(CompilationUnitDeclaration cud) {
 		CompilationUnit compilationUnit = getCompilationUnit(cud);
 		if (compilationUnit != null) {
-			CompilationUnit_delegateMethods.clear(compilationUnit);
+			EclipseAugments.CompilationUnit_delegateMethods.clear(compilationUnit);
 		}
 	}
 	
@@ -819,7 +819,7 @@ public class PatchDelegate {
 		if (sourceType != null) {
 			CompilationUnit compilationUnit = getCompilationUnit(sourceType.getCompilationUnit());
 			if (compilationUnit != null) {
-				ConcurrentMap<String, List<SourceMethod>> map = CompilationUnit_delegateMethods.setIfAbsent(compilationUnit, new ConcurrentHashMap<String, List<SourceMethod>>());
+				ConcurrentMap<String, List<SourceMethod>> map = EclipseAugments.CompilationUnit_delegateMethods.setIfAbsent(compilationUnit, new ConcurrentHashMap<String, List<SourceMethod>>());
 				List<SourceMethod> newList = new ArrayList<SourceMethod>();
 				List<SourceMethod> oldList = map.putIfAbsent(sourceType.getTypeQualifiedName(), newList);
 				return oldList != null ? oldList : newList;

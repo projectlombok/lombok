@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.agent;
 
-import static lombok.eclipse.EclipseAugments.CompilationUnit_javadoc;
+import static lombok.eclipse.EcjAugments.EclipseAugments.CompilationUnit_javadoc;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -36,7 +36,6 @@ import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.SourceMethod;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 
-import lombok.eclipse.EclipseAugments;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.permit.Permit;
 
@@ -52,7 +51,7 @@ public class PatchJavadoc {
 			ICompilationUnit iCompilationUnit = sourceMethod.getCompilationUnit();
 			if (iCompilationUnit instanceof CompilationUnit) {
 				CompilationUnit compilationUnit = (CompilationUnit) iCompilationUnit;
-				Map<String, String> docs = EclipseAugments.CompilationUnit_javadoc.get(compilationUnit);
+				Map<String, String> docs = CompilationUnit_javadoc.get(compilationUnit);
 				
 				String signature = getSignature(sourceMethod);
 				String rawJavadoc = docs.get(signature);
@@ -80,7 +79,7 @@ public class PatchJavadoc {
 		}
 		return methodDeclaration.print(tab, output);
 	}
-
+	
 	private static String getSignature(SourceMethod sourceMethod) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(sourceMethod.getParent().getElementName());

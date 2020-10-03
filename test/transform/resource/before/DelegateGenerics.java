@@ -1,3 +1,4 @@
+//platform !eclipse: Requires a 'full' eclipse with intialized workspace, and we don't (yet) have that set up properly in the test run.
 public class DelegateGenerics<T> {
 	@lombok.experimental.Delegate
 	I1<T> target;

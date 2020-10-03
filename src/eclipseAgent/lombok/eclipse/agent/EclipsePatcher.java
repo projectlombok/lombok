@@ -50,8 +50,7 @@ import lombok.patcher.scripts.ScriptBuilder;
  */
 public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	// At some point I'd like the agent to be capable of auto-detecting if its on eclipse or on ecj. This class is a sure sign we're not in ecj but in eclipse. -ReinierZ
-	@SuppressWarnings("unused")
-	private static final String ECLIPSE_SIGNATURE_CLASS = "org/eclipse/core/runtime/adaptor/EclipseStarter";
+	private static final String ECLIPSE_SIGNATURE_CLASS = "org.eclipse.core.runtime.adaptor.EclipseStarter";
 	
 	@Override public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected, Class<?> launchingContext) throws Exception {
 		String[] args = agentArgs == null ? new String[0] : agentArgs.split(":");
@@ -72,6 +71,12 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		if (forceEcj) ecj = true;
 		else if (forceEclipse) ecj = false;
 		else ecj = injected;
+		
+		if (!ecj) try {
+			Class.forName(ECLIPSE_SIGNATURE_CLASS);
+		} catch (ClassNotFoundException e) {
+			ecj = true;
+		}
 		
 		registerPatchScripts(instrumentation, injected, ecj, launchingContext);
 	}
@@ -117,6 +122,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			patchExtractInterface(sm);
 			patchAboutDialog(sm);
 			patchEclipseDebugPatches(sm);
+			patchJavadoc(sm);
 		} else {
 			patchPostCompileHookEcj(sm);
 		}
@@ -127,7 +133,6 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchExtensionMethod(sm, ecjOnly);
 		patchRenameField(sm);
 		patchNullCheck(sm);
-		patchJavadoc(sm);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
