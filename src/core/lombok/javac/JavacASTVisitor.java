@@ -22,6 +22,7 @@
 package lombok.javac;
 
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
@@ -32,6 +33,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.List;
 
 /**
  * Implement so you can ask any JavacAST.LombokNode to traverse depth-first through all children,
@@ -223,6 +225,26 @@ public interface JavacASTVisitor {
 			} else type = "METHOD";
 			print("<%s %s> %s returns: %s", type, method.name, printFlags(method.mods.flags), method.restype);
 			indent++;
+			JCVariableDecl recv;
+			try {
+				Field f = JCMethodDecl.class.getField("recvparam");
+				recv = (JCVariableDecl) f.get(method);
+			} catch (Exception ignore) {
+				recv = null;
+			}
+			
+			if (recv != null) {
+				List<JCAnnotation> annotations = recv.mods.annotations;
+				if (recv.mods != null) annotations = recv.mods.annotations;
+				boolean innerContent = annotations != null && annotations.isEmpty();
+				print("<RECEIVER-PARAM (%s) %s %s%s> %s", recv.vartype == null ? "null" : recv.vartype.getClass().toString(), recv.vartype, recv.name, innerContent ? "" : " /", printFlags(recv.mods.flags));
+				if (innerContent) {
+					indent++;
+					for (JCAnnotation ann : annotations) print("<ANNOTATION: %s />", ann);
+					indent--;
+					print("</RECEIVER-PARAM>");
+				}
+			}
 			if (printContent) {
 				if (method.body == null) print("(ABSTRACT)");
 				else print("%s", method.body);
@@ -237,11 +259,11 @@ public interface JavacASTVisitor {
 		@Override public void endVisitMethod(JavacNode node, JCMethodDecl method) {
 			if (printContent) disablePrinting--;
 			indent--;
-			print("</%s %s>", "XMETHOD", method.name);
+			print("</%s %s>", "METHOD", method.name);
 		}
 		
 		@Override public void visitMethodArgument(JavacNode node, JCVariableDecl arg, JCMethodDecl method) {
-			print("<METHODARG %s %s> %s", arg.vartype, arg.name, printFlags(arg.mods.flags));
+			print("<METHODARG (%s) %s %s> %s", arg.vartype.getClass().toString(), arg.vartype, arg.name, printFlags(arg.mods.flags));
 			indent++;
 		}
 		
