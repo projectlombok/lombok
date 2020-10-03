@@ -380,7 +380,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		/* java.lang.Object value = this.fieldName.get();*/ {
 			JCExpression valueVarType = genJavaLangTypeRef(fieldNode, "Object");
-			statements.append(maker.VarDef(maker.Modifiers(0), valueName, valueVarType, callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
+			statements.append(maker.VarDef(maker.Modifiers(0L), valueName, valueVarType, callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
 		}
 		
 		/* if (value == null) { */ {

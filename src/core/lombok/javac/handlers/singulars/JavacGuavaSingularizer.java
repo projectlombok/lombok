@@ -151,7 +151,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		
 		JCExpression init = maker.Conditional(isNull, empty, invokeBuild); // this.pluralName == null ? ImmutableX.of() : this.pluralName.build()
 		
-		JCStatement jcs = maker.VarDef(maker.Modifiers(0), data.getPluralName(), varType, init);
+		JCStatement jcs = maker.VarDef(maker.Modifiers(0L), data.getPluralName(), varType, init);
 		statements.append(jcs);
 	}
 

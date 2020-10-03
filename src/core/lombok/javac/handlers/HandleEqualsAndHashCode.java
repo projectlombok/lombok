@@ -234,7 +234,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				/* ... 1; */
 				init = maker.Literal(1);
 			}
-			statements.append(maker.VarDef(maker.Modifiers(isEmpty ? finalFlag : 0), resultName, maker.TypeIdent(CTC_INT), init));
+			statements.append(maker.VarDef(maker.Modifiers(isEmpty ? finalFlag : 0L), resultName, maker.TypeIdent(CTC_INT), init));
 		}
 		
 		for (Included<JavacNode, EqualsAndHashCode.Include> member : members) {

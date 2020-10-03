@@ -377,7 +377,6 @@ public class HandleConstructor {
 			addConstructorProperties(mods, typeNode, fieldsToParam);
 		}
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
-		if (getCheckerFrameworkVersion(source).generateUnique()) mods.annotations = mods.annotations.prepend(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
 			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
@@ -456,7 +455,6 @@ public class HandleConstructor {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | toJavacModifier(level));
-		if (getCheckerFrameworkVersion(typeNode).generateUnique()) mods.annotations = mods.annotations.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
 		
 		JCExpression returnType, constructorType;
 		
@@ -469,7 +467,9 @@ public class HandleConstructor {
 				typeParams.append(maker.TypeParameter(param.name, param.bounds));
 			}
 		}
-		returnType = namePlusTypeParamsToTypeReference(maker, typeNode, type.typarams);
+		List<JCAnnotation> annsOnReturnType = List.nil();
+		if (getCheckerFrameworkVersion(typeNode).generateUnique()) annsOnReturnType = List.of(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
+		returnType = namePlusTypeParamsToTypeReference(maker, typeNode, type.typarams, annsOnReturnType);
 		constructorType = namePlusTypeParamsToTypeReference(maker, typeNode, type.typarams);
 		
 		for (JavacNode fieldNode : fields) {

@@ -106,8 +106,16 @@ import lombok.experimental.NonFinal;
 public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	private HandleConstructor handleConstructor = new HandleConstructor();
 	
-	private static final char[] CLEAN_FIELD_NAME = "$lombokUnclean".toCharArray();
-	private static final char[] CLEAN_METHOD_NAME = "$lombokClean".toCharArray();
+	static final char[] CLEAN_FIELD_NAME = "$lombokUnclean".toCharArray();
+	static final char[] CLEAN_METHOD_NAME = "$lombokClean".toCharArray();
+	static final String TO_BUILDER_METHOD_NAME_STRING = "toBuilder";
+	static final char[] TO_BUILDER_METHOD_NAME = TO_BUILDER_METHOD_NAME_STRING.toCharArray();
+	static final char[] DEFAULT_PREFIX = {'$', 'd', 'e', 'f', 'a', 'u', 'l', 't', '$'};
+	static final char[] SET_PREFIX = {'$', 's', 'e', 't'};
+	static final char[] VALUE_PREFIX = {'$', 'v', 'a', 'l', 'u', 'e'};
+	static final char[] BUILDER_TEMP_VAR = {'b', 'u', 'i', 'l', 'd', 'e', 'r'};
+	static final AbstractMethodDeclaration[] EMPTY_METHODS = {};
+	static final String TO_BUILDER_NOT_SUPPORTED = "@Builder(toBuilder=true) is only supported if you return your own type.";
 	
 	private static final boolean toBoolean(Object expr, boolean defaultValue) {
 		if (expr == null) return defaultValue;
@@ -118,22 +126,28 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
-		EclipseNode builderTypeParent, builderType;
-		String builderClassName, builderMethodName, buildMethodName, toBuilderMethodName;
+		EclipseNode parentType;
+		String builderMethodName, buildMethodName;
 		boolean isStatic;
 		TypeParameter[] typeParams;
+		TypeParameter[] builderTypeParams;
 		ASTNode source;
 		EclipseNode sourceNode;
 		List<BuilderFieldData> builderFields;
 		AccessLevel accessInners, accessOuters;
 		boolean oldFluent, oldChain, toBuilder;
 		
-		TypeParameter[] copyTypeParams() {
-			return EclipseHandlerUtil.copyTypeParams(typeParams, source);
+		EclipseNode builderType;
+		String builderClassName;
+		char[] builderClassNameArr;
+		
+		void setBuilderClassName(String builderClassName) {
+			this.builderClassName = builderClassName;
+			this.builderClassNameArr = builderClassName.toCharArray();
 		}
 		
-		char[] getBuilderClassName() {
-			return builderClassName.toCharArray();
+		TypeParameter[] copyTypeParams() {
+			return EclipseHandlerUtil.copyTypeParams(typeParams, source);
 		}
 		
 		long getPos() {
@@ -141,22 +155,22 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		public TypeReference createBuilderTypeReference() {
-			return namePlusTypeParamsToTypeReference(builderTypeParent, getBuilderClassName(), !isStatic, typeParams, getPos());
+			return namePlusTypeParamsToTypeReference(parentType, builderClassNameArr, !isStatic, builderTypeParams, getPos());
 		}
 		
 		public TypeReference createBuilderTypeReferenceForceStatic() {
-			return namePlusTypeParamsToTypeReference(builderTypeParent, getBuilderClassName(), false, typeParams, getPos());
+			return namePlusTypeParamsToTypeReference(parentType, builderClassNameArr, false, builderTypeParams, getPos());
 		}
 		
 		public TypeReference createBuilderParentTypeReference() {
-			return namePlusTypeParamsToTypeReference(builderTypeParent, typeParams, getPos());
+			return namePlusTypeParamsToTypeReference(parentType, typeParams, getPos());
 		}
 		
 		public EclipseNode getTopNode() {
-			return builderTypeParent.top();
+			return parentType.top();
 		}
 		
-		public void init(AnnotationValues<Builder> node, Builder ann) {
+		void init(AnnotationValues<Builder> annValues, Builder ann, EclipseNode node) {
 			accessOuters = ann.access();
 			if (accessOuters == null) accessOuters = AccessLevel.PUBLIC;
 			if (accessOuters == AccessLevel.NONE) {
@@ -166,22 +180,36 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			accessInners = accessOuters == AccessLevel.PROTECTED ? AccessLevel.PUBLIC : accessOuters;
 			
 			// These exist just to support the 'old' lombok.experimental.Builder, which had these properties. lombok.Builder no longer has them.
-			oldFluent = toBoolean(node.getActualExpression("fluent"), true);
-			oldChain = toBoolean(node.getActualExpression("chain"), true);
+			oldFluent = toBoolean(annValues.getActualExpression("fluent"), true);
+			oldChain = toBoolean(annValues.getActualExpression("chain"), true);
 			
 			builderMethodName = ann.builderMethodName();
 			buildMethodName = ann.buildMethodName();
-			builderClassName = ann.builderClassName();
-			toBuilderMethodName = "toBuilder";
+			setBuilderClassName(fixBuilderClassName(node, ann.builderClassName()));
 			toBuilder = ann.toBuilder();
 			
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
-			if (builderClassName == null) builderClassName = "";
 		}
 		
-		public MethodDeclaration createNewMethodDeclaration() {
+		static String fixBuilderClassName(EclipseNode node, String override) {
+			if (override != null && !override.isEmpty()) return override;
+			override = node.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
+			if (override != null && !override.isEmpty()) return override;
+			return "*Builder";
+		}
+		
+		MethodDeclaration createNewMethodDeclaration() {
 			return new MethodDeclaration(((CompilationUnitDeclaration) getTopNode().get()).compilationResult);
+		}
+		
+		String replaceBuilderClassName(char[] name) {
+			if (builderClassName.indexOf('*') == -1) return builderClassName;
+			return builderClassName.replace("*", new String(name));
+		}
+		
+		String replaceBuilderClassName(String name) {
+			return builderClassName.replace("*", name);
 		}
 	}
 	
@@ -219,10 +247,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return true;
 	}
 	
-	private static final char[] DEFAULT_PREFIX = {'$', 'd', 'e', 'f', 'a', 'u', 'l', 't', '$'};
-	private static final char[] SET_PREFIX = {'$', 's', 'e', 't'};
-	private static final char[] VALUE_PREFIX = {'$', 'v', 'a', 'l', 'u', 'e'};
-	
 	private static final char[] prefixWith(char[] prefix, char[] name) {
 		char[] out = new char[prefix.length + name.length];
 		System.arraycopy(prefix, 0, out, 0, prefix.length);
@@ -236,9 +260,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		job.sourceNode = annotationNode;
 		job.source = ast;
 		job.checkerFramework = getCheckerFrameworkVersion(annotationNode);
+		job.isStatic = true;
 		
 		Builder annInstance = annotation.getInstance();
-		job.init(annotation, annInstance);
+		job.init(annotation, annInstance, annotationNode);
 		List<char[]> typeArgsForToBuilder = null;
 		
 		boolean generateBuilderMethod;
@@ -251,45 +276,35 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (!checkName("buildMethodName", job.buildMethodName, annotationNode)) return;
-		if (!job.builderClassName.isEmpty()) {
-			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
-		}
 		
 		EclipseNode parent = annotationNode.up();
 		
 		job.builderFields = new ArrayList<BuilderFieldData>();
 		TypeReference buildMethodReturnType;
 		TypeReference[] buildMethodThrownExceptions;
-		char[] nameOfStaticBuilderMethod;
+		char[] nameOfBuilderMethod;
 		
 		EclipseNode fillParametersFrom = parent.get() instanceof AbstractMethodDeclaration ? parent : null;
 		boolean addCleaning = false;
-		job.isStatic = true;
 		
 		List<EclipseNode> nonFinalNonDefaultedFields = null;
 		
-		if (job.builderClassName.isEmpty()) job.builderClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
-		if (job.builderClassName == null || job.builderClassName.isEmpty()) job.builderClassName = "*Builder";
-		boolean replaceNameInBuilderClassName = job.builderClassName.contains("*");
-		
 		if (parent.get() instanceof TypeDeclaration) {
-			job.builderTypeParent = parent;
-			TypeDeclaration td = (TypeDeclaration) job.builderTypeParent.get();
+			job.parentType = parent;
+			TypeDeclaration td = (TypeDeclaration) parent.get();
 			
 			List<EclipseNode> allFields = new ArrayList<EclipseNode>();
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
-			for (EclipseNode fieldNode : HandleConstructor.findAllFields(job.builderTypeParent, true)) {
+			for (EclipseNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 				boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
-				
-				Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
 				
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fieldNode.getName().toCharArray();
 				bfd.name = removePrefixFromField(fieldNode);
 				bfd.builderFieldName = bfd.name;
-				bfd.annotations = copyAnnotations(fd, copyableAnnotations);
+				bfd.annotations = copyAnnotations(fd, findCopyableAnnotations(fieldNode));
 				bfd.type = fd.type;
 				bfd.singularData = getSingularData(fieldNode, ast, annInstance.setterPrefix());
 				bfd.originalFieldNode = fieldNode;
@@ -316,22 +331,22 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					bfd.builderFieldName = prefixWith(bfd.name, VALUE_PREFIX);
 					
 					MethodDeclaration md = generateDefaultProvider(bfd.nameOfDefaultProvider, td.typeParameters, fieldNode, ast);
-					if (md != null) injectMethod(job.builderTypeParent, md);
+					if (md != null) injectMethod(parent, md);
 				}
 				addObtainVia(bfd, fieldNode);
 				job.builderFields.add(bfd);
 				allFields.add(fieldNode);
 			}
 			
-			handleConstructor.generateConstructor(job.builderTypeParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
+			handleConstructor.generateConstructor(parent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
 				Collections.<Annotation>emptyList(), annotationNode);
 			
-			job.typeParams = td.typeParameters;
+			job.typeParams = job.builderTypeParams = td.typeParameters;
 			buildMethodReturnType = job.createBuilderParentTypeReference();
 			buildMethodThrownExceptions = null;
-			nameOfStaticBuilderMethod = null;
-			if (replaceNameInBuilderClassName) job.builderClassName = job.builderClassName.replace("*", new String(td.name));
-			replaceNameInBuilderClassName = false;
+			nameOfBuilderMethod = null;
+			job.setBuilderClassName(job.replaceBuilderClassName(td.name));
+			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 		} else if (parent.get() instanceof ConstructorDeclaration) {
 			ConstructorDeclaration cd = (ConstructorDeclaration) parent.get();
 			if (cd.typeParameters != null && cd.typeParameters.length > 0) {
@@ -339,21 +354,20 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				return;
 			}
 			
-			job.builderTypeParent = parent.up();
-			TypeDeclaration td = (TypeDeclaration) job.builderTypeParent.get();
-			job.typeParams = td.typeParameters;
+			job.parentType = parent.up();
+			TypeDeclaration td = (TypeDeclaration) job.parentType.get();
+			job.typeParams = job.builderTypeParams = td.typeParameters;
 			buildMethodReturnType = job.createBuilderParentTypeReference();
 			buildMethodThrownExceptions = cd.thrownExceptions;
-			nameOfStaticBuilderMethod = null;
-			if (replaceNameInBuilderClassName) job.builderClassName = job.builderClassName.replace("*", new String(cd.selector));
-			replaceNameInBuilderClassName = false;
+			nameOfBuilderMethod = null;
+			job.setBuilderClassName(job.replaceBuilderClassName(cd.selector));
+			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 		} else if (parent.get() instanceof MethodDeclaration) {
 			MethodDeclaration md = (MethodDeclaration) parent.get();
-			job.builderTypeParent = parent.up();
+			job.parentType = parent.up();
 			job.isStatic = md.isStatic();
 			
 			if (job.toBuilder) {
-				final String TO_BUILDER_NOT_SUPPORTED = "@Builder(toBuilder=true) is only supported if you return your own type.";
 				char[] token;
 				char[][] pkg = null;
 				if (md.returnType.dimensions() > 0) {
@@ -379,12 +393,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					return;
 				}
 				
-				if (job.builderTypeParent == null || !equals(job.builderTypeParent.getName(), token)) {
+				if (job.parentType == null || !equals(job.parentType.getName(), token)) {
 					annotationNode.addError(TO_BUILDER_NOT_SUPPORTED);
 					return;
 				}
 				
-				TypeParameter[] tpOnType = ((TypeDeclaration) job.builderTypeParent.get()).typeParameters;
+				TypeParameter[] tpOnType = ((TypeDeclaration) job.parentType.get()).typeParameters;
 				TypeParameter[] tpOnMethod = md.typeParameters;
 				TypeReference[][] tpOnRet_ = null;
 				if (md.returnType instanceof ParameterizedSingleTypeReference) {
@@ -423,15 +437,15 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				}
 			}
 			
-			job.typeParams = md.typeParameters;
+			job.typeParams = job.builderTypeParams = md.typeParameters;
 			buildMethodReturnType = copyType(md.returnType, ast);
 			buildMethodThrownExceptions = md.thrownExceptions;
-			nameOfStaticBuilderMethod = md.selector;
-			if (replaceNameInBuilderClassName) {
+			nameOfBuilderMethod = md.selector;
+			if (job.builderClassName.indexOf('*') > -1) {
 				char[] token = returnTypeToBuilderClassName(annotationNode, md, job.typeParams);
-				if (token == null)
-					return;
-				job.builderClassName = job.builderClassName.replace("*", new String(token));
+				if (token == null) return; // should not happen.
+				job.setBuilderClassName(job.replaceBuilderClassName(token));
+				if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 			}
 		} else {
 			annotationNode.addError("@Builder is only supported on types, constructors, and methods.");
@@ -458,7 +472,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 		}
 		
-		job.builderType = findInnerClass(job.builderTypeParent, job.builderClassName);
+		job.builderType = findInnerClass(job.parentType, job.builderClassName);
 		if (job.builderType == null) makeBuilderClass(job);
 		else {
 			TypeDeclaration builderTypeDeclaration = (TypeDeclaration) job.builderType.get();
@@ -527,7 +541,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			MemberExistsResult methodExists = methodExists(job.buildMethodName, job.builderType, -1);
 			if (methodExists == MemberExistsResult.EXISTS_BY_LOMBOK) methodExists = methodExists(job.buildMethodName, job.builderType, 0);
 			if (methodExists == MemberExistsResult.NOT_EXISTS) {
-				MethodDeclaration md = generateBuildMethod(job, nameOfStaticBuilderMethod, buildMethodReturnType, buildMethodThrownExceptions, addCleaning);
+				MethodDeclaration md = generateBuildMethod(job, nameOfBuilderMethod, buildMethodReturnType, buildMethodThrownExceptions, addCleaning);
 				if (md != null) injectMethod(job.builderType, md);
 			}
 		}
@@ -548,13 +562,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (cleanMethod != null) injectMethod(job.builderType, cleanMethod);
 		}
 		
-		if (generateBuilderMethod && methodExists(job.builderMethodName, job.builderTypeParent, -1) != MemberExistsResult.NOT_EXISTS) generateBuilderMethod = false;
+		if (generateBuilderMethod && methodExists(job.builderMethodName, job.parentType, -1) != MemberExistsResult.NOT_EXISTS) generateBuilderMethod = false;
 		if (generateBuilderMethod) {
 			MethodDeclaration md = generateBuilderMethod(job);
-			if (md != null) injectMethod(job.builderTypeParent, md);
+			if (md != null) injectMethod(job.parentType, md);
 		}
 		
-		if (job.toBuilder) switch (methodExists(job.toBuilderMethodName, job.builderTypeParent, 0)) {
+		if (job.toBuilder) switch (methodExists(TO_BUILDER_METHOD_NAME_STRING, job.parentType, 0)) {
 		case EXISTS_BY_USER:
 			annotationNode.addWarning("Not generating toBuilder() as it already exists.");
 			break;
@@ -569,7 +583,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 			MethodDeclaration md = generateToBuilderMethod(job, tps, annInstance.setterPrefix());
 			
-			if (md != null) injectMethod(job.builderTypeParent, md);
+			if (md != null) injectMethod(job.parentType, md);
 		}
 		
 		if (nonFinalNonDefaultedFields != null && generateBuilderMethod) {
@@ -608,13 +622,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return token;
 	}
 	
-	private static final char[] BUILDER_TEMP_VAR = {'b', 'u', 'i', 'l', 'd', 'e', 'r'};
 	private MethodDeclaration generateToBuilderMethod(BuilderJob job, TypeParameter[] typeParameters, String prefix) {
 		int pS = job.source.sourceStart, pE = job.source.sourceEnd;
 		long p = job.getPos();
 		
 		MethodDeclaration out = job.createNewMethodDeclaration();
-		out.selector = job.toBuilderMethodName.toCharArray();
+		out.selector = TO_BUILDER_METHOD_NAME;
 		out.modifiers = toEclipseModifier(job.accessOuters);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		
@@ -657,7 +670,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 							obtainExpr.typeArguments[j] = new SingleTypeReference(typeParameters[j].name, 0);
 						}
 					}
-					obtainExpr.receiver = generateNameReference(job.builderTypeParent, 0);
+					obtainExpr.receiver = generateNameReference(job.parentType, 0);
 				} else {
 					obtainExpr.receiver = new ThisReference(0, 0);
 				}
@@ -709,8 +722,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			out.statements[preSs] = new ReturnStatement(receiver, pS, pE);
 		}
 		
-		createRelevantNonNullAnnotation(job.builderTypeParent, out);
-		out.traverse(new SetGeneratedByVisitor(job.source), ((TypeDeclaration) job.builderTypeParent.get()).scope);
+		createRelevantNonNullAnnotation(job.parentType, out);
+		out.traverse(new SetGeneratedByVisitor(job.source), ((TypeDeclaration) job.parentType.get()).scope);
 		return out;
 	}
 	
@@ -734,6 +747,18 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		decl.statements = statements.toArray(new Statement[0]);
 		decl.traverse(new SetGeneratedByVisitor(job.source), (ClassScope) null);
 		return decl;
+	}
+	
+	static Receiver generateNotCalledReceiver(BuilderJob job, String setterName) {
+		char[][] nameNotCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__NOT_CALLED);
+		SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameNotCalled, poss(job.source, nameNotCalled.length)), job.source.sourceStart);
+		ann.memberValue = new StringLiteral(setterName.toCharArray(), 0, 0, 0);
+		
+		TypeReference typeReference = job.createBuilderTypeReference();
+		int trLen = typeReference.getTypeName().length;
+		typeReference.annotations = new Annotation[trLen][];
+		typeReference.annotations[trLen - 1] = new Annotation[] {ann};
+		return new Receiver(new char[] { 't', 'h', 'i', 's' }, 0, typeReference, null, 0);
 	}
 	
 	static Receiver generateBuildReceiver(BuilderJob job) {
@@ -803,7 +828,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				MessageSend inv = new MessageSend();
 				inv.sourceStart = job.source.sourceStart;
 				inv.sourceEnd = job.source.sourceEnd;
-				inv.receiver = new SingleNameReference(((TypeDeclaration) job.builderTypeParent.get()).name, 0L);
+				inv.receiver = new SingleNameReference(((TypeDeclaration) job.parentType.get()).name, 0L);
 				inv.selector = bfd.nameOfDefaultProvider;
 				inv.typeArguments = typeParameterNames(((TypeDeclaration) job.builderType.get()).typeParameters);
 				
@@ -897,7 +922,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	public MethodDeclaration generateBuilderMethod(BuilderJob job) {
 		int pS = job.source.sourceStart, pE = job.source.sourceEnd;
 		long p = job.getPos();
-		char[] builderClassName = job.getBuilderClassName();
 		
 		MethodDeclaration out = job.createNewMethodDeclaration();
 		out.selector = job.builderMethodName.toCharArray();
@@ -920,9 +944,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			QualifiedAllocationExpression qualifiedInvoke = new QualifiedAllocationExpression();
 			qualifiedInvoke.enclosingInstance = new ThisReference(pS, pE);
 			if (job.typeParams == null || job.typeParams.length == 0) {
-				qualifiedInvoke.type = new SingleTypeReference(builderClassName, p);
+				qualifiedInvoke.type = new SingleTypeReference(job.builderClassNameArr, p);
 			} else {
-				qualifiedInvoke.type = namePlusTypeParamsToTypeReference(null, builderClassName, false, job.typeParams, p);
+				qualifiedInvoke.type = namePlusTypeParamsToTypeReference(null, job.builderClassNameArr, false, job.typeParams, p);
 			}
 			
 			out.statements = new Statement[] {new ReturnStatement(qualifiedInvoke, pS, pE)};
@@ -973,29 +997,27 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 	}
 	
-	private static final AbstractMethodDeclaration[] EMPTY = {};
-	
 	public void makePrefixedSetterMethodsForBuilder(BuilderJob job, BuilderFieldData bfd, String prefix) {
 		boolean deprecate = isFieldDeprecated(bfd.originalFieldNode);
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			makePrefixedSetterMethodForBuilder(job, deprecate, bfd.createdFields.get(0), bfd.name, bfd.nameOfSetFlag, bfd.annotations, bfd.originalFieldNode, prefix);
+			makePrefixedSetterMethodForBuilder(job, bfd, deprecate, prefix);
 		} else {
 			bfd.singularData.getSingularizer().generateMethods(job, bfd.singularData, deprecate);
 		}
 	}
 	
-	private void makePrefixedSetterMethodForBuilder(BuilderJob job, boolean deprecate, EclipseNode fieldNode, char[] paramName, char[] nameOfSetFlag, Annotation[] annotations, EclipseNode originalFieldNode, String prefix) {
+	private void makePrefixedSetterMethodForBuilder(BuilderJob job, BuilderFieldData bfd, boolean deprecate, String prefix) {
 		TypeDeclaration td = (TypeDeclaration) job.builderType.get();
+		EclipseNode fieldNode = bfd.createdFields.get(0);
 		AbstractMethodDeclaration[] existing = td.methods;
-		if (existing == null) existing = EMPTY;
+		if (existing == null) existing = EMPTY_METHODS;
 		int len = existing.length;
-		
 		String setterPrefix = prefix.isEmpty() ? "set" : prefix;
 		String setterName;
 		if (job.oldFluent) {
-			setterName = prefix.isEmpty() ? new String(paramName) : HandlerUtil.buildAccessorName(setterPrefix, new String(paramName));
+			setterName = prefix.isEmpty() ? new String(bfd.name) : HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));
 		} else {
-			setterName = HandlerUtil.buildAccessorName(setterPrefix, new String(paramName));
+			setterName = HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));
 		}
 		
 		for (int i = 0; i < len; i++) {
@@ -1005,26 +1027,16 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		List<Annotation> methodAnnsList = Collections.<Annotation>emptyList();
-		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(bfd.originalFieldNode);
 		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
 		ASTNode source = job.sourceNode.get();
-		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, paramName, nameOfSetFlag, job.oldChain, toEclipseModifier(job.accessInners),
-			job.sourceNode, methodAnnsList, annotations != null ? Arrays.asList(copyAnnotations(source, annotations)) : Collections.<Annotation>emptyList());
-		if (job.checkerFramework.generateCalledMethods()) {
-			char[][] nameNotCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__NOT_CALLED);
-			SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameNotCalled, poss(source, nameNotCalled.length)), source.sourceStart);
-			ann.memberValue = new StringLiteral(setterName.toCharArray(), 0, 0, 0);
-			
-			TypeReference typeReference = job.createBuilderTypeReference();
-			int trLen = typeReference.getTypeName().length;
-			typeReference.annotations = new Annotation[trLen][];
-			typeReference.annotations[trLen - 1] = new Annotation[] {ann};
-			setter.receiver = new Receiver(new char[] { 't', 'h', 'i', 's' }, 0, typeReference, null, 0);
-		}
+		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, toEclipseModifier(job.accessInners),
+			job.sourceNode, methodAnnsList, bfd.annotations != null ? Arrays.asList(copyAnnotations(source, bfd.annotations)) : Collections.<Annotation>emptyList());
+		if (job.checkerFramework.generateCalledMethods()) setter.receiver = generateNotCalledReceiver(job, setterName);
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
-			copyJavadocFromParam(originalFieldNode.up(), setter, td, paramName.toString());
+			copyJavadocFromParam(bfd.originalFieldNode.up(), setter, td, bfd.name.toString());
 		} else {
-			copyJavadoc(originalFieldNode, setter, td, CopyJavadoc.SETTER, true);
+			copyJavadoc(bfd.originalFieldNode, setter, td, CopyJavadoc.SETTER, true);
 		}
 		injectMethod(job.builderType, setter);
 	}
@@ -1045,15 +1057,15 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	public void makeBuilderClass(BuilderJob job) {
-		TypeDeclaration parent = (TypeDeclaration) job.builderTypeParent.get();
+		TypeDeclaration parent = (TypeDeclaration) job.parentType.get();
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);
 		builder.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		builder.modifiers |= toEclipseModifier(job.accessOuters);
 		if (job.isStatic) builder.modifiers |= ClassFileConstants.AccStatic;
 		builder.typeParameters = job.copyTypeParams();
-		builder.name = job.getBuilderClassName();
+		builder.name = job.builderClassNameArr;
 		builder.traverse(new SetGeneratedByVisitor(job.source), (ClassScope) null);
-		job.builderType = injectType(job.builderTypeParent, builder);
+		job.builderType = injectType(job.parentType, builder);
 	}
 	
 	private void addObtainVia(BuilderFieldData bfd, EclipseNode node) {
