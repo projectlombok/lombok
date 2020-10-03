@@ -32,9 +32,9 @@ public final class CheckerFrameworkVersion implements ConfigurationValueType {
 	public static final String NAME__SIDE_EFFECT_FREE = "org.checkerframework.dataflow.qual.SideEffectFree";
 	public static final String NAME__PURE = "org.checkerframework.dataflow.qual.Pure";
 	public static final String NAME__UNIQUE = "org.checkerframework.common.aliasing.qual.Unique";
-	public static final String NAME__RETURNS_RECEIVER = "org.checkerframework.checker.builder.qual.ReturnsReceiver";
-	public static final String NAME__NOT_CALLED = "org.checkerframework.checker.builder.qual.NotCalledMethods";
-	public static final String NAME__CALLED = "org.checkerframework.checker.builder.qual.CalledMethods";
+	public static final String NAME__RETURNS_RECEIVER = "org.checkerframework.common.returnsreceiver.qual.This";
+	public static final String NAME__NOT_CALLED = "org.checkerframework.checker.objectconstruction.qual.NotCalledMethods";
+	public static final String NAME__CALLED = "org.checkerframework.checker.objectconstruction.qual.CalledMethods";
 	
 	public static final CheckerFrameworkVersion NONE = new CheckerFrameworkVersion(0);
 	
