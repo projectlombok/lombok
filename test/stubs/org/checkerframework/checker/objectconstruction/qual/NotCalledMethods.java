@@ -1,4 +1,4 @@
-package org.checkerframework.checker.objectconstruction.qual;
+package org.checkerframework.checker.calledmethods.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
