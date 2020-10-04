@@ -24,8 +24,10 @@ package lombok.javac.apt;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -432,11 +434,12 @@ public class LombokProcessor extends AbstractProcessor {
 		
 		// try to find a "delegate" field in the object, and use this to try to obtain a JavacProcessingEnvironment
 		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
-			try {
-				return getJavacProcessingEnvironment(tryGetDelegateField(procEnvClass, procEnv));
-			} catch (final Exception e) {
-				// delegate field was not found, try on superclass
-			}
+			Object delegate = tryGetDelegateField(procEnvClass, procEnv);
+			if (delegate == null) delegate = tryGetProxyDelegateToField(procEnvClass, procEnv);
+			if (delegate == null) delegate = tryGetProcessingEnvField(procEnvClass, procEnv);
+			
+			if (delegate != null) return getJavacProcessingEnvironment(delegate);
+			// delegate field was not found, try on superclass
 		}
 		
 		processingEnv.getMessager().printMessage(Kind.WARNING,
@@ -454,11 +457,12 @@ public class LombokProcessor extends AbstractProcessor {
 		
 		// try to find a "delegate" field in the object, and use this to check for a JavacFiler
 		for (Class<?> filerClass = filer.getClass(); filerClass != null; filerClass = filerClass.getSuperclass()) {
-			try {
-				return getJavacFiler(tryGetDelegateField(filerClass, filer));
-			} catch (final Exception e) {
-				// delegate field was not found, try on superclass
-			}
+			Object delegate = tryGetDelegateField(filerClass, filer);
+			if (delegate == null) delegate = tryGetProxyDelegateToField(filerClass, filer);
+			if (delegate == null) delegate = tryGetFilerField(filerClass, filer);
+			
+			if (delegate != null) return getJavacFiler(delegate);
+			// delegate field was not found, try on superclass
 		}
 		
 		processingEnv.getMessager().printMessage(Kind.WARNING,
@@ -466,7 +470,48 @@ public class LombokProcessor extends AbstractProcessor {
 		return null;
 	}
 
-	private Object tryGetDelegateField(Class<?> delegateClass, Object instance) throws Exception {
-		return Permit.getField(delegateClass, "delegate").get(instance);
+	/**
+	 * Gradle incremental processing
+	 */
+	private Object tryGetDelegateField(Class<?> delegateClass, Object instance) {
+		try {
+			return Permit.getField(delegateClass, "delegate").get(instance);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * Kotlin incremental processing
+	 */
+	private Object tryGetProcessingEnvField(Class<?> delegateClass, Object instance) {
+		try {
+			return Permit.getField(delegateClass, "processingEnv").get(instance);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * Kotlin incremental processing
+	 */
+	private Object tryGetFilerField(Class<?> delegateClass, Object instance) {
+		try {
+			return Permit.getField(delegateClass, "filer").get(instance);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * InteliJ >= 2020.3
+	 */
+	private Object tryGetProxyDelegateToField(Class<?> delegateClass, Object instance) {
+		try {
+			InvocationHandler handler = Proxy.getInvocationHandler(instance);
+			return Permit.getField(handler.getClass(), "val$delegateTo").get(handler);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }
