@@ -11,16 +11,16 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") CheckerFrameworkBuilderBuilder() {
       super();
     }
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(CheckerFrameworkBuilder.@org.checkerframework.checker.objectconstruction.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder this, final int x) {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder this, final int x) {
       this.x$value = x;
       x$set = true;
       return this;
     }
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(CheckerFrameworkBuilder.@org.checkerframework.checker.objectconstruction.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder this, final int y) {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder this, final int y) {
       this.y = y;
       return this;
     }
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(CheckerFrameworkBuilder.@org.checkerframework.checker.objectconstruction.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder this, final int z) {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder this, final int z) {
       this.z = z;
       return this;
     }
@@ -45,7 +45,7 @@ import lombok.Singular;
           this.names.clear();
       return this;
     }
-    public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder build(CheckerFrameworkBuilder.@org.checkerframework.checker.objectconstruction.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder this) {
+    public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder build(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder this) {
       java.util.List<String> names;
       switch (((this.names == null) ? 0 : this.names.size())) {
       case 0 :

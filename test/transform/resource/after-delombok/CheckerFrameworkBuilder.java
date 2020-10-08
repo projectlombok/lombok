@@ -33,20 +33,20 @@ class CheckerFrameworkBuilder {
 		}
 		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(CheckerFrameworkBuilder.@org.checkerframework.checker.objectconstruction.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder this, final int x) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder this, final int x) {
 			this.x$value = x;
 			x$set = true;
 			return this;
 		}
 		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(CheckerFrameworkBuilder.@org.checkerframework.checker.objectconstruction.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder this, final int y) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder this, final int y) {
 			this.y = y;
 			return this;
 		}
 		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(CheckerFrameworkBuilder.@org.checkerframework.checker.objectconstruction.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder this, final int z) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder this, final int z) {
 			this.z = z;
 			return this;
 		}
@@ -75,7 +75,7 @@ class CheckerFrameworkBuilder {
 		}
 		@org.checkerframework.dataflow.qual.SideEffectFree
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder build(CheckerFrameworkBuilder.@org.checkerframework.checker.objectconstruction.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder this) {
+		public CheckerFrameworkBuilder build(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder this) {
 			java.util.List<String> names;
 			switch (this.names == null ? 0 : this.names.size()) {
 			case 0: 
