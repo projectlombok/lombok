@@ -51,7 +51,9 @@ public class PatchJavadoc {
 			ICompilationUnit iCompilationUnit = sourceMethod.getCompilationUnit();
 			if (iCompilationUnit instanceof CompilationUnit) {
 				CompilationUnit compilationUnit = (CompilationUnit) iCompilationUnit;
+				
 				Map<String, String> docs = CompilationUnit_javadoc.get(compilationUnit);
+				if (docs == null) return null;
 				
 				String signature = getSignature(sourceMethod);
 				String rawJavadoc = docs.get(signature);
