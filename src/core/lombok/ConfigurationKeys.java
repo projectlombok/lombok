@@ -274,7 +274,7 @@ public class ConfigurationKeys {
 	 * 
 	 * For any class with an {@code @ToString} annotation which extends a class other than {@code java.lang.Object}, should a call to superclass's implementation of {@code toString} be included in the generated method? (Default = skip)
 	 */
-	public static final ConfigurationKey<CallSuperType> TO_STRING_CALL_SUPER = new ConfigurationKey<CallSuperType>("lombok.toString.callSuper", "When generating toString for classes that extend something (other than Object), either automatically take into account superclass implementation (call), or don't (skip), or warn and don't (warn). (default = warn).") {};
+	public static final ConfigurationKey<CallSuperType> TO_STRING_CALL_SUPER = new ConfigurationKey<CallSuperType>("lombok.toString.callSuper", "When generating toString for classes that extend something (other than Object), either automatically take into account superclass implementation (call), or don't (skip), or warn and don't (warn). (default = skip).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.toString.flagUsage} = {@code WARNING} | {@code ERROR}.
