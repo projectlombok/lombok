@@ -32,6 +32,7 @@ import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.core.configuration.FlagUsageType;
 import lombok.core.AST.Kind;
 import lombok.core.handlers.InclusionExclusionUtils;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
@@ -64,6 +65,10 @@ import com.sun.tools.javac.util.List;
 public class HandleToString extends JavacAnnotationHandler<ToString> {
 	@Override public void handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.TO_STRING_FLAG_USAGE, "@ToString");
+		System.out.println("annotation:"+annotation);
+		
+		String encryptionClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED);
+		System.out.println("Encription Class Name:"+encryptionClassName);
 		
 		deleteAnnotationIfNeccessary(annotationNode, ToString.class);
 		
@@ -82,7 +87,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		Boolean fieldNamesConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 		boolean includeNames = annotation.isExplicit("includeFieldNames") || fieldNamesConfiguration == null ? ann.includeFieldNames() : fieldNamesConfiguration;
 		
-		generateToString(annotationNode.up(), annotationNode, members, includeNames, callSuper, true, fieldAccess);
+		generateToString(annotationNode.up(), annotationNode, members, includeNames, callSuper, true, fieldAccess, encryptionClassName);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -101,11 +106,11 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		FieldAccess access = doNotUseGettersConfiguration == null || !doNotUseGettersConfiguration ? FieldAccess.GETTER : FieldAccess.PREFER_FIELD;
 		
 		java.util.List<Included<JavacNode, ToString.Include>> members = InclusionExclusionUtils.handleToStringMarking(typeNode, null, null);
-		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access);
+		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access, "");
 	}
 	
 	public void generateToString(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, ToString.Include>> members,
-		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
+		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, String encryptionClassName) {
 		
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
@@ -141,7 +146,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 					}
 				}
 			}
-			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source.get());
+			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source.get(), encryptionClassName);
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -156,7 +161,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	}
 	
 	static JCMethodDecl createToString(JavacNode typeNode, Collection<Included<JavacNode, ToString.Include>> members,
-		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JCTree source, String encryptionClassName) {
 		
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
@@ -207,10 +212,29 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 		
 		for (Included<JavacNode, ToString.Include> member : members) {
+			
+			System.out.println("Member:"+member);
+			
+			
 			JCExpression expr;
 			
 			JCExpression memberAccessor;
 			JavacNode memberNode = member.getNode();
+			
+			System.out.println("memberNode1:"+memberNode);
+			System.out.println("memberNode2:"+memberNode.getAst());
+			System.out.println("memberNode3:"+memberNode.get());
+			JCTree tree = memberNode.get();
+			System.out.println("tree:"+tree);
+			System.out.println("tree kind:"+tree.getKind());
+			System.out.println("tree kind tostring:"+tree.toString());
+			
+			List<JCAnnotation> annotations = JavacHandlerUtil.JCAnnotatedTypeReflect.getAnnotations(tree);
+			for (JCAnnotation jcAnnotation : annsOnMethod) {
+				System.out.println("A  :"+annotations);	
+			}
+			
+			
 			if (memberNode.getKind() == Kind.METHOD) {
 				memberAccessor = createMethodAccessor(maker, memberNode);
 			} else {
@@ -218,6 +242,9 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			}
 			
 			JCExpression memberType = getFieldType(memberNode, fieldAccess);
+			
+			
+			System.out.println("memberType:"+memberType);
 			
 			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
 			@SuppressWarnings("unused")
@@ -228,7 +255,14 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
 				JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
 				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(memberAccessor));
-			} else expr = memberAccessor;
+			} else if ( encryptionClassName != null &&"".equals(encryptionClassName)==false) {
+				String[] tokens = (encryptionClassName+".encrypt").split("\\.");
+				JCExpression tsMethod = chainDots(typeNode, tokens);
+				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(memberAccessor));
+			}
+			else {
+				expr = memberAccessor;
+			}
 			
 			if (first) {
 				current = maker.Binary(CTC_PLUS, current, expr);

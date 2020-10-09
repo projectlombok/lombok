@@ -439,7 +439,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				}
 			}
 			
-			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, false, FieldAccess.ALWAYS_FIELD, ast);
+			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, false, FieldAccess.ALWAYS_FIELD, ast,"");
 			if (md != null) injectMethod(builderType, md);
 		}
 		
