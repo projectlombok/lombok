@@ -49,6 +49,7 @@ import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -258,7 +259,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			} else if ( encryptionClassName != null &&"".equals(encryptionClassName)==false) {
 				String[] tokens = (encryptionClassName+".encrypt").split("\\.");
 				JCExpression tsMethod = chainDots(typeNode, tokens);
-				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(memberAccessor));
+				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of( memberAccessor));
 			}
 			else {
 				expr = memberAccessor;
