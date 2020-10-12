@@ -1,3 +1,4 @@
+//platform !ecj: Javadoc copying not supported on ecj
 import java.util.List;
 
 @lombok.Builder

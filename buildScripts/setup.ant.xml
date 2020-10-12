@@ -106,7 +106,7 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	
 	<target name="-ipp.load" depends="-ipp.download">
 		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
-		<ivy:ensureippversion version="1.36" property="ivyplusplus.minimumAvailable" />
+		<ivy:ensureippversion version="1.38" property="ivyplusplus.minimumAvailable" />
 	</target>
 	
 	<target name="-ipp.redownload" unless="ivyplusplus.minimumAvailable">

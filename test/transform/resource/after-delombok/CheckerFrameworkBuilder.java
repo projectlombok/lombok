@@ -9,7 +9,6 @@ class CheckerFrameworkBuilder {
 	private static int $default$x() {
 		return 5;
 	}
-	@org.checkerframework.common.aliasing.qual.Unique
 	@java.lang.SuppressWarnings("all")
 	CheckerFrameworkBuilder(final int x, final int y, final int z, final List<String> names) {
 		this.x = x;
@@ -29,37 +28,36 @@ class CheckerFrameworkBuilder {
 		private int z;
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<String> names;
-		@org.checkerframework.common.aliasing.qual.Unique
 		@java.lang.SuppressWarnings("all")
 		CheckerFrameworkBuilderBuilder() {
 		}
-		@org.checkerframework.checker.builder.qual.ReturnsReceiver
+		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(@org.checkerframework.checker.builder.qual.NotCalledMethods("x") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder this, final int x) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder this, final int x) {
 			this.x$value = x;
 			x$set = true;
 			return this;
 		}
-		@org.checkerframework.checker.builder.qual.ReturnsReceiver
+		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(@org.checkerframework.checker.builder.qual.NotCalledMethods("y") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder this, final int y) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder this, final int y) {
 			this.y = y;
 			return this;
 		}
-		@org.checkerframework.checker.builder.qual.ReturnsReceiver
+		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(@org.checkerframework.checker.builder.qual.NotCalledMethods("z") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder this, final int z) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder this, final int z) {
 			this.z = z;
 			return this;
 		}
-		@org.checkerframework.checker.builder.qual.ReturnsReceiver
+		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
 		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder name(final String name) {
 			if (this.names == null) this.names = new java.util.ArrayList<String>();
 			this.names.add(name);
 			return this;
 		}
-		@org.checkerframework.checker.builder.qual.ReturnsReceiver
+		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
 		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder names(final java.util.Collection<? extends String> names) {
 			if (names == null) {
@@ -69,7 +67,7 @@ class CheckerFrameworkBuilder {
 			this.names.addAll(names);
 			return this;
 		}
-		@org.checkerframework.checker.builder.qual.ReturnsReceiver
+		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
 		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder clearNames() {
 			if (this.names != null) this.names.clear();
@@ -77,7 +75,7 @@ class CheckerFrameworkBuilder {
 		}
 		@org.checkerframework.dataflow.qual.SideEffectFree
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder build(@org.checkerframework.checker.builder.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder this) {
+		public CheckerFrameworkBuilder build(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder this) {
 			java.util.List<String> names;
 			switch (this.names == null ? 0 : this.names.size()) {
 			case 0: 
@@ -100,10 +98,10 @@ class CheckerFrameworkBuilder {
 			return "CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder(x$value=" + this.x$value + ", y=" + this.y + ", z=" + this.z + ", names=" + this.names + ")";
 		}
 	}
-	@org.checkerframework.common.aliasing.qual.Unique
+	
 	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.SuppressWarnings("all")
-	public static CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder builder() {
+	public static CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
 		return new CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder();
 	}
 }

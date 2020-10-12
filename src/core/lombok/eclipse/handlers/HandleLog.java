@@ -22,11 +22,9 @@
 package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
-import static lombok.eclipse.Eclipse.fromQualifiedName;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -35,7 +33,6 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -154,19 +151,6 @@ public class HandleLog {
 		fieldDecl.initialization = factoryMethodCall;
 		
 		return fieldDecl;
-	}
-	
-	public static TypeReference createTypeReference(String typeName, Annotation source) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long) pS << 32 | pE;
-		
-		char[][] typeNameTokens = fromQualifiedName(typeName);
-		long[] pos = new long[typeNameTokens.length];
-		Arrays.fill(pos, p);
-		
-		TypeReference typeReference = new QualifiedTypeReference(typeNameTokens, pos);
-		setGeneratedBy(typeReference, source);
-		return typeReference;
 	}
 	
 	private static final Expression[] createFactoryParameters(ClassLiteralAccess loggingType, Annotation source, List<LogFactoryParameter> parameters, Expression loggerTopic) {

@@ -10,4 +10,7 @@ public class Arguments {
 	public void init(String ownName, String... argv) {}
 	public Map<Option, String> getDeferredFileManagerOptions() { return null; }
 	public boolean validate() { return false; }
+	
+	// JDK15
+	public void init(String ownName, Iterable<String> args) {}
 }

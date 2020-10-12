@@ -8,29 +8,29 @@ import lombok.Singular;
     private @java.lang.SuppressWarnings("all") int y;
     private @java.lang.SuppressWarnings("all") int z;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> names;
-    @org.checkerframework.common.aliasing.qual.Unique @java.lang.SuppressWarnings("all") CheckerFrameworkBuilderBuilder() {
+    @java.lang.SuppressWarnings("all") CheckerFrameworkBuilderBuilder() {
       super();
     }
-    public @org.checkerframework.checker.builder.qual.ReturnsReceiver @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(final @org.checkerframework.checker.builder.qual.NotCalledMethods("x") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder this, final int x) {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder this, final int x) {
       this.x$value = x;
       x$set = true;
       return this;
     }
-    public @org.checkerframework.checker.builder.qual.ReturnsReceiver @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(final @org.checkerframework.checker.builder.qual.NotCalledMethods("y") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder this, final int y) {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder this, final int y) {
       this.y = y;
       return this;
     }
-    public @org.checkerframework.checker.builder.qual.ReturnsReceiver @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(final @org.checkerframework.checker.builder.qual.NotCalledMethods("z") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder this, final int z) {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder this, final int z) {
       this.z = z;
       return this;
     }
-    public @org.checkerframework.checker.builder.qual.ReturnsReceiver @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder name(final String name) {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder name(final String name) {
       if ((this.names == null))
           this.names = new java.util.ArrayList<String>();
       this.names.add(name);
       return this;
     }
-    public @org.checkerframework.checker.builder.qual.ReturnsReceiver @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder names(final java.util.Collection<? extends String> names) {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder names(final java.util.Collection<? extends String> names) {
       if ((names == null))
           {
             throw new java.lang.NullPointerException("names cannot be null");
@@ -40,12 +40,12 @@ import lombok.Singular;
       this.names.addAll(names);
       return this;
     }
-    public @org.checkerframework.checker.builder.qual.ReturnsReceiver @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder clearNames() {
+    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder clearNames() {
       if ((this.names != null))
           this.names.clear();
       return this;
     }
-    public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder build(final @org.checkerframework.checker.builder.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder this) {
+    public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder build(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder this) {
       java.util.List<String> names;
       switch (((this.names == null) ? 0 : this.names.size())) {
       case 0 :
@@ -73,14 +73,14 @@ import lombok.Singular;
   private static @java.lang.SuppressWarnings("all") int $default$x() {
     return 5;
   }
-  @org.checkerframework.common.aliasing.qual.Unique @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder(final int x, final int y, final int z, final List<String> names) {
+  @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder(final int x, final int y, final int z, final List<String> names) {
     super();
     this.x = x;
     this.y = y;
     this.z = z;
     this.names = names;
   }
-  public static @org.checkerframework.common.aliasing.qual.Unique @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder builder() {
+  public static @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
     return new CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder();
   }
 }

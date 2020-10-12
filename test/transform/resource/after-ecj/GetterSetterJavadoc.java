@@ -1,8 +1,18 @@
 @lombok.Data class GetterSetterJavadoc1 {
   private int fieldName;
+  /**
+   * Getter section
+   * 
+   * @return Sky is blue1
+   */
   public @java.lang.SuppressWarnings("all") int getFieldName() {
     return this.fieldName;
   }
+  /**
+   * Some text
+   * 
+   * @param fieldName Hello, World1
+   */
   public @java.lang.SuppressWarnings("all") void setFieldName(final int fieldName) {
     this.fieldName = fieldName;
   }
@@ -39,9 +49,19 @@ class GetterSetterJavadoc2 {
   GetterSetterJavadoc2() {
     super();
   }
+  /**
+   * Some text
+   * 
+   * @return Sky is blue2
+   */
   public @java.lang.SuppressWarnings("all") int getFieldName() {
     return this.fieldName;
   }
+  /**
+   * Some text
+   * 
+   * @param fieldName Hello, World2
+   */
   public @java.lang.SuppressWarnings("all") void setFieldName(final int fieldName) {
     this.fieldName = fieldName;
   }
@@ -51,9 +71,17 @@ class GetterSetterJavadoc3 {
   GetterSetterJavadoc3() {
     super();
   }
+  /**
+   * Getter section
+   * @return Sky is blue3
+   */
   public @java.lang.SuppressWarnings("all") int getFieldName() {
     return this.fieldName;
   }
+  /**
+   * Setter section
+   * @param fieldName Hello, World3
+   */
   public @java.lang.SuppressWarnings("all") void setFieldName(final int fieldName) {
     this.fieldName = fieldName;
   }
@@ -63,9 +91,20 @@ class GetterSetterJavadoc3 {
   GetterSetterJavadoc4() {
     super();
   }
+  /**
+   * Some text
+   * 
+   * @return Sky is blue4
+   */
   public @java.lang.SuppressWarnings("all") int fieldName() {
     return this.fieldName;
   }
+  /**
+   * Some text
+   * 
+   * @param fieldName Hello, World4
+   * @return {@code this}.
+   */
   public @java.lang.SuppressWarnings("all") GetterSetterJavadoc4 fieldName(final int fieldName) {
     this.fieldName = fieldName;
     return this;
@@ -76,9 +115,18 @@ class GetterSetterJavadoc3 {
   GetterSetterJavadoc5() {
     super();
   }
+  /**
+   * Getter section
+   * @return Sky is blue5
+   */
   public @java.lang.SuppressWarnings("all") int fieldName() {
     return this.fieldName;
   }
+  /**
+   * Setter section
+   * @param fieldName Hello, World5
+   * @return Sky is blue5
+   */
   public @java.lang.SuppressWarnings("all") GetterSetterJavadoc5 fieldName(final int fieldName) {
     this.fieldName = fieldName;
     return this;

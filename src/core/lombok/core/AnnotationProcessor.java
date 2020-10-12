@@ -26,8 +26,9 @@ import static lombok.core.Augments.ClassLoader_lombokAlreadyAddedTo;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,21 +84,51 @@ public class AnnotationProcessor extends AbstractProcessor {
 		
 		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
 			try {
-				Field field;
-				try {
-					field = Permit.getField(procEnvClass, "delegate");
-				} catch (NoSuchFieldException e) {
-					field = Permit.getField(procEnvClass, "processingEnv");
-				}
-				Object delegate = field.get(procEnv);
-				
-				return tryRecursivelyObtainJavacProcessingEnvironment((ProcessingEnvironment) delegate);
+				Object delegate = tryGetDelegateField(procEnvClass, procEnv);
+				if (delegate == null) delegate = tryGetProcessingEnvField(procEnvClass, procEnv);
+				if (delegate == null) delegate = tryGetProxyDelegateToField(procEnvClass, procEnv);
+
+				if (delegate != null) return tryRecursivelyObtainJavacProcessingEnvironment((ProcessingEnvironment) delegate);
 			} catch (final Exception e) {
 				// no valid delegate, try superclass
 			}
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Gradle incremental processing
+	 */
+	private static Object tryGetDelegateField(Class<?> delegateClass, Object instance) {
+		try {
+			return Permit.getField(delegateClass, "delegate").get(instance);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * Kotlin incremental processing
+	 */
+	private static Object tryGetProcessingEnvField(Class<?> delegateClass, Object instance) {
+		try {
+			return Permit.getField(delegateClass, "processingEnv").get(instance);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * InteliJ >= 2020.3
+	 */
+	private static Object tryGetProxyDelegateToField(Class<?> delegateClass, Object instance) {
+		try {
+			InvocationHandler handler = Proxy.getInvocationHandler(instance);
+			return Permit.getField(handler.getClass(), "val$delegateTo").get(handler);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 	
 	static class JavacDescriptor extends ProcessorDescriptor {

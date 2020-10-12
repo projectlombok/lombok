@@ -150,6 +150,19 @@ such as applying the templates to produce the website, converting the changelog 
 		<website.make version="${lombok.version.live}" fullversion="${lombok.fullversion.live}" cmd="all" />
 	</target>
 	
+	<target name="website.open" depends="website.build, compile.support" description="Builds the website, then serves it locally, opening a browser.">
+		<local name="dir.build.website" />
+		<property name="dir.build.website" location="build/website" />
+		<java classname="lombok.website.RunSite" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="${dir.build.website}" />
+			<arg value="open" />
+		</java>
+	</target>
+	
 	<target name="website.print-all-versions" depends="compile.support">
 		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>

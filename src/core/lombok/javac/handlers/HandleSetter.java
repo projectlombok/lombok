@@ -226,7 +226,30 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		return d;
 	}
 	
+	public static JCMethodDecl createSetterWithRecv(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, JCVariableDecl recv) {
+		JCExpression returnType = null;
+		JCReturn returnStatement = null;
+		if (shouldReturnThis) {
+			returnType = cloneSelfType(field);
+			returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
+		}
+		
+		JCMethodDecl d = createSetterWithRecv(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam, recv);
+		if (shouldReturnThis && getCheckerFrameworkVersion(source).generateReturnsReceiver()) {
+			List<JCAnnotation> annotations = d.mods.annotations;
+			if (annotations == null) annotations = List.nil();
+			JCAnnotation anno = treeMaker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil());
+			recursiveSetGeneratedBy(anno, source.get(), field.getContext());
+			d.mods.annotations = annotations.prepend(anno);
+		}
+		return d;
+	}
+	
 	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+		return createSetterWithRecv(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, methodType, returnStatement, source, onMethod, onParam, null);
+	}
+	
+	public static JCMethodDecl createSetterWithRecv(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, JCVariableDecl recv) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -277,8 +300,14 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}
 		
-		JCMethodDecl methodDef = treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
-			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
+		JCMethodDecl methodDef;
+		if (recv != null && treeMaker.hasMethodDefWithRecvParam()) {
+			methodDef = treeMaker.MethodDefWithRecvParam(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
+				methodGenericParams, recv, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
+		} else {
+			methodDef = treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
+				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
+		}
 		if (returnStatement != null) createRelevantNonNullAnnotation(source, methodDef);
 		JCMethodDecl decl = recursiveSetGeneratedBy(methodDef, source.get(), field.getContext());
 		copyJavadoc(field, decl, CopyJavadoc.SETTER, returnStatement != null);

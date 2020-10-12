@@ -24,6 +24,7 @@ package lombok.javac;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -106,7 +107,19 @@ public class JavacTreeMaker {
 		return this;
 	}
 	
-	private static class MethodId<J> {
+	private static final class FieldId<J> {
+		private final Class<?> owner;
+		private final String name;
+		private final Class<J> fieldType;
+		
+		FieldId(Class<?> owner, String name, Class<J> fieldType) {
+			this.owner = owner;
+			this.name = name;
+			this.fieldType = fieldType;
+		}
+	}
+	
+	private static final class MethodId<J> {
 		private final Class<?> owner;
 		private final String name;
 		private final Class<J> returnType;
@@ -332,9 +345,79 @@ public class JavacTreeMaker {
 		throw new InternalError("Not found: " + name);
 	}
 	
-	private static final Object METHOD_NOT_FOUND = new Object[0];
-	private static final Object METHOD_MULTIPLE_FOUND = new Object[0];
+	static <J> FieldId<J> FieldId(Class<?> owner, String name, Class<J> fieldType) {
+		return new FieldId<J>(owner, name, fieldType);
+	}
+	
+	private static final ConcurrentHashMap<FieldId<?>, Object> FIELD_CACHE = new ConcurrentHashMap<FieldId<?>, Object>();
+	
+	private static boolean has(FieldId<?> f) {
+		Object field = FIELD_CACHE.get(f);
+		if (field == REFLECTIVE_ITEM_NOT_FOUND) return false;
+		if (field instanceof Field) return true;
+		
+		try {
+			return getFromCache(f) != REFLECTIVE_ITEM_NOT_FOUND;
+		} catch (IllegalStateException e) {
+			return false;
+		}
+	}
+	
+	private static <J> J get(Object owner, FieldId<J> f) {
+		Field field = getFromCache(f);
+		try {
+			return f.fieldType.cast(field.get(owner));
+		} catch (IllegalAccessException e) {
+			throw Javac.sneakyThrow(e);
+		}
+	}
+	
+	private static <J> void set(Object owner, FieldId<J> f, J val) {
+		Field field = getFromCache(f);
+		try {
+			field.set(owner, val);
+		} catch (IllegalAccessException e) {
+			throw Javac.sneakyThrow(e);
+		} catch (IllegalArgumentException e) {
+			System.err.println("Type mismatch for: " + field);
+			throw e;
+		}
+	}
+	
+	private static Field getFromCache(FieldId<?> f) {
+		Object s = FIELD_CACHE.get(f);
+		if (s == null) s = addToCache(f);
+		if (s == REFLECTIVE_ITEM_NOT_FOUND) throw new IllegalStateException("Lombok TreeMaker frontend issue: no match when looking for field: " +  f);
+		return (Field) s;
+	}
+	
+	private static Object addToCache(FieldId<?> f) {
+		for (Field field : f.owner.getDeclaredFields()) {
+			if (f.name.equals(field.getName())) {
+				if (!Modifier.isPublic(field.getModifiers())) field.setAccessible(true);
+				return FIELD_CACHE.putIfAbsent(f, field);
+			}
+		}
+		
+		return FIELD_CACHE.putIfAbsent(f, REFLECTIVE_ITEM_NOT_FOUND);
+	}
+	
+	private static final Object REFLECTIVE_ITEM_NOT_FOUND = new Object[0];
+	private static final Object REFLECTIVE_ITEM_MULTIPLE_FOUND = new Object[0];
 	private static final ConcurrentHashMap<MethodId<?>, Object> METHOD_CACHE = new ConcurrentHashMap<MethodId<?>, Object>();
+	
+	private boolean has(MethodId<?> m) {
+		Object method = METHOD_CACHE.get(m);
+		if (method == REFLECTIVE_ITEM_NOT_FOUND) return false;
+		if (method instanceof Method) return true;
+		
+		try {
+			return getFromCache(m) != REFLECTIVE_ITEM_NOT_FOUND;
+		} catch (IllegalStateException e) {
+			return false;
+		}
+	}
+	
 	private <J> J invoke(MethodId<J> m, Object... args) {
 		return invokeAny(tm, m, args);
 	}
@@ -351,8 +434,8 @@ public class JavacTreeMaker {
 		} catch (IllegalAccessException e) {
 			throw Javac.sneakyThrow(e);
 		} catch (IllegalArgumentException e) {
-			System.err.println(method);
-			throw Javac.sneakyThrow(e);
+			System.err.println("Type mismatch for: " + method);
+			throw e;
 		}
 	}
 	
@@ -366,8 +449,8 @@ public class JavacTreeMaker {
 	private static Method getFromCache(MethodId<?> m) {
 		Object s = METHOD_CACHE.get(m);
 		if (s == null) s = addToCache(m);
-		if (s == METHOD_MULTIPLE_FOUND) throw new IllegalStateException("Lombok TreeMaker frontend issue: multiple matches when looking for method: " + m);
-		if (s == METHOD_NOT_FOUND) throw new IllegalStateException("Lombok TreeMaker frontend issue: no match when looking for method: " + m);
+		if (s == REFLECTIVE_ITEM_MULTIPLE_FOUND) throw new IllegalStateException("Lombok TreeMaker frontend issue: multiple matches when looking for method: " + m);
+		if (s == REFLECTIVE_ITEM_NOT_FOUND) throw new IllegalStateException("Lombok TreeMaker frontend issue: no match when looking for method: " + m);
 		return (Method) s;
 	}
 	
@@ -391,13 +474,13 @@ public class JavacTreeMaker {
 			}
 			if (found == null) found = method;
 			else {
-				METHOD_CACHE.putIfAbsent(m, METHOD_MULTIPLE_FOUND);
-				return METHOD_MULTIPLE_FOUND;
+				METHOD_CACHE.putIfAbsent(m, REFLECTIVE_ITEM_MULTIPLE_FOUND);
+				return REFLECTIVE_ITEM_MULTIPLE_FOUND;
 			}
 		}
 		if (found == null) {
-			METHOD_CACHE.putIfAbsent(m, METHOD_NOT_FOUND);
-			return METHOD_NOT_FOUND;
+			METHOD_CACHE.putIfAbsent(m, REFLECTIVE_ITEM_NOT_FOUND);
+			return REFLECTIVE_ITEM_NOT_FOUND;
 		}
 		Permit.setAccessible(found);
 		Object marker = METHOD_CACHE.putIfAbsent(m, found);
@@ -431,8 +514,12 @@ public class JavacTreeMaker {
 	
 	//javac versions: 8
 	private static final MethodId<JCMethodDecl> MethodDefWithRecvParam = MethodId("MethodDef", JCMethodDecl.class, JCModifiers.class, Name.class, JCExpression.class, List.class, JCVariableDecl.class, List.class, List.class, JCBlock.class, JCExpression.class);
-	public JCMethodDecl MethodDef(JCModifiers mods, Name name, JCExpression resType, List<JCTypeParameter> typarams, JCVariableDecl recvparam, List<JCVariableDecl> params, List<JCExpression> thrown, JCBlock body, JCExpression defaultValue) {
-		return invoke(MethodDefWithRecvParam, mods, name, resType, recvparam, typarams, params, thrown, body, defaultValue);
+	public boolean hasMethodDefWithRecvParam() {
+		return has(MethodDefWithRecvParam);
+	}
+	
+	public JCMethodDecl MethodDefWithRecvParam(JCModifiers mods, Name name, JCExpression resType, List<JCTypeParameter> typarams, JCVariableDecl recvparam, List<JCVariableDecl> params, List<JCExpression> thrown, JCBlock body, JCExpression defaultValue) {
+		return invoke(MethodDefWithRecvParam, mods, name, resType, typarams, recvparam, params, thrown, body, defaultValue);
 	}
 	
 	//javac versions: 6-8
@@ -877,5 +964,19 @@ public class JavacTreeMaker {
 	private static final MethodId<JCExpression> Type = MethodId("Type");
 	public JCExpression Type(Type type) {
 		return invoke(Type, type);
+	}
+	
+	private static final FieldId<JCVariableDecl> MethodDecl_recvParam = FieldId(JCMethodDecl.class, "recvparam", JCVariableDecl.class);
+	//javac versions: 8+
+	public boolean hasReceiverParameter() {
+		return has(MethodDecl_recvParam);
+	}
+	
+	public JCVariableDecl getReceiverParameter(JCMethodDecl method) {
+		return get(method, MethodDecl_recvParam);
+	}
+	
+	public void setReceiverParameter(JCMethodDecl method, JCVariableDecl param) {
+		set(method, MethodDecl_recvParam, param);
 	}
 }

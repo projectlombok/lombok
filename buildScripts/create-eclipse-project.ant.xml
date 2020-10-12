@@ -27,7 +27,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 	<target name="eclipse" depends="eclipse.projectfiles, eclipse.testtarget.default" description="Downloads dependencies, create eclipse project files, as well as debug/run test targets. Open this directory as project in eclipse (via import... existing projects)" />
 	
 	<target name="eclipse.projectfiles" depends="deps">
-		<ivy:eclipsegen source="1.6">
+		<ivy:eclipsegen source="1.6" srcout="bin/main">
 			<srcdir dir="src/core" />
 			<srcdir dir="src/core8" />
 			<srcdir dir="src/launch" />
@@ -35,7 +35,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			<srcdir dir="src/eclipseAgent" />
 			<srcdir dir="src/installer" />
 			<srcdir dir="src/delombok" />
-			<srcdir dir="src/stubs" />
+			<srcdir dir="src/stubs" srcout="bin/stubs" />
 			<srcdir dir="src/support" />
 			<srcdir dir="experimental/src" />
 			<srcdir dir="test/transform/src" />
@@ -96,7 +96,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 				<path refid="cp.buildtools" />
 				<pathelement location="build/support" />
 			</classpath>
-			<arg value="name=Lombok-test Javac14" />
+			<arg value="name=Lombok-test Javac 14" />
 			<arg value="testType=lombok.TestJavac" />
 			<arg value="jvmTarget=14" />
 			<arg value="conf.test=${cp.test}" />
@@ -116,7 +116,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			
 			<condition property="inputs.jvmtarget" value="1.6"><equals arg1="${inputs.jvmtarget.raw}" arg2="6" /></condition>
 			<condition property="inputs.jvmtarget" value="1.8"><equals arg1="${inputs.jvmtarget.raw}" arg2="8" /></condition>
-			<property name="inputs" value="${inputs.jvmtarget.raw}" />
+			<property name="inputs.jvmtarget" value="${inputs.jvmtarget.raw}" />
 			
 			<condition property="inputs.bootpath" value="${jdk6-rt.loc}"><equals arg1="${inputs.jvmtarget.raw}" arg2="6" /></condition>
 			<condition property="inputs.bootpath" value="${jdk8-rt.loc}"><equals arg1="${inputs.jvmtarget.raw}" arg2="8" /></condition>
@@ -126,6 +126,12 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 	
 	<target name="eclipse.testtarget.javac" depends="compile.support" description="Makes an eclipse launch target for running the tests for javac">
 		<eclipse.testtarget.conf.jvmtarget question="Which javac do you want to target? Enter a version, such as '11'." validargs="8,11,13,14,15" />
+		
+		<local name="inputs.confcp" />
+		<condition property="inputs.confcp" value="NONE">
+			<not><equals arg1="8" arg2="${inputs.jvmtarget.raw}" /></not>
+		</condition>
+		<property name="inputs.confcp" refid="cp.javac8" />
 		
 		<java classname="lombok.eclipseCreate.CreateEclipseDebugTarget" failonerror="true">
 			<classpath>

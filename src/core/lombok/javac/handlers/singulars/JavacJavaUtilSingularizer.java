@@ -84,7 +84,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName(), true, false, builderVariable), cases.toList());
 		JCExpression localShadowerType = chainDotsString(builderType, data.getTargetFqn());
 		localShadowerType = addTypeArgs(mapMode ? 2 : 1, false, builderType, localShadowerType, data.getTypeArgs(), source);
-		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0), data.getPluralName(), localShadowerType, null);
+		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0L), data.getPluralName(), localShadowerType, null);
 		return List.of(varDefStat, switchStat);
 	}
 	
@@ -143,7 +143,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 			if (defineVar) {
 				JCExpression localShadowerType = chainDotsString(builderType, data.getTargetFqn());
 				localShadowerType = addTypeArgs(mapMode ? 2 : 1, false, builderType, localShadowerType, data.getTypeArgs(), source);
-				createStat = maker.VarDef(maker.Modifiers(0), data.getPluralName(), localShadowerType, constructorCall);
+				createStat = maker.VarDef(maker.Modifiers(0L), data.getPluralName(), localShadowerType, constructorCall);
 			} else {
 				createStat = maker.Exec(maker.Assign(maker.Ident(data.getPluralName()), constructorCall));
 			}
@@ -161,7 +161,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				//   error: method put in interface Map<K#2,V#2> cannot be applied to given types;
 				arg2 = maker.TypeCast(createTypeArgs(2, false, builderType, data.getTypeArgs(), source).get(1), arg2);
 				JCStatement putStatement = maker.Exec(maker.Apply(jceBlank, pluralnameDotPut, List.of(arg1, arg2)));
-				JCStatement forInit = maker.VarDef(maker.Modifiers(0), ivar, maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
+				JCStatement forInit = maker.VarDef(maker.Modifiers(0L), ivar, maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
 				JCExpression checkExpr = maker.Binary(CTC_LESS_THAN, maker.Ident(ivar), getSize(maker, builderType, keyVarName, nullGuard, true, builderVariable));
 				JCExpression incrementExpr = maker.Unary(CTC_POSTINC, maker.Ident(ivar));
 				fillStat = maker.ForLoop(List.of(forInit), checkExpr, List.of(maker.Exec(incrementExpr)), putStatement);

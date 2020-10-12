@@ -57,6 +57,7 @@ import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.handlers.HandlerUtil;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.HandleBuilder.BuilderJob;
 
 public class JavacSingularsRecipes {
 	public interface ExpressionMaker {
@@ -243,20 +244,22 @@ public class JavacSingularsRecipes {
 		 * If you need more control over the return type and value, use
 		 * {@link #generateMethods(SingularData, boolean, JavacNode, JCTree, boolean, ExpressionMaker, StatementMaker)}.
 		 */
-		public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, final JavacNode builderType, JCTree source, boolean fluent, final boolean chain, AccessLevel access) {
-			final JavacTreeMaker maker = builderType.getTreeMaker();
+		public void generateMethods(final BuilderJob job, SingularData data, boolean deprecate) {
+			//job.checkerFramework, job.builderType, job.source, job.oldFluent, job.oldChain, job.accessInners
+			//CheckerFrameworkVersion cfv, final JavacNode builderType, JCTree source, boolean fluent, final boolean chain, AccessLevel access) {
+			final JavacTreeMaker maker = job.builderType.getTreeMaker();
 			
 			ExpressionMaker returnTypeMaker = new ExpressionMaker() { @Override public JCExpression make() {
-				return chain ? 
-					cloneSelfType(builderType) : 
-					maker.Type(createVoidType(builderType.getSymbolTable(), CTC_VOID));
+				return job.oldChain ? 
+					cloneSelfType(job.builderType) : 
+					maker.Type(createVoidType(job.builderType.getSymbolTable(), CTC_VOID));
 			}};
 			
 			StatementMaker returnStatementMaker = new StatementMaker() { @Override public JCStatement make() {
-				return chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
+				return job.oldChain ? maker.Return(maker.Ident(job.builderType.toName("this"))) : null;
 			}};
 			
-			generateMethods(cfv, data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker, access);
+			generateMethods(job.checkerFramework, data, deprecate, job.builderType, job.source, job.oldFluent, returnTypeMaker, returnStatementMaker, job.accessInners);
 		}
 		
 		/**

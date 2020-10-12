@@ -24,6 +24,7 @@ package lombok.eclipse.agent;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.createAnnotation;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,8 +57,8 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
-import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Scope;
@@ -138,6 +139,22 @@ public class PatchExtensionMethod {
 		}
 	}
 	
+	private static class PostponedNonStaticAccessToStaticMethodError implements PostponedError {
+		private final ProblemReporter problemReporter;
+		private ASTNode location;
+		private MethodBinding method;
+		
+		PostponedNonStaticAccessToStaticMethodError(ProblemReporter problemReporter, ASTNode location, MethodBinding method) {
+			this.problemReporter = problemReporter;
+			this.location = location;
+			this.method = method;
+		}
+
+		public void fire() {
+			problemReporter.nonStaticAccessToStaticMethod(location, method);
+		}
+	}
+	
 	private static interface PostponedError {
 		public void fire();
 	}
@@ -200,15 +217,12 @@ public class PatchExtensionMethod {
 			TypeBinding receiverType) {
 		
 		List<MethodBinding> extensionMethods = new ArrayList<MethodBinding>();
-		CompilationUnitScope cuScope = ((CompilationUnitDeclaration) typeNode.top().get()).scope;
 		for (MethodBinding method : extensionMethodProviderBinding.methods()) {
 			if (!method.isStatic()) continue;
 			if (!method.isPublic()) continue;
 			if (method.parameters == null || method.parameters.length == 0) continue;
 			TypeBinding firstArgType = method.parameters[0];
 			if (receiverType.isProvablyDistinct(firstArgType) && !receiverType.isCompatibleWith(firstArgType.erasure())) continue;
-			TypeBinding[] argumentTypes = Arrays.copyOfRange(method.parameters, 1, method.parameters.length);
-			if ((receiverType instanceof ReferenceBinding) && ((ReferenceBinding) receiverType).getExactMethod(method.selector, argumentTypes, cuScope) != null) continue;
 			extensionMethods.add(method);
 		}
 		return extensionMethods;
@@ -226,6 +240,10 @@ public class PatchExtensionMethod {
 	
 	public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method, Scope scope) {
 		MessageSend_postponedErrors.set(messageSend, new PostponedInvalidMethodError(problemReporter, messageSend, method, scope));
+	}
+	
+	public static void nonStaticAccessToStaticMethod(ProblemReporter problemReporter, ASTNode location, MethodBinding method, MessageSend messageSend) {
+		MessageSend_postponedErrors.set(messageSend, new PostponedNonStaticAccessToStaticMethodError(problemReporter, location, method));
 	}
 	
 	public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
@@ -250,6 +268,14 @@ public class PatchExtensionMethod {
 			Binding binding = ((NameReference)methodCall.receiver).binding;
 			if (binding instanceof TypeBinding) skip = true;
 		}
+		// It's impossible to resolve the right method without types
+		if (Reflection.argumentsHaveErrors != null) {
+			try {
+				if ((Boolean) Reflection.argumentsHaveErrors.get(methodCall)) skip = true;
+			} catch (IllegalAccessException ignore) {
+				// ignore
+			}
+		}
 		
 		if (!skip) for (Extension extension : extensions) {
 			if (!extension.suppressBaseMethods && !(methodCall.binding instanceof ProblemMethodBinding)) continue;
@@ -262,13 +288,30 @@ public class PatchExtensionMethod {
 				List<Expression> arguments = new ArrayList<Expression>();
 				arguments.add(methodCall.receiver);
 				if (methodCall.arguments != null) arguments.addAll(Arrays.asList(methodCall.arguments));
-				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
-				for (Expression argument : arguments) {
-					if (argument.resolvedType != null) argumentTypes.add(argument.resolvedType);
-					// TODO: Instead of just skipping nulls entirely, there is probably a 'unresolved type' placeholder. THAT is what we ought to be adding here!
-				}
 				Expression[] originalArgs = methodCall.arguments;
 				methodCall.arguments = arguments.toArray(new Expression[0]);
+				
+				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
+				for (Expression argument : arguments) {
+					TypeBinding argumentType = argument.resolvedType;
+					if (argumentType == null && Reflection.isFunctionalExpression(argument)) {
+						argumentType = Reflection.getPolyTypeBinding(argument);
+					}
+					if (argumentType == null) {
+						argumentType = TypeBinding.NULL;
+					}					
+					argumentTypes.add(argumentType);
+				}
+				
+				// Copy generic information. This one covers a few simple cases, more complex cases are still broken
+				int typeVariables = extensionMethod.typeVariables.length;
+				if (typeVariables > 0 && methodCall.receiver.resolvedType instanceof ParameterizedTypeBinding) {
+					ParameterizedTypeBinding parameterizedTypeBinding = (ParameterizedTypeBinding) methodCall.receiver.resolvedType;
+					if (parameterizedTypeBinding.arguments != null && parameterizedTypeBinding.arguments.length == typeVariables) {
+						methodCall.genericTypeArguments = parameterizedTypeBinding.arguments;
+					}
+				}
+				
 				MethodBinding fixedBinding = scope.getMethod(extensionMethod.declaringClass, methodCall.selector, argumentTypes.toArray(new TypeBinding[0]), methodCall);
 				if (fixedBinding instanceof ProblemMethodBinding) {
 					methodCall.arguments = originalArgs;
@@ -276,18 +319,33 @@ public class PatchExtensionMethod {
 						PostponedInvalidMethodError.invoke(scope.problemReporter(), methodCall, fixedBinding, scope);
 					}
 				} else {
+					// If the extension method uses varargs, the last fixed binding parameter is an array but 
+					// the method arguments are not. Even thought we already know that the method is fine we still
+					// have to compare each parameter with the type of the array to support autoboxing/unboxing.
+					boolean isVarargs = fixedBinding.isVarargs();
 					for (int i = 0, iend = arguments.size(); i < iend; i++) {
 						Expression arg = arguments.get(i);
-						if (fixedBinding.parameters[i].isArrayType() != arg.resolvedType.isArrayType()) break;
-						if (arg instanceof MessageSend) {
-							((MessageSend) arg).valueCast = arg.resolvedType;
+						TypeBinding[] parameters = fixedBinding.parameters;
+						TypeBinding param;
+						if (isVarargs && i >= parameters.length - 1) {
+							// Extract the array element type for all vararg arguments
+							param = parameters[parameters.length - 1].leafComponentType();
+						} else {
+							param = parameters[i];
 						}
-						if (!fixedBinding.parameters[i].isBaseType() && arg.resolvedType.isBaseType()) {
-							int id = arg.resolvedType.id;
-							arg.implicitConversion = TypeIds.BOXING | (id + (id << 4)); // magic see TypeIds
-						} else if (fixedBinding.parameters[i].isBaseType() && !arg.resolvedType.isBaseType()) {
-							int id = fixedBinding.parameters[i].id;
-							arg.implicitConversion = TypeIds.UNBOXING | (id + (id << 4)); // magic see TypeIds
+						// Resolve types for lambdas
+						if (Reflection.isFunctionalExpression(arg)) {
+							arg.setExpectedType(param);
+							arg.resolveType(scope);
+						}
+						if (arg.resolvedType != null) {
+							if (!param.isBaseType() && arg.resolvedType.isBaseType()) {
+								int id = arg.resolvedType.id;
+								arg.implicitConversion = TypeIds.BOXING | (id + (id << 4)); // magic see TypeIds
+							} else if (param.isBaseType() && !arg.resolvedType.isBaseType()) {
+								int id = parameters[i].id;
+								arg.implicitConversion = TypeIds.UNBOXING | (id + (id << 4)); // magic see TypeIds
+							}
 						}
 					}
 					
@@ -295,6 +353,7 @@ public class PatchExtensionMethod {
 					methodCall.actualReceiverType = extensionMethod.declaringClass;
 					methodCall.binding = fixedBinding;
 					methodCall.resolvedType = methodCall.binding.returnType;
+					methodCall.statementEnd = methodCall.sourceEnd;
 					if (Reflection.argumentTypes != null) {
 						try {
 							Reflection.argumentTypes.set(methodCall, argumentTypes.toArray(new TypeBinding[0]));
@@ -340,16 +399,41 @@ public class PatchExtensionMethod {
 	}
 	
 	private static final class Reflection {
-		public static final Field argumentTypes;
+		public static final Field argumentTypes = Permit.permissiveGetField(MessageSend.class, "argumentTypes");
+		public static final Field argumentsHaveErrors = Permit.permissiveGetField(MessageSend.class, "argumentsHaveErrors");
+		private static final Class<?> functionalExpression;
+		private static final Constructor<?> polyTypeBindingConstructor;
 		
 		static {
-			Field a = null;
+			Class<?> a = null;
+			Constructor<?> b = null;
 			try {
-				a = Permit.getField(MessageSend.class, "argumentTypes");
-			}  catch (Throwable t) {
-				//ignore - old eclipse versions don't know this one
+				a = Class.forName("org.eclipse.jdt.internal.compiler.ast.FunctionalExpression");
+			} catch (Exception e) {
+				// Ignore
 			}
-			argumentTypes = a;
+			try {
+				b = Permit.getConstructor(Class.forName("org.eclipse.jdt.internal.compiler.lookup.PolyTypeBinding"), Expression.class);
+			} catch (Exception e) {
+				// Ignore
+			}
+			functionalExpression = a;
+			polyTypeBindingConstructor = b;
+		}
+		
+		public static boolean isFunctionalExpression(Expression expression) {
+			if (functionalExpression == null) return false;
+			return functionalExpression.isInstance(expression);
+		}
+		
+		public static TypeBinding getPolyTypeBinding(Expression expression) {
+			if (polyTypeBindingConstructor == null) return null;
+			try {
+				return (TypeBinding) polyTypeBindingConstructor.newInstance(expression);
+			} catch (Exception e) {
+				// Ignore
+			}
+			return null;
 		}
 	}
 }

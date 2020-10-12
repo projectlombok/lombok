@@ -35,13 +35,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IField;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -50,6 +52,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Scope;
@@ -63,7 +66,7 @@ import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
 import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 
-import lombok.eclipse.EclipseAugments;
+import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
 
 /** These contain a mix of the following:
  * <ul>
@@ -191,14 +194,20 @@ final class PatchFixesHider {
 	/** Contains patch code to support {@code @Delegate} */
 	public static final class Delegate {
 		private static final Method HANDLE_DELEGATE_FOR_TYPE;
+		private static final Method GET_CHILDREN;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegatePortal");
 			HANDLE_DELEGATE_FOR_TYPE = Util.findMethod(shadowed, "handleDelegateForType", Object.class);
+			GET_CHILDREN = Util.findMethod(shadowed, "getChildren", Object.class, Object.class);
 		}
 		
 		public static boolean handleDelegateForType(Object classScope) {
 			return (Boolean) Util.invokeMethod(HANDLE_DELEGATE_FOR_TYPE, classScope);
+		}
+		
+		public static Object[] getChildren(Object returnValue, Object javaElement) {
+			return (Object[]) Util.invokeMethod(GET_CHILDREN, returnValue, javaElement);
 		}
 	}
 	
@@ -271,6 +280,7 @@ final class PatchFixesHider {
 		private static final Method RESOLVE_TYPE;
 		private static final Method ERROR_NO_METHOD_FOR;
 		private static final Method INVALID_METHOD, INVALID_METHOD2;
+		private static final Method NON_STATIC_ACCESS_TO_STATIC_METHOD;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchExtensionMethod");
@@ -278,6 +288,7 @@ final class PatchFixesHider {
 			ERROR_NO_METHOD_FOR = Util.findMethod(shadowed, "errorNoMethodFor", ProblemReporter.class, MessageSend.class, TypeBinding.class, TypeBinding[].class);
 			INVALID_METHOD = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class);
 			INVALID_METHOD2 = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class, Scope.class);
+			NON_STATIC_ACCESS_TO_STATIC_METHOD = Util.findMethod(shadowed, "nonStaticAccessToStaticMethod", ProblemReporter.class, ASTNode.class, MethodBinding.class, MessageSend.class);
 		}
 		
 		public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
@@ -294,6 +305,30 @@ final class PatchFixesHider {
 		
 		public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method, Scope scope) {
 			Util.invokeMethod(INVALID_METHOD2, problemReporter, messageSend, method, scope);
+		}
+		
+		public static void nonStaticAccessToStaticMethod(ProblemReporter problemReporter, ASTNode location, MethodBinding method, MessageSend messageSend) {
+			Util.invokeMethod(NON_STATIC_ACCESS_TO_STATIC_METHOD, problemReporter, location, method, messageSend);
+		}
+	}
+	
+	/** Contains patch code to support Javadoc for generated methods */
+	public static final class Javadoc {
+		private static final Method GET_HTML;
+		private static final Method PRINT_METHOD;
+		
+		static {
+			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchJavadoc");
+			GET_HTML = Util.findMethod(shadowed, "getHTMLContentFromSource", String.class, IJavaElement.class);
+			PRINT_METHOD = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuffer.class, TypeDeclaration.class);
+		}
+		
+		public static String getHTMLContentFromSource(String original, IJavaElement member) {
+			return (String) Util.invokeMethod(GET_HTML, original, member);
+		}
+		
+		public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuffer output, TypeDeclaration type) {
+			return (StringBuffer) Util.invokeMethod(PRINT_METHOD, methodDeclaration, tab, output, type);
 		}
 	}
 	
@@ -497,6 +532,10 @@ final class PatchFixesHider {
 			return original == -1 ? end : original;
 		}
 		
+		public static int fixRetrieveStartBlockPosition(int original, int start) {
+			return original == -1 ? start : original;
+		}
+		
 		public static int fixRetrieveRightBraceOrSemiColonPosition(int original, int end) {
 //			if (original == -1) {
 //				Thread.dumpStack();
@@ -506,21 +545,21 @@ final class PatchFixesHider {
 		
 		public static int fixRetrieveRightBraceOrSemiColonPosition(int retVal, AbstractMethodDeclaration amd) {
 			if (retVal != -1 || amd == null) return retVal;
-			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(amd) != null;
+			boolean isGenerated = ASTNode_generatedBy.get(amd) != null;
 			if (isGenerated) return amd.declarationSourceEnd;
 			return -1;
 		}
 		
 		public static int fixRetrieveRightBraceOrSemiColonPosition(int retVal, FieldDeclaration fd) {
 			if (retVal != -1 || fd == null) return retVal;
-			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(fd) != null;
+			boolean isGenerated = ASTNode_generatedBy.get(fd) != null;
 			if (isGenerated) return fd.declarationSourceEnd;
 			return -1;
 		}
 		
-		public static int fixRetrieveProperRightBracketPosition(int retVal, ArrayType arrayType) {
-			if (retVal != -1 || arrayType == null) return retVal;
-			if (isGenerated(arrayType)) return arrayType.getStartPosition() + arrayType.getLength() - 1;
+		public static int fixRetrieveProperRightBracketPosition(int retVal, Type type) {
+			if (retVal != -1 || type == null) return retVal;
+			if (isGenerated(type)) return type.getStartPosition() + type.getLength() - 1;
 			return -1;
 		}
 		
@@ -539,13 +578,13 @@ final class PatchFixesHider {
 				org.eclipse.jdt.internal.compiler.ast.ASTNode internalNode) throws Exception {
 			
 			if (internalNode == null || domNode == null) return;
-			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(internalNode) != null;
+			boolean isGenerated = ASTNode_generatedBy.get(internalNode) != null;
 			if (isGenerated) domNode.getClass().getField("$isGenerated").set(domNode, true);
 		}
 		
 		public static void setIsGeneratedFlagForName(org.eclipse.jdt.core.dom.Name name, Object internalNode) throws Exception {
 			if (internalNode instanceof org.eclipse.jdt.internal.compiler.ast.ASTNode) {
-				boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get((org.eclipse.jdt.internal.compiler.ast.ASTNode) internalNode) != null;
+				boolean isGenerated = ASTNode_generatedBy.get((org.eclipse.jdt.internal.compiler.ast.ASTNode) internalNode) != null;
 				if (isGenerated) name.getClass().getField("$isGenerated").set(name, true);
 			}
 		}

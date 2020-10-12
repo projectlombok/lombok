@@ -35,11 +35,13 @@ import org.eclipse.jdt.internal.compiler.ast.FunctionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.impl.Constant;
 import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
@@ -227,14 +229,16 @@ public class PatchVal {
 		boolean var = isVar(local, scope);
 		if (!(val || var)) return false;
 		
-		StackTraceElement[] st = new Throwable().getStackTrace();
-		for (int i = 0; i < st.length - 2 && i < 10; i++) {
-			if (st[i].getClassName().equals("lombok.launch.PatchFixesHider$Val")) {
-				boolean valInForStatement = val &&
-					st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
-					st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement");
-				if (valInForStatement) return false;
-				break;
+		if (val) {
+			StackTraceElement[] st = new Throwable().getStackTrace();
+			for (int i = 0; i < st.length - 2 && i < 10; i++) {
+				if (st[i].getClassName().equals("lombok.launch.PatchFixesHider$Val")) {
+					boolean valInForStatement = 
+						st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
+						st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement");
+					if (valInForStatement) return false;
+					break;
+				}
 			}
 		}
 		
@@ -264,6 +268,7 @@ public class PatchVal {
 			}
 			
 			TypeBinding resolved = null;
+			Constant oldConstant = init.constant;
 			try {
 				resolved = decomponent ? getForEachComponentType(init, scope) : resolveForExpression(init, scope);
 			} catch (NullPointerException e) {
@@ -279,6 +284,10 @@ public class PatchVal {
 					if (!decomponent) init.resolvedType = replacement.resolveType(scope);
 				} catch (Exception e) {
 					// Some type thing failed.
+				}
+			} else {
+				if (init instanceof MessageSend && ((MessageSend) init).actualReceiverType == null) {
+					init.constant = oldConstant;
 				}
 			}
 		}

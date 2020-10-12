@@ -1,4 +1,4 @@
-//platform ecj
+//platform ecj,eclipse
 //version 8:
 
 public class OnXJava7StyleOn8 {
