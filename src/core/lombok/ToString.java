@@ -119,4 +119,13 @@ public @interface ToString {
 		 */
 		String name() default "";
 	}
+
+	@Target({ElementType.FIELD,ElementType.METHOD})
+	@Retention(RetentionPolicy.SOURCE)
+	public static @interface Secure {
+		boolean salted() default false;
+
+		String encryptClass() default "";
+		String encryptMethod() default "";
+	}
 }

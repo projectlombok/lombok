@@ -55,6 +55,7 @@ import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.Visitor;
 import com.sun.tools.javac.util.List;
 
 /**
@@ -64,7 +65,6 @@ import com.sun.tools.javac.util.List;
 public class HandleToString extends JavacAnnotationHandler<ToString> {
 	@Override public void handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.TO_STRING_FLAG_USAGE, "@ToString");
-		
 		deleteAnnotationIfNeccessary(annotationNode, ToString.class);
 		
 		ToString ann = annotation.getInstance();
@@ -205,12 +205,35 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			current = maker.Binary(CTC_PLUS, current, callToSuper);
 			first = false;
 		}
+
+		String defaultEncryptionClass = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_CLASS);
+		String defaultEncryptionMethod = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_METHOD);
+		Boolean defaultSalted = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_SALTED);
+
 		
 		for (Included<JavacNode, ToString.Include> member : members) {
-			JCExpression expr;
-			
-			JCExpression memberAccessor;
 			JavacNode memberNode = member.getNode();
+
+			String fieldName = member.getNode().getName();
+			AnnotationValues<ToString.Secure> secured = memberNode.findAnnotation(ToString.Secure.class);
+			String annotationEncryptClass = null;
+			String annotationEncryptMethod = null;
+			Boolean salted = null;
+
+			JCExpression expr;
+			JCExpression memberAccessor;
+
+
+			if (secured != null) {
+				annotationEncryptClass = secured.getAsString("encryptClass");
+				annotationEncryptMethod = secured.getAsString("encryptMethod");
+				salted = secured.getAsBoolean("salted");
+			}
+
+			String finalEncryptClass = (annotationEncryptClass == null || "".equals(annotationEncryptClass)) ?  defaultEncryptionClass : annotationEncryptClass;
+			String finalEncryptMethod = (annotationEncryptMethod == null || "".equals(annotationEncryptMethod)) ?  defaultEncryptionMethod : annotationEncryptMethod;
+			Boolean finalSalted = salted == null ? (defaultSalted != null && defaultSalted) : salted;
+
 			if (memberNode.getKind() == Kind.METHOD) {
 				memberAccessor = createMethodAccessor(maker, memberNode);
 			} else {
@@ -218,18 +241,32 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			}
 			
 			JCExpression memberType = getFieldType(memberNode, fieldAccess);
-			
 			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
 			@SuppressWarnings("unused")
 			boolean fieldIsPrimitive = memberType instanceof JCPrimitiveTypeTree;
 			boolean fieldIsPrimitiveArray = memberType instanceof JCArrayTypeTree && ((JCArrayTypeTree) memberType).elemtype instanceof JCPrimitiveTypeTree;
 			boolean fieldIsObjectArray = !fieldIsPrimitiveArray && memberType instanceof JCArrayTypeTree;
 			
+
+			
 			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
 				JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
 				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(memberAccessor));
-			} else expr = memberAccessor;
-			
+			} else if ( secured != null && finalEncryptClass != null && finalEncryptMethod != null)  {
+				String[] tokens = (finalEncryptClass+"."+finalEncryptMethod).split("\\.");
+				JCExpression tsMethod = chainDots(typeNode, tokens);
+				if (finalSalted == false){
+					expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of( memberAccessor));
+				}
+				else {
+					JCTree.JCLiteral saltParam = maker.Literal(fieldName);
+					expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(saltParam, memberAccessor));
+				}
+			}
+			else {
+				expr = memberAccessor;
+			}
+
 			if (first) {
 				current = maker.Binary(CTC_PLUS, current, expr);
 				first = false;
