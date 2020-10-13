@@ -32,7 +32,6 @@ import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.CheckerFrameworkVersion;
-import lombok.core.configuration.FlagUsageType;
 import lombok.core.AST.Kind;
 import lombok.core.handlers.InclusionExclusionUtils;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
@@ -57,6 +56,7 @@ import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.Visitor;
 import com.sun.tools.javac.util.List;
 
 /**
@@ -66,11 +66,6 @@ import com.sun.tools.javac.util.List;
 public class HandleToString extends JavacAnnotationHandler<ToString> {
 	@Override public void handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.TO_STRING_FLAG_USAGE, "@ToString");
-		System.out.println("annotation:"+annotation);
-		
-		String encryptionClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED);
-		System.out.println("Encription Class Name:"+encryptionClassName);
-		
 		deleteAnnotationIfNeccessary(annotationNode, ToString.class);
 		
 		ToString ann = annotation.getInstance();
@@ -88,7 +83,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		Boolean fieldNamesConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 		boolean includeNames = annotation.isExplicit("includeFieldNames") || fieldNamesConfiguration == null ? ann.includeFieldNames() : fieldNamesConfiguration;
 		
-		generateToString(annotationNode.up(), annotationNode, members, includeNames, callSuper, true, fieldAccess, encryptionClassName);
+		generateToString(annotationNode.up(), annotationNode, members, includeNames, callSuper, true, fieldAccess);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -107,11 +102,11 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		FieldAccess access = doNotUseGettersConfiguration == null || !doNotUseGettersConfiguration ? FieldAccess.GETTER : FieldAccess.PREFER_FIELD;
 		
 		java.util.List<Included<JavacNode, ToString.Include>> members = InclusionExclusionUtils.handleToStringMarking(typeNode, null, null);
-		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access, "");
+		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access);
 	}
 	
 	public void generateToString(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, ToString.Include>> members,
-		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, String encryptionClassName) {
+		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
@@ -147,7 +142,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 					}
 				}
 			}
-			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source.get(), encryptionClassName);
+			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source.get());
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -162,7 +157,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	}
 	
 	static JCMethodDecl createToString(JavacNode typeNode, Collection<Included<JavacNode, ToString.Include>> members,
-		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JCTree source, String encryptionClassName) {
+		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
@@ -211,31 +206,34 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			current = maker.Binary(CTC_PLUS, current, callToSuper);
 			first = false;
 		}
+
+		String defaultEncryptionClass = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_CLASS);
+		String defaultEncryptionMethod = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_METHOD);
+		Boolean defaultSalted = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_SALTED);
+
 		
 		for (Included<JavacNode, ToString.Include> member : members) {
-			
-			System.out.println("Member:"+member);
-			
-			
-			JCExpression expr;
-			
-			JCExpression memberAccessor;
 			JavacNode memberNode = member.getNode();
-			
-			System.out.println("memberNode1:"+memberNode);
-			System.out.println("memberNode2:"+memberNode.getAst());
-			System.out.println("memberNode3:"+memberNode.get());
-			JCTree tree = memberNode.get();
-			System.out.println("tree:"+tree);
-			System.out.println("tree kind:"+tree.getKind());
-			System.out.println("tree kind tostring:"+tree.toString());
-			
-			List<JCAnnotation> annotations = JavacHandlerUtil.JCAnnotatedTypeReflect.getAnnotations(tree);
-			for (JCAnnotation jcAnnotation : annsOnMethod) {
-				System.out.println("A  :"+annotations);	
+
+			String fieldName = member.getNode().getName();
+			AnnotationValues<ToString.Secure> secured = memberNode.findAnnotation(ToString.Secure.class);
+			String annotationEncryptClass = null;
+			String annotationEncryptMethod = null;
+			Boolean salted = null;
+
+			JCExpression expr;
+			JCExpression memberAccessor;
+
+			if (secured != null) {
+				annotationEncryptClass = secured.getAsString("encryptClass");
+				annotationEncryptMethod = secured.getAsString("encryptMethod");
+				salted = secured.getAsBoolean("salted");
 			}
-			
-			
+
+			String finalEncryptClass = (annotationEncryptClass == null || "".equals(annotationEncryptClass)) ?  defaultEncryptionClass : annotationEncryptClass;
+			String finalEncryptMethod = (annotationEncryptMethod == null || "".equals(annotationEncryptMethod)) ?  defaultEncryptionMethod : annotationEncryptMethod;
+			Boolean finalSalted = salted == null ? (defaultSalted != null && defaultSalted) : salted;
+
 			if (memberNode.getKind() == Kind.METHOD) {
 				memberAccessor = createMethodAccessor(maker, memberNode);
 			} else {
@@ -243,23 +241,28 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			}
 			
 			JCExpression memberType = getFieldType(memberNode, fieldAccess);
-			
-			
-			System.out.println("memberType:"+memberType);
-			
+
 			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
 			@SuppressWarnings("unused")
 			boolean fieldIsPrimitive = memberType instanceof JCPrimitiveTypeTree;
 			boolean fieldIsPrimitiveArray = memberType instanceof JCArrayTypeTree && ((JCArrayTypeTree) memberType).elemtype instanceof JCPrimitiveTypeTree;
 			boolean fieldIsObjectArray = !fieldIsPrimitiveArray && memberType instanceof JCArrayTypeTree;
 			
+
+			
 			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
 				JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
 				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(memberAccessor));
-			} else if ( encryptionClassName != null &&"".equals(encryptionClassName)==false) {
-				String[] tokens = (encryptionClassName+".encrypt").split("\\.");
+			} else if ( secured != null && finalEncryptClass != null && finalEncryptMethod != null)  {
+				String[] tokens = (finalEncryptClass+"."+finalEncryptMethod).split("\\.");
 				JCExpression tsMethod = chainDots(typeNode, tokens);
-				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of( memberAccessor));
+				if (finalSalted == false){
+					expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of( memberAccessor));
+				}
+				else {
+					JCLiteral saltParam = maker.Literal(fieldName);
+					expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(saltParam, memberAccessor));
+				}
 			}
 			else {
 				expr = memberAccessor;

@@ -122,7 +122,10 @@ public @interface ToString {
 	
 	@Target({ElementType.FIELD,ElementType.METHOD})
 	@Retention(RetentionPolicy.SOURCE)
-	public static @interface Secured {
-		String[] value() default "";
+	public static @interface Secure {
+		boolean salted() default false;
+
+		String encryptClass() default "";
+		String encryptMethod() default "";
 	}
 }

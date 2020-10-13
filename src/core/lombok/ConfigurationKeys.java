@@ -295,7 +295,9 @@ public class ConfigurationKeys {
 	 * 
 	 * For any class without an {@code @ToString} that explicitly defines the {@code includeFieldNames} option, this value is used  (default = true).
 	 */
-	public static final ConfigurationKey<String> TO_STRING_SECURED = new ConfigurationKey<String>("lombok.toString.secured", "Encryption strategy class name") {};
+	public static final ConfigurationKey<String> TO_STRING_SECURED_DEFAULT_CLASS = new ConfigurationKey<String>("lombok.toString.secured.defaultClass", "Encryption strategy class name") {};
+	public static final ConfigurationKey<String> TO_STRING_SECURED_DEFAULT_METHOD = new ConfigurationKey<String>("lombok.toString.secured.defaultMethod", "Encryption strategy class name") {};
+	public static final ConfigurationKey<Boolean> TO_STRING_SECURED_DEFAULT_SALTED = new ConfigurationKey<Boolean>("lombok.toString.secured.defaultSalted", "Encryption strategy class name") {};
 	
 	// ----- Builder -----
 	
