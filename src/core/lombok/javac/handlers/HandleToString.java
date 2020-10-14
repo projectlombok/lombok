@@ -91,7 +91,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
-		
+
 		boolean includeFieldNames = true;
 		try {
 			Boolean configuration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
@@ -211,7 +211,6 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		String defaultEncryptionMethod = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_METHOD);
 		Boolean defaultSalted = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_SALTED);
 
-		
 		for (Included<JavacNode, ToString.Include> member : members) {
 			JavacNode memberNode = member.getNode();
 
@@ -241,15 +240,11 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			}
 			
 			JCExpression memberType = getFieldType(memberNode, fieldAccess);
-
 			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
 			@SuppressWarnings("unused")
 			boolean fieldIsPrimitive = memberType instanceof JCPrimitiveTypeTree;
 			boolean fieldIsPrimitiveArray = memberType instanceof JCArrayTypeTree && ((JCArrayTypeTree) memberType).elemtype instanceof JCPrimitiveTypeTree;
 			boolean fieldIsObjectArray = !fieldIsPrimitiveArray && memberType instanceof JCArrayTypeTree;
-			
-
-			
 			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
 				JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
 				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(memberAccessor));
@@ -260,14 +255,13 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 					expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of( memberAccessor));
 				}
 				else {
-					JCLiteral saltParam = maker.Literal(fieldName);
+					JCTree.JCLiteral saltParam = maker.Literal(fieldName);
 					expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(saltParam, memberAccessor));
 				}
 			}
 			else {
 				expr = memberAccessor;
 			}
-			
 			if (first) {
 				current = maker.Binary(CTC_PLUS, current, expr);
 				first = false;

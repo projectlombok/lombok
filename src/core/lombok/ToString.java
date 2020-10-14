@@ -119,13 +119,30 @@ public @interface ToString {
 		 */
 		String name() default "";
 	}
-	
+
+
+	/**
+	 * Configure the behaviour of how this member is rendered in the {@code toString}; if on a method, encrypted the method's return value in the output.
+	 */
 	@Target({ElementType.FIELD,ElementType.METHOD})
 	@Retention(RetentionPolicy.SOURCE)
 	public static @interface Secure {
-		boolean salted() default false;
-
+		/**
+		 * Generally encrypt class is defined in lombok.config. But in some cases, some value need to use another encrypt class.
+		 * @return encrypt class name
+		 */
 		String encryptClass() default "";
+
+		/**
+		 * Generally encrypt method is defined in lombok.config. But in some cases, some value need to use another encrypt method.
+		 * @return encrypt class name
+		 */
 		String encryptMethod() default "";
+
+		/**
+		 * If salted, encrypt with field name salt. encrypt method given two parameter. salt,  method's return value in the output.
+		 * @return
+		 */
+		boolean salted() default false;
 	}
 }
