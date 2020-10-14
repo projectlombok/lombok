@@ -90,7 +90,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
-		
+
 		boolean includeFieldNames = true;
 		try {
 			Boolean configuration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
@@ -210,7 +210,6 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		String defaultEncryptionMethod = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_METHOD);
 		Boolean defaultSalted = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_SECURED_DEFAULT_SALTED);
 
-		
 		for (Included<JavacNode, ToString.Include> member : members) {
 			JavacNode memberNode = member.getNode();
 
@@ -246,9 +245,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			boolean fieldIsPrimitive = memberType instanceof JCPrimitiveTypeTree;
 			boolean fieldIsPrimitiveArray = memberType instanceof JCArrayTypeTree && ((JCArrayTypeTree) memberType).elemtype instanceof JCPrimitiveTypeTree;
 			boolean fieldIsObjectArray = !fieldIsPrimitiveArray && memberType instanceof JCArrayTypeTree;
-			
 
-			
 			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
 				JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
 				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(memberAccessor));
