@@ -31,6 +31,12 @@ import lombok.patcher.scripts.ScriptBuilder;
 public class EclipseLoaderPatcher {
 	private static final String TRANSPLANTS_CLASS_NAME = "lombok.eclipse.agent.EclipseLoaderPatcherTransplants";
 	
+	static final String[] OSGI_TYPES = {
+		"org/eclipse/osgi/internal/baseadaptor/DefaultClassLoader",
+		"org/eclipse/osgi/framework/adapter/core/AbstractClassLoader",
+		"org/eclipse/osgi/internal/loader/ModuleClassLoader"
+	};
+	
 	public static void patchEquinoxLoaders(ScriptManager sm, Class<?> launchingContext) {
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader", "loadClass",

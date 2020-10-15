@@ -22,6 +22,7 @@
 package lombok.eclipse.agent;
 
 import static lombok.patcher.scripts.ScriptBuilder.*;
+import static lombok.eclipse.agent.EclipseLoaderPatcher.OSGI_TYPES;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
@@ -49,39 +50,11 @@ import lombok.patcher.scripts.ScriptBuilder;
  * transformed.
  */
 public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
-	// At some point I'd like the agent to be capable of auto-detecting if its on eclipse or on ecj. This class is a sure sign we're not in ecj but in eclipse. -ReinierZ
-	private static final String ECLIPSE_SIGNATURE_CLASS = "org.eclipse.core.runtime.adaptor.EclipseStarter";
-	
 	@Override public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected, Class<?> launchingContext) throws Exception {
-		String[] args = agentArgs == null ? new String[0] : agentArgs.split(":");
-		boolean forceEcj = false;
-		boolean forceEclipse = false;
-		
-		for (String arg : args) {
-			if (arg.trim().equalsIgnoreCase("ECJ")) forceEcj = true;
-			if (arg.trim().equalsIgnoreCase("ECLIPSE")) forceEclipse = true;
-		}
-		if (forceEcj && forceEclipse) {
-			forceEcj = false;
-			forceEclipse = false;
-		}
-		
-		boolean ecj;
-		
-		if (forceEcj) ecj = true;
-		else if (forceEclipse) ecj = false;
-		else ecj = injected;
-		
-		if (!ecj) try {
-			Class.forName(ECLIPSE_SIGNATURE_CLASS);
-		} catch (ClassNotFoundException e) {
-			ecj = true;
-		}
-		
-		registerPatchScripts(instrumentation, injected, ecj, launchingContext);
+		registerPatchScripts(instrumentation, injected, launchingContext);
 	}
 	
-	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, boolean ecjOnly, Class<?> launchingContext) {
+	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, Class<?> launchingContext) {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
 		sm.setFilter(new Filter() {
@@ -102,35 +75,33 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			}
 		});
 		
-		if (!ecjOnly) {
-			EclipseLoaderPatcher.patchEquinoxLoaders(sm, launchingContext);
-			patchCatchReparse(sm);
-			patchIdentifierEndReparse(sm);
-			patchRetrieveEllipsisStartPosition(sm);
-			patchRetrieveRightBraceOrSemiColonPosition(sm);
-			patchRetrieveProperRightBracketPosition(sm);
-			patchRetrieveStartBlockPosition(sm);
-			patchSetGeneratedFlag(sm);
-			patchDomAstReparseIssues(sm);
-			patchHideGeneratedNodes(sm);
-			patchPostCompileHookEclipse(sm);
-			patchFixSourceTypeConverter(sm);
-			patchDisableLombokForCodeCleanup(sm);
-			patchListRewriteHandleGeneratedMethods(sm);
-			patchSyntaxAndOccurrencesHighlighting(sm);
-			patchSortMembersOperation(sm);
-			patchExtractInterface(sm);
-			patchAboutDialog(sm);
-			patchEclipseDebugPatches(sm);
-			patchJavadoc(sm);
-		} else {
-			patchPostCompileHookEcj(sm);
-		}
+		EclipseLoaderPatcher.patchEquinoxLoaders(sm, launchingContext);
+		patchCatchReparse(sm);
+		patchIdentifierEndReparse(sm);
+		patchRetrieveEllipsisStartPosition(sm);
+		patchRetrieveRightBraceOrSemiColonPosition(sm);
+		patchRetrieveProperRightBracketPosition(sm);
+		patchRetrieveStartBlockPosition(sm);
+		patchSetGeneratedFlag(sm);
+		patchDomAstReparseIssues(sm);
+		patchHideGeneratedNodes(sm);
+		patchPostCompileHookEclipse(sm);
+		patchFixSourceTypeConverter(sm);
+		patchDisableLombokForCodeCleanup(sm);
+		patchListRewriteHandleGeneratedMethods(sm);
+		patchSyntaxAndOccurrencesHighlighting(sm);
+		patchSortMembersOperation(sm);
+		patchExtractInterface(sm);
+		patchAboutDialog(sm);
+		patchEclipseDebugPatches(sm);
+		patchJavadoc(sm);
+		
+		patchPostCompileHookEcj(sm);
 		
 		patchAvoidReparsingGeneratedCode(sm);
 		patchLombokizeAST(sm);
-		patchEcjTransformers(sm, ecjOnly);
-		patchExtensionMethod(sm, ecjOnly);
+		patchEcjTransformers(sm);
+		patchExtensionMethod(sm);
 		patchRenameField(sm);
 		patchNullCheck(sm);
 		
@@ -165,7 +136,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	
 	private static void patchExtractInterface(ScriptManager sm) {
 		/* Fix sourceEnding for generated nodes to avoid null pointer */
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.SourceElementNotifier", "notifySourceElementRequestor", "void", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration", "org.eclipse.jdt.internal.compiler.ast.ImportReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.internal.compiler.util.HashtableOfObjectToInt", "get", "int", "java.lang.Object"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "getSourceEndFixed", "int", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
@@ -173,7 +144,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.transplant().build());
 		
 		/* Make sure the generated source element is found instead of the annotation */
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ExtractInterfaceProcessor", "createMethodDeclaration", "void",
 				"org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite", 
 				"org.eclipse.jdt.core.dom.rewrite.ASTRewrite",
@@ -186,7 +157,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			.transplant().build());
 		
 		/* get real generated node in stead of a random one generated by the annotation */
-		sm.addScript(ScriptBuilder.replaceMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ExtractInterfaceProcessor", "createMemberDeclarations"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ExtractInterfaceProcessor", "createMethodComments"))
 				.methodToReplace(new Hook("org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil", "getMethodDeclarationNode", "org.eclipse.jdt.core.dom.MethodDeclaration", "org.eclipse.jdt.core.IMethod", "org.eclipse.jdt.core.dom.CompilationUnit"))
@@ -194,14 +165,14 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.transplant().build());
 		
 		/* Do not add @Override's for generated methods */
-		sm.addScript(ScriptBuilder.exitEarly()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ListRewrite", "insertFirst"))
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isListRewriteOnGeneratedNode", "boolean", "org.eclipse.jdt.core.dom.rewrite.ListRewrite"))
 				.request(StackRequest.THIS)
 				.transplant().build());
 		
 		/* Do not add comments for generated methods */
-		sm.addScript(ScriptBuilder.exitEarly()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ExtractInterfaceProcessor", "createMethodComment"))
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
 				.request(StackRequest.PARAM2)
@@ -214,7 +185,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		 * This is doable without patching, but we intentionally patch it so that presence of the lombok info
 		 * in the about dialog can be used to ascertain that patching in general is doing something.
 		 */
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.core.internal.runtime.Product", "getProperty", "java.lang.String", "java.lang.String"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$LombokDeps", "addLombokNotesToEclipseAboutDialog", "java.lang.String", "java.lang.String", "java.lang.String"))
 				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1)
@@ -225,7 +196,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		/*
 		 * Skip generated nodes for "visual effects" (syntax highlighting && highlight occurrences)
 		 */
-		sm.addScript(ScriptBuilder.exitEarly()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.search.OccurrencesFinder", "addUsage"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.search.OccurrencesFinder", "addWrite"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.javaeditor.SemanticHighlightingReconciler$PositionCollector", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
@@ -236,7 +207,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchDisableLombokForCodeCleanup(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.exitEarly()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.DoStatement"))
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.EnhancedForStatement"))
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.ForStatement"))
@@ -263,7 +234,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchListRewriteHandleGeneratedMethods(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.replaceMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer$ListRewriter", "rewriteList"))
 				.methodToReplace(new Hook("org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent", "getChildren", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent[]"))
 				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "listRewriteHandleGeneratedMethods", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent[]", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent"))
@@ -275,37 +246,37 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		 * I would have liked to patch sortMembers, but kept getting a VerifyError: Illegal type in constant pool
 		 * So now I just patch all calling methods
 		 */
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.SortElementsOperation$2", "visit", "boolean", "org.eclipse.jdt.core.dom.CompilationUnit"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.CompilationUnit", "types", "java.util.List"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedNodes", "java.util.List", "java.util.List"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.SortElementsOperation$2", "visit", "boolean", "org.eclipse.jdt.core.dom.AnnotationTypeDeclaration"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.AnnotationTypeDeclaration", "bodyDeclarations", "java.util.List"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedNodes", "java.util.List", "java.util.List"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.SortElementsOperation$2", "visit", "boolean", "org.eclipse.jdt.core.dom.AnonymousClassDeclaration"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.AnonymousClassDeclaration", "bodyDeclarations", "java.util.List"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedNodes", "java.util.List", "java.util.List"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.SortElementsOperation$2", "visit", "boolean", "org.eclipse.jdt.core.dom.TypeDeclaration"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.TypeDeclaration", "bodyDeclarations", "java.util.List"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedNodes", "java.util.List", "java.util.List"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.SortElementsOperation$2", "visit", "boolean", "org.eclipse.jdt.core.dom.EnumDeclaration"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.EnumDeclaration", "bodyDeclarations", "java.util.List"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedNodes", "java.util.List", "java.util.List"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.SortElementsOperation$2", "visit", "boolean", "org.eclipse.jdt.core.dom.EnumDeclaration"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.EnumDeclaration", "enumConstants", "java.util.List"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedNodes", "java.util.List", "java.util.List"))
@@ -313,7 +284,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchDomAstReparseIssues(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.replaceMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer", "visit"))
 				.methodToReplace(new Hook("org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner", "getTokenEndOffset", "int", "int", "int"))
 				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "getTokenEndOffsetFixed", "int", "org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner", "int", "int", "java.lang.Object"))
@@ -324,7 +295,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchPostCompileHookEclipse(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.builder.IncrementalImageBuilder", "writeClassFileContents"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.builder.AbstractImageBuilder", "writeClassFileContents"))
 				.methodToWrap(new Hook("org.eclipse.jdt.internal.compiler.ClassFile", "getBytes", "byte[]"))
@@ -334,13 +305,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchPostCompileHookEcj(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfNotWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.tool.EclipseCompilerImpl", "outputClassFiles"))
 				.methodToWrap(new Hook("javax.tools.JavaFileObject", "openOutputStream", "java.io.OutputStream"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$LombokDeps", "runPostCompiler", "java.io.OutputStream", "java.io.OutputStream"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfNotWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.util.Util", "writeToDisk"))
 				.methodToWrap(new Hook("java.io.BufferedOutputStream", "<init>", "void", "java.io.OutputStream", "int"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$LombokDeps", "runPostCompiler", "java.io.BufferedOutputStream", "java.io.BufferedOutputStream", "java.lang.String", "java.lang.String"))
@@ -349,7 +320,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchHideGeneratedNodes(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByBinding"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedSimpleNames", "org.eclipse.jdt.core.dom.SimpleName[]",
@@ -361,37 +332,37 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchFormatters(ScriptManager sm) {
-	    // before Eclipse Mars
-		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
-		        .target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "formatCompilationUnit"))
-		        .callToWrap(new Hook("org.eclipse.jdt.internal.core.util.CodeSnippetParsingUtil", "parseCompilationUnit", "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "char[]", "java.util.Map", "boolean"))
-		        .symbol("lombok.disable")
-		        .build());
+		// before Eclipse Mars
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.setSymbolDuringMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "formatCompilationUnit"))
+				.callToWrap(new Hook("org.eclipse.jdt.internal.core.util.CodeSnippetParsingUtil", "parseCompilationUnit", "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "char[]", "java.util.Map", "boolean"))
+				.symbol("lombok.disable")
+				.build());
 		
 		// Eclipse Mars and beyond
-		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
-		        .target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "parseSourceCode"))
-		        .callToWrap(new Hook("org.eclipse.jdt.core.dom.ASTParser", "createAST", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.core.runtime.IProgressMonitor"))
-		        .symbol("lombok.disable")
-		        .build());
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.setSymbolDuringMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "parseSourceCode"))
+				.callToWrap(new Hook("org.eclipse.jdt.core.dom.ASTParser", "createAST", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.core.runtime.IProgressMonitor"))
+				.symbol("lombok.disable")
+				.build());
 	}
 	
 	private static void patchRefactorScripts(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.exitEarly()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ASTRewrite", "replace"))
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ASTRewrite", "remove"))
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "skipRewritingGeneratedNodes", "boolean",
 						"org.eclipse.jdt.core.dom.ASTNode"))
 				.transplant().request(StackRequest.PARAM1).build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.RenameTypeProcessor", "addConstructorRenames"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.IType", "getMethods", "org.eclipse.jdt.core.IMethod[]"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedMethods", "org.eclipse.jdt.core.IMethod[]",
 						"org.eclipse.jdt.core.IMethod[]"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.exitEarly()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.TempOccurrenceAnalyzer", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.RenameAnalyzeUtil$ProblemNodeFinder$NameNodeVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
@@ -401,35 +372,35 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchCatchReparse(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveStartingCatchPosition", "int", "int", "int"))
 				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM1).build());
 	}
 	
 	private static void patchIdentifierEndReparse(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveIdentifierEndPosition"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveIdentifierEndPosition", "int", "int", "int", "int"))
 				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM1, StackRequest.PARAM2).build());
 	}
 	
 	private static void patchRetrieveEllipsisStartPosition(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveEllipsisStartPosition"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveEllipsisStartPosition", "int", "int", "int"))
 				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
 	}
 	
 	private static void patchRetrieveStartBlockPosition(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartBlockPosition"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveStartBlockPosition", "int", "int", "int"))
 				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
 	}
 	
 	private static void patchRetrieveRightBraceOrSemiColonPosition(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
 			.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ASTConverter", "retrieveRightBraceOrSemiColonPosition", "int", "int", "int"))
 			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveRightBraceOrSemiColonPosition", "int", "int", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
@@ -461,7 +432,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 
 	private static void patchRetrieveProperRightBracketPosition(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "extractSubArrayType", "org.eclipse.jdt.core.dom.ArrayType", "org.eclipse.jdt.core.dom.ArrayType", "int", "int"))
 			.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ASTConverter", "retrieveProperRightBracketPosition", "int", "int", "int"))
 			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveProperRightBracketPosition", "int", "int", "org.eclipse.jdt.core.dom.Type"))
@@ -469,7 +440,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			.transplant()
 			.build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToArray", "org.eclipse.jdt.core.dom.ArrayType", "org.eclipse.jdt.core.dom.Type", "int", "int", "int", "org.eclipse.jdt.internal.compiler.ast.Annotation[][]"))
 			.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ASTConverter", "retrieveProperRightBracketPosition", "int", "int", "int"))
 			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveProperRightBracketPosition", "int", "int", "org.eclipse.jdt.core.dom.Type"))
@@ -479,18 +450,18 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 
 	private static void patchSetGeneratedFlag(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.addField()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.ASTNode")
 				.fieldName("$generatedBy")
 				.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
 				.setPublic().setTransient().build());
 		
-		sm.addScript(ScriptBuilder.addField()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.core.dom.ASTNode")
 				.fieldName("$isGenerated").fieldType("Z")
 				.setPublic().setTransient().build());
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new TargetMatcher() {
 					@Override public boolean matches(String classSpec, String methodName, String descriptor) {
 						if (!"convert".equals(methodName)) return false;
@@ -502,6 +473,10 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						return true;
 					}
 					
+					@Override public String describe() {
+						return "ASTConverter:[all relevant]";
+					}
+					
 					@Override public Collection<String> getAffectedClasses() {
 						return Collections.singleton("org.eclipse.jdt.core.dom.ASTConverter");
 					}
@@ -510,14 +485,14 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
 				.request(StackRequest.PARAM2, StackRequest.RETURN_VALUE)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlag", "void",
 						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToFieldDeclaration", "org.eclipse.jdt.core.dom.FieldDeclaration", "org.eclipse.jdt.internal.compiler.ast.FieldDeclaration"))
 /* Targets beneath are only patched because the resulting dom nodes should be marked if generated.
  * However I couldn't find a usecase where these were actually used
@@ -538,7 +513,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.transplant().build());
 		
 		/* Set generated flag for SimpleNames */
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new TargetMatcher() {
 					@Override public boolean matches(String classSpec, String methodName, String descriptor) {
 						if (!methodName.startsWith("convert")) return false;
@@ -550,6 +525,10 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						return true;
 					}
 					
+					@Override public String describe() {
+						return "ASTConverter::(all relevant)";
+					}
+					
 					@Override public Collection<String> getAffectedClasses() {
 						return Collections.singleton("org.eclipse.jdt.core.dom.ASTConverter");
 					}
@@ -559,7 +538,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM2)
@@ -568,7 +547,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.transplant().build());
 		
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.PrimitiveType", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM1)
@@ -577,7 +556,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.transplant()
 				.build());
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleType", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM1)
@@ -586,7 +565,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.transplant()
 				.build());
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.ParameterizedType", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM1)
@@ -595,7 +574,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.transplant()
 				.build());
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedType", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM1)
@@ -605,7 +584,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.build());
 
 		/* Set generated flag for QualifiedNames */
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM4)
@@ -613,7 +592,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM4)
@@ -621,7 +600,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM3)
@@ -629,7 +608,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM3)
@@ -637,7 +616,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
 
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setTypeNameForAnnotation", "void", "org.eclipse.jdt.internal.compiler.ast.Annotation", "org.eclipse.jdt.core.dom.Annotation"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM1)
@@ -645,7 +624,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
 		
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setTypeNameForAnnotation", "void", "org.eclipse.jdt.internal.compiler.ast.Annotation", "org.eclipse.jdt.core.dom.Annotation"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM1)
@@ -702,13 +681,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.request(StackRequest.THIS, StackRequest.RETURN_VALUE).build());
 	}
 	
-	private static void patchEcjTransformers(ScriptManager sm, boolean ecj) {
-		addPatchesForDelegate(sm, ecj);
+	private static void patchEcjTransformers(ScriptManager sm) {
+		addPatchesForDelegate(sm);
 		addPatchesForVal(sm);
-		if (!ecj) addPatchesForValEclipse(sm);
+		addPatchesForValEclipse(sm);
 	}
 	
-	private static void addPatchesForDelegate(ScriptManager sm, boolean ecj) {
+	private static void addPatchesForDelegate(ScriptManager sm) {
 		final String CLASSSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.ClassScope";
 		
 		sm.addScript(ScriptBuilder.exitEarly()
@@ -718,10 +697,10 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.build());
 		
 		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
-		        .target(new MethodTarget("org.eclipse.jdt.internal.core.SelectionRequestor", "acceptSourceMethod"))
-		        .callToWrap(new Hook("org.eclipse.jdt.core.IType", "getMethods", "org.eclipse.jdt.core.IMethod[]"))
-		        .symbol("lombok.skipdelegates")
-		        .build());
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.SelectionRequestor", "acceptSourceMethod"))
+				.callToWrap(new Hook("org.eclipse.jdt.core.IType", "getMethods", "org.eclipse.jdt.core.IMethod[]"))
+				.symbol("lombok.skipdelegates")
+				.build());
 		
 		sm.addScript(ScriptBuilder.addField()
 				.fieldName("$delegateMethods")
@@ -745,7 +724,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		final String SINGLEVARIABLEDECLARATION_SIG = "org.eclipse.jdt.core.dom.SingleVariableDeclaration";
 		final String ASTCONVERTER_SIG = "org.eclipse.jdt.core.dom.ASTConverter";
 		
-		sm.addScript(ScriptBuilder.addField()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
 				.fieldName("$initCopy")
 				.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
 				.setPublic()
@@ -753,7 +732,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration")
 				.build());
 		
-		sm.addScript(ScriptBuilder.addField()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
 				.fieldName("$iterableCopy")
 				.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
 				.setPublic()
@@ -761,25 +740,25 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration")
 				.build());
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(PARSER_SIG, "consumeExitVariableWithInitialization", "void"))
 				.request(StackRequest.THIS)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$ValPortal", "copyInitializationOfLocalDeclaration", "void", "java.lang.Object"))
 				.build());
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(PARSER_SIG, "consumeEnhancedForStatementHeader", "void"))
 				.request(StackRequest.THIS)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$ValPortal", "copyInitializationOfForEachIterable", "void", "java.lang.Object"))
 				.build());
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(ASTCONVERTER_SIG, "setModifiers", "void", VARIABLEDECLARATIONSTATEMENT_SIG, LOCALDECLARATION_SIG))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$ValPortal", "addFinalAndValAnnotationToVariableDeclarationStatement",
 						"void", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
 				.request(StackRequest.THIS, StackRequest.PARAM1, StackRequest.PARAM2).build());
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(ASTCONVERTER_SIG, "setModifiers", "void", SINGLEVARIABLEDECLARATION_SIG, LOCALDECLARATION_SIG))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$ValPortal", "addFinalAndValAnnotationToSingleVariableDeclaration",
 						"void", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
@@ -824,7 +803,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		final String I_ANNOTATABLE_SIG = "org.eclipse.jdt.core.IAnnotatable";
 		final String ANNOTATION_SIG = "org.eclipse.jdt.internal.compiler.ast.Annotation";
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(SOURCE_TYPE_CONVERTER_SIG, "convertAnnotations", ANNOTATION_SIG + "[]", I_ANNOTATABLE_SIG))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "convertAnnotations", ANNOTATION_SIG + "[]", ANNOTATION_SIG + "[]", I_ANNOTATABLE_SIG))
 				.request(StackRequest.PARAM1, StackRequest.RETURN_VALUE).build());
@@ -834,7 +813,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		final String ASTNODE_SIG = "org.eclipse.jdt.core.dom.ASTNode";
 		final String PATCH_DEBUG = "lombok.eclipse.agent.PatchDiagnostics";
 		
-		sm.addScript(exitEarly()
+		sm.addScriptIfWitness(OSGI_TYPES, exitEarly()
 				.target(new MethodTarget(ASTNODE_SIG, "setSourceRange", "void", "int", "int"))
 				.request(StackRequest.THIS)
 				.request(StackRequest.PARAM1)
@@ -843,7 +822,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.build());
 	}
 	
-	private static void patchExtensionMethod(ScriptManager sm, boolean ecj) {
+	private static void patchExtensionMethod(ScriptManager sm) {
 		final String PATCH_EXTENSIONMETHOD = "lombok.launch.PatchFixesHider$ExtensionMethod";
 		final String PATCH_EXTENSIONMETHOD_COMPLETIONPROPOSAL_PORTAL = "lombok.eclipse.agent.PatchExtensionMethodCompletionProposalPortal";
 		final String MESSAGE_SEND_SIG = "org.eclipse.jdt.internal.compiler.ast.MessageSend";
@@ -891,14 +870,12 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			.requestExtra(StackRequest.THIS)
 			.build());
 		
-		if (!ecj) {
-			sm.addScript(wrapReturnValue()
-				.target(new MethodTarget(COMPLETION_PROPOSAL_COLLECTOR_SIG, "getJavaCompletionProposals", I_JAVA_COMPLETION_PROPOSAL_SIG))
-				.request(StackRequest.RETURN_VALUE)
-				.request(StackRequest.THIS)
-				.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD_COMPLETIONPROPOSAL_PORTAL, "getJavaCompletionProposals", I_JAVA_COMPLETION_PROPOSAL_SIG, "java.lang.Object[]", "java.lang.Object"))
-				.build());
-		}
+		sm.addScriptIfWitness(OSGI_TYPES, wrapReturnValue()
+			.target(new MethodTarget(COMPLETION_PROPOSAL_COLLECTOR_SIG, "getJavaCompletionProposals", I_JAVA_COMPLETION_PROPOSAL_SIG))
+			.request(StackRequest.RETURN_VALUE)
+			.request(StackRequest.THIS)
+			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD_COMPLETIONPROPOSAL_PORTAL, "getJavaCompletionProposals", I_JAVA_COMPLETION_PROPOSAL_SIG, "java.lang.Object[]", "java.lang.Object"))
+			.build());
 	}
 
 	private static void patchNullCheck(ScriptManager sm) {
@@ -921,7 +898,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchJavadoc(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContent", "java.lang.String", "org.eclipse.jdt.core.IJavaElement", "boolean"))
 				.methodToWrap(new Hook("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContentFromSource", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "getHTMLContentFromSource", "java.lang.String", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
@@ -929,21 +906,21 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.build());
 		
 		/* This is an older version that uses IMember instead of IJavaElement */
-		sm.addScript(ScriptBuilder.wrapMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContent", "java.lang.String", "org.eclipse.jdt.core.IMember", "boolean"))
 				.methodToWrap(new Hook("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContentFromSource", "java.lang.String", "org.eclipse.jdt.core.IMember"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "getHTMLContentFromSource", "java.lang.String", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
 				.requestExtra(StackRequest.PARAM1)
 				.build());
 		
-		sm.addScript(ScriptBuilder.replaceMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.TypeDeclaration", "printBody", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
 				.methodToReplace(new Hook("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
 				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "printMethod", "java.lang.StringBuffer", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "int", "java.lang.StringBuffer", "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration"))
 				.requestExtra(StackRequest.THIS)
 				.build());
 
-		sm.addScript(ScriptBuilder.addField()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
 				.fieldName("$javadoc")
 				.fieldType("Ljava/util/Map;")
 				.setPublic()
