@@ -4,7 +4,7 @@ Lombok Changelog
 ### v1.18.17 "Edgy Guinea Pig"
 * NO CHANGES YET
 
-### v1.18.16(October 15th, 2020)
+### v1.18.16 (October 15th, 2020)
 * BUGFIX: Version 1.18.14 could not be installed in Eclipse, it would break Eclipse.
 * BREAKING CHANGE: mapstruct users should now add a dependency to lombok-mapstruct-binding. This solves compiling modules with lombok (and mapstruct).
 * IMPROBABLE BREAKING CHANGE: The generated hashcode has changed for classes that include both primitive fields and reference fields.
