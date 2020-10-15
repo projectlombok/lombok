@@ -1,10 +1,11 @@
 Lombok Changelog
 ----------------
 
-### v1.18.15 "Edgy Guinea Pig"
+### v1.18.17 "Edgy Guinea Pig"
 * NO CHANGES YET
 
-### v1.18.14(October 8th, 2020)
+### v1.18.16(October 15th, 2020)
+* BUGFIX: Version 1.18.14 could not be installed in Eclipse, it would break Eclipse.
 * BREAKING CHANGE: mapstruct users should now add a dependency to lombok-mapstruct-binding. This solves compiling modules with lombok (and mapstruct).
 * IMPROBABLE BREAKING CHANGE: The generated hashcode has changed for classes that include both primitive fields and reference fields.
 * FEATURE: Similar to `@Builder`, you can now configure a `@SuperBuilder`'s 'setter' prefixes via `@SuperBuilder(setterPrefix = "set")` for example. We still discourage doing this. [Pull Request #2357](https://github.com/rzwitserloot/lombok/pull/2357).
@@ -21,6 +22,9 @@ Lombok Changelog
 * BUGFIX: Various lombok annotations on classes nested inside enums or interfaces would cause errors in eclipse. [Issue #2369](https://github.com/rzwitserloot/lombok/issues/2369)
 * BUGFIX: Trying to add `@ExtensionMethod`s with exactly 2 arguments would fail in eclipse. [Issue #1441](https://github.com/rzwitserloot/lombok/issues/1441) [Pull Request #2376](https://github.com/rzwitserloot/lombok/pull/2376) thanks to __@Rawi01__.
 * BUGFIX: Javac sets incorrect annotated type on with methods. [Issue #2463](https://github.com/rzwitserloot/lombok/issues/2463)
+
+### v1.18.14 (October 8th, 2020)
+* Don't use this version. It is broken. Changes are listed under 1.18.16
 
 
 ### v1.18.12 (February 1st, 2020)
