@@ -12,6 +12,8 @@
 			<em>NEW in Lombok 0.10: </em>Unless your class is <code>final</code> and extends <code>java.lang.Object</code>, lombok generates a <code>canEqual</code> method which means JPA proxies can still be equal to their base class, but subclasses that add new state don't break the equals contract. The complicated reasons for why such a method is necessary are explained in this paper: <a href="https://www.artima.com/lejava/articles/equality.html">How to Write an Equality Method in Java</a>. If all classes in a hierarchy are a mix of scala case classes and classes with lombok-generated equals methods, all equality will 'just work'. If you need to write your own equals methods, you should always override <code>canEqual</code> if you change <code>equals</code> and <code>hashCode</code>.
 		</p><p>
 			<em>NEW in Lombok 1.14.0: </em>To put annotations on the <code>other</code> parameter of the <code>equals</code> (and, if relevant, <code>canEqual</code>) method, you can use <code>onParam=@__({@AnnotationsHere})</code>. Be careful though! This is an experimental feature. For more details see the documentation on the <a ng-click="toFeature('on-x')">onX</a> feature.
+		</p><p>
+			<em>NEW in Lombok 1.18.16: </em>Caching the result of the generated <code>hashCode()</code> can be cached by setting <code>cacheStrategy</code> to a value other than <code>CacheStrategy.NEVER</code>. <em>Do not</em> use this if objects of the annotated class can be modified in any way that would lead to the result of <code>hashCode()</code> changing.
 		</p>
 	</@f.overview>
 
