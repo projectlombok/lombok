@@ -62,6 +62,7 @@ public abstract class Symbol implements Element {
 	
 	public static class VarSymbol extends Symbol implements VariableElement {
 		public Type type;
+		public int adr;
 		public VarSymbol(long flags, Name name, Type type, Symbol owner) {
 		}
 		@Override public ElementKind getKind() { return null; }
