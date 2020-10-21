@@ -1241,6 +1241,7 @@ public class JavacHandlerUtil {
 				if (param.sym == null) {
 					Type paramType = paramTypes == null ? param.getType().type : paramTypes.get(i);
 					VarSymbol varSymbol = new VarSymbol(param.mods.flags, param.name, paramType, symtab.noSymbol);
+					varSymbol.adr = i;
 					List<JCAnnotation> annotations = param.getModifiers().getAnnotations();
 					if (annotations != null && !annotations.isEmpty()) {
 						ListBuffer<Attribute.Compound> newAnnotations = new ListBuffer<Attribute.Compound>();
