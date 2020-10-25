@@ -1275,6 +1275,9 @@ public class JavacHandlerUtil {
 		MethodSymbol methodSymbol = new MethodSymbol(access, methodName, new MethodType(paramTypes, returnType, List.<Type>nil(), Symtab.instance(context).methodClass), cs);
 		if (params != null && !params.isEmpty()) {
 			methodSymbol.params = params;
+			for (VarSymbol varSymbol : params) {
+				varSymbol.owner = methodSymbol;
+			}
 		}
 		ClassSymbolMembersField.enter(cs, methodSymbol);
 	}
