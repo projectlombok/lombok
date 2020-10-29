@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2012-2020 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -55,7 +55,7 @@ public class PatchDelegatePortal {
 	
 	public static Object[] getChildren(Object returnValue, Object javaElement) {
 		try {
-			return (Object[]) Reflection.getChildren.invoke(null, returnValue, javaElement);
+			return (Object[]) ReflectionChildren.getChildren.invoke(null, returnValue, javaElement);
 		} catch (NoClassDefFoundError e) {
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
@@ -66,7 +66,7 @@ public class PatchDelegatePortal {
 			throw Lombok.sneakyThrow(e.getCause());
 		} catch (NullPointerException e) {
 			if (!"false".equals(System.getProperty("lombok.debug.reflection", "false"))) {
-				e.initCause(Reflection.problem);
+				e.initCause(ReflectionChildren.problem);
 				throw e;
 			}
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
@@ -77,21 +77,40 @@ public class PatchDelegatePortal {
 	
 	private static final class Reflection {
 		public static final Method handleDelegateForType;
-		public static final Method getChildren;
 		public static final Throwable problem;
 		
 		static {
-			Method m = null, n = null;
+			Method m = null;
 			Throwable problem_ = null;
 			try {
 				m = PatchDelegate.class.getMethod("handleDelegateForType", Class.forName(CLASS_SCOPE));
-				n = PatchDelegate.class.getMethod("getChildren", Class.forName(I_JAVA_ELEMENT_ARRAY), Class.forName(SOURCE_TYPE_ELEMENT_INFO));
 			} catch (Throwable t) {
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.
 				problem_ = t;
 			}
 			handleDelegateForType = m;
+			problem = problem_;
+		}
+	}
+	
+	private static final class ReflectionChildren {
+		public static final Method getChildren;
+		public static final Throwable problem;
+		
+		static {
+			Method n = null;
+			Throwable problem_ = null;
+			try {
+				n = PatchDelegateChildren.class.getMethod("getChildren", Class.forName(I_JAVA_ELEMENT_ARRAY), Class.forName(SOURCE_TYPE_ELEMENT_INFO));
+				// Class Loading works, so we have access to jdt.core and can
+				// use PatchDelegateChildren from the PatchDelegate class
+				PatchDelegate.setDelegateChildren(new PatchDelegateChildren());
+			} catch (Throwable t) {
+				// That's problematic, but as long as no local classes are used we don't actually need it.
+				// Better fail on local classes than crash altogether.
+				problem_ = t;
+			}
 			getChildren = n;
 			problem = problem_;
 		}

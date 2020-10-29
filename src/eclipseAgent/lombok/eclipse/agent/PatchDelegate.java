@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2010-2020 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,29 +21,18 @@
  */
 package lombok.eclipse.agent;
 
+import static lombok.eclipse.EcjAugments.Annotation_applied;
 import static lombok.eclipse.Eclipse.*;
-import static lombok.eclipse.EcjAugments.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import org.eclipse.jdt.core.ElementChangedEvent;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.ILocalVariable;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.Signature;
-import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -72,7 +61,6 @@ import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
-import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
@@ -83,24 +71,12 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
-import org.eclipse.jdt.internal.core.CompilationUnit;
-import org.eclipse.jdt.internal.core.DeltaProcessor;
-import org.eclipse.jdt.internal.core.JavaElement;
-import org.eclipse.jdt.internal.core.JavaElementDelta;
-import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.eclipse.jdt.internal.core.LocalVariable;
-import org.eclipse.jdt.internal.core.SourceMethod;
-import org.eclipse.jdt.internal.core.SourceMethodInfo;
-import org.eclipse.jdt.internal.core.SourceType;
-import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 
 import lombok.core.AST.Kind;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
 import lombok.eclipse.handlers.SetGeneratedByVisitor;
-import lombok.patcher.Symbols;
 
 public class PatchDelegate {
 
@@ -108,16 +84,22 @@ public class PatchDelegate {
 		ClassScopeEntry(ClassScope scope) {
 			this.scope = scope;
 		}
-		
+
 		final ClassScope scope;
 		String corruptedPath;
 	}
-	
+
 	private static ThreadLocal<List<ClassScopeEntry>> visited = new ThreadLocal<List<ClassScopeEntry>>() {
 		protected List<ClassScopeEntry> initialValue() {
 			return new ArrayList<ClassScopeEntry>();
 		}
 	};
+
+	private static IPatchDelegateChildren delegateChildren = new DelegateChildrenNoImpl();
+	
+	public static void setDelegateChildren(IPatchDelegateChildren delegateChildren) {
+		PatchDelegate.delegateChildren = delegateChildren;
+	}
 	
 	private static String nameOfScope(ClassScope scope) {
 		TypeDeclaration decl = scope.referenceContext;
@@ -125,7 +107,7 @@ public class PatchDelegate {
 		if (decl.name == null || decl.name.length == 0) return "(unknown)";
 		return new String(decl.name);
 	}
-	
+
 	private static boolean hasDelegateMarkedFieldsOrMethods(TypeDeclaration decl) {
 		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
 			if (field.annotations == null) continue;
@@ -141,17 +123,17 @@ public class PatchDelegate {
 		}
 		return false;
 	}
-	
+
 	public static boolean handleDelegateForType(ClassScope scope) {
 		if (TransformEclipseAST.disableLombok) return false;
-		
+
 		CompilationUnitDeclaration cud = scope.compilationUnitScope().referenceContext;
 		if (scope == scope.compilationUnitScope().topLevelTypes[0].scope) {
 			cleanupDelegateMethods(cud);
 		}
-		
+
 		if (!hasDelegateMarkedFieldsOrMethods(scope.referenceContext)) return false;
-		
+
 		List<ClassScopeEntry> stack = visited.get();
 		StringBuilder corrupted = null;
 		for (ClassScopeEntry entry : stack) {
@@ -161,7 +143,7 @@ public class PatchDelegate {
 				corrupted = new StringBuilder().append(nameOfScope(scope));
 			}
 		}
-		
+
 		if (corrupted != null) {
 			boolean found = false;
 			String path = corrupted.toString();
@@ -172,7 +154,7 @@ public class PatchDelegate {
 		} else {
 			ClassScopeEntry entry = new ClassScopeEntry(scope);
 			stack.add(entry);
-			
+
 			try {
 				TypeDeclaration decl = scope.referenceContext;
 				if (decl != null) {
@@ -199,20 +181,10 @@ public class PatchDelegate {
 				}
 			}
 		}
-		
+
 		return false;
 	}
-	
-	public static IJavaElement[] getChildren(IJavaElement[] returnValue, SourceTypeElementInfo javaElement) {
-		if (Symbols.hasSymbol("lombok.skipdelegates")) return returnValue;
-		
-		List<SourceMethod> delegateMethods = getDelegateMethods((SourceType) javaElement.getHandle());
-		if (delegateMethods != null) {
-			return concat(returnValue, delegateMethods.toArray(new IJavaElement[0]), IJavaElement.class);
-		}
-		return returnValue;
-	}
-	
+
 	/**
 	 * Returns a string containing the signature of a method that appears (erased) at least twice in the list.
 	 * If no duplicates are present, {@code null} is returned.
@@ -222,44 +194,44 @@ public class PatchDelegate {
 		for (BindingTuple tuple : tuples) {
 			if (!sigs.add(printSig(tuple.parameterized))) return printSig(tuple.parameterized);
 		}
-		
+
 		return null;
 	}
-	
+
 	public static void markHandled(Annotation annotation) {
 		Annotation_applied.set(annotation, true);
 	}
-	
+
 	private static void fillMethodBindingsForFields(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
 		TypeDeclaration decl = scope.referenceContext;
 		if (decl == null) return;
-		
+
 		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
 			if (field.annotations == null) continue;
 			for (Annotation ann : field.annotations) {
 				if (!isDelegate(ann, decl)) continue;
 				if (Annotation_applied.getAndSet(ann, true)) continue;
-				
+
 				if ((field.modifiers & ClassFileConstants.AccStatic) != 0) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
 					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
 					break;
 				}
-				
+
 				List<ClassLiteralAccess> rawTypes = rawTypes(ann, "types");
 				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
-				
+
 				List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
 				List<BindingTuple> methodsToDelegateForThisAnn = new ArrayList<BindingTuple>();
-				
+
 				try {
 					for (ClassLiteralAccess cla : excludedRawTypes) {
 						addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), field.name, ann);
 					}
-					
+
 					Set<String> banList = findAlreadyImplementedMethods(decl);
 					for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
-					
+
 					if (rawTypes.isEmpty()) {
 						addAllMethodBindings(methodsToDelegateForThisAnn, field.type.resolveType(decl.initializerScope), banList, field.name, ann);
 					} else {
@@ -272,10 +244,10 @@ public class PatchDelegate {
 					eclipseAst.get(ann).addError(String.format(RECURSION_NOT_ALLOWED, new String(e.member), new String(e.type)));
 					break;
 				}
-				
+
 				// Not doing this right now because of problems - see commented-out-method for info.
 				// removeExistingMethods(methodsToDelegate, decl, scope);
-				
+
 				String dupe = containsDuplicates(methodsToDelegateForThisAnn);
 				if (dupe != null) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
@@ -286,14 +258,14 @@ public class PatchDelegate {
 			}
 		}
 	}
-	
+
 	private static final String LEGALITY_OF_DELEGATE = "@Delegate is legal only on instance fields or no-argument instance methods.";
 	private static final String RECURSION_NOT_ALLOWED = "@Delegate does not support recursion (delegating to a type that itself has @Delegate members). Member \"%s\" is @Delegate in type \"%s\"";
-	
+
 	private static void fillMethodBindingsForMethods(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
 		TypeDeclaration decl = scope.referenceContext;
 		if (decl == null) return;
-		
+
 		if (decl.methods != null) for (AbstractMethodDeclaration methodDecl : decl.methods) {
 			if (methodDecl.annotations == null) continue;
 			for (Annotation ann : methodDecl.annotations) {
@@ -315,13 +287,13 @@ public class PatchDelegate {
 					break;
 				}
 				MethodDeclaration method = (MethodDeclaration) methodDecl;
-				
+
 				List<ClassLiteralAccess> rawTypes = rawTypes(ann, "types");
 				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
-				
+
 				List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
 				List<BindingTuple> methodsToDelegateForThisAnn = new ArrayList<BindingTuple>();
-				
+
 				try {
 					for (ClassLiteralAccess cla : excludedRawTypes) {
 						addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), method.selector, ann);
@@ -329,7 +301,7 @@ public class PatchDelegate {
 
 					Set<String> banList = findAlreadyImplementedMethods(decl);
 					for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
-					
+
 					if (rawTypes.isEmpty()) {
 						if (method.returnType == null) continue;
 						addAllMethodBindings(methodsToDelegateForThisAnn, method.returnType.resolveType(decl.initializerScope), banList, method.selector, ann);
@@ -343,10 +315,10 @@ public class PatchDelegate {
 					eclipseAst.get(ann).addError(String.format(RECURSION_NOT_ALLOWED, new String(e.member), new String(e.type)));
 					break;
 				}
-				
+
 				// Not doing this right now because of problems - see commented-out-method for info.
 				// removeExistingMethods(methodsToDelegate, decl, scope);
-				
+
 				String dupe = containsDuplicates(methodsToDelegateForThisAnn);
 				if (dupe != null) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
@@ -357,24 +329,24 @@ public class PatchDelegate {
 			}
 		}
 	}
-	
+
 	private static boolean isDelegate(Annotation ann, TypeDeclaration decl) {
 		if (ann.type == null) return false;
 		if (!charArrayEquals("Delegate", ann.type.getLastToken())) return false;
-		
+
 		TypeBinding tb = ann.type.resolveType(decl.initializerScope);
 		if (tb == null) return false;
 		if (!charArrayEquals("lombok", tb.qualifiedPackageName()) && !charArrayEquals("lombok.experimental", tb.qualifiedPackageName())) return false;
 		if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) return false;
 		return true;
 	}
-	
+
 	private static List<ClassLiteralAccess> rawTypes(Annotation ann, String name) {
 		List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
 		for (MemberValuePair pair : ann.memberValuePairs()) {
 			if (charArrayEquals(name, pair.name)) {
 				if (pair.value instanceof ArrayInitializer) {
-					for (Expression expr : ((ArrayInitializer)pair.value).expressions) {
+					for (Expression expr : ((ArrayInitializer) pair.value).expressions) {
 						if (expr instanceof ClassLiteralAccess) rawTypes.add((ClassLiteralAccess) expr);
 					}
 				}
@@ -385,7 +357,7 @@ public class PatchDelegate {
 		}
 		return rawTypes;
 	}
-	
+
 	/*
 	 * We may someday finish this method. Steps to be completed:
 	 * 
@@ -458,35 +430,33 @@ public class PatchDelegate {
 	
 	private static void generateDelegateMethods(EclipseNode typeNode, List<BindingTuple> methods, DelegateReceiver delegateReceiver) {
 		CompilationUnitDeclaration top = (CompilationUnitDeclaration) typeNode.top().get();
-		
-		String qualifiedName = new String(CharOperation.concatWith(getQualifiedInnerName(typeNode.up(), typeNode.getName().toCharArray()), '$'));
-		SourceType sourceType = getSourceType(top, qualifiedName);
-		List<SourceMethod> delegateSourceMethods = getDelegateMethods(sourceType);
-		
+
+		List<Object> delegateSourceMethods = getDelegateMethods(typeNode, top);
+
 		for (BindingTuple pair : methods) {
 			EclipseNode annNode = typeNode.getAst().get(pair.responsible);
 			MethodDeclaration method = createDelegateMethod(pair.fieldName, typeNode, pair, top.compilationResult, annNode, delegateReceiver);
-			if (method != null) { 
+			if (method != null) {
 				SetGeneratedByVisitor visitor = new SetGeneratedByVisitor(annNode.get());
-				method.traverse(visitor, ((TypeDeclaration)typeNode.get()).scope);
+				method.traverse(visitor, ((TypeDeclaration) typeNode.get()).scope);
 				injectMethod(typeNode, method);
-				
+
 				if (delegateSourceMethods != null) {
-					delegateSourceMethods.add(DelegateSourceMethod.forMethodDeclaration(sourceType, method));
+					delegateSourceMethods.add(createDelegateSourceMethod(typeNode, top, method));
 				}
 			}
 		}
 	}
-	
+
 	public static void checkConflictOfTypeVarNames(BindingTuple binding, EclipseNode typeNode) throws CantMakeDelegates {
 		TypeVariableBinding[] typeVars = binding.parameterized.typeVariables();
 		if (typeVars == null || typeVars.length == 0) return;
-		
+
 		Set<String> usedInOurType = new HashSet<String>();
 		EclipseNode enclosingType = typeNode;
 		while (enclosingType != null) {
 			if (enclosingType.getKind() == Kind.TYPE) {
-				TypeParameter[] typeParameters = ((TypeDeclaration)enclosingType.get()).typeParameters;
+				TypeParameter[] typeParameters = ((TypeDeclaration) enclosingType.get()).typeParameters;
 				if (typeParameters != null) {
 					for (TypeParameter param : typeParameters) {
 						if (param.name != null) usedInOurType.add(new String(param.name));
@@ -495,23 +465,23 @@ public class PatchDelegate {
 			}
 			enclosingType = enclosingType.up();
 		}
-		
+
 		Set<String> usedInMethodSig = new HashSet<String>();
 		for (TypeVariableBinding var : typeVars) {
 			char[] sourceName = var.sourceName();
 			if (sourceName != null) usedInMethodSig.add(new String(sourceName));
 		}
-		
+
 		usedInMethodSig.retainAll(usedInOurType);
 		if (usedInMethodSig.isEmpty()) return;
-		
+
 		// We might be delegating a List<T>, and we are making method <T> toArray(). A conflict is possible.
 		// But only if the toArray method also uses type vars from its class, otherwise we're only shadowing,
 		// which is okay as we'll add a @SuppressWarnings.
-		
+
 		TypeVarFinder finder = new TypeVarFinder();
 		finder.visitRaw(binding.base);
-		
+
 		Set<String> names = new HashSet<String>(finder.getTypeVariables());
 		names.removeAll(usedInMethodSig);
 		if (!names.isEmpty()) {
@@ -521,24 +491,24 @@ public class PatchDelegate {
 			throw cmd;
 		}
 	}
-	
+
 	public static class CantMakeDelegates extends Exception {
 		public Set<String> conflicted;
 	}
-	
+
 	public static class TypeVarFinder extends EclipseTypeBindingScanner {
 		private Set<String> typeVars = new HashSet<String>();
-		
+
 		public Set<String> getTypeVariables() {
 			return typeVars;
 		}
-		
+
 		@Override public void visitTypeVariable(TypeVariableBinding binding) {
 			if (binding.sourceName != null) typeVars.add(new String(binding.sourceName));
 			super.visitTypeVariable(binding);
 		}
 	}
-	
+
 	public abstract static class EclipseTypeBindingScanner {
 		public void visitRaw(Binding binding) {
 			if (binding == null) return;
@@ -551,10 +521,10 @@ public class PatchDelegate {
 			if (binding instanceof ParameterizedTypeBinding) visitParameterized((ParameterizedTypeBinding) binding);
 			if (binding instanceof ReferenceBinding) visitReference((ReferenceBinding) binding);
 		}
-		
+
 		public void visitReference(ReferenceBinding binding) {
 		}
-		
+
 		public void visitParameterized(ParameterizedTypeBinding binding) {
 			visitRaw(binding.genericType());
 			TypeVariableBinding[] typeVars = binding.typeVariables();
@@ -562,7 +532,7 @@ public class PatchDelegate {
 				visitRaw(child);
 			}
 		}
-		
+
 		public void visitTypeVariable(TypeVariableBinding binding) {
 			visitRaw(binding.superclass);
 			ReferenceBinding[] supers = binding.superInterfaces();
@@ -570,21 +540,21 @@ public class PatchDelegate {
 				visitRaw(child);
 			}
 		}
-		
+
 		public void visitWildcard(WildcardBinding binding) {
 			visitRaw(binding.bound);
 		}
-		
+
 		public void visitUnresolved(UnresolvedReferenceBinding binding) {
 		}
-		
+
 		public void visitArray(ArrayBinding binding) {
 			visitRaw(binding.leafComponentType());
 		}
-		
+
 		public void visitBase(BaseTypeBinding binding) {
 		}
-		
+
 		public void visitMethod(MethodBinding binding) {
 			if (binding.parameters != null) for (TypeBinding child : binding.parameters) {
 				visitRaw(child);
@@ -603,51 +573,51 @@ public class PatchDelegate {
 			}
 		}
 	}
-	
+
 	private static MethodDeclaration createDelegateMethod(char[] name, EclipseNode typeNode, BindingTuple pair, CompilationResult compilationResult, EclipseNode annNode, DelegateReceiver delegateReceiver) {
 		/* public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
 		 *      (return) delegate.<T, U>methodName(name1, name2);
 		 *  }
 		 */
-		
+
 		boolean isVarargs = (pair.base.modifiers & ClassFileConstants.AccVarargs) != 0;
-		
+
 		try {
 			checkConflictOfTypeVarNames(pair, typeNode);
 		} catch (CantMakeDelegates e) {
 			annNode.addError("There's a conflict in the names of type parameters. Fix it by renaming the following type parameters of your class: " + e.conflicted);
 			return null;
 		}
-		
+
 		ASTNode source = annNode.get();
-		
+
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		
+
 		MethodBinding binding = pair.parameterized;
 		MethodDeclaration method = new MethodDeclaration(compilationResult);
 		setGeneratedBy(method, source);
 		method.sourceStart = pS; method.sourceEnd = pE;
 		method.modifiers = ClassFileConstants.AccPublic;
-		
+
 		method.returnType = makeType(binding.returnType, source, false);
 		boolean isDeprecated = binding.isDeprecated();
-		
+
 		method.selector = binding.selector;
-		
+
 		if (binding.thrownExceptions != null && binding.thrownExceptions.length > 0) {
 			method.thrownExceptions = new TypeReference[binding.thrownExceptions.length];
 			for (int i = 0; i < method.thrownExceptions.length; i++) {
 				method.thrownExceptions[i] = makeType(binding.thrownExceptions[i], source, false);
 			}
 		}
-		
+
 		MessageSend call = new MessageSend();
 		call.sourceStart = pS; call.sourceEnd = pE;
 		call.nameSourcePosition = pos(source);
 		setGeneratedBy(call, source);
 		call.receiver = delegateReceiver.get(source, name);
 		call.selector = binding.selector;
-		
+
 		if (binding.typeVariables != null && binding.typeVariables.length > 0) {
 			method.typeParameters = new TypeParameter[binding.typeVariables.length];
 			call.typeArguments = new TypeReference[binding.typeVariables.length];
@@ -674,13 +644,13 @@ public class PatchDelegate {
 				}
 			}
 		}
-		
+
 		if (isDeprecated) {
-			method.annotations = new Annotation[] { generateDeprecatedAnnotation(source) };
+			method.annotations = new Annotation[] {generateDeprecatedAnnotation(source)};
 		}
-		
+
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		
+
 		if (binding.parameters != null && binding.parameters.length > 0) {
 			method.arguments = new Argument[binding.parameters.length];
 			call.arguments = new Expression[method.arguments.length];
@@ -708,145 +678,22 @@ public class PatchDelegate {
 				method.arguments[method.arguments.length - 1].type.bits |= ASTNode.IsVarArgs;
 			}
 		}
-		
+
 		Statement body;
-		if (method.returnType instanceof SingleTypeReference && ((SingleTypeReference)method.returnType).token == TypeConstants.VOID) {
+		if (method.returnType instanceof SingleTypeReference && ((SingleTypeReference) method.returnType).token == TypeConstants.VOID) {
 			body = call;
 		} else {
 			body = new ReturnStatement(call, source.sourceStart, source.sourceEnd);
 			setGeneratedBy(body, source);
 		}
-		
+
 		method.statements = new Statement[] {body};
 		return method;
 	}
-	
-	private static void cleanupDelegateMethods(CompilationUnitDeclaration cud) {
-		CompilationUnit compilationUnit = getCompilationUnit(cud);
-		if (compilationUnit != null) {
-			EclipseAugments.CompilationUnit_delegateMethods.clear(compilationUnit);
-		}
-	}
-	
-	private static boolean javaModelManagerAvailable = true;
-	private static void notifyDelegateMethodsAdded(CompilationUnitDeclaration cud) {
-		CompilationUnit compilationUnit = getCompilationUnit(cud);
-		if (compilationUnit != null && javaModelManagerAvailable) {
-			try {
-				DeltaProcessor deltaProcessor = JavaModelManager.getJavaModelManager().getDeltaProcessor();
-				deltaProcessor.fire(new JavaElementDelta(compilationUnit), ElementChangedEvent.POST_CHANGE);
-			} catch (NoClassDefFoundError e) {
-				javaModelManagerAvailable = false;
-			}
-		}
-	}
-	
-	private static CompilationUnit getCompilationUnit(Object iCompilationUnit) {
-		if (iCompilationUnit instanceof CompilationUnit) {
-			CompilationUnit compilationUnit = (CompilationUnit) iCompilationUnit;
-			return compilationUnit.originalFromClone();
-		}
-		return null;
-	}
-	
-	private static CompilationUnit getCompilationUnit(CompilationUnitDeclaration cud) {
-		return getCompilationUnit(cud.compilationResult.compilationUnit);
-	}
-	
-	private static final class DelegateSourceMethod extends SourceMethod {
-		private DelegateSourceMethodInfo sourceMethodInfo;
 
-		private static DelegateSourceMethod forMethodDeclaration(JavaElement parent, MethodDeclaration method) {
-			Argument[] arguments = method.arguments != null ? method.arguments : new Argument[0];
-			String[] parameterTypes = new String[arguments.length];
-			for (int i = 0; i < arguments.length; i++) {
-				parameterTypes[i] = Signature.createTypeSignature(CharOperation.concatWith(arguments[i].type.getParameterizedTypeName(), '.'), false);
-			}
-			return new DelegateSourceMethod(parent, new String(method.selector), parameterTypes, method);
-		}
-		
-		private DelegateSourceMethod(JavaElement parent, String name, String[] parameterTypes, MethodDeclaration md) {
-			super(parent, name, parameterTypes);
-			sourceMethodInfo = new DelegateSourceMethodInfo(this, md);
-		}
-		
-		@Override public Object getElementInfo() throws JavaModelException {
-			return sourceMethodInfo;
-		}
-		
-		/**
-		 * Disable refactoring for delegate methods
-		 */
-		@Override public boolean isReadOnly() {
-			return true;
-		}
-		
-		/**
-		 * This is required to prevent duplicate entries in the outline
-		 */
-		@Override public boolean equals(Object o) {
-			return this == o;
-		}
-		
-		public static final class DelegateSourceMethodInfo extends SourceMethodInfo {
-			DelegateSourceMethodInfo(DelegateSourceMethod delegateSourceMethod, MethodDeclaration md) {
-				int pS = md.sourceStart;
-				int pE = md.sourceEnd;
-				
-				Argument[] methodArguments = md.arguments != null ? md.arguments : new Argument[0];
-				char[][] argumentNames = new char[methodArguments.length][];
-				arguments = new ILocalVariable[methodArguments.length];
-				for (int i = 0; i < methodArguments.length; i++) {
-					Argument argument = methodArguments[i];
-					argumentNames[i] = argument.name;
-					arguments[i] = new LocalVariable(delegateSourceMethod, new String(argument.name), pS, pE, pS, pS, delegateSourceMethod.getParameterTypes()[i], argument.annotations, argument.modifiers, true);
-				}
-				setArgumentNames(argumentNames);
-				
-				setSourceRangeStart(pS);
-				setSourceRangeEnd(pE);
-				setNameSourceStart(pS);
-				setNameSourceEnd(pE);
-				
-				setExceptionTypeNames(CharOperation.NO_CHAR_CHAR);
-				setReturnType(md.returnType == null ? new char[]{'v', 'o','i', 'd'} : CharOperation.concatWith(md.returnType.getParameterizedTypeName(), '.'));
-				setFlags(md.modifiers);
-			}
-		}
-	}
-	
-	private static List<SourceMethod> getDelegateMethods(SourceType sourceType) {
-		if (sourceType != null) {
-			CompilationUnit compilationUnit = getCompilationUnit(sourceType.getCompilationUnit());
-			if (compilationUnit != null) {
-				ConcurrentMap<String, List<SourceMethod>> map = EclipseAugments.CompilationUnit_delegateMethods.setIfAbsent(compilationUnit, new ConcurrentHashMap<String, List<SourceMethod>>());
-				List<SourceMethod> newList = new ArrayList<SourceMethod>();
-				List<SourceMethod> oldList = map.putIfAbsent(sourceType.getTypeQualifiedName(), newList);
-				return oldList != null ? oldList : newList;
-			}
-		}
-		return null;
-	}
-	
-	private static SourceType getSourceType(CompilationUnitDeclaration cud, String typeName) {
-		CompilationUnit compilationUnit = getCompilationUnit(cud);
-		if (compilationUnit != null) {
-			try {
-				for (IType type : compilationUnit.getAllTypes()) {
-					if (type instanceof SourceType && type.getTypeQualifiedName().equals(typeName)) {
-						return (SourceType) type;
-					}
-				}
-			} catch (JavaModelException e) {
-				// Ignore
-			}
-		}
-		return null;
-	}
-	
 	private static final class Reflection {
 		public static final Method classScopeBuildFieldsAndMethodsMethod;
-		
+
 		static {
 			Method m = null;
 			try {
@@ -856,42 +703,42 @@ public class PatchDelegate {
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.
 			}
-			
+
 			classScopeBuildFieldsAndMethodsMethod = m;
 		}
 	}
-	
+
 	private static void addAllMethodBindings(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
 		banList.addAll(METHODS_IN_OBJECT);
 		addAllMethodBindings0(list, binding, banList, fieldName, responsible);
 	}
-	
+
 	private static class DelegateRecursion extends Throwable {
 		final char[] type, member;
-		
+
 		public DelegateRecursion(char[] type, char[] member) {
 			this.type = type;
 			this.member = member;
 		}
 	}
-	
+
 	private static void addAllMethodBindings0(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
 		if (binding instanceof SourceTypeBinding) {
 			ClassScope scope = ((SourceTypeBinding) binding).scope;
 			if (scope != null) scope.environment().globalOptions.storeAnnotations = true;
 		}
 		if (binding == null) return;
-		
+
 		TypeBinding inner;
-		
+
 		if (binding instanceof ParameterizedTypeBinding) {
 			inner = ((ParameterizedTypeBinding) binding).genericType();
 		} else {
 			inner = binding;
 		}
-		
+
 		if (inner instanceof SourceTypeBinding) {
-			ClassScope cs = ((SourceTypeBinding)inner).scope;
+			ClassScope cs = ((SourceTypeBinding) inner).scope;
 			if (cs != null) {
 				try {
 					Reflection.classScopeBuildFieldsAndMethodsMethod.invoke(cs);
@@ -900,21 +747,21 @@ public class PatchDelegate {
 				}
 			}
 		}
-		
+
 		if (!(binding instanceof ReferenceBinding)) {
 			return;
 		}
-		
+
 		ReferenceBinding rb = (ReferenceBinding) binding;
 		MethodBinding[] availableMethods = rb.availableMethods();
 		FieldBinding[] availableFields = rb.availableFields();
 		failIfContainsAnnotation(binding, availableMethods);
 		failIfContainsAnnotation(binding, availableFields);
-		
+
 		MethodBinding[] parameterizedSigs = availableMethods;
 		MethodBinding[] baseSigs = parameterizedSigs;
 		if (binding instanceof ParameterizedTypeBinding) {
-			baseSigs = ((ParameterizedTypeBinding)binding).genericType().availableMethods();
+			baseSigs = ((ParameterizedTypeBinding) binding).genericType().availableMethods();
 			if (baseSigs.length != parameterizedSigs.length) {
 				// The last known state of eclipse source says this can't happen, so we rely on it,
 				// but if this invariant is broken, better to go with 'arg0' naming instead of crashing.
@@ -940,28 +787,14 @@ public class PatchDelegate {
 			for (ReferenceBinding iface : interfaces) addAllMethodBindings0(list, iface, banList, fieldName, responsible);
 		}
 	}
-	
-	private static Set<String> findAlreadyImplementedMethods(TypeDeclaration decl) {
-		Set<String> sigs = new HashSet<String>();
-		for (AbstractMethodDeclaration md : decl.methods) {
-			if (md.isStatic()) continue;
-			if ((md.modifiers & ClassFileConstants.AccBridge) != 0) continue;
-			if (md.isConstructor()) continue;
-			if ((md.modifiers & ExtraCompilerModifiers.AccDefaultAbstract) != 0) continue;
-			if ((md.modifiers & ClassFileConstants.AccPublic) == 0) continue;
-			if ((md.modifiers & ClassFileConstants.AccSynthetic) != 0) continue;
-			
-			sigs.add(printSig(md, decl.scope));
-		}
-		return sigs;
-	}
-	
+
 	private static final char[] STRING_LOMBOK = new char[] {'l', 'o', 'm', 'b', 'o', 'k'};
 	private static final char[] STRING_EXPERIMENTAL = new char[] {'e', 'x', 'p', 'e', 'r', 'i', 'm', 'e', 'n', 't', 'a', 'l'};
 	private static final char[] STRING_DELEGATE = new char[] {'D', 'e', 'l', 'e', 'g', 'a', 't', 'e'};
+	
 	private static void failIfContainsAnnotation(TypeBinding parent, Binding[] bindings) throws DelegateRecursion {
 		if (bindings == null) return;
-		
+
 		for (Binding b : bindings) {
 			AnnotationBinding[] anns = null;
 			if (b instanceof MethodBinding) anns = ((MethodBinding) b).getAnnotations();
@@ -973,17 +806,17 @@ public class PatchDelegate {
 				try {
 					name = ann.getAnnotationType().compoundName;
 				} catch (Exception ignore) {}
-				
+
 				if (name == null || name.length < 2 || name.length > 3) continue;
 				if (!Arrays.equals(STRING_LOMBOK, name[0])) continue;
 				if (!Arrays.equals(STRING_DELEGATE, name[name.length - 1])) continue;
 				if (name.length == 3 && !Arrays.equals(STRING_EXPERIMENTAL, name[1])) continue;
-				
+
 				throw new DelegateRecursion(parent.readableName(), b.readableName());
 			}
 		}
 	}
-	
+
 	private static final class BindingTuple {
 		BindingTuple(MethodBinding parameterized, MethodBinding base, char[] fieldName, ASTNode responsible) {
 			this.parameterized = parameterized;
@@ -991,16 +824,16 @@ public class PatchDelegate {
 			this.fieldName = fieldName;
 			this.responsible = responsible;
 		}
-		
+
 		final MethodBinding parameterized, base;
 		final char[] fieldName;
 		final ASTNode responsible;
-		
+
 		@Override public String toString() {
 			return String.format("{param: %s, base: %s, fieldName: %s}", parameterized == null ? "(null)" : printSig(parameterized), base == null ? "(null)" : printSig(base), new String(fieldName));
 		}
 	}
-	
+
 	private static final List<String> METHODS_IN_OBJECT = Collections.unmodifiableList(Arrays.asList(
 			"hashCode()",
 			"canEqual(java.lang.Object)",  //Not in j.l.Object, but it goes with hashCode and equals so if we ignore those two, we should ignore this one.
@@ -1014,10 +847,10 @@ public class PatchDelegate {
 			"getClass()",
 			"clone()",
 			"finalize()"));
-	
+
 	private static String printSig(MethodBinding binding) {
 		StringBuilder signature = new StringBuilder();
-		
+
 		signature.append(binding.selector);
 		signature.append("(");
 		boolean first = true;
@@ -1027,62 +860,14 @@ public class PatchDelegate {
 			signature.append(typeBindingToSignature(param));
 		}
 		signature.append(")");
-		
+
 		return signature.toString();
 	}
-	
-	private static String printSig(AbstractMethodDeclaration md, ClassScope scope) {
-		StringBuilder signature = new StringBuilder();
-		
-		signature.append(md.selector);
-		signature.append("(");
-		boolean first = true;
-		if (md.arguments != null) {
-			TypeParameter[] typeParameters = md.typeParameters();
-			Map<String, TypeParameter> typeParametersMap = new HashMap<String, TypeParameter>();
-			if (typeParameters != null) {
-				for (TypeParameter typeParameter : typeParameters) {
-					typeParametersMap.put(new String(typeParameter.name), typeParameter);
-				}
-			}
-			
-			for (Argument argument : md.arguments) {
-				TypeBinding typeBinding = makeTypeBinding(argument.type, typeParametersMap, scope);
-				
-				if (!first) signature.append(", ");
-				first = false;
-				signature.append(typeBindingToSignature(typeBinding));
-			}
-		}
-		signature.append(")");
-		
-		return signature.toString();
-	}
-	
-	private static TypeBinding makeTypeBinding(TypeReference typeReference, Map<String, TypeParameter> typeParametersMap, ClassScope scope) {
-		char[][] typeName = typeReference.getTypeName();
-		String typeNameString = Eclipse.toQualifiedName(typeName);
-		
-		TypeParameter typeParameter = typeParametersMap.get(typeNameString);
-		if (typeParameter != null) {
-			if (typeParameter.type != null) {
-				typeName = typeParameter.type.getTypeName();
-			} else {
-				typeName = TypeConstants.JAVA_LANG_OBJECT;
-			}
-		}
-		
-		TypeBinding typeBinding = scope.getType(typeName, typeName.length);
-		if (typeReference.dimensions() > 0) {
-			typeBinding = scope.createArrayType(typeBinding, typeReference.dimensions());
-		}
-		return typeBinding;
-	}
-	
-	private static String typeBindingToSignature(TypeBinding binding) {
+
+	static String typeBindingToSignature(TypeBinding binding) {
 		binding = binding.erasure();
 		if (binding != null && binding.isBaseType()) {
-			return new String (binding.sourceName());
+			return new String(binding.sourceName());
 		} else if (binding instanceof ReferenceBinding) {
 			String pkg = binding.qualifiedPackageName() == null ? "" : new String(binding.qualifiedPackageName());
 			String qsn = binding.qualifiedSourceName() == null ? "" : new String(binding.qualifiedSourceName());
@@ -1093,19 +878,19 @@ public class PatchDelegate {
 			for (int i = 0; i < binding.dimensions(); i++) out.append("[]");
 			return out.toString();
 		}
-		
+
 		return "";
 	}
-	
+
 	private static boolean charArrayEquals(String s, char[] c) {
 		if (s == null) return c == null;
 		if (c == null) return false;
-		
+
 		if (s.length() != c.length) return false;
 		for (int i = 0; i < s.length(); i++) if (s.charAt(i) != c[i]) return false;
 		return true;
 	}
-	
+
 	private enum DelegateReceiver {
 		METHOD {
 			public Expression get(final ASTNode source, char[] name) {
@@ -1128,7 +913,53 @@ public class PatchDelegate {
 				return fieldRef;
 			}
 		};
-		
+
 		public abstract Expression get(final ASTNode source, char[] name);
+	}
+	
+	private static class DelegateChildrenNoImpl implements IPatchDelegateChildren {
+		
+		@Override public Object createDelegateSourceMethod(EclipseNode typeNode, CompilationUnitDeclaration top, MethodDeclaration method) {
+			return null;
+		}
+		
+		@Override public List<Object> getDelegateMethods(EclipseNode typeNode, CompilationUnitDeclaration top) {
+			return null;
+		}
+		
+		@Override public Set<String> findAlreadyImplementedMethods(TypeDeclaration decl) {
+			Set<String> banList = new HashSet<String>();
+			return banList;
+		}
+		
+		@Override public void notifyDelegateMethodsAdded(CompilationUnitDeclaration cud) {
+			// do nothing
+			
+		}
+		
+		@Override public void cleanupDelegateMethods(CompilationUnitDeclaration cud) {
+			// do nothing
+		}
+		
+	}
+	
+	private static Object createDelegateSourceMethod(EclipseNode typeNode, CompilationUnitDeclaration top, MethodDeclaration method) {
+		return delegateChildren.createDelegateSourceMethod(typeNode, top, method);
+	}
+	
+	private static List<Object> getDelegateMethods(EclipseNode typeNode, CompilationUnitDeclaration top) {
+		return delegateChildren.getDelegateMethods(typeNode, top);
+	}
+	
+	private static Set<String> findAlreadyImplementedMethods(TypeDeclaration decl) {
+		return delegateChildren.findAlreadyImplementedMethods(decl);
+	}
+	
+	private static void notifyDelegateMethodsAdded(CompilationUnitDeclaration cud) {
+		delegateChildren.notifyDelegateMethodsAdded(cud);
+	}
+	
+	private static void cleanupDelegateMethods(CompilationUnitDeclaration cud) {
+		delegateChildren.cleanupDelegateMethods(cud);
 	}
 }
