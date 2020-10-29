@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.17 "Edgy Guinea Pig"
-* NO CHANGES YET
+* BUGFIX: Netbeans would not work with 1.18.16 anymore. [Issue #2612](https://github.com/rzwitserloot/lombok/issues/2612)
 
 ### v1.18.16 (October 15th, 2020)
 * BUGFIX: Version 1.18.14 could not be installed in Eclipse, it would break Eclipse.
