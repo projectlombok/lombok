@@ -102,6 +102,16 @@ class ShadowClassLoader extends ClassLoader {
 	private final List<String> parentExclusion = new ArrayList<String>();
 	private final List<String> highlanders = new ArrayList<String>();
 	
+	private final List<ClassLoader> prependedLoaders = new ArrayList<ClassLoader>();
+	
+	public void prepend(ClassLoader loader) {
+		if (loader == null) return;
+		for (ClassLoader cl : prependedLoaders) {
+			if (cl == loader) return;
+		}
+		prependedLoaders.add(loader);
+	}
+	
 	/**
 	 * @param source The 'parent' classloader.
 	 * @param sclSuffix The suffix of the shadowed class files in our own jar. For example, if this is {@code lombok}, then the class files in your jar should be {@code foo/Bar.SCL.lombok} and not {@code foo/Bar.class}.
@@ -529,6 +539,16 @@ class ShadowClassLoader extends ClassLoader {
 		}
 		
 		String fileNameOfClass = name.replace(".", "/") + ".class";
+		for (ClassLoader pre : prependedLoaders) {
+			try {
+				URL res = pre.getResource(fileNameOfClass);
+				if (res == null) continue;
+				return urlToDefineClass(name, res, resolve);
+			} catch (Exception e) {
+				continue;
+			}
+		}
+		
 		URL res = getResource_(fileNameOfClass, true);
 		if (res == null) {
 			if (!exclusionListMatch(fileNameOfClass)) try {
@@ -540,6 +560,10 @@ class ShadowClassLoader extends ClassLoader {
 		}
 		if (res == null) throw new ClassNotFoundException(name);
 		
+		return urlToDefineClass(name, res, resolve);
+	}
+	
+	private Class<?> urlToDefineClass(String name, URL res, boolean resolve) throws ClassNotFoundException {
 		byte[] b;
 		int p = 0;
 		try {

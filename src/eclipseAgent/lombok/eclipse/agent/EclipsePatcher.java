@@ -669,15 +669,16 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		
 		final String PARSER_SIG = "org.eclipse.jdt.internal.compiler.parser.Parser";
 		final String CUD_SIG = "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration";
+		final String OBJECT_SIG = "java.lang.Object";
 		
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(PARSER_SIG, "getMethodBodies", "void", CUD_SIG))
-				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Transform", "transform", "void", PARSER_SIG, CUD_SIG))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Transform", "transform", "void", OBJECT_SIG, OBJECT_SIG))
 				.request(StackRequest.THIS, StackRequest.PARAM1).build());
 		
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(PARSER_SIG, "endParse", CUD_SIG, "int"))
-				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Transform", "transform_swapped", "void", CUD_SIG, PARSER_SIG))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Transform", "transform_swapped", "void", OBJECT_SIG, OBJECT_SIG))
 				.request(StackRequest.THIS, StackRequest.RETURN_VALUE).build());
 	}
 	
@@ -835,13 +836,15 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		final String COMPLETION_PROPOSAL_COLLECTOR_SIG = "org.eclipse.jdt.ui.text.java.CompletionProposalCollector";
 		final String I_JAVA_COMPLETION_PROPOSAL_SIG = "org.eclipse.jdt.ui.text.java.IJavaCompletionProposal[]";
 		final String AST_NODE = "org.eclipse.jdt.internal.compiler.ast.ASTNode";
+		final String OBJECT_SIG = "java.lang.Object";
 		
 		sm.addScript(wrapReturnValue()
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
 			.request(StackRequest.RETURN_VALUE)
 			.request(StackRequest.THIS)
 			.request(StackRequest.PARAM1)
-			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD, "resolveType", TYPE_BINDING_SIG, TYPE_BINDING_SIG, MESSAGE_SEND_SIG, BLOCK_SCOPE_SIG))
+			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD, "resolveType", OBJECT_SIG, OBJECT_SIG, MESSAGE_SEND_SIG, BLOCK_SCOPE_SIG))
+			.cast()
 			.build());
 		
 		sm.addScript(replaceMethodCall()

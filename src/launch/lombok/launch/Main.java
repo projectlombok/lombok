@@ -34,6 +34,11 @@ class Main {
 		return classLoader;
 	}
 	
+	static synchronized void prependClassLoader(ClassLoader loader) {
+		getShadowClassLoader();
+		classLoader.prepend(loader);
+	}
+	
 	public static void main(String[] args) throws Throwable {
 		ClassLoader cl = getShadowClassLoader();
 		Class<?> mc = cl.loadClass("lombok.core.Main");

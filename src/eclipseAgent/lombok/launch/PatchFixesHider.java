@@ -46,7 +46,6 @@ import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
@@ -57,7 +56,6 @@ import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
-import org.eclipse.jdt.internal.compiler.parser.Parser;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 import org.eclipse.jdt.internal.core.SourceField;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
@@ -87,20 +85,24 @@ final class PatchFixesHider {
 	public static final class Util {
 		private static ClassLoader shadowLoader;
 		
+		public static ClassLoader getShadowLoader() {
+			if (shadowLoader == null) {
+				try {
+					Class.forName("lombok.core.LombokNode");
+					// If we get here, then lombok is already available.
+					shadowLoader = Util.class.getClassLoader();
+				} catch (ClassNotFoundException e) {
+					// If we get here, it isn't, and we should use the shadowloader.
+					shadowLoader = Main.getShadowClassLoader();
+				}
+			}
+			
+			return shadowLoader;
+		}
+		
 		public static Class<?> shadowLoadClass(String name) {
 			try {
-				if (shadowLoader == null) {
-					try {
-						Class.forName("lombok.core.LombokNode");
-						// If we get here, then lombok is already available.
-						shadowLoader = Util.class.getClassLoader();
-					} catch (ClassNotFoundException e) {
-						// If we get here, it isn't, and we should use the shadowloader.
-						shadowLoader = Main.getShadowClassLoader();
-					}
-				}
-				
-				return Class.forName(name, true, shadowLoader);
+				return Class.forName(name, true, getShadowLoader());
 			} catch (ClassNotFoundException e) {
 				throw sneakyThrow(e);
 			}
@@ -112,6 +114,11 @@ final class PatchFixesHider {
 			} catch (NoSuchMethodException e) {
 				throw sneakyThrow(e);
 			}
+		}
+		
+		public static Method findMethodAnyArgs(Class<?> type, String name) {
+			for (Method m : type.getDeclaredMethods()) if (name.equals(m.getName())) return m;
+			throw sneakyThrow(new NoSuchMethodException(type.getName() + "::" + name));
 		}
 		
 		public static Object invokeMethod(Method method, Object... args) {
@@ -173,20 +180,26 @@ final class PatchFixesHider {
 	}
 	
 	public static final class Transform {
-		private static final Method TRANSFORM;
-		private static final Method TRANSFORM_SWAPPED;
+		private static Method TRANSFORM;
+		private static Method TRANSFORM_SWAPPED;
 		
-		static {
+		private static synchronized void init(ClassLoader prepend) {
+			if (TRANSFORM != null) return;
+			
+			Main.prependClassLoader(prepend);
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.TransformEclipseAST");
-			TRANSFORM = Util.findMethod(shadowed, "transform", Parser.class, CompilationUnitDeclaration.class);
-			TRANSFORM_SWAPPED = Util.findMethod(shadowed, "transform_swapped", CompilationUnitDeclaration.class, Parser.class);
+			TRANSFORM = Util.findMethodAnyArgs(shadowed, "transform");
+			TRANSFORM_SWAPPED = Util.findMethodAnyArgs(shadowed, "transform_swapped");
 		}
 		
-		public static void transform(Parser parser, CompilationUnitDeclaration ast) throws IOException {
+		public static void transform(Object parser, Object ast) throws IOException {
+			Main.prependClassLoader(parser.getClass().getClassLoader());
+			init(parser.getClass().getClassLoader());
 			Util.invokeMethod(TRANSFORM, parser, ast);
 		}
 		
-		public static void transform_swapped(CompilationUnitDeclaration ast, Parser parser) throws IOException {
+		public static void transform_swapped(Object ast, Object parser) throws IOException {
+			init(parser.getClass().getClassLoader());
 			Util.invokeMethod(TRANSFORM_SWAPPED, ast, parser);
 		}
 	}
@@ -284,15 +297,15 @@ final class PatchFixesHider {
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchExtensionMethod");
-			RESOLVE_TYPE = Util.findMethod(shadowed, "resolveType", TypeBinding.class, MessageSend.class, BlockScope.class);
+			RESOLVE_TYPE = Util.findMethod(shadowed, "resolveType", Object.class, MessageSend.class, BlockScope.class);
 			ERROR_NO_METHOD_FOR = Util.findMethod(shadowed, "errorNoMethodFor", ProblemReporter.class, MessageSend.class, TypeBinding.class, TypeBinding[].class);
 			INVALID_METHOD = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class);
 			INVALID_METHOD2 = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class, Scope.class);
 			NON_STATIC_ACCESS_TO_STATIC_METHOD = Util.findMethod(shadowed, "nonStaticAccessToStaticMethod", ProblemReporter.class, ASTNode.class, MethodBinding.class, MessageSend.class);
 		}
 		
-		public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
-			return (TypeBinding) Util.invokeMethod(RESOLVE_TYPE, resolvedType, methodCall, scope);
+		public static Object resolveType(Object resolvedType, MessageSend methodCall, BlockScope scope) {
+			return Util.invokeMethod(RESOLVE_TYPE, resolvedType, methodCall, scope);
 		}
 		
 		public static void errorNoMethodFor(ProblemReporter problemReporter, MessageSend messageSend, TypeBinding recType, TypeBinding[] params) {

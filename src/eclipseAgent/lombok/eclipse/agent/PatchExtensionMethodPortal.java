@@ -5,8 +5,6 @@ import java.lang.reflect.Method;
 
 import lombok.Lombok;
 
-import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
-
 public class PatchExtensionMethodPortal {
 	private static final String TYPE_BINDING = "org.eclipse.jdt.internal.compiler.lookup.TypeBinding";
 	private static final String TYPE_BINDING_ARRAY = "[Lorg.eclipse.jdt.internal.compiler.lookup.TypeBinding;";
@@ -15,13 +13,13 @@ public class PatchExtensionMethodPortal {
 	private static final String METHOD_BINDING = "org.eclipse.jdt.internal.compiler.lookup.MethodBinding";
 	private static final String PROBLEM_REPORTER = "org.eclipse.jdt.internal.compiler.problem.ProblemReporter";
 
-	public static TypeBinding resolveType(Object resolvedType, Object methodCall, Object scope) {
+	public static Object resolveType(Object resolvedType, Object methodCall, Object scope) {
 		try {
-			return (TypeBinding) Reflection.resolveType.invoke(null, resolvedType, methodCall, scope);
+			return Reflection.resolveType.invoke(null, resolvedType, methodCall, scope);
 		} catch (NoClassDefFoundError e) {
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
-			return (TypeBinding) resolvedType;
+			return resolvedType;
 		} catch (IllegalAccessException e) {
 			throw Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
@@ -33,7 +31,7 @@ public class PatchExtensionMethodPortal {
 			}
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
-			return (TypeBinding)resolvedType;
+			return resolvedType;
 		}
 	}
 
@@ -85,7 +83,7 @@ public class PatchExtensionMethodPortal {
 			Method m = null, n = null, o = null;
 			Throwable problem_ = null;
 			try {
-				m = PatchExtensionMethod.class.getMethod("resolveType", Class.forName(TYPE_BINDING), Class.forName(MESSAGE_SEND), Class.forName(BLOCK_SCOPE));
+				m = PatchExtensionMethod.class.getMethod("resolveType", Object.class, Class.forName(MESSAGE_SEND), Class.forName(BLOCK_SCOPE));
 				n = PatchExtensionMethod.class.getMethod("errorNoMethodFor", Class.forName(PROBLEM_REPORTER),
 						Class.forName(MESSAGE_SEND), Class.forName(TYPE_BINDING), Class.forName(TYPE_BINDING_ARRAY));
 				o = PatchExtensionMethod.class.getMethod("invalidMethod", Class.forName(PROBLEM_REPORTER), Class.forName(MESSAGE_SEND), Class.forName(METHOD_BINDING));
