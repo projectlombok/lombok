@@ -22,6 +22,7 @@
 package lombok.core;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -67,7 +68,7 @@ public final class PostCompiler {
 	
 	public static OutputStream wrapOutputStream(final OutputStream originalStream, final String fileName, final DiagnosticsReceiver diagnostics) throws IOException {
 		if (System.getProperty("lombok.disablePostCompiler", null) != null) return originalStream;
-		return new ByteArrayOutputStream() {
+		return new FilterOutputStream(new ByteArrayOutputStream() {
 			@Override public void close() throws IOException {
 				// no need to call super
 				byte[] original = toByteArray();
@@ -88,6 +89,6 @@ public final class PostCompiler {
 				originalStream.write(copy);
 				originalStream.close(); 
 			}
-		};
+		});
 	}
 }
