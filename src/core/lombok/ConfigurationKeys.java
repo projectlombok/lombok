@@ -678,6 +678,15 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> JACKSONIZED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.jacksonized.flagUsage", "Emit a warning or error if @Jacksonized is used.") {};
 	
+	// ----- FxProperty -----
+	
+	/**
+	 * lombok configuration: {@code lombok.fxproperty.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @FxProperty} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> FXPROPERTY_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.fxproperty.flagUsage", "Emit a warning or error if @FxProperty is used.") {};
+	
 	// ----- Configuration System -----
 	
 	/**

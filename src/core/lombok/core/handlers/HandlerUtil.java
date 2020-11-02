@@ -564,6 +564,18 @@ public class HandlerUtil {
 	}
 	
 	/**
+	 * Generates a property name from a given field name.
+	 * 
+	 * Strategy: Take the field name and append {@code "Property"} at the end.
+	 * 
+	 * @param fieldName the name of the field.
+	 * @return The property name for this field.
+	 */
+	public static String toPropertyName(CharSequence fieldName) {
+		return fieldName + "Property";
+	}
+	
+	/**
 	 * Generates a withBy name from a given field name.
 	 * 
 	 * Strategy: The same as the {@code toWithName} strategy, but then append {@code "By"} at the end.
