@@ -251,9 +251,10 @@ public class HandleConstructor {
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					boolean skipGeneration = (annotationTypeMatches(NoArgsConstructor.class, child) ||
-						annotationTypeMatches(AllArgsConstructor.class, child) ||
-						annotationTypeMatches(RequiredArgsConstructor.class, child));
+					boolean skipGeneration = annotationTypeMatches(AllArgsConstructor.class, child) ||
+						(skipIfConstructorExists != SkipIfConstructorExists.I_AM_BUILDER
+							&& (annotationTypeMatches(RequiredArgsConstructor.class, child)
+								|| annotationTypeMatches(NoArgsConstructor.class, child)));
 					
 					if (!skipGeneration && skipIfConstructorExists == SkipIfConstructorExists.YES) {
 						skipGeneration = annotationTypeMatches(Builder.class, child);
@@ -277,7 +278,7 @@ public class HandleConstructor {
 		
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
 		
-		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
+		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode, fieldsToParam) != MemberExistsResult.NOT_EXISTS)) {
 			ConstructorDeclaration constr = createConstructor(
 				staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fieldsToParam, forceDefaults,
 				sourceNode, onConstructor);

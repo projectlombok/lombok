@@ -1893,6 +1893,61 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
+	 * Checks if there is a constructor that matches the fields in the same
+	 * order.
+	 *
+	 * @param node
+	 *            Any node that represents the Type (TypeDeclaration) to look
+	 *            in, or any child node thereof.
+	 * @param fieldParams
+	 *            The parameter list to match the constructor
+	 */
+	public static MemberExistsResult constructorExists(EclipseNode node, List<EclipseNode> fieldParams) {
+		List<ConstructorDeclaration> constructors = getConstructors(node);
+		for (ConstructorDeclaration constructor : constructors) {
+			int constructorArgumentsNumber = 0;
+			if (constructor.arguments != null) {
+				constructorArgumentsNumber = constructor.arguments.length;
+			}
+			if (constructorArgumentsNumber == fieldParams.size()) {
+				for (int i = 0; i < constructorArgumentsNumber; i++) {
+					Argument argument = constructor.arguments[i];
+					if (!typeMatches(argument.type.toString(), node, ((FieldDeclaration) fieldParams.get(i).get()).type)) {
+						return MemberExistsResult.NOT_EXISTS;
+					}
+				}
+				return getGeneratedBy(constructor) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+			}
+		}
+
+		return MemberExistsResult.NOT_EXISTS;
+	}
+
+	/**
+	 * Get a list of constructors
+	 * @param node  Any node that represents the Type (TypeDeclaration) to look in, or any child node thereof.
+	 * @return A list of constructor declarations
+	 */
+	private static List<ConstructorDeclaration> getConstructors(EclipseNode node) {
+		List<ConstructorDeclaration> constructors = new ArrayList<ConstructorDeclaration>(5);
+		node = upToTypeNode(node);
+		if (node != null && node.get() instanceof TypeDeclaration) {
+			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
+			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
+				if (def instanceof ConstructorDeclaration) {
+					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
+
+					if (isTolerate(node, def)) continue;
+
+					constructors.add((ConstructorDeclaration)def);
+				}
+			}
+		}
+		return constructors;
+
+	}
+
+	/**
 	 * Inserts a field into an existing type. The type must represent a {@code TypeDeclaration}.
 	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
 	 */

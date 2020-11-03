@@ -228,9 +228,10 @@ public class HandleConstructor {
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					boolean skipGeneration = annotationTypeMatches(NoArgsConstructor.class, child) ||
-						annotationTypeMatches(AllArgsConstructor.class, child) ||
-						annotationTypeMatches(RequiredArgsConstructor.class, child);
+					boolean skipGeneration = annotationTypeMatches(AllArgsConstructor.class, child) ||
+						(skipIfConstructorExists != SkipIfConstructorExists.I_AM_BUILDER
+							&& (annotationTypeMatches(RequiredArgsConstructor.class, child)
+								|| annotationTypeMatches(NoArgsConstructor.class, child)));
 					
 					if (!skipGeneration && skipIfConstructorExists == SkipIfConstructorExists.YES) {
 						skipGeneration = annotationTypeMatches(Builder.class, child);
@@ -262,7 +263,7 @@ public class HandleConstructor {
 		}
 		List<Type> argTypes_ = argTypes == null ? null : argTypes.toList();
 
-		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
+		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode, fields) != MemberExistsResult.NOT_EXISTS)) {
 			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
 			injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 		}

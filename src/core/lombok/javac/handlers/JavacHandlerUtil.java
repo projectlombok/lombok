@@ -813,6 +813,47 @@ public class JavacHandlerUtil {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
+	public static MemberExistsResult constructorExists(JavacNode node, List<JavacNode> fieldParams) {
+		List<JCMethodDecl> constructors = getConstructors(node);
+		for (JCMethodDecl constructor : constructors) {
+			List<JCVariableDecl> constructorParams = constructor.params;
+			if (constructorParams.size() == fieldParams.size()) {
+				for (int i = 0; i < fieldParams.size(); i++) {
+					JCVariableDecl argument = constructorParams.get(i);
+					if(!typeMatches(argument.vartype.toString(), node, ((JCVariableDecl)fieldParams.get(i).get()).vartype)) {
+						return MemberExistsResult.NOT_EXISTS;
+					}
+				}
+				return getGeneratedBy(constructor) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+			}
+		}
+		return MemberExistsResult.NOT_EXISTS;
+	}
+	/**
+	 * Get a list of constructors
+	 * @param node  Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
+	 * @return A list of constructor declarations
+	 */
+	private static List<JCMethodDecl> getConstructors(JavacNode node) {
+		ListBuffer<JCMethodDecl> constructors = new ListBuffer<JCMethodDecl>();
+		node = upToTypeNode(node);
+		if (node != null && node.get() instanceof JCClassDecl) {
+			for (JCTree def : ((JCClassDecl)node.get()).defs) {
+				if (def instanceof JCMethodDecl) {
+					JCMethodDecl md = (JCMethodDecl) def;
+					if (md.name.contentEquals("<init>")) {
+						if ((md.mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
+						if (isTolerate(node, md)) continue;
+
+						constructors.add((JCMethodDecl)def);
+					}
+				}
+			}
+		}
+		return constructors.toList();
+
+	}
+
 	public static boolean isConstructorCall(final JCStatement statement) {
 		if (!(statement instanceof JCExpressionStatement)) return false;
 		JCExpression expr = ((JCExpressionStatement) statement).expr;
