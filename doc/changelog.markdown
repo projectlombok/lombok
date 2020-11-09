@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.17 "Edgy Guinea Pig"
 * BUGFIX: Netbeans would not work with 1.18.16 anymore. [Issue #2612](https://github.com/rzwitserloot/lombok/issues/2612)
 * (potential) BUGFIX: Using lombok with Maven Tycho now works. With assistance from [Rabea Gransberger](https://github.com/rgra). [Issue #285](https://github.com/rzwitserloot/lombok/issues/285)
+* FEATURE: You can now pass a [`config file`](https://projectlombok.org/features/configuration) via the system property `lombok.configUri` (e.g. when using Eclipse, passing `-Dlombok.configUri=/path/to/lombok.config` in `eclipse.ini` or, in general, setting it via the `JAVA_TOOL_OPTIONS` environment variable so `javac` picks it up). This might be useful if the used build tool uses some exotic path system. E.g. starting with version 1.4, sbt (https://www.scala-sbt.org/) uses `vf:` instead of `file:`, which [lombok couldn't handle](https://github.com/sbt/sbt/issues/5968).
 
 ### v1.18.16 (October 15th, 2020)
 * BUGFIX: Version 1.18.14 could not be installed in Eclipse, it would break Eclipse.

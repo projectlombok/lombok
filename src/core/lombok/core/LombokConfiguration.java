@@ -51,6 +51,8 @@ public class LombokConfiguration {
 					return NULL_RESOLVER;
 				}
 			};
+		} else if (System.getProperty("lombok.configUri") != null) {
+			configurationResolverFactory = createSystemPropertyConfigUriResolverFactory(URI.create(System.getProperty("lombok.configUri")));
 		}
 		else {
 			configurationResolverFactory = createFileSystemBubblingResolverFactory();
@@ -78,6 +80,16 @@ public class LombokConfiguration {
 		return new ConfigurationResolverFactory() {
 			@Override public ConfigurationResolver createResolver(URI sourceLocation) {
 				return new BubblingConfigurationResolver(cache.forUri(sourceLocation), fileToSource);
+			}
+		};
+	}
+
+	private static ConfigurationResolverFactory createSystemPropertyConfigUriResolverFactory(URI configUri) {
+		final ConfigurationFileToSource fileToSource = cache.fileToSource(new ConfigurationParser(ConfigurationProblemReporter.CONSOLE));
+		final ConfigurationResolver systemPropertyConfigUriResolver = new BubblingConfigurationResolver(cache.forUri(configUri), fileToSource);
+		return new ConfigurationResolverFactory() {
+			@Override public ConfigurationResolver createResolver(URI sourceLocation) {
+				return systemPropertyConfigUriResolver;
 			}
 		};
 	}
