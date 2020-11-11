@@ -27,6 +27,7 @@ module lombok {
 	exports lombok;
 	exports lombok.experimental;
 	exports lombok.extern.apachecommons;
+	exports lombok.extern.jackson;
 	exports lombok.extern.java;
 	exports lombok.extern.jbosslog;
 	exports lombok.extern.log4j;
