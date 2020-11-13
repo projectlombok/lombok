@@ -3,7 +3,8 @@ Lombok Changelog
 
 ### v1.18.17 "Edgy Guinea Pig"
 * BUGFIX: Netbeans would not work with 1.18.16 anymore. [Issue #2612](https://github.com/rzwitserloot/lombok/issues/2612)
-* (potential) BUGFIX: Using lombok with Maven Tycho now works. With assistance from [Rabea Gransberger](https://github.com/rgra). [Issue #285](https://github.com/rzwitserloot/lombok/issues/285)
+* PLATFORM: using `lombok.config` files when compiling with sbt 1.4 now works again. [Issue #2645](https://github.com/rzwitserloot/lombok/issues/2645)
+* (potential) BUGFIX: Using lombok with Maven Tycho now works. With assistance from [Rabea Gransberger](https://github.com/rgra). [Issue #285](https://github.com/rzwitserloot/lombok/issues/285) __UPDATE: This doesn't quite work yet, still investigating.__
 
 ### v1.18.16 (October 15th, 2020)
 * BUGFIX: Version 1.18.14 could not be installed in Eclipse, it would break Eclipse.

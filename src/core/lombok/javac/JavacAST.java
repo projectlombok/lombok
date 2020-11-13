@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.javac;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -110,12 +111,88 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		return memoizedAbsoluteFileLocation;
 	}
 	
+	private static Class<?> wrappedFileObjectClass, sbtJavaFileObjectClass, sbtMappedVirtualFileClass, sbtOptionClass;
+	private static Field wrappedFileObjectField, sbtJavaFileObjectField, sbtMappedVirtualFilePathField, sbtMappedVirtualFileRootsField, sbtOptionField;
+	private static Method sbtMapGetMethod;
+	
 	public static URI getAbsoluteFileLocation(JCCompilationUnit cu) {
 		try {
-			return cu.sourcefile.toUri();
+			URI uri = cu.sourcefile.toUri();
+			String fn = uri.toString();
+			if (fn.startsWith("file:")) return uri;
+			URI sbtUri = tryGetSbtFile(cu.sourcefile);
+			if (sbtUri != null) return sbtUri;
+			return uri;
 		} catch (Exception e) {
 			return null;
 		}
+	}
+	
+	private static URI tryGetSbtFile(JavaFileObject sourcefile) {
+		try {
+			return tryGetSbtFile_(sourcefile);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	private static URI tryGetSbtFile_(JavaFileObject sourcefile) throws Exception {
+		Class<?> c = sourcefile.getClass();
+		String cn;
+		
+		if (wrappedFileObjectClass == null) {
+			if (!c.getName().equals("com.sun.tools.javac.api.ClientCodeWrapper$WrappedJavaFileObject")) return null;
+			wrappedFileObjectClass = c;
+		}
+		if (c != wrappedFileObjectClass) return null;
+		
+		if (wrappedFileObjectField == null) wrappedFileObjectField = Permit.permissiveGetField(wrappedFileObjectClass.getSuperclass(), "clientFileObject");
+		if (wrappedFileObjectField == null) return null;
+		Object fileObject = wrappedFileObjectField.get(sourcefile);
+		c = fileObject.getClass();
+		
+		if (sbtJavaFileObjectClass == null) {
+			cn = c.getName();
+			if (!cn.startsWith("sbt.") || !cn.endsWith("JavaFileObject")) return null;
+			sbtJavaFileObjectClass = c;
+		}
+		if (sbtJavaFileObjectClass != c) return null;
+		if (sbtJavaFileObjectField == null) sbtJavaFileObjectField = Permit.permissiveGetField(sbtJavaFileObjectClass, "underlying");
+		if (sbtJavaFileObjectField == null) return null;
+		
+		Object mappedVirtualFile = sbtJavaFileObjectField.get(fileObject);
+		c = mappedVirtualFile.getClass();
+		
+		if (sbtMappedVirtualFileClass == null) {
+			cn = c.getName();
+			if (!cn.startsWith("sbt.") || !cn.endsWith("MappedVirtualFile")) return null;
+			sbtMappedVirtualFileClass = c;
+		}
+		if (sbtMappedVirtualFilePathField == null) sbtMappedVirtualFilePathField = Permit.permissiveGetField(sbtMappedVirtualFileClass, "encodedPath");
+		if (sbtMappedVirtualFilePathField == null) return null;
+		if (sbtMappedVirtualFileRootsField == null) sbtMappedVirtualFileRootsField = Permit.permissiveGetField(sbtMappedVirtualFileClass, "rootPathsMap");
+		if (sbtMappedVirtualFileRootsField == null) return null;
+		
+		String encodedPath = (String) sbtMappedVirtualFilePathField.get(mappedVirtualFile);
+		if (!encodedPath.startsWith("${")) return null;
+		int idx = encodedPath.indexOf('}');
+		if (idx == -1) return null;
+		String base = encodedPath.substring(2, idx);
+		Object roots = sbtMappedVirtualFileRootsField.get(mappedVirtualFile);
+		if (sbtMapGetMethod == null) sbtMapGetMethod = Permit.getMethod(roots.getClass(), "get", Object.class);
+		if (sbtMapGetMethod == null) return null;
+		
+		Object option = sbtMapGetMethod.invoke(roots, base);
+		c = option.getClass();
+		if (sbtOptionClass == null) {
+			if (c.getName().equals("scala.Some")) sbtOptionClass = c;
+		}
+		if (c != sbtOptionClass) return null;
+		if (sbtOptionField == null) sbtOptionField = Permit.permissiveGetField(sbtOptionClass, "value");
+		if (sbtOptionField == null) return null;
+		
+		Object path = sbtOptionField.get(option);
+		return new File(path.toString() + encodedPath.substring(idx + 1)).toURI();
 	}
 	
 	private static String sourceName(JCCompilationUnit cu) {
