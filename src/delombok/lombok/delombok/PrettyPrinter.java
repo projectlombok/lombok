@@ -1547,13 +1547,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	public static JCTree getExtendsClause(JCClassDecl decl) {
-		try {
-			return (JCTree) getExtendsClause.invoke(decl);
-		} catch (IllegalAccessException e) {
-			throw sneakyThrow(e);
-		} catch (InvocationTargetException e) {
-			throw sneakyThrow(e.getCause());
-		}
+		return (JCTree) Permit.invokeSneaky(getExtendsClause, decl);
 	}
 	
 	static RuntimeException sneakyThrow(Throwable t) {

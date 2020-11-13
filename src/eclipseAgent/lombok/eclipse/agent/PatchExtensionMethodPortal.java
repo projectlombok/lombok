@@ -54,7 +54,7 @@ public class PatchExtensionMethodPortal {
 			//do anything useful here.
 		}
 	}
-
+	
 	public static void invalidMethod(Object problemReporter, Object messageSend, Object method) {
 		try {
 			Reflection.invalidMethod.invoke(null, problemReporter, messageSend, method);
@@ -62,23 +62,37 @@ public class PatchExtensionMethodPortal {
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
 		} catch (IllegalAccessException e) {
+			handleReflectionDebug(e);
 			throw Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
+			handleReflectionDebug(e.getCause());
 			throw Lombok.sneakyThrow(e.getCause());
 		} catch (NullPointerException e) {
-			if (!"false".equals(System.getProperty("lombok.debug.reflection", "false"))) {
-				e.initCause(Reflection.problem);
-				throw e;
-			}
+			handleReflectionDebug(e);
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
 		}
 	}
-
+	
+	public static boolean isDebugReflection() {
+		return !"false".equals(System.getProperty("lombok.debug.reflection", "false"));
+	}
+	
+	public static void handleReflectionDebug(Throwable t) {
+		if (!isDebugReflection()) return;
+		
+		System.err.println("** LOMBOK REFLECTION exception: " + t.getClass() + ": " + (t.getMessage() == null ? "(no message)" : t.getMessage()));
+		t.printStackTrace(System.err);
+		if (Reflection.problem != null) {
+			System.err.println("*** ADDITIONALLY, exception occurred setting up reflection: ");
+			Reflection.problem.printStackTrace(System.err);
+		}
+	}
+	
 	private static final class Reflection {
 		public static final Method resolveType, errorNoMethodFor, invalidMethod;
 		public static final Throwable problem;
-
+		
 		static {
 			Method m = null, n = null, o = null;
 			Throwable problem_ = null;

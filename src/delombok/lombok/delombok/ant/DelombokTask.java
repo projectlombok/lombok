@@ -177,9 +177,11 @@ class Tasks {
 				}
 				
 				return Class.forName(name, true, shadowLoader);
-			} catch (Exception e) {
-				if (e instanceof RuntimeException) throw (RuntimeException) e;
-				throw new RuntimeException(e);
+			} catch (Throwable t) {
+				if (t instanceof InvocationTargetException) t = t.getCause();
+				if (t instanceof RuntimeException) throw (RuntimeException) t;
+				if (t instanceof Error) throw (Error) t;
+				throw new RuntimeException(t);
 			}
 		}
 		
@@ -207,10 +209,10 @@ class Tasks {
 				
 				Method m = instance.getClass().getMethod("execute", Location.class);
 				m.invoke(instance, loc);
-			} catch (Exception e) {
-				Throwable t = (e instanceof InvocationTargetException) ? e.getCause() : e;
-				if (t instanceof Error) throw (Error) t;
+			} catch (Throwable t) {
+				if (t instanceof InvocationTargetException) t = t.getCause();
 				if (t instanceof RuntimeException) throw (RuntimeException) t;
+				if (t instanceof Error) throw (Error) t;
 				throw new RuntimeException(t);
 			}
 		}

@@ -81,6 +81,7 @@ import lombok.javac.JavacResolution;
 import lombok.javac.JavacResolution.TypeNotConvertibleException;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.ResolutionResetNeeded;
+import lombok.permit.Permit;
 
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(HandleDelegate.HANDLE_DELEGATE_PRIORITY) //2^16; to make sure that we also delegate generated methods.
@@ -466,7 +467,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		static {
 			Method m = null;
 			try {
-				m = Type.class.getDeclaredMethod("unannotatedType");
+				m = Permit.getMethod(Type.class, "unannotatedType");
 			} catch (Exception e) {/* ignore */}
 			unannotated = m;
 		}
@@ -474,7 +475,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		static Type unannotatedType(Type t) {
 			if (unannotated == null) return t;
 			try {
-				return (Type) unannotated.invoke(t);
+				return (Type) Permit.invoke(unannotated, t);
 			} catch (Exception e) {
 				return t;
 			}

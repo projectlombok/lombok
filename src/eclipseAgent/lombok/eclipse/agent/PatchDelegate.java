@@ -101,6 +101,7 @@ import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
 import lombok.eclipse.handlers.SetGeneratedByVisitor;
 import lombok.patcher.Symbols;
+import lombok.permit.Permit;
 
 public class PatchDelegate {
 
@@ -846,18 +847,20 @@ public class PatchDelegate {
 	
 	private static final class Reflection {
 		public static final Method classScopeBuildFieldsAndMethodsMethod;
-		
+		public static final Throwable initCause;
 		static {
 			Method m = null;
+			Throwable c = null;
 			try {
-				m = ClassScope.class.getDeclaredMethod("buildFieldsAndMethods");
-				m.setAccessible(true);
+				m = Permit.getMethod(ClassScope.class, "buildFieldsAndMethods");
 			} catch (Throwable t) {
+				c = t;
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.
 			}
 			
 			classScopeBuildFieldsAndMethodsMethod = m;
+			initCause = c;
 		}
 	}
 	
@@ -894,16 +897,14 @@ public class PatchDelegate {
 			ClassScope cs = ((SourceTypeBinding)inner).scope;
 			if (cs != null) {
 				try {
-					Reflection.classScopeBuildFieldsAndMethodsMethod.invoke(cs);
+					Permit.invoke(Reflection.initCause, Reflection.classScopeBuildFieldsAndMethodsMethod, cs);
 				} catch (Exception e) {
 					// See 'Reflection' class for why we ignore this exception.
 				}
 			}
 		}
 		
-		if (!(binding instanceof ReferenceBinding)) {
-			return;
-		}
+		if (!(binding instanceof ReferenceBinding)) return;
 		
 		ReferenceBinding rb = (ReferenceBinding) binding;
 		MethodBinding[] availableMethods = rb.availableMethods();

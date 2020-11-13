@@ -1183,7 +1183,7 @@ public class JavacHandlerUtil {
 			try {
 				Scope scope = (Scope) membersField.get(from);
 				if (scope == null) return;
-				removeMethod.invoke(scope, toRemove);
+				Permit.invoke(removeMethod, scope, toRemove);
 			} catch (Exception e) {}
 		}
 		
@@ -1192,7 +1192,7 @@ public class JavacHandlerUtil {
 			try {
 				Scope scope = (Scope) membersField.get(from);
 				if (scope == null) return;
-				enterMethod.invoke(scope, toEnter);
+				Permit.invoke(enterMethod, scope, toEnter);
 			} catch (Exception e) {}
 		}
 	}

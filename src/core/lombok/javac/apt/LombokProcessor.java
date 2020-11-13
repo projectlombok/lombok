@@ -156,10 +156,10 @@ public class LombokProcessor extends AbstractProcessor {
 		disablePartialReparseInNetBeansEditor(context);
 		try {
 			Method keyMethod = Permit.getMethod(Context.class, "key", Class.class);
-			Object key = keyMethod.invoke(context, JavaFileManager.class);
+			Object key = Permit.invoke(keyMethod, context, JavaFileManager.class);
 			Field htField = Permit.getField(Context.class, "ht");
 			@SuppressWarnings("unchecked")
-			Map<Object,Object> ht = (Map<Object,Object>) htField.get(context);
+			Map<Object,Object> ht = (Map<Object,Object>) Permit.get(htField, context);
 			final JavaFileManager originalFiler = (JavaFileManager) ht.get(key);
 			if (!(originalFiler instanceof InterceptingJavaFileManager)) {
 				final Messager messager = processingEnv.getMessager();
@@ -182,10 +182,10 @@ public class LombokProcessor extends AbstractProcessor {
 
 	private void replaceFileManagerJdk9(Context context, JavaFileManager newFiler) {
 		try {
-			JavaCompiler compiler = (JavaCompiler) Permit.getMethod(JavaCompiler.class, "instance", Context.class).invoke(null, context);
+			JavaCompiler compiler = (JavaCompiler) Permit.invoke(Permit.getMethod(JavaCompiler.class, "instance", Context.class), null, context);
 			try {
 				Field fileManagerField = Permit.getField(JavaCompiler.class, "fileManager");
-				fileManagerField.set(compiler, newFiler);
+				Permit.set(fileManagerField, compiler, newFiler);
 			}
 			catch (Exception e) {}
 			
@@ -193,7 +193,7 @@ public class LombokProcessor extends AbstractProcessor {
 				Field writerField = Permit.getField(JavaCompiler.class, "writer");
 				ClassWriter writer = (ClassWriter) writerField.get(compiler);
 				Field fileManagerField = Permit.getField(ClassWriter.class, "fileManager");
-				fileManagerField.set(writer, newFiler);
+				Permit.set(fileManagerField, writer, newFiler);
 			}
 			catch (Exception e) {}
 		}
@@ -215,8 +215,8 @@ public class LombokProcessor extends AbstractProcessor {
 	private void disablePartialReparseInNetBeansEditor(Context context) {
 		try {
 			Class<?> cancelServiceClass = Class.forName("com.sun.tools.javac.util.CancelService");
-			Method cancelServiceInstace = Permit.getMethod(cancelServiceClass, "instance", Context.class);
-			Object cancelService = cancelServiceInstace.invoke(null, context);
+			Method cancelServiceInstance = Permit.getMethod(cancelServiceClass, "instance", Context.class);
+			Object cancelService = Permit.invoke(cancelServiceInstance, null, context);
 			if (cancelService == null) return;
 			Field parserField = Permit.getField(cancelService.getClass(), "parser");
 			Object parser = parserField.get(cancelService);
@@ -388,8 +388,8 @@ public class LombokProcessor extends AbstractProcessor {
 		try {
 			if (qualifiedNamableClass == null) qualifiedNamableClass = Class.forName("javax.lang.model.element.QualifiedNamable");
 			if (!qualifiedNamableClass.isInstance(element)) return null;
-			if (qualifiedNamableQualifiedNameMethod == null) qualifiedNamableQualifiedNameMethod = qualifiedNamableClass.getMethod("getQualifiedName");
-			String name = qualifiedNamableQualifiedNameMethod.invoke(element).toString().trim();
+			if (qualifiedNamableQualifiedNameMethod == null) qualifiedNamableQualifiedNameMethod = Permit.getMethod(qualifiedNamableClass, "getQualifiedName");
+			String name = Permit.invoke(qualifiedNamableQualifiedNameMethod, element).toString().trim();
 			return name.isEmpty() ? null : name;
 		} catch (ClassNotFoundException e) {
 			return null;

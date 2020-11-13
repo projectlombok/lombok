@@ -38,6 +38,7 @@ import javax.tools.JavaFileObject;
 import lombok.Lombok;
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
+import lombok.permit.Permit;
 
 final class InterceptingJavaFileObject implements LombokFileObject {
 	private final JavaFileObject delegate;
@@ -63,16 +64,8 @@ final class InterceptingJavaFileObject implements LombokFileObject {
 	}
 	
 	@Override public CharsetDecoder getDecoder(boolean ignoreEncodingErrors) {
-		if (decoderMethod == null) {
-			throw new UnsupportedOperationException();
-		}
-		try {
-			return (CharsetDecoder) decoderMethod.invoke(delegate, ignoreEncodingErrors);
-		} catch (IllegalAccessException e) {
-			throw Lombok.sneakyThrow(e);
-		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e);
-		}
+		if (decoderMethod == null) throw new UnsupportedOperationException();
+		return (CharsetDecoder) Permit.invokeSneaky(decoderMethod, delegate, ignoreEncodingErrors);
 	}	
 	
 	@Override public boolean equals(Object obj) {

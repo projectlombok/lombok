@@ -174,7 +174,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 				if (!ClassLoader_lombokAlreadyAddedTo.getAndSet(environmentClassLoader, true)) {
 					Method m = Permit.getMethod(environmentClassLoader.getClass(), "addURL", URL.class);
 					URL selfUrl = new File(ClassRootFinder.findClassRootOfClass(AnnotationProcessor.class)).toURI().toURL();
-					m.invoke(environmentClassLoader, selfUrl);
+					Permit.invoke(m, environmentClassLoader, selfUrl);
 				}
 			}
 			

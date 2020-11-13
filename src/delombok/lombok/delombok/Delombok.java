@@ -34,7 +34,6 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -841,12 +840,8 @@ public class Delombok {
 				}
 			}
 		}
-		try {
-			return attributeMethod.invoke(compiler, arg);
-		} catch (Exception e) {
-			if (e instanceof InvocationTargetException) throw Lombok.sneakyThrow(e.getCause());
-			throw Lombok.sneakyThrow(e);
-		}
+		
+		return Permit.invokeSneaky(attributeMethod, compiler, arg);
 	}
 	
 	private static Method flowMethod;
@@ -863,12 +858,8 @@ public class Delombok {
 				}
 			}
 		}
-		try {
-			flowMethod.invoke(compiler, arg);
-		} catch (Exception e) {
-			if (e instanceof InvocationTargetException) throw Lombok.sneakyThrow(e.getCause());
-			throw Lombok.sneakyThrow(e);
-		}
+		
+		Permit.invokeSneaky(flowMethod, compiler, arg);
 	}
 	
 	private static String canonical(File dir) {

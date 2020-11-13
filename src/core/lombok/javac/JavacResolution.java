@@ -25,7 +25,6 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -65,7 +64,6 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
 
-import lombok.Lombok;
 import lombok.core.debug.AssertionLogger;
 import lombok.permit.Permit;
 
@@ -251,27 +249,27 @@ public class JavacResolution {
 	
 	private static class ReflectiveAccess {
 		private static Method UPPER_BOUND;
+		private static Throwable initError;
 		
 		static {
 			Method upperBound = null;
 			try {
 				upperBound = Permit.getMethod(Types.class, "upperBound", Type.class);
-			} catch (Throwable ignore) {}
+			} catch (Throwable e) {
+				initError = e;
+			}
+			
 			if (upperBound == null) try {
 				upperBound = Permit.getMethod(Types.class, "wildUpperBound", Type.class);
-			} catch (Throwable ignore) {}
+			} catch (Throwable e) {
+				initError = e;
+			}
 			
 			UPPER_BOUND = upperBound;
 		}
 		
 		public static Type Types_upperBound(Types types, Type type) {
-			try {
-				return (Type) UPPER_BOUND.invoke(types, type);
-			} catch (InvocationTargetException e) {
-				throw Lombok.sneakyThrow(e.getCause());
-			} catch (Exception e) {
-				throw Lombok.sneakyThrow(e);
-			}
+			return (Type) Permit.invokeSneaky(initError, UPPER_BOUND, types, type);
 		}
 	}
 	

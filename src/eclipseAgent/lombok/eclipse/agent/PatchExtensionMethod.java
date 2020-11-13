@@ -99,13 +99,13 @@ public class PatchExtensionMethod {
 		
 		private static final Method shortMethod = getMethod("invalidMethod", MessageSend.class, MethodBinding.class);
 		private static final Method longMethod = getMethod("invalidMethod", MessageSend.class, MethodBinding.class, Scope.class);
+		private static Throwable initProblem;
 		
 		private static Method getMethod(String name, Class<?>... types) {
 			try {
-				Method m = ProblemReporter.class.getMethod(name, types);
-				m.setAccessible(true);
-				return m;
+				return Permit.getMethod(ProblemReporter.class, name, types);
 			} catch (Exception e) {
+				initProblem = e;
 				return null;
 			}
 		}
@@ -120,8 +120,9 @@ public class PatchExtensionMethod {
 		static void invoke(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method, Scope scope) {
 			if (messageSend != null) {
 				try {
-					if (shortMethod != null) shortMethod.invoke(problemReporter, messageSend, method);
-					else if (longMethod != null) longMethod.invoke(problemReporter, messageSend, method, scope);
+					if (shortMethod != null) Permit.invoke(initProblem, shortMethod, problemReporter, messageSend, method);
+					else if (longMethod != null) Permit.invoke(initProblem, longMethod, problemReporter, messageSend, method, scope);
+					else Permit.reportReflectionProblem(initProblem, "method named 'invalidMethod' not found in ProblemReporter.class");
 				} catch (IllegalAccessException e) {
 					throw new RuntimeException(e);
 				} catch (InvocationTargetException e) {

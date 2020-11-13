@@ -373,7 +373,7 @@ public class EclipseHandlerUtil {
 		private static Class<?> getClass(String fqn) {
 			try {
 				return Class.forName(fqn);
-			} catch (Exception e) {
+			} catch (Throwable t) {
 				return null;
 			}
 		}
@@ -381,7 +381,7 @@ public class EclipseHandlerUtil {
 		private static Field getField(Class<?> c, String fName) {
 			try {
 				return Permit.getField(c, fName);
-			} catch (Exception e) {
+			} catch (Throwable t) {
 				return null;
 			}
 		}
@@ -2309,18 +2309,10 @@ public class EclipseHandlerUtil {
 	public static IntLiteral makeIntLiteral(char[] token, ASTNode source) {
 		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
 		IntLiteral result;
-		try {
-			if (intLiteralConstructor != null) {
-				result = intLiteralConstructor.newInstance(token, pS, pE);
-			} else {
-				result = (IntLiteral) intLiteralFactoryMethod.invoke(null, token, pS, pE);
-			}
-		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
-		} catch (IllegalAccessException e) {
-			throw Lombok.sneakyThrow(e);
-		} catch (InstantiationException e) {
-			throw Lombok.sneakyThrow(e);
+		if (intLiteralConstructor != null) {
+			result = Permit.newInstanceSneaky(intLiteralConstructor, token, pS, pE);
+		} else {
+			result = (IntLiteral) Permit.invokeSneaky(intLiteralFactoryMethod, null, token, pS, pE);
 		}
 		
 		if (source != null) setGeneratedBy(result, source);
@@ -2671,7 +2663,7 @@ public class EclipseHandlerUtil {
 		try {
 			Class.forName("org.eclipse.jdt.internal.core.CompilationUnit");
 			eclipseMode = true;
-		} catch (Exception e) {
+		} catch (Throwable t) {
 			eclipseMode = false;
 		}
 		return eclipseMode;

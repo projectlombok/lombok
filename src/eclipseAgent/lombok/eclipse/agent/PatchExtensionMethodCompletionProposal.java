@@ -198,7 +198,7 @@ public class PatchExtensionMethodCompletionProposal {
 		public static final Field completionEngineField;
 		public static final Field nameLookupField;
 		public static final Method createJavaCompletionProposalMethod;
-
+		
 		static {
 			replacementOffsetField = accessField(AbstractJavaCompletionProposal.class, "fReplacementOffset");
 			contextField = accessField(CompletionProposalCollector.class, "fContext");

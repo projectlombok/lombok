@@ -58,7 +58,7 @@ public class Javac6BasedLombokOptions extends LombokOptions {
 	
 	@Override public void putJavacOption(String optionName, String value) {
 		try {
-			options_put.invoke(this, optionName_valueOf.invoke(null, optionName), value);
+			Permit.invoke(options_put, this, Permit.invoke(optionName_valueOf, null, optionName), value);
 		} catch (IllegalAccessException e) {
 			throw new IllegalArgumentException("Can't initialize Javac6-based lombok options due to reflection issue.", e);
 		} catch (InvocationTargetException e) {

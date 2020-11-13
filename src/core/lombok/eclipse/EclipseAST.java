@@ -286,23 +286,8 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	 */
 	public static void addProblemToCompilationResult(char[] fileNameArray, CompilationResult result,
 			boolean isWarning, String message, int sourceStart, int sourceEnd) {
-		try {
-			EcjReflectionCheck.addProblemToCompilationResult.invoke(null, fileNameArray, result, isWarning, message, sourceStart, sourceEnd);
-		} catch (NoClassDefFoundError e) {
-			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-			//do anything useful here.
-		} catch (IllegalAccessException e) {
-			throw Lombok.sneakyThrow(e);
-		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e);
-		} catch (NullPointerException e) {
-			if (!"false".equals(System.getProperty("lombok.debug.reflection", "false"))) {
-				e.initCause(EcjReflectionCheck.problemAddProblemToCompilationResult);
-				throw e;
-			}
-			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-			//do anything useful here.
-		}
+		
+		Permit.invokeSneaky(EcjReflectionCheck.problemAddProblemToCompilationResult, EcjReflectionCheck.addProblemToCompilationResult, null, fileNameArray, result, isWarning, message, sourceStart, sourceEnd);
 	}
 	
 	public static Annotation[] getTopLevelTypeReferenceAnnotations(TypeReference tr) {
@@ -310,14 +295,14 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		if (m == null) return null;
 		Annotation[][] annss = null;
 		try {
-			annss = (Annotation[][]) m.invoke(tr);
+			annss = (Annotation[][]) Permit.invoke(m, tr);
 			if (annss != null) return annss[0];
 		} catch (Throwable ignore) {}
 		
 		try {
 			Field f = EcjReflectionCheck.typeReferenceAnnotations;
 			if (f == null) return null;
-			annss = (Annotation[][]) f.get(tr);
+			annss = (Annotation[][]) Permit.get(f, tr);
 			if (annss == null) return null;
 			return annss[annss.length - 1];
 		} catch (Throwable t) {

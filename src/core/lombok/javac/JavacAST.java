@@ -397,11 +397,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	}
 	
 	private JCTree getBody(JCTree jcTree) {
-		try {
-			return (JCTree) getBodyMethod(jcTree.getClass()).invoke(jcTree);
-		} catch (Exception e) {
-			throw Javac.sneakyThrow(e);
-		}
+		return (JCTree) Permit.invokeSneaky(getBodyMethod(jcTree.getClass()), jcTree);
 	}
 	
 	private final static ConcurrentMap<Class<?>, Method> getBodyMethods = new ConcurrentHashMap<Class<?>, Method>();
@@ -662,42 +658,26 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		}
 		
 		@Override void error1(DiagnosticPosition pos, String message) {
-			try {
-				Object error = this.errorKey.invoke(diags, PROC_MESSAGER, new Object[] { message });
-				errorMethod.invoke(log, multiple, pos, error);
-			} catch (Throwable t) {
-				//t.printStackTrace();
-			}
+			Object error = Permit.invokeSneaky(this.errorKey, diags, PROC_MESSAGER, new Object[] { message });
+			if (error != null) Permit.invokeSneaky(errorMethod, log, multiple, pos, error);
 		}
 
 		@Override
 		void warning1(DiagnosticPosition pos, String message) {
-			try {
-				Object warning = this.warningKey.invoke(diags, PROC_MESSAGER, new Object[] { message });
-				warningMethod.invoke(log, pos, warning);
-			} catch (Throwable t) {
-				//t.printStackTrace();
-			}
+			Object warning = Permit.invokeSneaky(this.warningKey, diags, PROC_MESSAGER, new Object[] { message });
+			if (warning != null) Permit.invokeSneaky(warningMethod, log, pos, warning);
 		}
 
 		@Override
 		void mandatoryWarning1(DiagnosticPosition pos, String message) {
-			try {
-				Object warning = this.warningKey.invoke(diags, PROC_MESSAGER, new Object[] { message });
-				mandatoryWarningMethod.invoke(log, pos, warning);
-			} catch (Throwable t) {
-				//t.printStackTrace();
-			}
+			Object warning = Permit.invokeSneaky(this.warningKey, diags, PROC_MESSAGER, new Object[] { message });
+			if (warning != null) Permit.invokeSneaky(mandatoryWarningMethod, log, pos, warning);
 		}
 
 		@Override
 		void note(DiagnosticPosition pos, String message) {
-			try {
-				Object note = this.noteKey.invoke(diags, PROC_MESSAGER, new Object[] { message });
-				noteMethod.invoke(log, pos, note);
-			} catch (Throwable t) {
-				//t.printStackTrace();
-			}
+			Object note = Permit.invokeSneaky(this.noteKey, diags, PROC_MESSAGER, new Object[] { message });
+			if (note != null) Permit.invokeSneaky(noteMethod, log, pos, note);
 		}
 	}
 }
