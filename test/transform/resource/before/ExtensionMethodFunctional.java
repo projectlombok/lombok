@@ -1,10 +1,13 @@
 // version 8:
-import java.util.function.Function;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lombok.experimental.ExtensionMethod;
 
-@ExtensionMethod(ExtensionMethodFunctional.Extensions.class)
+@ExtensionMethod(value = ExtensionMethodFunctional.Extensions.class, suppressBaseMethods = false)
 class ExtensionMethodFunctional {
 	public void test() {
 		String test = "test";
@@ -12,6 +15,9 @@ class ExtensionMethodFunctional {
 		
 		test.consume(s -> System.out.println("1: " + s), s -> System.out.println("2: " + s));
 		test.consume(System.out::println, System.out::println);
+		
+		Stream.of("a", "b", "c").map(String::toUpperCase).toList();
+		List<Integer> i2 = Stream.of("a", "b", "c").map(String::toUpperCase).toList2();
 	}
 	
 	static class Extensions {
@@ -28,6 +34,14 @@ class ExtensionMethodFunctional {
 			for (int i = 0; i < consumer.length; i++) {
 				consumer[i].accept(o);
 			}
+		}
+		
+		public static <T> List<T> toList(Stream<T> stream) {
+			return (List<T>) stream.collect(Collectors.toList());
+		}
+		
+		public static <T, U> List<U> toList2(Stream<T> stream) {
+			return null;
 		}
 	}
 }

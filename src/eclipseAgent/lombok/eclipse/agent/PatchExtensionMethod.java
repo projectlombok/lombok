@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2012-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
-import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Scope;
@@ -304,12 +303,13 @@ public class PatchExtensionMethod {
 					argumentTypes.add(argumentType);
 				}
 				
-				// Copy generic information. This one covers a few simple cases, more complex cases are still broken
-				int typeVariables = extensionMethod.typeVariables.length;
-				if (typeVariables > 0 && methodCall.receiver.resolvedType instanceof ParameterizedTypeBinding) {
-					ParameterizedTypeBinding parameterizedTypeBinding = (ParameterizedTypeBinding) methodCall.receiver.resolvedType;
-					if (parameterizedTypeBinding.arguments != null && parameterizedTypeBinding.arguments.length == typeVariables) {
-						methodCall.genericTypeArguments = parameterizedTypeBinding.arguments;
+				if (methodCall.receiver instanceof MessageSend) {
+					if (Reflection.inferenceContexts != null) {
+						try {
+							Permit.set(Reflection.inferenceContexts, methodCall.receiver, null);
+						} catch (IllegalAccessException ignore) {
+							// ignore
+						}
 					}
 				}
 				
@@ -402,6 +402,7 @@ public class PatchExtensionMethod {
 	private static final class Reflection {
 		public static final Field argumentTypes = Permit.permissiveGetField(MessageSend.class, "argumentTypes");
 		public static final Field argumentsHaveErrors = Permit.permissiveGetField(MessageSend.class, "argumentsHaveErrors");
+		public static final Field inferenceContexts = Permit.permissiveGetField(MessageSend.class, "inferenceContexts");
 		private static final Class<?> functionalExpression;
 		private static final Constructor<?> polyTypeBindingConstructor;
 		
