@@ -18,3 +18,16 @@ class ConstructorWithToBuilder<T> {
 	public ConstructorWithToBuilder(String mOne, @Builder.ObtainVia(field = "foo") T baz, com.google.common.collect.ImmutableList<T> bars) {
 	}
 }
+
+class StaticMethodWithToBuilder<T> {
+	private T foo;
+	
+	public StaticMethodWithToBuilder(T foo) {
+		this.foo = foo;
+	}
+
+    @Builder(toBuilder = true)
+    public static <T> StaticMethodWithToBuilder<T> of(T foo) {
+        return new StaticMethodWithToBuilder<T>(foo);
+    }
+}

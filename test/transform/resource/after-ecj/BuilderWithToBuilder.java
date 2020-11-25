@@ -126,3 +126,35 @@ import lombok.Builder;
     return new ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T>().mOne(this.mOne).baz(this.foo).bars(this.bars);
   }
 }
+class StaticMethodWithToBuilder<T> {
+  public static @java.lang.SuppressWarnings("all") class StaticMethodWithToBuilderBuilder<T> {
+    private @java.lang.SuppressWarnings("all") T foo;
+    @java.lang.SuppressWarnings("all") StaticMethodWithToBuilderBuilder() {
+      super();
+    }
+    public @java.lang.SuppressWarnings("all") StaticMethodWithToBuilder.StaticMethodWithToBuilderBuilder<T> foo(final T foo) {
+      this.foo = foo;
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") StaticMethodWithToBuilder<T> build() {
+      return StaticMethodWithToBuilder.<T>of(this.foo);
+    }
+    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+      return (("StaticMethodWithToBuilder.StaticMethodWithToBuilderBuilder(foo=" + this.foo) + ")");
+    }
+  }
+  private T foo;
+  public StaticMethodWithToBuilder(T foo) {
+    super();
+    this.foo = foo;
+  }
+  public static @Builder(toBuilder = true) <T>StaticMethodWithToBuilder<T> of(T foo) {
+    return new StaticMethodWithToBuilder<T>(foo);
+  }
+  public static @java.lang.SuppressWarnings("all") <T>StaticMethodWithToBuilder.StaticMethodWithToBuilderBuilder<T> builder() {
+    return new StaticMethodWithToBuilder.StaticMethodWithToBuilderBuilder<T>();
+  }
+  public @java.lang.SuppressWarnings("all") StaticMethodWithToBuilder.StaticMethodWithToBuilderBuilder<T> toBuilder() {
+    return new StaticMethodWithToBuilder.StaticMethodWithToBuilderBuilder<T>().foo(this.foo);
+  }
+}

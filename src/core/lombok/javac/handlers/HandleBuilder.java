@@ -371,7 +371,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				}
 				
 				List<JCTypeParameter> tpOnMethod = jmd.typarams;
-				List<JCTypeParameter> tpOnType = ((JCClassDecl) job.builderType.get()).typarams;
+				List<JCTypeParameter> tpOnType = ((JCClassDecl) job.parentType.get()).typarams;
 				typeArgsForToBuilder = new ArrayList<Name>();
 				
 				for (JCTypeParameter tp : tpOnMethod) {
