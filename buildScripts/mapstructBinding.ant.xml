@@ -80,8 +80,11 @@ exists as a separate dependency solely because it is itself dependent on both lo
 		<mkdir dir="build/mapstruct-binding/classes" />
 		<echo file="build/mapstruct-binding/classes/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.mapstruct.NotifierHider$AstModificationNotifier</echo>
 		
+		<javac includeAntRuntime="false" source="1.8" target="1.8" destdir="build/mapstruct-binding/classes" modulepath="build/mapstruct-module-path">
+			<src path="src/bindings/mapstruct" excludes="module-info.java"/>
+		</javac>
 		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct-binding/classes" modulepath="build/mapstruct-module-path">
-			<src path="src/bindings/mapstruct" />
+			<src path="src/bindings/mapstruct" includes="module-info.java"/>
 		</javac>
 		<jar destfile="dist/lombok-mapstruct-binding-${mapstruct-binding.version}.jar" basedir="build/mapstruct-binding/classes" includes="**" />
 	</target>
