@@ -38,8 +38,6 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.util.List;
 
-import lombok.Lombok;
-
 // sunapi suppresses javac's warning about using Unsafe; 'all' suppresses eclipse's warning about the unspecified 'sunapi' key. Leave them both.
 // Yes, javac's definition of the word 'all' is quite contrary to what the dictionary says it means. 'all' does NOT include 'sunapi' according to javac.
 @SuppressWarnings({"sunapi", "all"})
@@ -223,9 +221,9 @@ public class Permit {
 			return null;
 		} catch (IllegalAccessException e) {
 			handleReflectionDebug(e, initError);
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
+			throw sneakyThrow(e.getCause());
 		} catch (RuntimeException e) {
 			handleReflectionDebug(e, initError);
 			throw e;
@@ -276,12 +274,12 @@ public class Permit {
 			return null;
 		} catch (IllegalAccessException e) {
 			handleReflectionDebug(e, initError);
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (InstantiationException e) {
 			handleReflectionDebug(e, initError);
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
+			throw sneakyThrow(e.getCause());
 		} catch (RuntimeException e) {
 			handleReflectionDebug(e, initError);
 			throw e;
@@ -329,4 +327,15 @@ public class Permit {
 			initError.printStackTrace(System.err);
 		}
 	}
+	
+	public static RuntimeException sneakyThrow(Throwable t) {
+		if (t == null) throw new NullPointerException("t");
+		return Permit.<RuntimeException>sneakyThrow0(t);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T extends Throwable> T sneakyThrow0(Throwable t) throws T {
+		throw (T)t;
+	}
+	
 }
