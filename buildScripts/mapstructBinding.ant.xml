@@ -96,6 +96,37 @@ exists as a separate dependency solely because it is itself dependent on both lo
 	<target name="mapstructBinding.pack" depends="dist,-mapstructBinding.jar,-mapstructBinding.doc,-mapstructBinding.src">
 	</target>
 	
+	<target name="mapstructBinding.publish" depends="mapstructBinding.pack, setup.ssh">
+		<tar destfile="dist/mavenPublish-mapstructBinding.tar.bz2" compression="bzip2">
+		<tarfileset dir="dist">
+			<include name="lombok-mapstruct-binding-${mapstruct-binding.version}.jar" />
+			<include name="lombok-mapstruct-binding-${mapstruct-binding.version}-sources.jar" />
+			<include name="lombok-mapstruct-binding-${mapstruct-binding.version}-javadoc.jar" />
+		</tarfileset>
+		<tarfileset dir="build/mapstruct-binding/maven" includes="pom.xml" />
+		</tar>
+		<ivy:scpUpload
+			from="dist/mavenPublish-mapstructBinding.tar.bz2"
+			to="/data/lombok/staging"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/publishToMavenCentral-mapstructBinding"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<echo>The artifact has been published to staging. Now go to https://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/showMavenCentralPassword"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+	</target>
+	
 	<target name="mapstructBinding.maven" depends="mapstructBinding.pack" description="Create a maven repo for mapstruct binding into a build dir.">
 		<delete quiet="true" dir="build/mapstruct-binding-maven" />
 		<mkdir dir="build/mapstruct-binding-maven" />
