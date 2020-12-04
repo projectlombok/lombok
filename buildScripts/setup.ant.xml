@@ -24,6 +24,9 @@
 This buildfile is part of projectlombok.org. It sets up the build itself.
 	</description>
 	
+	<!-- increment this number to force a clean of the 'build' dir -->
+	<property name="build.version" value="1" />
+	
 	<property name="pattern.jdk11plus" value="^(\d\d\d+|1[1-9]|[2-9]\d)(\..*)?$" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<property environment="env" />
@@ -83,6 +86,37 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	</target>
 	
 	<target name="setup.ssh" depends="-setup.ssh.ask, -setup.ssh.save" />
+	
+	<target name="-autoclean.check">
+		<available type="dir" file="build" property="existingbuild.present" />
+		<loadresource property="existingbuild.ver">
+			<first count="1">
+				<resources>
+					<restrict>
+						<fileset dir="." includes="build/build-ver.txt" />
+						<exists />
+					</restrict>
+					<string>0</string>
+				</resources>
+			</first>
+		</loadresource>
+		<condition property="existingbuild.mismatch">
+			<and>
+				<isset property="existingbuild.present" />
+				<not><equals arg1="${existingbuild.ver}" arg2="${build.version}" trim="true" /></not>
+			</and>
+		</condition>
+	</target>
+	
+	<target name="autoclean" depends="-autoclean.check" if="existingbuild.mismatch" description="Checks if a change in the build or deplist neccessitates a clean">
+		<echo>build ver has been incremented, neccessitating a clean...</echo>
+		<delete dir="build" />
+	</target>
+	
+	<target name="-setup.build" depends="autoclean">
+		<mkdir dir="build" />
+		<echo file="build/build-ver.txt">${build.version}</echo>
+	</target>
 	
 	<target name="clean" description="Removes all generated files.">
 		<delete dir="build" quiet="true" />

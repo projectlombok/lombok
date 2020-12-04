@@ -27,7 +27,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 	<property name="mapstruct-binding.version" value="0.2.0" />
 	
 	<!-- compiles just 'version.java' and runs the produced class file, setting up the various version properties -->
-	<target name="version" depends="ipp.setup, deps.jdk-runtime" description="Shows the version number" unless="lombok.version">
+	<target name="version" depends="ipp.setup, deps.jdk-runtime, -setup.build" description="Shows the version number" unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true">
 			<bootclasspath path="${jdk6-rt.loc}" />
@@ -51,7 +51,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		<echo level="info">Lombok version: ${lombok.version} (${lombok.fullversion})</echo>
 	</target>
 	
-	<target name="compile" depends="version, deps" description="Compiles the code">
+	<target name="compile" depends="version, deps, -setup.build" description="Compiles the code">
 		<!--
 			1. Compile stubs.
 			2. Compile lombok-utils.
@@ -218,7 +218,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 	</target>
 	
 	<!-- compiles the bit of API from mapstruct that lombok compiles against. -->
-	<target name="mapstruct.compile">
+	<target name="mapstruct.compile" depends="-setup.build">
 		<mkdir dir="build/mapstruct" />
 		<ivy:compile destdir="build/mapstruct" release="8">
 			<src path="src/j9stubs" />
@@ -294,7 +294,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	
-	<target name="compile.support" depends="ipp.setup, deps" description="Compiles code that is used solely by the build, such as website and IDE project creation">
+	<target name="compile.support" depends="ipp.setup, deps, -setup.build" description="Compiles code that is used solely by the build, such as website and IDE project creation">
 		<ivy:compile includeDestClasses="false" includeantruntime="false" destdir="build/support" debug="on" source="1.8" target="1.8">
 			<compilerarg value="-proc:none" />
 			<compilerarg value="-Xlint:-options" />

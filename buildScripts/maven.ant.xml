@@ -59,7 +59,7 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 		</sequential>
 	</macrodef>
 	
-	<target name="maven" depends="version, dist, javadoc.build" description="Creates a maven repo for the current release into a build dir. The intent is for you to put that on a server someplace. Will invoke your local mvn installation.">
+	<target name="maven" depends="version, dist, javadoc.build, -setup.build" description="Creates a maven repo for the current release into a build dir. The intent is for you to put that on a server someplace. Will invoke your local mvn installation.">
 		<mkdir dir="build" />
 		<mkdir dir="dist" />
 		

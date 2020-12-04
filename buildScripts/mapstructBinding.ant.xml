@@ -26,7 +26,7 @@ version on mavencentral is the last version that is ever needed; the code itself
 exists as a separate dependency solely because it is itself dependent on both lombok and mapstruct.
 	</description>
 	
-	<target name="-mapstructBinding.compile">
+	<target name="-mapstructBinding.compile" depends="-setup.build">
 		<mkdir dir="build/mapstruct" />
 		<javac includeAntRuntime="false" source="1.8" target="1.8" destdir="build/mapstruct">
 			<src path="src/j9stubs" />

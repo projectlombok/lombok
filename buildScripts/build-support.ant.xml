@@ -50,7 +50,7 @@ None of these tasks are normally needed, unless modifying how the build works, s
 		<input addproperty="target.jdk">You need to specify the JDK9+ jdk whose jdk.compiler and java.compiler modules are to be converted. Run ant with -Dtarget.jdk=/full/path/here to automate this, or type the path in now (for example: /Library/JavaVirtualMachines/jdk-14.jdk/Contents/Home):</input>
 	</target>
 	
-	<target name="make.javac-patch-jar" depends="-ask.target-jdk" description="to test javac13 on JDK14, for example, you need a jar (not a jmod), to use with --patch-modules. This task makes those.">
+	<target name="make.javac-patch-jar" depends="-ask.target-jdk, -setup.build" description="to test javac13 on JDK14, for example, you need a jar (not a jmod), to use with --patch-modules. This task makes those.">
 		<exec executable="${target.jdk}/bin/java${executable.suffix}" outputproperty="target.javac.version.full" errorproperty="target.javac.version.err">
 			<arg value="--version" />
 		</exec>
