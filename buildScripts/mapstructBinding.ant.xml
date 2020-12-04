@@ -28,12 +28,9 @@ exists as a separate dependency solely because it is itself dependent on both lo
 	
 	<target name="-mapstructBinding.compile">
 		<mkdir dir="build/mapstruct" />
-		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct">
+		<javac includeAntRuntime="false" source="1.8" target="1.8" destdir="build/mapstruct">
 			<src path="src/j9stubs" />
-			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
 		</javac>
-		<mkdir dir="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi" />
-		<move file="build/mapstruct/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" tofile="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.SCL.lombok" />
 	</target>
 	
 	<target name="-mapstructBinding.prepare" depends="-mapstructBinding.compile">
@@ -80,11 +77,14 @@ exists as a separate dependency solely because it is itself dependent on both lo
 		<mkdir dir="build/mapstruct-binding/classes" />
 		<echo file="build/mapstruct-binding/classes/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.mapstruct.NotifierHider$AstModificationNotifier</echo>
 		
-		<javac includeAntRuntime="false" source="1.8" target="1.8" destdir="build/mapstruct-binding/classes" modulepath="build/mapstruct-module-path">
-			<src path="src/bindings/mapstruct" excludes="module-info.java"/>
+		<javac includeAntRuntime="false" source="1.8" target="1.8" destdir="build/mapstruct-binding/classes">
+			<src path="src/bindings/mapstruct" />
+			<exclude name="module-info.java" />
+			<classpath location="build/mapstruct" />
 		</javac>
 		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct-binding/classes" modulepath="build/mapstruct-module-path">
-			<src path="src/bindings/mapstruct" includes="module-info.java"/>
+			<src path="src/bindings/mapstruct" />
+			<include name="module-info.java" />
 		</javac>
 		<jar destfile="dist/lombok-mapstruct-binding-${mapstruct-binding.version}.jar" basedir="build/mapstruct-binding/classes" includes="**" />
 	</target>

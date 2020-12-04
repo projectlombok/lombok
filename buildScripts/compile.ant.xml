@@ -24,7 +24,7 @@
 This buildfile is part of projectlombok.org. It takes care of compiling and building lombok itself.
 	</description>
 	
-	<property name="mapstruct-binding.version" value="0.1.0" />
+	<property name="mapstruct-binding.version" value="0.2.0" />
 	
 	<!-- compiles just 'version.java' and runs the produced class file, setting up the various version properties -->
 	<target name="version" depends="ipp.setup, deps.jdk-runtime" description="Shows the version number" unless="lombok.version">
