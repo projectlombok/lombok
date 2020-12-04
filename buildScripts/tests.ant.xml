@@ -33,8 +33,8 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<bootclasspath path="${jdk6-rt.loc}" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.eclipse-oxygen" />
-			<classpath location="build/lombok" />
-			<classpath location="build/tests" />
+			<classpath refid="packing.basedirs.path" />
+			<classpath path="build/tests" />
 			<src path="test/core/src" />
 			<src path="test/transform/src" />
 			<src path="test/bytecode/src" />
@@ -84,7 +84,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />
 			<classpath refid="cp.javac6" />
-			<classpath location="build/lombok" />
+			<classpath refid="packing.basedirs.path" />
 			<classpath location="build/tests" />
 			<test name="lombok.TestJavac" />
 		</junit>
@@ -100,7 +100,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />
 			<classpath refid="cp.javac8" />
-			<classpath location="build/lombok" />
+			<classpath refid="packing.basedirs.path" />
 			<classpath location="build/tests" />
 			<test name="lombok.TestJavac" />
 		</junit>
@@ -117,7 +117,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 				<formatter type="plain" usefile="false" unless="tests.quiet" />
 				<classpath refid="cp.test" />
 				<classpath refid="cp.stripe" />
-				<classpath location="build/lombok" />
+				<classpath refid="packing.basedirs.path" />
 				<classpath location="build/tests" />
 				<classpath location="build/teststubs" />
 				<test name="lombok.TestJavac" />
@@ -140,7 +140,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />
-			<classpath location="build/lombok" />
+			<classpath refid="packing.basedirs.path" />
 			<classpath location="build/tests" />
 			<classpath location="build/teststubs" />
 			<test name="lombok.TestJavac" />
@@ -160,7 +160,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 				<classpath refid="cp.test" />
 				<classpath refid="cp.stripe" />
 				<classpath refid="cp.eclipse-@{version}" />
-				<classpath location="build/lombok" />
+				<classpath refid="packing.basedirs.path" />
 				<classpath location="build/tests" />
 				<test name="lombok.TestEclipse" />
 			</junit>

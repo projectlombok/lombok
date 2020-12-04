@@ -217,7 +217,7 @@ such as applying the templates to produce the website, converting the changelog 
 			<package name="lombok" />
 			<package name="lombok.experimental" />
 			<package name="lombok.extern.*" />
-			<classpath location="build/lombok" />
+			<classpath location="build/lombok-main" />
 			<header><![CDATA[<a href='https://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
 			<bottom><![CDATA[<i>Copyright &copy; 2009-${javadoc.year} The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
 		</javadoc>
