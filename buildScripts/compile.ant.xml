@@ -220,13 +220,9 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 	<!-- compiles the bit of API from mapstruct that lombok compiles against. -->
 	<target name="mapstruct.compile">
 		<mkdir dir="build/mapstruct" />
-		<ivy:compile destdir="build/mapstruct" release="9">
+		<ivy:compile destdir="build/mapstruct" release="8">
 			<src path="src/j9stubs" />
 		</ivy:compile>
-		<mkdir dir="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi" />
-		<move
-			file="build/mapstruct/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class"
-			tofile="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.SCL.lombok" />
 	</target>
 	
 	<target name="-deps.unpack" depends="deps">

@@ -73,7 +73,7 @@ exists as a separate dependency solely because it is itself dependent on both lo
 		<jar destfile="dist/lombok-mapstruct-binding-${mapstruct-binding.version}-javadoc.jar" basedir="build/mapstruct-binding/api" includes="**" />
 	</target>
 	
-	<target name="-mapstructBinding.jar" depends="dist,-mapstructBinding.prepare">
+	<target name="-mapstructBinding.jar" depends="dist, -mapstructBinding.prepare">
 		<mkdir dir="build/mapstruct-binding/classes" />
 		<echo file="build/mapstruct-binding/classes/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.mapstruct.NotifierHider$AstModificationNotifier</echo>
 		
