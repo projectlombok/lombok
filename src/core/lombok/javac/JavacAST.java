@@ -174,7 +174,14 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (sbtMappedVirtualFileRootsField == null) return null;
 		
 		String encodedPath = (String) sbtMappedVirtualFilePathField.get(mappedVirtualFile);
-		if (!encodedPath.startsWith("${")) return null;
+		if (!encodedPath.startsWith("${")) {
+			File maybeAbsoluteFile = new File(encodedPath);
+			if (maybeAbsoluteFile.exists()) {
+				return maybeAbsoluteFile.toURI();
+			} else {
+				return null;
+			}
+		}
 		int idx = encodedPath.indexOf('}');
 		if (idx == -1) return null;
 		String base = encodedPath.substring(2, idx);
