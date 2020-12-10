@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.17 "Edgy Guinea Pig"
 * BUGFIX: Various tools using ecj under the hood (including intellij) could cause corrupt class files to be generated. [PR #2637](https://github.com/rzwitserloot/lombok/pull/2637), [lombok-intellij-plugin issue #969](https://github.com/mplushnikov/lombok-intellij-plugin/issues/969).
 * BUGFIX: Netbeans would not work with 1.18.16 anymore. [Issue #2612](https://github.com/rzwitserloot/lombok/issues/2612)
+* BUGFIX: `@ExtensionMethod` support in ecj improved when generics are involved. [Issue #2648](https://github.com/rzwitserloot/lombok/issues/2648), [PR #2658](https://github.com/rzwitserloot/lombok/pull/2658) thanks to __@Rawi01__.
 * PLATFORM: using `lombok.config` files when compiling with sbt 1.4 now works again. [Issue #2645](https://github.com/rzwitserloot/lombok/issues/2645)
 * (potential) BUGFIX: Using lombok with Maven Tycho now works. With assistance from [Rabea Gransberger](https://github.com/rgra). [Issue #285](https://github.com/rzwitserloot/lombok/issues/285) __UPDATE: This doesn't quite work yet, still investigating.__
 
