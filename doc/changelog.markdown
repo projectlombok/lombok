@@ -15,6 +15,7 @@ Lombok Changelog
 * FEATURE: If using `@Synchronized("lockVar")`, if `lockVar` is referring to a static field, the code lombok generates no longer causes a warning about accessing a static entity incorrectly. [Issue #678](https://github.com/rzwitserloot/lombok/issues/678)
 * FEATURE: `@Jacksonized` on a `@Builder` or `@SuperBuilder` will configure [Jackson](https://github.com/FasterXML/jackson) to use this builder when deserializing. [Pull Request #2387](https://github.com/rzwitserloot/lombok/pull/2387) thanks to __@JanRieke__. [@Jacksonized documentation](https://projectlombok.org/features/experimental/Jacksonized).
 * FEATURE: The checkerframework support has been updated; the relevant annotations were renamed in checkerframework's APIs, lombok now generates the annotations according to their current API names.
+* FEATURE: Add option to cache hashCode via `@EqualsAndHashCode(cacheStrategy = EqualsAndHashCode.CacheStrategy.LAZY)`. [Issue #784](https://github.com/rzwitserloot/lombok/issues/784) [Pull Request](https://github.com/rzwitserloot/lombok/pull/2513) thanks to __@andrebrait__.
 * PLATFORM: Added support for compiling projects with OpenJ9 [Pull Request #2437](https://github.com/rzwitserloot/lombok/pull/2437)
 * PLATFORM: Improved support for recent JVM/javac versions (14 and 15) and new language features.
 * PERFORMANCE: Several performance improvements during parsing/compilation, both using javac and Eclipse. Thanks __@Rawi01__!
@@ -128,7 +129,7 @@ Lombok Changelog
 ### v1.16.22 "Envious Ferret" (May 29th, 2018)
 * FEATURE: Private no-args constructor for `@Data` and `@Value` to enable deserialization frameworks (like Jackson) to operate out-of-the-box. Use `lombok.noArgsConstructor.extraPrivate = false` to disable this behavior.
 * FEATURE: Methods can now be marked for inclusion in `toString`, `equals`, and `hashCode` generation. There is a new mechanism to mark which fields (and now, methods) are to be included or excluded for the generation of these methods: mark the relevant member with for example `@ToString.Include` or `@EqualsAndHashCode.Exclude`. [ToString documentation](https://projectlombok.org/features/ToString) [EqualsAndHashCode documentation](https://projectlombok.org/features/EqualsAndHashCode)
-* FEATURE: `@Getter` and `@Setter` also allow `onMethod` and `onParam` when put on a type. [Issue #1653](https://github.com/rzwitserloot/lombok/issues/1653) 
+* FEATURE: `@Getter` and `@Setter` also allow `onMethod` and `onParam` when put on a type. [Issue #1653](https://github.com/rzwitserloot/lombok/issues/1653)
 * FEATURE: `@FieldNameConstants` is a new feature that generates string constants for your field names. [Docs on @FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants).
 * PLATFORM: Lombok can be compiled on JDK10, and should run on JDK10. [Issue #1693](https://github.com/rzwitserloot/lombok/issues/1693)
 * PLATFORM: lombok now counts as an _incremental annotation processor_ for gradle. Should speed up your gradle builds considerably! [Issue #1580](https://github.com/rzwitserloot/lombok/issues/1580)
@@ -171,7 +172,7 @@ Lombok Changelog
 * DEPRECATION: The configuration key `lombok.addGeneratedAnnotation` is now deprecated, use `lombok.addJavaxGeneratedAnnotation` instead.
 
 ### v1.16.12 (December 5th, 2016)
-* FEATURE: `var` is the mutable sister of `val`. For now experimental, and opt-in using `ALLOW` in the flagUsage configuration key. Thanks for the contribution, Bulgakov Alexander. 
+* FEATURE: `var` is the mutable sister of `val`. For now experimental, and opt-in using `ALLOW` in the flagUsage configuration key. Thanks for the contribution, Bulgakov Alexander.
 * CHANGE: `@Value` and `@FieldDefaults` no longer touch static fields [Issue #1254](https://github.com/rzwitserloot/lombok/issues/1254)
 * BUGFIX: `val` in lambda expressions now work as expected [Issue #911](https://github.com/rzwitserloot/lombok/issues/911)
 * BUGFIX: `Getter(lazy=true)` now emits an error message when used on a transient field [Issue #1236](https://github.com/rzwitserloot/lombok/issues/1236)
