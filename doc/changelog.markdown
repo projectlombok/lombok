@@ -16,7 +16,7 @@ Lombok Changelog
 * FEATURE: If using `@Synchronized("lockVar")`, if `lockVar` is referring to a static field, the code lombok generates no longer causes a warning about accessing a static entity incorrectly. [Issue #678](https://github.com/rzwitserloot/lombok/issues/678)
 * FEATURE: `@Jacksonized` on a `@Builder` or `@SuperBuilder` will configure [Jackson](https://github.com/FasterXML/jackson) to use this builder when deserializing. [Pull Request #2387](https://github.com/rzwitserloot/lombok/pull/2387) thanks to __@JanRieke__. [@Jacksonized documentation](https://projectlombok.org/features/experimental/Jacksonized).
 * FEATURE: The checkerframework support has been updated; the relevant annotations were renamed in checkerframework's APIs, lombok now generates the annotations according to their current API names.
-* FEATURE: Add option to cache hashCode via `@EqualsAndHashCode(cacheStrategy = EqualsAndHashCode.CacheStrategy.LAZY)`. [Issue #784](https://github.com/rzwitserloot/lombok/issues/784) [Pull Request](https://github.com/rzwitserloot/lombok/pull/2513) thanks to __@andrebrait__.
+* FEATURE: Add option to cache hashCode via `@EqualsAndHashCode(cacheStrategy = EqualsAndHashCode.CacheStrategy.LAZY)`. [Issue #784](https://github.com/rzwitserloot/lombok/issues/784) [Pull Request #2513](https://github.com/rzwitserloot/lombok/pull/2513) thanks to __@andrebrait__.
 * PLATFORM: Added support for compiling projects with OpenJ9 [Pull Request #2437](https://github.com/rzwitserloot/lombok/pull/2437)
 * PLATFORM: Improved support for recent JVM/javac versions (14 and 15) and new language features.
 * PERFORMANCE: Several performance improvements during parsing/compilation, both using javac and Eclipse. Thanks __@Rawi01__!
