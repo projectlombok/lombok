@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-20199 The Project Lombok Authors.
+ * Copyright (C) 2018-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
