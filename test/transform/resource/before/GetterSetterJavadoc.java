@@ -1,4 +1,3 @@
-//platform !ecj: Javadoc copying not supported on ecj
 @lombok.Data
 class GetterSetterJavadoc1 {
 	/**

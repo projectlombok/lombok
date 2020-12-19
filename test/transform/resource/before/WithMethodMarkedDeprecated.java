@@ -1,4 +1,3 @@
-//platform !ecj: Javadoc copying not supported on ecj
 import lombok.With;
 
 class WithMethodMarkedDeprecated {

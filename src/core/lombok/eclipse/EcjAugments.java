@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.SourceMethod;
 
@@ -42,13 +43,13 @@ public final class EcjAugments {
 	public static final FieldAugment<ASTNode, Boolean> ASTNode_handled = FieldAugment.augment(ASTNode.class, boolean.class, "lombok$handled");
 	public static final FieldAugment<ASTNode, ASTNode> ASTNode_generatedBy = FieldAugment.augment(ASTNode.class, ASTNode.class, "$generatedBy");
 	public static final FieldAugment<Annotation, Boolean> Annotation_applied = FieldAugment.augment(Annotation.class, boolean.class, "lombok$applied");
+	public static final FieldAugment<ICompilationUnit, Map<String, String>> CompilationUnit_javadoc = FieldAugment.augment(ICompilationUnit.class, Map.class, "$javadoc");
 	
 	public static final class EclipseAugments {
 		private EclipseAugments() {
 			// Prevent instantiation
 		}
 		
-		public static final FieldAugment<CompilationUnit, Map<String, String>> CompilationUnit_javadoc = FieldAugment.augment(CompilationUnit.class, Map.class, "$javadoc");
 		public static final FieldAugment<CompilationUnit, ConcurrentMap<String, List<SourceMethod>>> CompilationUnit_delegateMethods = FieldAugment.augment(CompilationUnit.class, ConcurrentMap.class, "$delegateMethods");
 	}
 }
