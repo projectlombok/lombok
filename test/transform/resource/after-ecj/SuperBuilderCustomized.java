@@ -62,6 +62,9 @@ public class SuperBuilderCustomized {
       }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B field2(final double field2) {
         this.field2 = field2;
         return self();

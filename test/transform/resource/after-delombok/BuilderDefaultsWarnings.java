@@ -23,11 +23,17 @@ public class BuilderDefaultsWarnings {
 		@java.lang.SuppressWarnings("all")
 		BuilderDefaultsWarningsBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder x(final long x) {
 			this.x = x;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder z(final int z) {
 			this.z = z;

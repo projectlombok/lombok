@@ -13,11 +13,17 @@ class BuilderGenericMethod<T> {
 		@java.lang.SuppressWarnings("all")
 		MapBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderGenericMethod<T>.MapBuilder<N> a(final int a) {
 			this.a = a;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderGenericMethod<T>.MapBuilder<N> b(final long b) {
 			this.b = b;

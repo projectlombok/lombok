@@ -8,10 +8,16 @@
     }
     protected abstract @java.lang.SuppressWarnings("all") B self();
     public abstract @java.lang.SuppressWarnings("all") C build();
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") B field(final int field) {
       this.field = field;
       return self();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") B otherField(final int otherField) {
       this.otherField = otherField;
       return self();

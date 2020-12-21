@@ -2645,8 +2645,9 @@ public class EclipseHandlerUtil {
 	}
 	 
 	public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
-		Map<String, String> docs = EcjAugments.CompilationUnit_javadoc.setIfAbsent(cud.compilationResult.compilationUnit, new HashMap<String, String>());
+		if (doc == null) return;
 		
+		Map<String, String> docs = EcjAugments.CompilationUnit_javadoc.setIfAbsent(cud.compilationResult.compilationUnit, new HashMap<String, String>());
 		if (node instanceof AbstractMethodDeclaration) {
 			AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) node;
 			String signature = getSignature(type, methodDeclaration);
@@ -2759,10 +2760,10 @@ public class EclipseHandlerUtil {
 		try {
 			CompilationUnitDeclaration cud = ((CompilationUnitDeclaration) from.top().get());
 			String newJavadoc = copyMode.apply(cud, from);
-			if (newJavadoc != null) {
-				if (forceAddReturn) newJavadoc = addReturnsThisIfNeeded(newJavadoc);
-				setDocComment(cud, type, to, newJavadoc);
+			if (forceAddReturn) {
+				newJavadoc = addReturnsThisIfNeeded(newJavadoc);
 			}
+			setDocComment(cud, type, to, newJavadoc);
 		} catch (Exception ignore) {}
 	}
 }

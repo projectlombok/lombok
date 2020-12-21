@@ -8,10 +8,16 @@ public @Builder class BuilderDefaultsWarnings {
     @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder x(final long x) {
       this.x = x;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder z(final int z) {
       this.z = z;
       return this;

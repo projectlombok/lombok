@@ -25,12 +25,18 @@ public class SuperBuilderWithDefaults {
 			protected abstract B self();
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B millis(final long millis) {
 				this.millis$value = millis;
 				millis$set = true;
 				return self();
 			}
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B numberField(final N numberField) {
 				this.numberField$value = numberField;
@@ -89,6 +95,9 @@ public class SuperBuilderWithDefaults {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B doubleField(final double doubleField) {
 				this.doubleField$value = doubleField;

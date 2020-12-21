@@ -16,6 +16,9 @@ public class JacksonJsonProperty {
 		@java.lang.SuppressWarnings("all")
 		JacksonJsonPropertyBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@JsonProperty("kebab-case-prop")
 		@JsonSetter(nulls = Nulls.SKIP)
 		@java.lang.SuppressWarnings("all")

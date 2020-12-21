@@ -19,11 +19,17 @@ public class BuilderWithRecursiveGenerics {
 			@java.lang.SuppressWarnings("all")
 			TestBuilder() {
 			}
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> foo(final Foo foo) {
 				this.foo = foo;
 				return this;
 			}
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> bar(final Bar bar) {
 				this.bar = bar;

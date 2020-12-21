@@ -23,18 +23,30 @@ public class SuperBuilderBasicToBuilder {
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.SuppressWarnings("all") C build();
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B field1(final int field1) {
         this.field1 = field1;
         return self();
       }
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B obtainViaField(final int obtainViaField) {
         this.obtainViaField = obtainViaField;
         return self();
       }
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B obtainViaMethod(final int obtainViaMethod) {
         this.obtainViaMethod = obtainViaMethod;
         return self();
       }
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B obtainViaStaticMethod(final String obtainViaStaticMethod) {
         this.obtainViaStaticMethod = obtainViaStaticMethod;
         return self();
@@ -128,6 +140,9 @@ public class SuperBuilderBasicToBuilder {
       }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B field3(final double field3) {
         this.field3 = field3;
         return self();

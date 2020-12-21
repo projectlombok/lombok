@@ -5,10 +5,16 @@ public @lombok.Builder class BuilderWithBadNames {
     @java.lang.SuppressWarnings("all") BuilderWithBadNamesBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithBadNames.BuilderWithBadNamesBuilder build(final String build) {
       this.build = build;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithBadNames.BuilderWithBadNamesBuilder toString(final String toString) {
       this.toString = toString;
       return this;

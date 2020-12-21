@@ -13,11 +13,17 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithExistingBuilderClassWithSetterPrefixBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg1(final Z arg1) {
 			this.arg1 = arg1;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg3(final String arg3) {
 			this.arg3 = arg3;

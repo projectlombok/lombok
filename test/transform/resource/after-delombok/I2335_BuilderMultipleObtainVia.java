@@ -26,11 +26,17 @@ public class I2335_BuilderMultipleObtainVia {
 		@java.lang.SuppressWarnings("all")
 		I2335_BuilderMultipleObtainViaBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public I2335_BuilderMultipleObtainVia.I2335_BuilderMultipleObtainViaBuilder theString(final String theString) {
 			this.theString = theString;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public I2335_BuilderMultipleObtainVia.I2335_BuilderMultipleObtainViaBuilder theLong(final Long theLong) {
 			this.theLong = theLong;

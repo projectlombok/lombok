@@ -9,10 +9,16 @@ class BuilderWithExistingBuilderClassWithSetterPrefix<T, K extends Number> {
     @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassWithSetterPrefixBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg1(final Z arg1) {
       this.arg1 = arg1;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithExistingBuilderClassWithSetterPrefix.BuilderWithExistingBuilderClassWithSetterPrefixBuilder<Z> withArg3(final String arg3) {
       this.arg3 = arg3;
       return this;

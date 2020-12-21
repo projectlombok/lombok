@@ -27,16 +27,25 @@ class BuilderWithToBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithToBuilderBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> one(final String one) {
 			this.one = one;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> two(final String two) {
 			this.two = two;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> foo(final T foo) {
 			this.foo = foo;
@@ -114,16 +123,25 @@ class ConstructorWithToBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		ConstructorWithToBuilderBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T> mOne(final String mOne) {
 			this.mOne = mOne;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T> baz(final T baz) {
 			this.baz = baz;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public ConstructorWithToBuilder.ConstructorWithToBuilderBuilder<T> bars(final com.google.common.collect.ImmutableList<T> bars) {
 			this.bars = bars;
@@ -167,7 +185,9 @@ class StaticMethodWithToBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		StaticMethodWithToBuilderBuilder() {
 		}
-
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public StaticMethodWithToBuilder.StaticMethodWithToBuilderBuilder<T> foo(final T foo) {
 			this.foo = foo;

@@ -2120,10 +2120,10 @@ public class JavacHandlerUtil {
 		try {
 			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
 			String newJavadoc = copyMode.apply(cu, from);
-			if (newJavadoc != null) {
-				if (forceAddReturn) newJavadoc = addReturnsThisIfNeeded(newJavadoc);
-				Javac.setDocComment(cu, to, newJavadoc);
+			if (forceAddReturn) {
+				newJavadoc = addReturnsThisIfNeeded(newJavadoc);
 			}
+			Javac.setDocComment(cu, to, newJavadoc);
 		} catch (Exception ignore) {}
 	}
 	

@@ -10,11 +10,17 @@ final @NoArgsConstructor(force = true) @AllArgsConstructor @Builder @Value class
     @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaultsBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder x(final int x) {
       this.x$value = x;
       x$set = true;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder y(final int y) {
       this.y = y;
       return this;

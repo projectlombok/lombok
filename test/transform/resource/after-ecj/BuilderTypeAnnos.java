@@ -11,6 +11,9 @@ import java.util.List;
     @java.lang.SuppressWarnings("all") BuilderTypeAnnosBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderTypeAnnos.BuilderTypeAnnosBuilder foo(final @TA List<String> foo) {
       this.foo = foo;
       return this;

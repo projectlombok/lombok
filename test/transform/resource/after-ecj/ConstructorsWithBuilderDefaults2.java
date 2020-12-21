@@ -11,16 +11,25 @@ final @Builder @Value class ConstructorsWithBuilderDefaults<T> {
     @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaultsBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> z(final java.util.List<T> z) {
       this.z$value = z;
       z$set = true;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> x(final T x) {
       this.x$value = x;
       x$set = true;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> q(final T q) {
       this.q = q;
       return this;

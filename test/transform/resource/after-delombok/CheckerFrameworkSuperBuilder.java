@@ -29,6 +29,9 @@ class CheckerFrameworkSuperBuilder {
 			@org.checkerframework.dataflow.qual.SideEffectFree
 			@java.lang.SuppressWarnings("all")
 			public abstract C build(CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) ParentBuilder<C, B> this);
+			/**
+			 * @return {@code this}.
+			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
 			public B x(CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") ParentBuilder<C, B> this, final int x) {
@@ -36,12 +39,18 @@ class CheckerFrameworkSuperBuilder {
 				x$set = true;
 				return self();
 			}
+			/**
+			 * @return {@code this}.
+			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
 			public B y(CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") ParentBuilder<C, B> this, final int y) {
 				this.y = y;
 				return self();
 			}
+			/**
+			 * @return {@code this}.
+			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
 			public B z(CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") ParentBuilder<C, B> this, final int z) {
@@ -147,6 +156,9 @@ class CheckerFrameworkSuperBuilder {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public abstract C build(CheckerFrameworkSuperBuilder.ZChild.@org.checkerframework.checker.calledmethods.qual.CalledMethods("b") ZChildBuilder<C, B> this);
+			/**
+			 * @return {@code this}.
+			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
 			public B a(CheckerFrameworkSuperBuilder.ZChild.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("a") ZChildBuilder<C, B> this, final int a) {
@@ -154,6 +166,9 @@ class CheckerFrameworkSuperBuilder {
 				a$set = true;
 				return self();
 			}
+			/**
+			 * @return {@code this}.
+			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
 			public B b(CheckerFrameworkSuperBuilder.ZChild.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("b") ZChildBuilder<C, B> this, final int b) {

@@ -10,15 +10,24 @@ public final @Value @Builder class BuilderDefaults {
     @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder x(final int x) {
       this.x$value = x;
       x$set = true;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder name(final String name) {
       this.name = name;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder z(final long z) {
       this.z$value = z;
       z$set = true;

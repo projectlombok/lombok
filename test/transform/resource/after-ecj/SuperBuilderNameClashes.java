@@ -70,6 +70,9 @@ public class SuperBuilderNameClashes {
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.SuppressWarnings("all") C3 build();
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B c2(final C2 c2) {
         this.c2 = c2;
         return self();

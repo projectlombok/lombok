@@ -6,10 +6,16 @@ public @Builder class I2335_BuilderMultipleObtainVia {
     @java.lang.SuppressWarnings("all") I2335_BuilderMultipleObtainViaBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") I2335_BuilderMultipleObtainVia.I2335_BuilderMultipleObtainViaBuilder theString(final String theString) {
       this.theString = theString;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") I2335_BuilderMultipleObtainVia.I2335_BuilderMultipleObtainViaBuilder theLong(final Long theLong) {
       this.theLong = theLong;
       return this;

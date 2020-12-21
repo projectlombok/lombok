@@ -6,10 +6,16 @@ import java.util.List;
     @java.lang.SuppressWarnings("all") BuilderSimpleBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderSimple.BuilderSimpleBuilder<T> yes(final int yes) {
       this.yes = yes;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderSimple.BuilderSimpleBuilder<T> also(final List<T> also) {
       this.also = also;
       return this;

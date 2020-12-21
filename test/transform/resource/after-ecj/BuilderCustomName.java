@@ -7,6 +7,9 @@ import java.util.List;
     }
     protected abstract @java.lang.SuppressWarnings("all") B self();
     public abstract @java.lang.SuppressWarnings("all") C build();
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") B field(final int field) {
       this.field = field;
       return self();

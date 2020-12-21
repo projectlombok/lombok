@@ -12,6 +12,9 @@ class BuilderSimpleWithSetterPrefix<T> {
 		@java.lang.SuppressWarnings("all")
 		BuilderSimpleWithSetterPrefixBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder<T> withUnprefixed(final int unprefixed) {
 			this.unprefixed = unprefixed;

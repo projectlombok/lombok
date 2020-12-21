@@ -18,11 +18,17 @@ class BuilderSimple<T> {
 		@java.lang.SuppressWarnings("all")
 		BuilderSimpleBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderSimple.BuilderSimpleBuilder<T> yes(final int yes) {
 			this.yes = yes;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderSimple.BuilderSimpleBuilder<T> also(final List<T> also) {
 			this.also = also;

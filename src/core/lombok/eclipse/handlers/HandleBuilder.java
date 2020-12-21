@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -1045,14 +1043,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		try {
 			CompilationUnitDeclaration cud = (CompilationUnitDeclaration) from.top().get();
 			String methodComment = getDocComment(cud, from.get());
-			if (methodComment == null) return;
-			
-			Pattern pattern = Pattern.compile("@param " + param + " (\\S|\\s)+?(?=^ ?@)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-			Matcher matcher = pattern.matcher(methodComment);
-			if (matcher.find()) {
-				String newJavadoc = addReturnsThisIfNeeded(matcher.group());
-				setDocComment(cud, type, to, newJavadoc);
-			}
+			String newJavadoc = addReturnsThisIfNeeded(getParamJavadoc(methodComment, param));
+			setDocComment(cud, type, to, newJavadoc);
 		} catch (Exception ignore) {}
 	}
 	

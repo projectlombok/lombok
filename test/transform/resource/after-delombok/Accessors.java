@@ -4,6 +4,9 @@ class AccessorsFluent {
 	public String fieldName() {
 		return this.fieldName;
 	}
+	/**
+	 * @return {@code this}.
+	 */
 	@java.lang.SuppressWarnings("all")
 	public AccessorsFluent fieldName(final String fieldName) {
 		this.fieldName = fieldName;
@@ -21,6 +24,9 @@ class AccessorsFluentOnClass {
 	public String getOtherFieldWithOverride() {
 		return this.otherFieldWithOverride;
 	}
+	/**
+	 * @return {@code this}.
+	 */
 	@java.lang.SuppressWarnings("all")
 	public AccessorsFluentOnClass fieldName(final String fieldName) {
 		this.fieldName = fieldName;
@@ -29,6 +35,9 @@ class AccessorsFluentOnClass {
 }
 class AccessorsChain {
 	private boolean isRunning;
+	/**
+	 * @return {@code this}.
+	 */
 	@java.lang.SuppressWarnings("all")
 	public AccessorsChain setRunning(final boolean isRunning) {
 		this.isRunning = isRunning;
@@ -93,6 +102,9 @@ class AccessorsPrefix3 {
 }
 class AccessorsFluentGenerics<T extends Number> {
 	private String name;
+	/**
+	 * @return {@code this}.
+	 */
 	@java.lang.SuppressWarnings("all")
 	public AccessorsFluentGenerics<T> name(final String name) {
 		this.name = name;

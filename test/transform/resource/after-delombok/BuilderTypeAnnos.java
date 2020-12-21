@@ -22,6 +22,9 @@ class BuilderTypeAnnos {
 		@java.lang.SuppressWarnings("all")
 		BuilderTypeAnnosBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderTypeAnnos.BuilderTypeAnnosBuilder foo(@TA final List<String> foo) {
 			this.foo = foo;

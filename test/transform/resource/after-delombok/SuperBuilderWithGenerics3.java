@@ -10,6 +10,9 @@ public class SuperBuilderWithGenerics3 {
 			protected abstract B self();
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B str(final String str) {
 				this.str = str;
@@ -60,6 +63,9 @@ public class SuperBuilderWithGenerics3 {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B field3(final double field3) {
 				this.field3 = field3;

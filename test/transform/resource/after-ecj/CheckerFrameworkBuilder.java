@@ -11,15 +11,24 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") CheckerFrameworkBuilderBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder this, final int x) {
       this.x$value = x;
       x$set = true;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder this, final int y) {
       this.y = y;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder this, final int z) {
       this.z = z;
       return this;

@@ -15,21 +15,33 @@ class BuilderComplex {
 		@java.lang.SuppressWarnings("all")
 		TestVoidName() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderComplex.TestVoidName<T> number(final T number) {
 			this.number = number;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderComplex.TestVoidName<T> arg2(final int arg2) {
 			this.arg2 = arg2;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderComplex.TestVoidName<T> arg3(final String arg3) {
 			this.arg3 = arg3;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderComplex.TestVoidName<T> selfRef(final BuilderComplex selfRef) {
 			this.selfRef = selfRef;
