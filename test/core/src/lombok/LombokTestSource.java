@@ -65,11 +65,20 @@ public class LombokTestSource {
 
 	public boolean runOnPlatform(String platform) {
 		if (platforms == null || platforms.isEmpty()) return true;
+		int inclusiveCount = 0;
 		for (String pl : platforms) {
-			if (pl.startsWith("!") && pl.regionMatches(true, 1, platform, 0, platform.length())) return false;
+			if (pl.startsWith("!")) continue;
+			inclusiveCount++;
 			if (pl.equalsIgnoreCase(platform)) return true;
 		}
-		return false;
+		if (inclusiveCount == platforms.size()) {
+			return false;
+		}
+		for (String pl : platforms) {
+			if (!pl.startsWith("!")) continue;
+			if (pl.regionMatches(true, 1, platform, 0, platform.length())) return false;
+		}
+		return true;
 	}
 	
 	public boolean versionWithinLimit(int version) {
