@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2020 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,8 @@ import lombok.core.CleanupRegistry;
 import lombok.core.DiagnosticsReceiver;
 import lombok.javac.JavacTransformer;
 import lombok.permit.Permit;
+import lombok.permit.dummy.Parent;
+import sun.misc.Unsafe;
 
 /**
  * This Annotation Processor is the standard injection mechanism for lombok-enabling the javac compiler.
@@ -430,6 +432,7 @@ public class LombokProcessor extends AbstractProcessor {
 	 * gradle incremental compilation, the delegate ProcessingEnvironment of the gradle wrapper is returned.
 	 */
 	public JavacProcessingEnvironment getJavacProcessingEnvironment(Object procEnv) {
+		addOpensForLombok();
 		if (procEnv instanceof JavacProcessingEnvironment) return (JavacProcessingEnvironment) procEnv;
 		
 		// try to find a "delegate" field in the object, and use this to try to obtain a JavacProcessingEnvironment
@@ -446,7 +449,91 @@ public class LombokProcessor extends AbstractProcessor {
 			"Can't get the delegate of the gradle IncrementalProcessingEnvironment. Lombok won't work.");
 		return null;
 	}
-
+	
+	private static Object getOwnModule() {
+		try {
+			Method m = Permit.getMethod(Class.class, "getModule");
+			return m.invoke(LombokProcessor.class);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	private static Object getJdkCompilerModule() {
+		/* call public api: ModuleLayer.boot().findModule("jdk.compiler").get();
+		   but use reflection because we don't want this code to crash on jdk1.7 and below.
+		   In that case, none of this stuff was needed in the first place, so we just exit via
+		   the catch block and do nothing.
+		 */
+		
+		try {
+			Class<?> cModuleLayer = Class.forName("java.lang.ModuleLayer");
+			Method mBoot = cModuleLayer.getDeclaredMethod("boot");
+			Object bootLayer = mBoot.invoke(null);
+			Class<?> cOptional = Class.forName("java.util.Optional");
+			Method mFindModule = cModuleLayer.getDeclaredMethod("findModule", String.class);
+			Object oCompilerO = mFindModule.invoke(bootLayer, "jdk.compiler");
+			return cOptional.getDeclaredMethod("get").invoke(oCompilerO);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/** Useful from jdk9 and up; required from jdk16 and up. This code is supposed to gracefully do nothing on jdk8 and below, as this operation isn't needed there. */
+	private static void addOpensForLombok() {
+		Class<?> cModule;
+		try {
+			cModule = Class.forName("java.lang.Module");
+		} catch (ClassNotFoundException e) {
+			return; //jdk8-; this is not needed.
+		}
+		
+		Unsafe unsafe = getUnsafe();
+		Object jdkCompilerModule = getJdkCompilerModule();
+		Object ownModule = getOwnModule();
+		String[] allPkgs = {
+			"com.sun.tools.javac.code",
+			"com.sun.tools.javac.comp",
+			"com.sun.tools.javac.file",
+			"com.sun.tools.javac.main",
+			"com.sun.tools.javac.model",
+			"com.sun.tools.javac.parser",
+			"com.sun.tools.javac.processing",
+			"com.sun.tools.javac.tree",
+			"com.sun.tools.javac.util",
+			"com.sun.tools.javac.jvm",
+		};
+		
+		try {
+			Method m = cModule.getDeclaredMethod("implAddOpens", String.class, cModule);
+			long firstFieldOffset = getFirstFieldOffset(unsafe);
+			unsafe.putBooleanVolatile(m, firstFieldOffset, true);
+			for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
+		} catch (Exception ignore) {}
+	}
+	
+	private static long getFirstFieldOffset(Unsafe unsafe) {
+		try {
+			return unsafe.objectFieldOffset(Parent.class.getDeclaredField("first"));
+		} catch (NoSuchFieldException e) {
+			// can't happen.
+			throw new RuntimeException(e);
+		} catch (SecurityException e) {
+			// can't happen
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private static Unsafe getUnsafe() {
+		try {
+			Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+			theUnsafe.setAccessible(true);
+			return (Unsafe) theUnsafe.get(null);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
 	/**
 	 * This class returns the given filer as a JavacFiler. In case the filer is no
 	 * JavacFiler (e.g. the Gradle IncrementalFiler), its "delegate" field is used to get the JavacFiler
