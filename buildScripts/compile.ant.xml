@@ -298,6 +298,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 				<attribute name="Can-Redefine-Classes" value="true" />
 				<attribute name="Main-Class" value="lombok.launch.Main" />
 				<attribute name="Lombok-Version" value="${lombok.version}" />
+				<attribute name="Automatic-Module-Name" value="lombok" />
 			</manifest>
 		</jar>
 		<delete file="release-timestamp.txt" />
