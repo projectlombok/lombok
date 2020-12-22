@@ -761,11 +761,20 @@ public class HandlerUtil {
 	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER|WITH(?:ER)?)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 	private static final Pattern LINE_BREAK_FINDER = Pattern.compile("(\\r?\\n)?");
 	
-	public static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
+	public enum JavadocTag {
+		PARAM("@param(?:eter)?"),
+		RETURN("@returns?");
+		
+		private Pattern pattern;
+		
+		JavadocTag(String regexpFragment) {
+			pattern = Pattern.compile("\\s?^[ \\t]*\\**[ \\t]*" + regexpFragment + "(\\S|\\s)*?(?=(\\s^\\s*\\**\\s*@|\\Z))", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		}
+	}
+	
+	public static String stripLinesWithTagFromJavadoc(String javadoc, JavadocTag tag) {
 		if (javadoc == null || javadoc.isEmpty()) return javadoc;
-		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(javadoc);
-		return m.replaceAll("");
+		return tag.pattern.matcher(javadoc).replaceAll("");
 	}
 	
 	public static String stripSectionsFromJavadoc(String javadoc) {

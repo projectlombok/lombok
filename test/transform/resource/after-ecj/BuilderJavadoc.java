@@ -58,7 +58,6 @@ import java.util.List;
   }
   /**
    * getsetwith gets a builder setter, an instance getter and setter, and a wither.
-   *
    * @return tag is moved to the getter.
    */
   public @java.lang.SuppressWarnings("all") int getGetsetwith() {

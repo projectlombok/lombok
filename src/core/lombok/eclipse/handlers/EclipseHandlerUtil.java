@@ -2688,7 +2688,7 @@ public class EclipseHandlerUtil {
 				String out = getJavadocSection(javadoc, "GETTER");
 				final boolean sectionBased = out != null;
 				if (!sectionBased) {
-					out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@param(?:eter)?\\s+.*");
+					out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.PARAM);
 				}
 				return out;
 			}
@@ -2718,7 +2718,7 @@ public class EclipseHandlerUtil {
 			String out = getJavadocSection(javadoc, sectionName);
 			final boolean sectionBased = out != null;
 			if (!sectionBased) {
-				out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@returns?\\s+.*");
+				out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.RETURN);
 			}
 			return shouldReturnThis(node) ? addReturnsThisIfNeeded(out) : out;
 		}
