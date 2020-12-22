@@ -65,8 +65,8 @@ public class TestConfiguration {
 		outStream.flush();
 		errStream.flush();
 		
-		String out = new String(rawOut.toByteArray()).replace('\\', '/').replaceAll(Pattern.quote(normalizedName) + "|" + Pattern.quote(baseName), "BASE/").trim();
-		String err = new String(rawErr.toByteArray()).replace('\\', '/').replaceAll(Pattern.quote(normalizedName) + "|" + Pattern.quote(baseName), "BASE/").trim();
+		String out = new String(rawOut.toByteArray()).replace('\\', '/').replace("\r", "").replaceAll(Pattern.quote(normalizedName) + "|" + Pattern.quote(baseName), "BASE/").trim();
+		String err = new String(rawErr.toByteArray()).replace('\\', '/').replace("\r", "").replaceAll(Pattern.quote(normalizedName) + "|" + Pattern.quote(baseName), "BASE/").trim();
 		
 		checkContent(directory, out, "out");
 		checkContent(directory, err, "err");
