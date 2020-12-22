@@ -3,7 +3,6 @@ class BuilderJavadoc<T> {
 	/**
 	 * basic gets only a builder setter.
 	 * @see #getsetwith
-	 *
 	 * @return tag is removed from the setter.
 	 */
 	private final int basic;
@@ -92,7 +91,6 @@ class BuilderJavadoc<T> {
 	}
 	/**
 	 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
-	 *
 	 * @return tag is moved to the getter.
 	 */
 	@java.lang.SuppressWarnings("all")

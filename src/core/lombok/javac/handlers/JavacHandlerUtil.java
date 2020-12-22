@@ -2044,7 +2044,7 @@ public class JavacHandlerUtil {
 				String out = getJavadocSection(javadoc, "GETTER");
 				final boolean sectionBased = out != null;
 				if (!sectionBased) {
-					out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@param(?:eter)?\\s+.*");
+					out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.PARAM);
 				}
 				node.getAst().cleanupTask("javadocfilter-getter", n, new CleanupTask() {
 					@Override public void cleanup() {
@@ -2052,7 +2052,7 @@ public class JavacHandlerUtil {
 						if (javadoc == null || javadoc.isEmpty()) return;
 						javadoc = stripSectionsFromJavadoc(javadoc);
 						if (!sectionBased) {
-							javadoc = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@returns?\\s+.*");
+							javadoc = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.RETURN);
 						}
 						Javac.setDocComment(cu, n, javadoc);
 					}
@@ -2085,7 +2085,7 @@ public class JavacHandlerUtil {
 			String out = getJavadocSection(javadoc, sectionName);
 			final boolean sectionBased = out != null;
 			if (!sectionBased) {
-				out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@returns?\\s+.*");
+				out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.RETURN);
 			}
 			node.getAst().cleanupTask("javadocfilter-setter", n, new CleanupTask() {
 				@Override public void cleanup() {
@@ -2093,7 +2093,7 @@ public class JavacHandlerUtil {
 					if (javadoc == null || javadoc.isEmpty()) return;
 					javadoc = stripSectionsFromJavadoc(javadoc);
 					if (!sectionBased) {
-						javadoc = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@param(?:eter)?\\s+.*");
+						javadoc = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.PARAM);
 					}
 					Javac.setDocComment(cu, n, javadoc);
 				}
