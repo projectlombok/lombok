@@ -292,9 +292,7 @@ public class EclipseHandlerUtil {
 			MarkerAnnotation ann = new MarkerAnnotation(copyType(annotation.type, source), pS);
 			setGeneratedBy(ann, source);
 			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
-			try {
-				reflectSet(ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect(ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation));
-			} catch (Exception ignore) { /* Various eclipse versions don't have it */ }
+			copyMemberValuePairName(ann, annotation);
 			return ann;
 		}
 		
@@ -303,9 +301,7 @@ public class EclipseHandlerUtil {
 			setGeneratedBy(ann, source);
 			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
 			ann.memberValue = copyAnnotationMemberValue(((SingleMemberAnnotation) annotation).memberValue);
-			try {
-				reflectSet(ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect(ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation));
-			} catch (Exception ignore) { /* Various eclipse versions don't have it */ }
+			copyMemberValuePairName(ann, annotation);
 			return ann;
 		}
 		
@@ -321,13 +317,19 @@ public class EclipseHandlerUtil {
 				for (int i = 0; i < inPairs.length; i++) ann.memberValuePairs[i] =
 						new MemberValuePair(inPairs[i].name, inPairs[i].sourceStart, inPairs[i].sourceEnd, copyAnnotationMemberValue(inPairs[i].value));
 			}
-			try {
-				reflectSet(ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect(ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation));
-			} catch (Exception ignore) { /* Various eclipse versions don't have it */ }
+			copyMemberValuePairName(ann, annotation);
 			return ann;
 		}
 		
 		return annotation;
+	}
+	
+	private static void copyMemberValuePairName(Annotation source, Annotation target) {
+		if (ANNOTATION__MEMBER_VALUE_PAIR_NAME == null) return;
+		
+		try {
+			reflectSet(ANNOTATION__MEMBER_VALUE_PAIR_NAME, source, reflect(ANNOTATION__MEMBER_VALUE_PAIR_NAME, target));
+		} catch (Exception ignore) { /* Various eclipse versions don't have it */ }
 	}
 	
 	static class EclipseReflectiveMembers {
