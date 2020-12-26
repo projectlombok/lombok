@@ -16,7 +16,9 @@ public class Symtab {
 	public static Symtab instance(Context context) {return null;}
 	public Type unknownType;
 	public TypeSymbol noSymbol;
-	
+	public Type stringType;
+	public Type throwableType;
+
 	// JDK 9
 	public ModuleSymbol unnamedModule;
 }
