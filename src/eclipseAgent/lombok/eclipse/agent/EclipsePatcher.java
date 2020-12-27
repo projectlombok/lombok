@@ -372,7 +372,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchCatchReparse(ScriptManager sm) {
-		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
+		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "fixRetrieveStartingCatchPosition", "int", "int", "int"))
 				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM1).build());
