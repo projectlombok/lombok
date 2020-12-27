@@ -17,6 +17,9 @@ public class SuperBuilderWithNonNull {
 			protected abstract B self();
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B nonNullParentField(@lombok.NonNull final String nonNullParentField) {
 				if (nonNullParentField == null) {
@@ -74,6 +77,9 @@ public class SuperBuilderWithNonNull {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B nonNullChildField(@lombok.NonNull final String nonNullChildField) {
 				if (nonNullChildField == null) {

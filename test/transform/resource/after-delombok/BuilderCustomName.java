@@ -9,6 +9,9 @@ class BuilderCustomName<T> {
 		protected abstract B self();
 		@java.lang.SuppressWarnings("all")
 		public abstract C build();
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public B field(final int field) {
 			this.field = field;

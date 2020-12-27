@@ -1,5 +1,8 @@
 public @lombok.EqualsAndHashCode @lombok.ToString @lombok.AllArgsConstructor class NullLibrary2 {
   @lombok.With String foo;
+  /**
+   * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
+   */
   public @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") NullLibrary2 withFoo(final String foo) {
     return ((this.foo == foo) ? this : new NullLibrary2(foo));
   }

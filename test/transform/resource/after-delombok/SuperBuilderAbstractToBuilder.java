@@ -18,6 +18,9 @@ public class SuperBuilderAbstractToBuilder {
 			protected abstract B self();
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B parentField(final int parentField) {
 				this.parentField = parentField;
@@ -81,6 +84,9 @@ public class SuperBuilderAbstractToBuilder {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B childField(final double childField) {
 				this.childField = childField;
@@ -121,6 +127,9 @@ public class SuperBuilderAbstractToBuilder {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B grandChildField(final String grandChildField) {
 				this.grandChildField = grandChildField;

@@ -27,8 +27,6 @@ import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.lang.model.element.Modifier;
 
@@ -927,16 +925,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		try {
 			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
 			String methodComment = Javac.getDocComment(cu, from.get());
-			if (methodComment == null) return;
-			
-			Pattern pattern = Pattern.compile("@param " + param + " (\\S|\\s)+?(?=^ ?@)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-			Matcher matcher = pattern.matcher(methodComment);
-			if (matcher.find()) {
-				String newJavadoc = addReturnsThisIfNeeded(matcher.group());
-				Javac.setDocComment(cu, to, newJavadoc);
-			}
+			String newJavadoc = addReturnsThisIfNeeded(getParamJavadoc(methodComment, param));
+			Javac.setDocComment(cu, to, newJavadoc);
 		} catch (Exception ignore) {}
-	}
+	}	
 	
 	public JavacNode makeBuilderClass(BuilderJob job) {
 		//boolean isStatic, JavacNode source, JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast, AccessLevel access) {

@@ -31,17 +31,26 @@ public final class BuilderDefaults {
 		@java.lang.SuppressWarnings("all")
 		BuilderDefaultsBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaults.BuilderDefaultsBuilder x(final int x) {
 			this.x$value = x;
 			x$set = true;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaults.BuilderDefaultsBuilder name(final String name) {
 			this.name = name;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaults.BuilderDefaultsBuilder z(final long z) {
 			this.z$value = z;

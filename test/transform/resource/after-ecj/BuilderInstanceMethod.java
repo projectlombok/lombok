@@ -8,18 +8,30 @@ class BuilderInstanceMethod<T> {
     @java.lang.SuppressWarnings("all") StringBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder show(final int show) {
       this.show = show;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder yes(final int yes) {
       this.yes = yes;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder also(final List<T> also) {
       this.also = also;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderInstanceMethod<T>.StringBuilder $andMe(final int $andMe) {
       this.$andMe = $andMe;
       return this;

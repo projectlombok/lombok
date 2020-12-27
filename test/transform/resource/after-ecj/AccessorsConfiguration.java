@@ -24,6 +24,9 @@ class AccessorsConfiguration {
   AccessorsConfiguration3() {
     super();
   }
+  /**
+   * @return {@code this}.
+   */
   public @java.lang.SuppressWarnings("all") AccessorsConfiguration3 setFieldName(final String fFieldName) {
     this.fFieldName = fFieldName;
     return this;

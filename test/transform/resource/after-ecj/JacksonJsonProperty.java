@@ -9,6 +9,9 @@ public @Builder class JacksonJsonProperty {
     @java.lang.SuppressWarnings("all") JacksonJsonPropertyBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @JsonProperty("kebab-case-prop") @JsonSetter(nulls = Nulls.SKIP) @java.lang.SuppressWarnings("all") JacksonJsonProperty.JacksonJsonPropertyBuilder kebabCaseProp(final String kebabCaseProp) {
       this.kebabCaseProp = kebabCaseProp;
       return this;

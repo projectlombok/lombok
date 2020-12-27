@@ -32,6 +32,9 @@ class With5 {
 	}
 	With5(String foo) {
 	}
+	/**
+	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
+	 */
 	@java.lang.SuppressWarnings("all")
 	public With5 withFoo(final String foo) {
 		return this.foo == foo ? this : new With5(foo);
@@ -43,6 +46,9 @@ class With6 {
 	}
 	With6(String foo) {
 	}
+	/**
+	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
+	 */
 	@java.lang.SuppressWarnings("all")
 	public With6 withFoo(final String foo) {
 		return this.foo == foo ? this : new With6(foo);

@@ -13,6 +13,9 @@ public class SuperBuilderBasic {
 			protected abstract B self();
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B field1(final int field1) {
 				this.field1 = field1;
@@ -93,6 +96,9 @@ public class SuperBuilderBasic {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
+			/**
+			 * @return {@code this}.
+			 */
 			@java.lang.SuppressWarnings("all")
 			public B field3(final double field3) {
 				this.field3 = field3;

@@ -11,11 +11,17 @@ public class SuperBuilderWithDefaults {
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.SuppressWarnings("all") C build();
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B millis(final long millis) {
         this.millis$value = millis;
         millis$set = true;
         return self();
       }
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B numberField(final N numberField) {
         this.numberField$value = numberField;
         numberField$set = true;
@@ -68,6 +74,9 @@ public class SuperBuilderWithDefaults {
       }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
+      /**
+       * @return {@code this}.
+       */
       public @java.lang.SuppressWarnings("all") B doubleField(final double doubleField) {
         this.doubleField$value = doubleField;
         doubleField$set = true;

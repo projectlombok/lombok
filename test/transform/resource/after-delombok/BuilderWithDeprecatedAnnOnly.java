@@ -23,6 +23,9 @@ public class BuilderWithDeprecatedAnnOnly {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithDeprecatedAnnOnlyBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithDeprecatedAnnOnly.BuilderWithDeprecatedAnnOnlyBuilder dep1(final int dep1) {

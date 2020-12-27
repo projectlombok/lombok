@@ -23,21 +23,33 @@ class BuilderWithAccessors {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithAccessorsBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithAccessors.BuilderWithAccessorsBuilder plower(final int plower) {
 			this.plower = plower;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithAccessors.BuilderWithAccessorsBuilder upper(final int upper) {
 			this.upper = upper;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithAccessors.BuilderWithAccessorsBuilder foo(final int foo) {
 			this.foo = foo;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithAccessors.BuilderWithAccessorsBuilder _bar(final int _bar) {
 			this._bar = _bar;

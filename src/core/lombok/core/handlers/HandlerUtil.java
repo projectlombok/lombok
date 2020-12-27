@@ -762,12 +762,14 @@ public class HandlerUtil {
 	private static final Pattern LINE_BREAK_FINDER = Pattern.compile("(\\r?\\n)?");
 	
 	public static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
+		if (javadoc == null || javadoc.isEmpty()) return javadoc;
 		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(javadoc);
 		return m.replaceAll("");
 	}
 	
 	public static String stripSectionsFromJavadoc(String javadoc) {
+		if (javadoc == null || javadoc.isEmpty()) return javadoc;
 		Matcher sectionMatcher = SECTION_FINDER.matcher(javadoc);
 		if (!sectionMatcher.find()) return javadoc;
 		
@@ -775,6 +777,7 @@ public class HandlerUtil {
 	}
 	
 	public static String getJavadocSection(String javadoc, String sectionNameSpec) {
+		if (javadoc == null || javadoc.isEmpty()) return null;
 		String[] sectionNames = sectionNameSpec.split("\\|");
 		Matcher sectionMatcher = SECTION_FINDER.matcher(javadoc);
 		Matcher lineBreakMatcher = LINE_BREAK_FINDER.matcher(javadoc);
@@ -805,19 +808,30 @@ public class HandlerUtil {
 	private static final Pattern FIND_RETURN = Pattern.compile("^\\s*\\**\\s*@returns?\\s+.*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 	
 	public static String addReturnsThisIfNeeded(String in) {
-		if (FIND_RETURN.matcher(in).find()) return in;
+		if (in != null && FIND_RETURN.matcher(in).find()) return in;
 		
 		return addJavadocLine(in, "@return {@code this}.");
 	}
 	
 	public static String addReturnsUpdatedSelfIfNeeded(String in) {
-		if (FIND_RETURN.matcher(in).find()) return in;
+		if (in != null && FIND_RETURN.matcher(in).find()) return in;
 		
 		return addJavadocLine(in, "@return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).");
 	}
 	
 	public static String addJavadocLine(String in, String line) {
+		if (in == null) return line;
 		if (in.endsWith("\n")) return in + line + "\n";
 		return in + "\n" + line;
+	}
+
+	public static String getParamJavadoc(String methodComment, String param) {
+		if (methodComment == null || methodComment.isEmpty()) return methodComment;
+		Pattern pattern = Pattern.compile("@param " + param + " (\\S|\\s)+?(?=^ ?@)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(methodComment);
+		if (matcher.find()) {
+			return matcher.group();
+		}
+		return null;
 	}
 }

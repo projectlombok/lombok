@@ -25,6 +25,9 @@ import java.util.regex.Pattern;
   public @java.lang.SuppressWarnings("all") Pattern getPattern() {
     return this.pattern;
   }
+  /**
+   * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
+   */
   public @java.lang.SuppressWarnings("all") Tolerate2 withPattern(final Pattern pattern) {
     return ((this.pattern == pattern) ? this : new Tolerate2(pattern));
   }

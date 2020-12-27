@@ -15,11 +15,17 @@ public class BuilderWithBadNames {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithBadNamesBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithBadNames.BuilderWithBadNamesBuilder build(final String build) {
 			this.build = build;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithBadNames.BuilderWithBadNamesBuilder toString(final String toString) {
 			this.toString = toString;

@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -106,7 +105,6 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
-import org.eclipse.jdt.internal.core.CompilationUnit;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -125,6 +123,7 @@ import lombok.core.configuration.TypeName;
 import lombok.core.debug.ProblemReporter;
 import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.eclipse.EcjAugments;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
@@ -2643,42 +2642,20 @@ public class EclipseHandlerUtil {
 		return null;
 	}
 	
-	private static class EclipseOnlyUtil {
-		public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
-			if (cud.compilationResult.compilationUnit instanceof CompilationUnit) {
-				CompilationUnit compilationUnit = (CompilationUnit) cud.compilationResult.compilationUnit;
-				Map<String, String> docs = EclipseAugments.CompilationUnit_javadoc.setIfAbsent(compilationUnit, new HashMap<String, String>());
-				
-				if (node instanceof AbstractMethodDeclaration) {
-					AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) node;
-					String signature = getSignature(type, methodDeclaration);
-					/* Add javadoc start marker, add leading asterisks to each line, add javadoc end marker */
-					docs.put(signature, String.format("/**%n%s%n */", doc.replaceAll("(?m)^", " * ")));
-				}
-			}
-		}
-	}
-	
-	private static Boolean eclipseMode;
-	private static boolean eclipseMode() {
-		if (eclipseMode != null) return eclipseMode.booleanValue();
-		try {
-			Class.forName("org.eclipse.jdt.internal.core.CompilationUnit");
-			eclipseMode = true;
-		} catch (Throwable t) {
-			eclipseMode = false;
-		}
-		return eclipseMode;
-	}
-	
 	public static void setDocComment(CompilationUnitDeclaration cud, EclipseNode eclipseNode, String doc) {
-		if (!eclipseMode()) return;
 		setDocComment(cud, (TypeDeclaration) upToTypeNode(eclipseNode).get(), eclipseNode.get(), doc);
 	}
 	 
 	public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
-		if (!eclipseMode()) return;
-		EclipseOnlyUtil.setDocComment(cud, type, node, doc);
+		if (doc == null) return;
+		
+		Map<String, String> docs = EcjAugments.CompilationUnit_javadoc.setIfAbsent(cud.compilationResult.compilationUnit, new HashMap<String, String>());
+		if (node instanceof AbstractMethodDeclaration) {
+			AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) node;
+			String signature = getSignature(type, methodDeclaration);
+			/* Add javadoc start marker, remove trailing line break, add leading asterisks to each line, add javadoc end marker */
+			docs.put(signature, String.format("/**%n%s%n */", doc.replaceAll("$\\r?\\n", "").replaceAll("(?m)^", " * ")));
+		}
 	}
 	
 	public static String getSignature(TypeDeclaration type, AbstractMethodDeclaration methodDeclaration) {
@@ -2690,8 +2667,7 @@ public class EclipseHandlerUtil {
 		Argument[] arguments = methodDeclaration.arguments;
 		if (arguments != null) {
 			for (Argument argument : arguments) {
-				String signature = Signature.createTypeSignature(argument.type.getLastToken(), false);
-				sb.append(signature);
+				sb.append(String.valueOf(argument.type));
 			}
 		}
 		sb.append(")");
@@ -2786,10 +2762,10 @@ public class EclipseHandlerUtil {
 		try {
 			CompilationUnitDeclaration cud = ((CompilationUnitDeclaration) from.top().get());
 			String newJavadoc = copyMode.apply(cud, from);
-			if (newJavadoc != null) {
-				if (forceAddReturn) newJavadoc = addReturnsThisIfNeeded(newJavadoc);
-				setDocComment(cud, type, to, newJavadoc);
+			if (forceAddReturn) {
+				newJavadoc = addReturnsThisIfNeeded(newJavadoc);
 			}
+			setDocComment(cud, type, to, newJavadoc);
 		} catch (Exception ignore) {}
 	}
 }

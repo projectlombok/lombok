@@ -4,6 +4,9 @@
     @java.lang.SuppressWarnings("all") BuilderWithNonNullWithSetterPrefixBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithNonNullWithSetterPrefix.BuilderWithNonNullWithSetterPrefixBuilder withId(final @lombok.NonNull String id) {
       if ((id == null))
           {

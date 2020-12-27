@@ -5,6 +5,9 @@ import lombok.Builder;
     @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethodBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithNoBuilderMethod.BuilderWithNoBuilderMethodBuilder a(final String a) {
       this.a = a;
       return this;

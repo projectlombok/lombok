@@ -18,6 +18,9 @@ class AccessorsConfiguration2 {
 }
 class AccessorsConfiguration3 {
 	private String fFieldName = "";
+	/**
+	 * @return {@code this}.
+	 */
 	@java.lang.SuppressWarnings("all")
 	public AccessorsConfiguration3 setFieldName(final String fFieldName) {
 		this.fFieldName = fFieldName;

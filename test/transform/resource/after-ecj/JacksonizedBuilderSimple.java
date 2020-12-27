@@ -8,10 +8,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
     @java.lang.SuppressWarnings("all") JacksonizedBuilderSimpleBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") JacksonizedBuilderSimple.JacksonizedBuilderSimpleBuilder<T> yes(final int yes) {
       this.yes = yes;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") JacksonizedBuilderSimple.JacksonizedBuilderSimpleBuilder<T> also(final List<T> also) {
       this.also = also;
       return this;

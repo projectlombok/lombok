@@ -9,6 +9,9 @@ public @Builder class BuilderWithTolerate {
     @java.lang.SuppressWarnings("all") BuilderWithTolerateBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithTolerate.BuilderWithTolerateBuilder value(final int value) {
       this.value = value;
       return this;

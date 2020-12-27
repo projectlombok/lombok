@@ -9,6 +9,9 @@ public @Builder class BuilderWithDeprecatedAnnOnly {
     @java.lang.SuppressWarnings("all") BuilderWithDeprecatedAnnOnlyBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedAnnOnly.BuilderWithDeprecatedAnnOnlyBuilder dep1(final int dep1) {
       this.dep1 = dep1;
       return this;

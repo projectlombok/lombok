@@ -14,11 +14,17 @@ class SuperBuilderWithPrefixes {
 		protected abstract B self();
 		@java.lang.SuppressWarnings("all")
 		public abstract C build();
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public B field(final int field) {
 			this.field = field;
 			return self();
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public B otherField(final int otherField) {
 			this.otherField = otherField;

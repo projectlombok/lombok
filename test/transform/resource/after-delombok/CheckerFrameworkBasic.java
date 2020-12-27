@@ -17,6 +17,9 @@ class CheckerFrameworkBasic {
 	public int getZ() {
 		return this.z;
 	}
+	/**
+	 * @return {@code this}.
+	 */
 	@org.checkerframework.common.returnsreceiver.qual.This
 	@java.lang.SuppressWarnings("all")
 	public CheckerFrameworkBasic setZ(final int z) {
@@ -64,6 +67,9 @@ class CheckerFrameworkBasic {
 		this.y = y;
 		this.z = z;
 	}
+	/**
+	 * @return {@code this}.
+	 */
 	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.SuppressWarnings("all")
 	public CheckerFrameworkBasic withX(final int x) {

@@ -5,6 +5,9 @@ import java.util.List;
     @java.lang.SuppressWarnings("all") BuilderSimpleWithSetterPrefixBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderSimpleWithSetterPrefix.BuilderSimpleWithSetterPrefixBuilder<T> withUnprefixed(final int unprefixed) {
       this.unprefixed = unprefixed;
       return this;

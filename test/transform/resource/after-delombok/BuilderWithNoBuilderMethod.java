@@ -11,6 +11,9 @@ class BuilderWithNoBuilderMethod {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithNoBuilderMethodBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithNoBuilderMethod.BuilderWithNoBuilderMethodBuilder a(final String a) {
 			this.a = a;

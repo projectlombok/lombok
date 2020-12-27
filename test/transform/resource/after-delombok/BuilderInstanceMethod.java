@@ -16,21 +16,33 @@ class BuilderInstanceMethod<T> {
 		@java.lang.SuppressWarnings("all")
 		StringBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderInstanceMethod<T>.StringBuilder show(final int show) {
 			this.show = show;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderInstanceMethod<T>.StringBuilder yes(final int yes) {
 			this.yes = yes;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderInstanceMethod<T>.StringBuilder also(final List<T> also) {
 			this.also = also;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderInstanceMethod<T>.StringBuilder $andMe(final int $andMe) {
 			this.$andMe = $andMe;

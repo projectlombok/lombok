@@ -18,6 +18,9 @@ public @Builder class BuilderWithDeprecated {
       this.dep1 = dep1;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecated.BuilderWithDeprecatedBuilder dep2(final int dep2) {
       this.dep2 = dep2;
       return this;

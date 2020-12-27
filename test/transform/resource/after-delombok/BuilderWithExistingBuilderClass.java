@@ -13,11 +13,17 @@ class BuilderWithExistingBuilderClass<T, K extends Number> {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithExistingBuilderClassBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z> arg1(final Z arg1) {
 			this.arg1 = arg1;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder<Z> arg3(final String arg3) {
 			this.arg3 = arg3;

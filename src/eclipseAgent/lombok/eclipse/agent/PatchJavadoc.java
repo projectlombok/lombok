@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.agent;
 
-import static lombok.eclipse.EcjAugments.EclipseAugments.CompilationUnit_javadoc;
+import static lombok.eclipse.EcjAugments.CompilationUnit_javadoc;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -41,7 +41,7 @@ import lombok.permit.Permit;
 
 public class PatchJavadoc {
 	
-	public static String getHTMLContentFromSource(String original, IJavaElement member) {
+	public static String getHTMLContentFromSource(String original, Object member) {
 		if (original != null) {
 			return original;
 		}
@@ -51,15 +51,14 @@ public class PatchJavadoc {
 			ICompilationUnit iCompilationUnit = sourceMethod.getCompilationUnit();
 			if (iCompilationUnit instanceof CompilationUnit) {
 				CompilationUnit compilationUnit = (CompilationUnit) iCompilationUnit;
-				
 				Map<String, String> docs = CompilationUnit_javadoc.get(compilationUnit);
 				if (docs == null) return null;
 				
-				String signature = getSignature(sourceMethod);
+				String signature = Signature.getSignature(sourceMethod);
 				String rawJavadoc = docs.get(signature);
 				if (rawJavadoc == null) return null;
 				
-				return Reflection.javadoc2HTML((IMember) member, member, rawJavadoc);
+				return Reflection.javadoc2HTML((IMember) member, (IJavaElement) member, rawJavadoc);
 			}
 		}
 		
@@ -67,33 +66,33 @@ public class PatchJavadoc {
 	}
 	
 	public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, Integer tab, StringBuffer output, TypeDeclaration type) {
-		if (methodDeclaration.compilationResult.compilationUnit instanceof CompilationUnit) {
-			Map<String, String> docs = CompilationUnit_javadoc.get((CompilationUnit) methodDeclaration.compilationResult.compilationUnit);
-			if (docs != null) {
-				String signature = EclipseHandlerUtil.getSignature(type, methodDeclaration);
-				String rawJavadoc = docs.get(signature);
-				if (rawJavadoc != null) {
-					for (String line : rawJavadoc.split("\r?\n")) {
-						ASTNode.printIndent(tab, output).append(line).append("\n");
-					}
+		Map<String, String> docs = CompilationUnit_javadoc.get(methodDeclaration.compilationResult.compilationUnit);
+		if (docs != null) {
+			String signature = EclipseHandlerUtil.getSignature(type, methodDeclaration);
+			String rawJavadoc = docs.get(signature);
+			if (rawJavadoc != null) {
+				for (String line : rawJavadoc.split("\r?\n")) {
+					ASTNode.printIndent(tab, output).append(line).append("\n");
 				}
 			}
 		}
 		return methodDeclaration.print(tab, output);
 	}
 	
-	private static String getSignature(SourceMethod sourceMethod) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(sourceMethod.getParent().getElementName());
-		sb.append(".");
-		sb.append(sourceMethod.getElementName());
-		sb.append("(");
-		for (String type : sourceMethod.getParameterTypes()) {
-			sb.append(type);
+	private static class Signature {
+		static final String getSignature(SourceMethod sourceMethod) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(sourceMethod.getParent().getElementName());
+			sb.append(".");
+			sb.append(sourceMethod.getElementName());
+			sb.append("(");
+			for (String type : sourceMethod.getParameterTypes()) {
+				sb.append(org.eclipse.jdt.core.Signature.toString(type));
+			}
+			sb.append(")");
+			
+			return sb.toString();
 		}
-		sb.append(")");
-		
-		return sb.toString();
 	}
 	
 	/**

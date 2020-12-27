@@ -14,6 +14,9 @@ public class BuilderWithTolerate {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithTolerateBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithTolerate.BuilderWithTolerateBuilder value(final int value) {
 			this.value = value;

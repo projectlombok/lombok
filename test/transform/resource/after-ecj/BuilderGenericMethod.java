@@ -8,10 +8,16 @@ class BuilderGenericMethod<T> {
     @java.lang.SuppressWarnings("all") MapBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderGenericMethod<T>.MapBuilder<N> a(final int a) {
       this.a = a;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderGenericMethod<T>.MapBuilder<N> b(final long b) {
       this.b = b;
       return this;

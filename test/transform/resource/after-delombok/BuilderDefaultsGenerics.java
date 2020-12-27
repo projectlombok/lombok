@@ -38,18 +38,27 @@ public class BuilderDefaultsGenerics<N extends Number, T, R extends List<T>> {
 		@java.lang.SuppressWarnings("all")
 		BuilderDefaultsGenericsBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> callable(final java.util.concurrent.Callable<N> callable) {
 			this.callable$value = callable;
 			callable$set = true;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> tee(final T tee) {
 			this.tee$value = tee;
 			tee$set = true;
 			return this;
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> arrr(final R arrr) {
 			this.arrr$value = arrr;

@@ -281,6 +281,7 @@ public class Javac {
 	
 	@SuppressWarnings("unchecked")
 	public static void setDocComment(JCCompilationUnit cu, JCTree node, String javadoc) {
+		if (javadoc == null) return;
 		Object dc = getDocComments(cu);
 		if (dc instanceof Map) {
 			((Map<JCTree, String>) dc).put(node, javadoc);

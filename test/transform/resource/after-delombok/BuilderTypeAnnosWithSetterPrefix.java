@@ -22,6 +22,9 @@ class BuilderTypeAnnosWithSetterPrefix {
 		@java.lang.SuppressWarnings("all")
 		BuilderTypeAnnosWithSetterPrefixBuilder() {
 		}
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder withFoo(@TA final List<String> foo) {
 			this.foo = foo;

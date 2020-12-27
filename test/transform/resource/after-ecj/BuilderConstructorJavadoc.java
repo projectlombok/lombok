@@ -16,10 +16,16 @@ class BuilderConstructorJavadoc<T> {
     @java.lang.SuppressWarnings("all") BuilderConstructorJavadocBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderConstructorJavadoc.BuilderConstructorJavadocBuilder<T> basic(final int basic) {
       this.basic = basic;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderConstructorJavadoc.BuilderConstructorJavadocBuilder<T> multiline(final int multiline) {
       this.multiline = multiline;
       return this;

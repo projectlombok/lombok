@@ -332,7 +332,7 @@ final class PatchFixesHider {
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchJavadoc");
-			GET_HTML = Util.findMethod(shadowed, "getHTMLContentFromSource", String.class, IJavaElement.class);
+			GET_HTML = Util.findMethod(shadowed, "getHTMLContentFromSource", String.class, Object.class);
 			PRINT_METHOD = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuffer.class, TypeDeclaration.class);
 		}
 		
