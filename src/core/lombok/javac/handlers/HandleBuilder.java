@@ -148,8 +148,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		String replaceBuilderClassName(Name name) {
-			if (builderClassName.indexOf('*') == -1) return builderClassName;
-			return builderClassName.replace("*", name.toString());
+			return replaceBuilderClassName(name.toString(), builderClassName);
+		}
+		
+		String replaceBuilderClassName(String name, String template) {
+			if (template.indexOf('*') == -1) return template;
+			return template.replace("*", name);
 		}
 		
 		JCExpression createBuilderParentTypeReference() {

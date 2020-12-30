@@ -202,8 +202,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		String replaceBuilderClassName(char[] name) {
-			if (builderClassName.indexOf('*') == -1) return builderClassName;
-			return builderClassName.replace("*", new String(name));
+			return replaceBuilderClassName(name, builderClassName);
+		}
+
+		String replaceBuilderClassName(char[] name, String template) {
+			if (template.indexOf('*') == -1) return template;
+			return template.replace("*", new String(name));
 		}
 		
 		String replaceBuilderClassName(String name) {

@@ -257,10 +257,12 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		if (extendsClause instanceof JCFieldAccess) {
 			Name superclassName = ((JCFieldAccess) extendsClause).getIdentifier();
-			String superclassBuilderClassName = superclassName.toString() + "Builder";
+			String builderClassNameTemplate = BuilderJob.fixBuilderClassName(annotationNode, "");
+			String superclassBuilderClassName = job.replaceBuilderClassName(superclassName.toString(), builderClassNameTemplate);
 			superclassBuilderClass = parent.getTreeMaker().Select((JCFieldAccess) extendsClause, parent.toName(superclassBuilderClassName));
 		} else if (extendsClause != null) {
-			String superclassBuilderClassName = extendsClause.toString() + "Builder";
+			String builderClassNameTemplate = BuilderJob.fixBuilderClassName(annotationNode, "");
+			String superclassBuilderClassName = job.replaceBuilderClassName(extendsClause.toString(), builderClassNameTemplate);
 			superclassBuilderClass = chainDots(parent, extendsClause.toString(), superclassBuilderClassName);
 		}
 		
