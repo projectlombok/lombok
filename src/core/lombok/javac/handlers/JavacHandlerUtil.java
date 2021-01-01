@@ -2170,6 +2170,10 @@ public class JavacHandlerUtil {
 			JCExpression resType = mth.restype;
 			if (resType instanceof JCTypeApply) {
 				JCTypeApply ta = (JCTypeApply) resType;
+				if (ta.clazz instanceof JCFieldAccess) {
+					mth.restype = maker.TypeApply(maker.AnnotatedType(List.of(m), ta.clazz), ta.arguments);
+					return;
+				}
 				resType = ta.clazz;
 			}
 			
