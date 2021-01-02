@@ -222,7 +222,7 @@ public class Processor extends AbstractProcessor {
 	 * We just return the latest version of whatever JDK we run on. Stupid? Yeah, but it's either that or warnings on all versions but 1.
 	 */
 	@Override public SourceVersion getSupportedSourceVersion() {
-		return SourceVersion.values()[SourceVersion.values().length - 1];
+		return SourceVersion.latest();
 	}
 
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
