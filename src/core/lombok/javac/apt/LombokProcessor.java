@@ -504,7 +504,7 @@ public class LombokProcessor extends AbstractProcessor {
 	}
 	
 	/**
-	 * InteliJ >= 2020.3
+	 * IntelliJ IDEA >= 2020.3
 	 */
 	private Object tryGetProxyDelegateToField(Class<?> delegateClass, Object instance) {
 		try {

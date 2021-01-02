@@ -65,7 +65,7 @@ public class HandlerLibrary {
 	
 	/**
 	 * Creates a new HandlerLibrary that will report any problems or errors to the provided messager.
-	 * You probably want to use {@link #load(Messager)} instead.
+	 * You probably want to use {@link #load(Messager, Trees)} instead.
 	 */
 	public HandlerLibrary(Messager messager) {
 		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();

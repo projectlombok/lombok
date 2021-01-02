@@ -69,7 +69,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 	private final List<String> delayedWarnings = new ArrayList<String>();
 	
 	/**
-	 * This method is a simplified version of {@link lombok.javac.apt.LombokProcessor.getJavacProcessingEnvironment}
+	 * This method is a simplified version of {@link lombok.javac.apt.LombokProcessor#getJavacProcessingEnvironment}
 	 * It simply returns the processing environment, but in case of gradle incremental compilation,
 	 * the delegate ProcessingEnvironment of the gradle wrapper is returned.
 	 */
@@ -120,7 +120,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 	}
 	
 	/**
-	 * InteliJ >= 2020.3
+	 * IntelliJ IDEA >= 2020.3
 	 */
 	private static Object tryGetProxyDelegateToField(Class<?> delegateClass, Object instance) {
 		try {
@@ -257,6 +257,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 	 * We just return the latest version of whatever JDK we run on. Stupid? Yeah, but it's either that or warnings on all versions but 1. Blame Joe.
 	 */
 	@Override public SourceVersion getSupportedSourceVersion() {
-		return SourceVersion.values()[SourceVersion.values().length - 1];
+		return SourceVersion.latest();
 	}
 }
