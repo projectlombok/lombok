@@ -471,7 +471,7 @@ public class JavacSingularsRecipes {
 			JCExpression fn = maker.Select(maker.Select(maker.Ident(thisName), name), builderType.toName("size"));
 			JCExpression sizeInvoke = maker.Apply(List.<JCExpression>nil(), fn, List.<JCExpression>nil());
 			if (nullGuard) {
-				JCExpression isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(thisName), name), maker.Literal(CTC_BOT, 0));
+				JCExpression isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(thisName), name), maker.Literal(CTC_BOT, null));
 				JCExpression out = maker.Conditional(isNull, maker.Literal(CTC_INT, 0), sizeInvoke);
 				if (parens) return maker.Parens(out);
 				return out;
