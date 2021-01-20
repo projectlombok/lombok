@@ -585,7 +585,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
 			maker.Block(0L, statements.toList()), null), job.sourceNode);
 		
-		injectMethod(job.parentType, constr, null, Javac.createVoidType(job.builderType.getSymbolTable(), CTC_VOID));
+		injectMethod(job.parentType, constr);
 	}
 	
 	private JCMethodDecl generateBuilderMethod(SuperBuilderJob job) {

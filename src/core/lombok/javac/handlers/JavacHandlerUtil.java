@@ -37,19 +37,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.lang.model.element.Element;
-
-import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.MethodType;
+import com.sun.tools.javac.comp.Annotate;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.MemberEnter;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
@@ -1012,12 +1011,6 @@ public class JavacHandlerUtil {
 		return call;
 	}
 	
-	public static Type getMirrorForFieldType(JavacNode fieldNode) {
-		Element fieldElement = fieldNode.getElement();
-		if (fieldElement instanceof VarSymbol) return ((VarSymbol) fieldElement).type;
-		return null;
-	}
-	
 	/**
 	 * Adds the given new field declaration to the provided type AST Node.
 	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
@@ -1072,6 +1065,8 @@ public class JavacHandlerUtil {
 		} else {
 			insertAfter.tail = fieldEntry;
 		}
+		
+		EnterReflect.memberEnter(field, typeNode);
 		
 		return typeNode.add(field, Kind.FIELD);
 	}
@@ -1148,24 +1143,6 @@ public class JavacHandlerUtil {
 			}
 		}
 	}
-	
-	static class JCAnnotationReflect {
-		private static Field ATTRIBUTE;
-		
-		static {
-			try {
-				ATTRIBUTE = Permit.getField(JCAnnotation.class, "attribute");
-			} catch (Exception ignore) {}
-		}
-
-		static Attribute.Compound getAttribute(JCAnnotation jcAnnotation) {
-			try {
-				return (Attribute.Compound) ATTRIBUTE.get(jcAnnotation);
-			} catch (Exception e) {
-				return null;
-			}
-		}
-	}
 
 	// jdk9 support, types have changed, names stay the same
 	static class ClassSymbolMembersField {
@@ -1206,8 +1183,10 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	public static void injectMethod(JavacNode typeNode, JCMethodDecl method) {
-		injectMethod(typeNode, method, null, null);
+	
+	@Deprecated
+	public static void injectMethod(JavacNode typeNode, JCMethodDecl method, List<Type> paramTypes, Type returnType) {
+		injectMethod(typeNode, method);
 	}
 	
 	/**
@@ -1216,9 +1195,7 @@ public class JavacHandlerUtil {
 	 * 
 	 * Also takes care of updating the JavacAST.
 	 */
-	public static void injectMethod(JavacNode typeNode, JCMethodDecl method, List<Type> paramTypes, Type returnType) {
-		Context context = typeNode.getContext();
-		Symtab symtab = Symtab.instance(context);
+	public static void injectMethod(JavacNode typeNode, JCMethodDecl method) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		if (method.getName().contentEquals("<init>")) {
@@ -1242,55 +1219,11 @@ public class JavacHandlerUtil {
 		addGenerated(method.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(method)), typeNode.getContext());
 		type.defs = type.defs.append(method);
 		
-		List<Symbol.VarSymbol> params = null;
-		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
-			ListBuffer<Symbol.VarSymbol> newParams = new ListBuffer<Symbol.VarSymbol>();
-			for (int i = 0; i < method.getParameters().size(); i++) {
-				JCTree.JCVariableDecl param = method.getParameters().get(i);
-				if (param.sym == null) {
-					Type paramType = paramTypes == null ? param.getType().type : paramTypes.get(i);
-					VarSymbol varSymbol = new VarSymbol(param.mods.flags, param.name, paramType, symtab.noSymbol);
-					varSymbol.adr = 1 << i;
-					List<JCAnnotation> annotations = param.getModifiers().getAnnotations();
-					if (annotations != null && !annotations.isEmpty()) {
-						ListBuffer<Attribute.Compound> newAnnotations = new ListBuffer<Attribute.Compound>();
-						for (JCAnnotation jcAnnotation : annotations) {
-							Attribute.Compound attribute = JCAnnotationReflect.getAttribute(jcAnnotation);
-							if (attribute != null) {
-								newAnnotations.append(attribute);
-							}
-						}
-						if (annotations.length() == newAnnotations.length()) {
-							varSymbol.appendAttributes(newAnnotations.toList());
-						}
-					}
-					newParams.append(varSymbol);
-				} else {
-					newParams.append(param.sym);
-				}
-			}
-			params = newParams.toList();
-			if (params.length() != method.getParameters().length()) params = null;
-		}
-		
-		fixMethodMirror(typeNode.getContext(), typeNode.getElement(), method.getModifiers().flags, method.getName(), paramTypes, params, returnType);
+		EnterReflect.memberEnter(method, typeNode);
 		
 		typeNode.add(method, Kind.METHOD);
 	}
 
-	private static void fixMethodMirror(Context context, Element typeMirror, long access, Name methodName, List<Type> paramTypes, List<Symbol.VarSymbol> params, Type returnType) {
-		if (typeMirror == null || paramTypes == null || returnType == null) return;
-		ClassSymbol cs = (ClassSymbol) typeMirror;
-		MethodSymbol methodSymbol = new MethodSymbol(access, methodName, new MethodType(paramTypes, returnType, List.<Type>nil(), Symtab.instance(context).methodClass), cs);
-		if (params != null && !params.isEmpty()) {
-			methodSymbol.params = params;
-			for (VarSymbol varSymbol : params) {
-				varSymbol.owner = methodSymbol;
-			}
-		}
-		ClassSymbolMembersField.enter(cs, methodSymbol);
-	}
-	
 	/**
 	 * Adds an inner type (class, interface, enum) to the given type. Cannot inject top-level types.
 	 * 
@@ -1303,7 +1236,53 @@ public class JavacHandlerUtil {
 		addSuppressWarningsAll(type.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(type)), typeNode.getContext());
 		addGenerated(type.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(type)), typeNode.getContext());
 		typeDecl.defs = typeDecl.defs.append(type);
+		
+		EnterReflect.classEnter(type, typeNode);
+		
 		return typeNode.add(type, Kind.TYPE);
+	}
+	
+	static class EnterReflect {
+		private static final Method classEnter;
+		private static final Method memberEnter;
+		private static final Method blockAnnotations;
+		private static final Method unblockAnnotations;
+		
+		static {
+			classEnter = Permit.permissiveGetMethod(Enter.class, "classEnter", JCTree.class, Env.class);
+			memberEnter = Permit.permissiveGetMethod(MemberEnter.class, "memberEnter", JCTree.class, Env.class);
+			
+			Method block = Permit.permissiveGetMethod(Annotate.class, "blockAnnotations");
+			if (block == null) block = Permit.permissiveGetMethod(Annotate.class, "enterStart");
+			blockAnnotations = block;
+			
+			Method unblock = Permit.permissiveGetMethod(Annotate.class, "unblockAnnotations");
+			if (unblock == null) unblock = Permit.permissiveGetMethod(Annotate.class, "enterDone");
+			unblockAnnotations = unblock;
+		}
+		
+		static Type classEnter(JCTree tree, JavacNode parent) {
+			Enter enter = Enter.instance(parent.getContext());
+			Env<AttrContext> classEnv = enter.getEnv((TypeSymbol) parent.getElement());
+			Type type = (Type) Permit.invokeSneaky(classEnter, enter, tree, classEnv);
+			if (type == null) return null;
+			type.complete();
+			return type;
+		}
+		
+		static void memberEnter(JCTree tree, JavacNode parent) {
+			Context context = parent.getContext();
+			MemberEnter me = MemberEnter.instance(context);
+			Annotate annotate = Annotate.instance(context);
+			Enter enter = Enter.instance(context);
+			
+			Env<AttrContext> classEnv = enter.getEnv((TypeSymbol) parent.getElement());
+			if (classEnv == null) return;
+			
+			Permit.invokeSneaky(blockAnnotations, annotate);
+			Permit.invokeSneaky(memberEnter, me, tree, classEnv);
+			Permit.invokeSneaky(unblockAnnotations, annotate);
+		}
 	}
 	
 	public static long addFinalIfNeeded(long flags, Context context) {

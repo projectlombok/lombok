@@ -41,8 +41,6 @@ import lombok.javac.JavacTreeMaker;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -188,17 +186,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
 		JCMethodDecl createdSetter = createSetter(access, fieldNode, fieldNode.getTreeMaker(), sourceNode, onMethod, onParam);
-		Type fieldType = getMirrorForFieldType(fieldNode);
-		Type returnType;
-		
-		if (shouldReturnThis(fieldNode)) {
-			ClassSymbol sym = ((JCClassDecl) fieldNode.up().get()).sym;
-			returnType = sym == null ? null : sym.type;
-		} else {
-			returnType = Javac.createVoidType(fieldNode.getSymbolTable(), CTC_VOID);
-		}
-		
-		injectMethod(fieldNode.up(), createdSetter, fieldType == null ? null : List.of(fieldType), returnType);
+		injectMethod(fieldNode.up(), createdSetter);
 	}
 	
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {

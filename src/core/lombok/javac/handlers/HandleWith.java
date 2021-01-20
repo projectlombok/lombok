@@ -41,8 +41,6 @@ import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -212,11 +210,8 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 		
 		JCMethodDecl createdWith = createWith(access, fieldNode, fieldNode.getTreeMaker(), source, onMethod, onParam, makeAbstract);
 		createRelevantNonNullAnnotation(fieldNode, createdWith);
-		ClassSymbol sym = ((JCClassDecl) fieldNode.up().get()).sym;
-		Type returnType = sym == null ? null : sym.type;
-		
 		recursiveSetGeneratedBy(createdWith, source);
-		injectMethod(typeNode, createdWith, List.<Type>of(getMirrorForFieldType(fieldNode)), returnType);
+		injectMethod(typeNode, createdWith);
 	}
 	
 	public JCMethodDecl createWith(long access, JavacNode field, JavacTreeMaker maker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean makeAbstract) {

@@ -47,7 +47,6 @@ import lombok.javac.JavacTreeMaker.TypeTag;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
@@ -219,7 +218,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source, lazy, onMethod), List.<Type>nil(), getMirrorForFieldType(fieldNode));
+		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source, lazy, onMethod));
 	}
 	
 	public JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, boolean lazy, List<JCAnnotation> onMethod) {
