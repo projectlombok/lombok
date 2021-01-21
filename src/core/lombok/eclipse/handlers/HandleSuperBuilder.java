@@ -50,6 +50,7 @@ import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
@@ -1093,6 +1094,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// 3. Add used type names.
 		if (td.fields != null) {
 			for (FieldDeclaration field : td.fields) {
+				if (field instanceof Initializer) continue; 
 				char[][] typeName = field.type.getTypeName();
 				if (typeName.length >= 1) // Add the first token, because only that can collide.
 					usedNames.add(String.valueOf(typeName[0]));
