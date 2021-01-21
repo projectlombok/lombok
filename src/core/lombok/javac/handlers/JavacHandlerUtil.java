@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope;
@@ -1143,6 +1144,35 @@ public class JavacHandlerUtil {
 			}
 		}
 	}
+	
+	static class JCAnnotationReflect {
+		private static final Field ATTRIBUTE;
+
+		static {
+			ATTRIBUTE = Permit.permissiveGetField(JCAnnotation.class, "attribute");
+		}
+
+		static Attribute.Compound getAttribute(JCAnnotation jcAnnotation) {
+			if (ATTRIBUTE != null) {
+				try {
+					return (Attribute.Compound) ATTRIBUTE.get(jcAnnotation);
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+			return null;
+		}
+		
+		static void setAttribute(JCAnnotation jcAnnotation, Attribute.Compound attribute) {
+			if (ATTRIBUTE != null) {
+				try {
+					Permit.set(ATTRIBUTE, jcAnnotation, attribute);
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+		}
+	}
 
 	// jdk9 support, types have changed, names stay the same
 	static class ClassSymbolMembersField {
@@ -1783,8 +1813,47 @@ public class JavacHandlerUtil {
 				addError(errorName, annotationNode);
 			}
 		}
+		for (JCAnnotation annotation : result) {
+			clearTypes(annotation);
+		}
 		ast.args = params.toList();
 		return result.toList();
+	}
+	
+	/**
+	 * Removes all type information from the provided tree.
+	 */
+	private static void clearTypes(JCTree tree) {
+		tree.accept(new TreeScanner() {
+			@Override public void scan(JCTree tree) {
+				tree.type = null;
+				super.scan(tree);
+			}
+			@Override public void visitClassDef(JCClassDecl tree) {
+				tree.sym = null;
+				super.visitClassDef(tree);
+			}
+			@Override public void visitMethodDef(JCMethodDecl tree) {
+				tree.sym = null;
+				super.visitMethodDef(tree);
+			}
+			@Override public void visitVarDef(JCVariableDecl tree) {
+				tree.sym = null;
+				super.visitVarDef(tree);
+			}
+			@Override public void visitSelect(JCFieldAccess tree) {
+				tree.sym = null;
+				super.visitSelect(tree);
+			}
+			@Override public void visitIdent(JCIdent tree) {
+				tree.sym = null;
+				super.visitIdent(tree);
+			}
+			@Override public void visitAnnotation(JCAnnotation tree) {
+				JCAnnotationReflect.setAttribute(tree, null);
+				super.visitAnnotation(tree);
+			}
+		});
 	}
 	
 	private static void addError(String errorName, JavacNode node) {
