@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.annotation.processing.AbstractProcessor;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -59,7 +61,6 @@ import lombok.Lombok;
 import lombok.javac.CommentCatcher;
 import lombok.javac.Javac;
 import lombok.javac.LombokOptions;
-import lombok.javac.apt.LombokProcessor;
 import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.Symtab;
@@ -97,6 +98,7 @@ public class Delombok {
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
 	private Map<String, String> formatPrefs = new HashMap<String, String>();
+	private List<AbstractProcessor> additionalAnnotationProcessors = new ArrayList<AbstractProcessor>();
 	
 	/** If null, output to standard out. */
 	private File output = null;
@@ -642,6 +644,10 @@ public class Delombok {
 		fileToBase.put(f, base);
 	}
 	
+	public void addAdditionalAnnotationProcessor(AbstractProcessor processor) {
+		additionalAnnotationProcessors.add(processor);
+	}
+	
 	private static <T> com.sun.tools.javac.util.List<T> toJavacList(List<T> list) {
 		com.sun.tools.javac.util.List<T> out = com.sun.tools.javac.util.List.nil();
 		ListIterator<T> li = list.listIterator(list.size());
@@ -718,7 +724,9 @@ public class Delombok {
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
 		
-		Set<LombokProcessor> processors = Collections.singleton(new lombok.javac.apt.LombokProcessor());
+		Set<AbstractProcessor> processors = new HashSet<AbstractProcessor>();
+		processors.add(new lombok.javac.apt.LombokProcessor());
+		processors.addAll(additionalAnnotationProcessors);
 		
 		if (Javac.getJavaCompilerVersion() >= 9) {
 			JavaFileManager jfm_ = context.get(JavaFileManager.class);
