@@ -39,6 +39,9 @@ import java.util.regex.Pattern;
 
 import javax.lang.model.element.Element;
 
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
@@ -100,6 +103,7 @@ import lombok.core.configuration.TypeName;
 import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.HandlerUtil.FieldAccess;
 import lombok.delombok.LombokOptionsFactory;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 import lombok.experimental.Accessors;
 import lombok.experimental.Tolerate;
 import lombok.javac.Javac;
@@ -815,17 +819,25 @@ public class JavacHandlerUtil {
 	
 	public static MemberExistsResult constructorExists(JavacNode node, List<JavacNode> fieldParams) {
 		List<JCMethodDecl> constructors = getConstructors(node);
+		int params = fieldParams.size();
 		for (JCMethodDecl constructor : constructors) {
-			List<JCVariableDecl> constructorParams = constructor.params;
-			if (constructorParams.size() == fieldParams.size()) {
-				for (int i = 0; i < fieldParams.size(); i++) {
-					JCVariableDecl argument = constructorParams.get(i);
-					if(!typeMatches(argument.vartype.toString(), node, ((JCVariableDecl)fieldParams.get(i).get()).vartype)) {
-						return MemberExistsResult.NOT_EXISTS;
-					}
+			if (isTolerate(node, constructor)) continue;
+			List<JCVariableDecl> ps = constructor.params;
+			int minArgs = 0;
+			int maxArgs = 0;
+			if (ps != null && ps.length() > 0) {
+				minArgs = ps.length();
+				if ((ps.last().mods.flags & Flags.VARARGS) != 0) {
+					maxArgs = Integer.MAX_VALUE;
+					minArgs--;
+				} else {
+					maxArgs = minArgs;
 				}
-				return getGeneratedBy(constructor) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 			}
+
+			if (params < minArgs || params > maxArgs) continue;
+
+			return getGeneratedBy(constructor) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 		}
 		return MemberExistsResult.NOT_EXISTS;
 	}
@@ -843,7 +855,6 @@ public class JavacHandlerUtil {
 					JCMethodDecl md = (JCMethodDecl) def;
 					if (md.name.contentEquals("<init>")) {
 						if ((md.mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
-						if (isTolerate(node, md)) continue;
 
 						constructors.add((JCMethodDecl)def);
 					}

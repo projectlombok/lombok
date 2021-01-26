@@ -7,18 +7,30 @@
     @java.lang.SuppressWarnings("all") BuilderWithRequiredArgsConstructorBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithRequiredArgsConstructor.BuilderWithRequiredArgsConstructorBuilder plower(final int plower) {
       this.plower = plower;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithRequiredArgsConstructor.BuilderWithRequiredArgsConstructorBuilder pUpper(final Long pUpper) {
       this.pUpper = pUpper;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithRequiredArgsConstructor.BuilderWithRequiredArgsConstructorBuilder _foo(final long _foo) {
       this._foo = _foo;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderWithRequiredArgsConstructor.BuilderWithRequiredArgsConstructorBuilder __bar(final String __bar) {
       this.__bar = __bar;
       return this;

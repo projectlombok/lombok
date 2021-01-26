@@ -33,24 +33,36 @@ class BuilderWithUserDefinedConstructor {
 		BuilderWithUserDefinedConstructorBuilder() {
 		}
 
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithUserDefinedConstructor.BuilderWithUserDefinedConstructorBuilder plower(final int plower) {
 			this.plower = plower;
 			return this;
 		}
 
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithUserDefinedConstructor.BuilderWithUserDefinedConstructorBuilder pUpper(final int pUpper) {
 			this.pUpper = pUpper;
 			return this;
 		}
 
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithUserDefinedConstructor.BuilderWithUserDefinedConstructorBuilder _foo(final int _foo) {
 			this._foo = _foo;
 			return this;
 		}
 
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithUserDefinedConstructor.BuilderWithUserDefinedConstructorBuilder __bar(final int __bar) {
 			this.__bar = __bar;

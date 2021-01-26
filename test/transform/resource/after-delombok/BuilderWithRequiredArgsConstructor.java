@@ -28,24 +28,36 @@ class BuilderWithRequiredArgsConstructor {
 		BuilderWithRequiredArgsConstructorBuilder() {
 		}
 
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithRequiredArgsConstructor.BuilderWithRequiredArgsConstructorBuilder plower(final int plower) {
 			this.plower = plower;
 			return this;
 		}
 
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithRequiredArgsConstructor.BuilderWithRequiredArgsConstructorBuilder pUpper(final Long pUpper) {
 			this.pUpper = pUpper;
 			return this;
 		}
 
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithRequiredArgsConstructor.BuilderWithRequiredArgsConstructorBuilder _foo(final long _foo) {
 			this._foo = _foo;
 			return this;
 		}
 
+		/**
+		 * @return {@code this}.
+		 */
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithRequiredArgsConstructor.BuilderWithRequiredArgsConstructorBuilder __bar(final String __bar) {
 			this.__bar = __bar;

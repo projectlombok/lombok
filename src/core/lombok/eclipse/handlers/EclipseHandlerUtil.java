@@ -1903,21 +1903,27 @@ public class EclipseHandlerUtil {
 	 *            The parameter list to match the constructor
 	 */
 	public static MemberExistsResult constructorExists(EclipseNode node, List<EclipseNode> fieldParams) {
+
 		List<ConstructorDeclaration> constructors = getConstructors(node);
+		int params = fieldParams.size();
 		for (ConstructorDeclaration constructor : constructors) {
-			int constructorArgumentsNumber = 0;
-			if (constructor.arguments != null) {
-				constructorArgumentsNumber = constructor.arguments.length;
-			}
-			if (constructorArgumentsNumber == fieldParams.size()) {
-				for (int i = 0; i < constructorArgumentsNumber; i++) {
-					Argument argument = constructor.arguments[i];
-					if (!typeMatches(argument.type.toString(), node, ((FieldDeclaration) fieldParams.get(i).get()).type)) {
-						return MemberExistsResult.NOT_EXISTS;
-					}
+			if (isTolerate(node, constructor)) continue;
+
+			int minArgs = 0;
+			int maxArgs = 0;
+			if (constructor.arguments != null && constructor.arguments.length > 0) {
+				minArgs = constructor.arguments.length;
+				if ((constructor.arguments[constructor.arguments.length - 1].type.bits & ASTNode.IsVarArgs) != 0) {
+					minArgs--;
+					maxArgs = Integer.MAX_VALUE;
+				} else {
+					maxArgs = minArgs;
 				}
-				return getGeneratedBy(constructor) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 			}
+
+			if (params < minArgs || params > maxArgs) continue;
+
+			return getGeneratedBy(constructor) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 		}
 
 		return MemberExistsResult.NOT_EXISTS;
@@ -1936,8 +1942,6 @@ public class EclipseHandlerUtil {
 			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
 				if (def instanceof ConstructorDeclaration) {
 					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
-
-					if (isTolerate(node, def)) continue;
 
 					constructors.add((ConstructorDeclaration)def);
 				}
