@@ -209,6 +209,7 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		ClassSymbol sym = ((JCClassDecl) fieldNode.up().get()).sym;
 		Type returnType = sym == null ? null : sym.type;
 		
+		recursiveSetGeneratedBy(createdWithBy, source);
 		injectMethod(typeNode, createdWithBy, List.<Type>of(getMirrorForFieldType(fieldNode)), returnType);
 	}
 	
@@ -265,7 +266,7 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		}
 		if (functionalInterfaceName == null) {
 			functionalInterfaceName = NAME_JUF_FUNCTION;
-			parameterizer = cloneType(maker, fieldDecl.vartype, source.get(), field.getContext());
+			parameterizer = cloneType(maker, fieldDecl.vartype, source);
 		}
 		if (functionalInterfaceName == NAME_JUF_INTOP) applyMethodName = "applyAsInt";
 		if (functionalInterfaceName == NAME_JUF_LONGOP) applyMethodName = "applyAsLong";
@@ -274,7 +275,7 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		JCExpression varType = chainDots(field, functionalInterfaceName);
 		if (parameterizer != null && superExtendsStyle) {
 			JCExpression parameterizer1 = parameterizer;
-			JCExpression parameterizer2 = cloneType(maker, parameterizer, source.get(), field.getContext());
+			JCExpression parameterizer2 = cloneType(maker, parameterizer, source);
 			// TODO: Apply copyable annotations to 'parameterizer' and 'parameterizer2'.
 			JCExpression arg1 = maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER), parameterizer1);
 			JCExpression arg2 = maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS), parameterizer2);
@@ -334,7 +335,7 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		if (makeAbstract) access = access | Flags.ABSTRACT;
 		createRelevantNonNullAnnotation(source, param);
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
-			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
+			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 		copyJavadoc(field, decl, CopyJavadoc.WITH_BY);
 		createRelevantNonNullAnnotation(source, decl);
 		return decl;

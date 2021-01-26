@@ -78,7 +78,7 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 		if (qualified.isEmpty()) {
 			errorNode.addWarning("No fields qualify for @FieldNameConstants, therefore this annotation does nothing");
 		} else {
-			createInnerTypeFieldNameConstants(typeNode, errorNode, errorNode.get(), level, qualified, asEnum, innerTypeName, uppercase);
+			createInnerTypeFieldNameConstants(typeNode, errorNode, level, qualified, asEnum, innerTypeName, uppercase);
 		}
 	}
 	
@@ -133,7 +133,7 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 		generateFieldNameConstantsForType(node, annotationNode, level, asEnum, innerTypeName, annotationInstance.onlyExplicitlyIncluded(), uppercase);
 	}
 	
-	private void createInnerTypeFieldNameConstants(JavacNode typeNode, JavacNode errorNode, JCTree pos, AccessLevel level, java.util.List<JavacNode> fields, boolean asEnum, IdentifierName innerTypeName, boolean uppercase) {
+	private void createInnerTypeFieldNameConstants(JavacNode typeNode, JavacNode errorNode, AccessLevel level, java.util.List<JavacNode> fields, boolean asEnum, IdentifierName innerTypeName, boolean uppercase) {
 		if (fields.isEmpty()) return;
 		
 		JavacTreeMaker maker = typeNode.getTreeMaker();
@@ -146,7 +146,7 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 		if (fieldsType == null) {
 			JCClassDecl innerType = maker.ClassDef(mods, fieldsName, List.<JCTypeParameter>nil(), null, List.<JCExpression>nil(), List.<JCTree>nil());
 			fieldsType = injectType(typeNode, innerType);
-			recursiveSetGeneratedBy(innerType, pos, typeNode.getContext());
+			recursiveSetGeneratedBy(innerType, errorNode);
 			genConstr = true;
 		} else {
 			JCClassDecl builderTypeDeclaration = (JCClassDecl) fieldsType.get();
@@ -166,7 +166,7 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 			JCModifiers genConstrMods = maker.Modifiers(Flags.GENERATEDCONSTR | (asEnum ? 0L : Flags.PRIVATE));
 			JCBlock genConstrBody = maker.Block(0L, List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(typeNode.toName("super")), List.<JCExpression>nil()))));
 			JCMethodDecl c = maker.MethodDef(genConstrMods, typeNode.toName("<init>"), null, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), genConstrBody, null);
-			recursiveSetGeneratedBy(c, pos, typeNode.getContext());
+			recursiveSetGeneratedBy(c, errorNode);
 			injectMethod(fieldsType, c);
 		}
 		
@@ -187,9 +187,9 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 			}
 			JCVariableDecl constantField = maker.VarDef(constantValueMods, fName, returnType, init);
 			injectField(fieldsType, constantField, false, true);
-			setGeneratedBy(constantField, pos, typeNode.getContext());
+			setGeneratedBy(constantField, errorNode);
 			generated.add(constantField);
 		}
-		for (JCVariableDecl cf : generated) recursiveSetGeneratedBy(cf, pos, typeNode.getContext());
+		for (JCVariableDecl cf : generated) recursiveSetGeneratedBy(cf, errorNode);
 	}
 }

@@ -55,6 +55,7 @@ public class HandleBuilderDefault extends JavacAnnotationHandler<Builder.Default
 			JCFieldAccess jfa = (JCFieldAccess) ast.annotationType;
 			if (jfa.selected instanceof JCIdent && ((JCIdent) jfa.selected).name.contentEquals("Builder") && jfa.name.contentEquals("Default")) {
 				JCFieldAccess newJfaSel = annotationNode.getTreeMaker().Select(annotationNode.getTreeMaker().Ident(annotationNode.toName("lombok")), ((JCIdent) jfa.selected).name);
+				recursiveSetGeneratedBy(newJfaSel, annotationNode);
 				jfa.selected = newJfaSel;
 			}
 		}

@@ -146,7 +146,7 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 		Name name = typeNode.toName("<init>");
 		JCBlock block = maker.Block(0L, createThrowStatement(typeNode, maker));
 		JCMethodDecl methodDef = maker.MethodDef(mods, name, null, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), block, null);
-		JCMethodDecl constructor = recursiveSetGeneratedBy(methodDef, typeNode.get(), typeNode.getContext());
+		JCMethodDecl constructor = recursiveSetGeneratedBy(methodDef, typeNode);
 		JavacHandlerUtil.injectMethod(typeNode, constructor, List.<Type>nil(), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 	}
 	

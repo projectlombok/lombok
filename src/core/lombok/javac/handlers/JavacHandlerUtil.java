@@ -116,17 +116,15 @@ public class JavacHandlerUtil {
 	}
 	
 	private static class MarkingScanner extends TreeScanner {
-		private final JCTree source;
-		private final Context context;
+		private final JavacNode source;
 		
-		MarkingScanner(JCTree source, Context context) {
+		MarkingScanner(JavacNode source) {
 			this.source = source;
-			this.context = context;
 		}
 		
 		@Override public void scan(JCTree tree) {
 			if (tree == null) return;
-			setGeneratedBy(tree, source, context);
+			setGeneratedBy(tree, source);
 			super.scan(tree);
 		}
 	}
@@ -158,19 +156,30 @@ public class JavacHandlerUtil {
 		return getGeneratedBy(node) != null;
 	}
 	
-	public static <T extends JCTree> T recursiveSetGeneratedBy(T node, JCTree source, Context context) {
+	public static <T extends JCTree> T recursiveSetGeneratedBy(T node, JavacNode source) {
 		if (node == null) return null;
-		setGeneratedBy(node, source, context);
-		node.accept(new MarkingScanner(source, context));
+		setGeneratedBy(node, source);
+		node.accept(new MarkingScanner(source));
 		return node;
 	}
 	
-	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source, Context context) {
+	public static <T extends JCTree> T setGeneratedBy(T node, JavacNode sourceNode) {
 		if (node == null) return null;
-		if (source == null) JCTree_generatedNode.clear(node);
-		else JCTree_generatedNode.set(node, source);
-		if (source != null && (!inNetbeansEditor(context) || (node instanceof JCVariableDecl && (((JCVariableDecl) node).mods.flags & Flags.PARAMETER) != 0))) node.pos = source.pos;
+		if (sourceNode == null) {
+			JCTree_generatedNode.clear(node);
+			return node;
+		}
+		JCTree_generatedNode.set(node, sourceNode.get());
+		
+		if (!inNetbeansEditor(sourceNode.getContext()) || isParameter(node)) {
+			node.pos = sourceNode.getStartPos();
+			storeEnd(node, sourceNode.getEndPosition(), (JCCompilationUnit) sourceNode.top().get());
+		}
 		return node;
+	}
+
+	public static boolean isParameter(JCTree node) {
+		return node instanceof JCVariableDecl && (((JCVariableDecl) node).mods.flags & Flags.PARAMETER) != 0;
 	}
 	
 	public static boolean hasAnnotation(String type, JavacNode node) {
@@ -1035,8 +1044,8 @@ public class JavacHandlerUtil {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		if (addGenerated) {
-			addSuppressWarningsAll(field.mods, typeNode, field.pos, getGeneratedBy(field), typeNode.getContext());
-			addGenerated(field.mods, typeNode, field.pos, getGeneratedBy(field), typeNode.getContext());
+			addSuppressWarningsAll(field.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(field)), typeNode.getContext());
+			addGenerated(field.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(field)), typeNode.getContext());
 		}
 		
 		List<JCTree> insertAfter = null;
@@ -1229,8 +1238,8 @@ public class JavacHandlerUtil {
 			}
 		}
 		
-		addSuppressWarningsAll(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
-		addGenerated(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
+		addSuppressWarningsAll(method.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(method)), typeNode.getContext());
+		addGenerated(method.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(method)), typeNode.getContext());
 		type.defs = type.defs.append(method);
 		
 		List<Symbol.VarSymbol> params = null;
@@ -1268,7 +1277,7 @@ public class JavacHandlerUtil {
 		
 		typeNode.add(method, Kind.METHOD);
 	}
-	
+
 	private static void fixMethodMirror(Context context, Element typeMirror, long access, Name methodName, List<Type> paramTypes, List<Symbol.VarSymbol> params, Type returnType) {
 		if (typeMirror == null || paramTypes == null || returnType == null) return;
 		ClassSymbol cs = (ClassSymbol) typeMirror;
@@ -1291,8 +1300,8 @@ public class JavacHandlerUtil {
 	 */
 	public static JavacNode injectType(JavacNode typeNode, final JCClassDecl type) {
 		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
-		addSuppressWarningsAll(type.mods, typeNode, type.pos, getGeneratedBy(type), typeNode.getContext());
-		addGenerated(type.mods, typeNode, type.pos, getGeneratedBy(type), typeNode.getContext());
+		addSuppressWarningsAll(type.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(type)), typeNode.getContext());
+		addGenerated(type.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(type)), typeNode.getContext());
 		typeDecl.defs = typeDecl.defs.append(type);
 		return typeNode.add(type, Kind.TYPE);
 	}
@@ -1331,7 +1340,7 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	public static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
+	public static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, JavacNode source, Context context) {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateSuppressWarnings()) return;
 		
 		boolean addJLSuppress = !Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_SUPPRESSWARNINGS_ANNOTATIONS));
@@ -1347,27 +1356,27 @@ public class JavacHandlerUtil {
 				}
 			}
 		}
-		if (addJLSuppress) addAnnotation(mods, node, pos, source, context, "java.lang.SuppressWarnings", node.getTreeMaker().Literal("all"));
+		if (addJLSuppress) addAnnotation(mods, node, source, "java.lang.SuppressWarnings", node.getTreeMaker().Literal("all"));
 		
 		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_FINDBUGS_SUPPRESSWARNINGS_ANNOTATIONS))) {
 			JavacTreeMaker maker = node.getTreeMaker();
 			JCExpression arg = maker.Assign(maker.Ident(node.toName("justification")), maker.Literal("generated code"));
-			addAnnotation(mods, node, pos, source, context, "edu.umd.cs.findbugs.annotations.SuppressFBWarnings", arg);
+			addAnnotation(mods, node, source, "edu.umd.cs.findbugs.annotations.SuppressFBWarnings", arg);
 		}
 	}
 	
-	public static void addGenerated(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
+	public static void addGenerated(JCModifiers mods, JavacNode node, JavacNode source, Context context) {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateGenerated()) return;
 		
 		if (HandlerUtil.shouldAddGenerated(node)) {
-			addAnnotation(mods, node, pos, source, context, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
+			addAnnotation(mods, node, source, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
 		}
 		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
-			addAnnotation(mods, node, pos, source, context, "lombok.Generated", null);
+			addAnnotation(mods, node, source, "lombok.Generated", null);
 		}
 	}
 	
-	public static void addAnnotation(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn, JCExpression arg) {
+	public static void addAnnotation(JCModifiers mods, JavacNode node, JavacNode source, String annotationTypeFqn, JCExpression arg) {
 		boolean isJavaLangBased;
 		String simpleName; {
 			int idx = annotationTypeFqn.lastIndexOf('.');
@@ -1390,17 +1399,8 @@ public class JavacHandlerUtil {
 		
 		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression annType = isJavaLangBased ? genJavaLangTypeRef(node, simpleName) : chainDotsString(node, annotationTypeFqn);
-		annType.pos = pos;
-		if (arg != null) {
-			arg.pos = pos;
-			if (arg instanceof JCAssign) {
-				((JCAssign) arg).lhs.pos = pos;
-				((JCAssign) arg).rhs.pos = pos;
-			}
-		}
 		List<JCExpression> argList = arg != null ? List.of(arg) : List.<JCExpression>nil();
-		JCAnnotation annotation = recursiveSetGeneratedBy(maker.Annotation(annType, argList), source, context);
-		annotation.pos = pos;
+		JCAnnotation annotation = recursiveSetGeneratedBy(maker.Annotation(annType, argList), source);
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
@@ -1820,13 +1820,12 @@ public class JavacHandlerUtil {
 		if (params == null || params.isEmpty()) return params;
 		ListBuffer<JCTypeParameter> out = new ListBuffer<JCTypeParameter>();
 		JavacTreeMaker maker = source.getTreeMaker();
-		Context context = source.getContext();
 		for (JCTypeParameter tp : params) {
 			List<JCExpression> bounds = tp.bounds;
 			if (bounds != null && !bounds.isEmpty()) {
 				ListBuffer<JCExpression> boundsCopy = new ListBuffer<JCExpression>();
 				for (JCExpression expr : tp.bounds) {
-					boundsCopy.append(cloneType(maker, expr, source.get(), context));
+					boundsCopy.append(cloneType(maker, expr, source));
 				}
 				bounds = boundsCopy.toList();
 			}
@@ -1949,11 +1948,11 @@ public class JavacHandlerUtil {
 		return node;
 	}
 	
-	public static List<JCExpression> cloneTypes(JavacTreeMaker maker, List<JCExpression> in, JCTree source, Context context) {
+	public static List<JCExpression> cloneTypes(JavacTreeMaker maker, List<JCExpression> in, JavacNode source) {
 		if (in.isEmpty()) return List.nil();
-		if (in.size() == 1) return List.of(cloneType(maker, in.get(0), source, context));
+		if (in.size() == 1) return List.of(cloneType(maker, in.get(0), source));
 		ListBuffer<JCExpression> lb = new ListBuffer<JCExpression>();
-		for (JCExpression expr : in) lb.append(cloneType(maker, expr, source, context));
+		for (JCExpression expr : in) lb.append(cloneType(maker, expr, source));
 		return lb.toList();
 	}
 	
@@ -1967,9 +1966,9 @@ public class JavacHandlerUtil {
 	 * the class's own parameter, but as its a static method, the static method's notion of {@code T} is different from the class notion of {@code T}. If you're duplicating
 	 * a type used in the class context, you need to use this method.
 	 */
-	public static JCExpression cloneType(JavacTreeMaker maker, JCExpression in, JCTree source, Context context) {
+	public static JCExpression cloneType(JavacTreeMaker maker, JCExpression in, JavacNode source) {
 		JCExpression out = cloneType0(maker, in);
-		if (out != null) recursiveSetGeneratedBy(out, source, context);
+		if (out != null) recursiveSetGeneratedBy(out, source);
 		return out;
 	}
 	

@@ -219,14 +219,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, onMethod), List.<Type>nil(), getMirrorForFieldType(fieldNode));
+		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source, lazy, onMethod), List.<Type>nil(), getMirrorForFieldType(fieldNode));
 	}
 	
-	public JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
+	public JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, boolean lazy, List<JCAnnotation> onMethod) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
-		JCExpression methodType = cloneType(treeMaker, copyType(treeMaker, fieldNode), source, field.getContext());
+		JCExpression methodType = cloneType(treeMaker, copyType(treeMaker, fieldNode), source);
 		// Generate the methodName; lazy will change the field type
 		Name methodName = field.toName(toGetterName(field));
 		
@@ -267,9 +267,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
-			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source, field.getContext());
+			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 		
-		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null, null);
+		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null);
 		if (methodArgPos != null) {
 			for (int i = 0; i < methodArgPos.length; i++) {
 				((JCMethodInvocation) toClearOfMarkers).args.get(i).pos = methodArgPos[i];
@@ -283,7 +283,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				suppressions.add(treeMaker.Literal("all"));
 			}
 			suppressions.add(treeMaker.Literal("unchecked"));
-			addAnnotation(decl.mods, field, source.pos, source, field.getContext(), "java.lang.SuppressWarnings", treeMaker.NewArray(null, List.<JCExpression>nil(), suppressions.toList()));
+			addAnnotation(decl.mods, field, source, "java.lang.SuppressWarnings", treeMaker.NewArray(null, List.<JCExpression>nil(), suppressions.toList()));
 		}
 		
 		copyJavadoc(field, decl, CopyJavadoc.GETTER);
@@ -334,7 +334,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		TYPE_MAP = Collections.unmodifiableMap(m);
 	}
 	
-	public List<JCStatement> createLazyGetterBody(JavacTreeMaker maker, JavacNode fieldNode, JCTree source) {
+	public List<JCStatement> createLazyGetterBody(JavacTreeMaker maker, JavacNode fieldNode, JavacNode source) {
 		/*
 		java.lang.Object value = this.fieldName.get();
 		if (value == null) {
@@ -447,8 +447,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		/*	private final java.util.concurrent.atomic.AtomicReference<Object> fieldName = new java.util.concurrent.atomic.AtomicReference<Object>(); */ {
 			field.vartype = recursiveSetGeneratedBy(
-				maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(genJavaLangTypeRef(fieldNode, "Object"))), source, fieldNode.getContext());
-			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source, fieldNode.getContext());
+				maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(genJavaLangTypeRef(fieldNode, "Object"))), source);
+			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source);
 		}
 		
 		return statements.toList();

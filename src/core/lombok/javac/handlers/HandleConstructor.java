@@ -55,11 +55,9 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.LombokNode;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.javac.Javac;
-import lombok.javac.JavacAST;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -269,11 +267,11 @@ public class HandleConstructor {
 		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source, argTypes_);
 	}
 	
-	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, LombokNode<JavacAST, JavacNode, JCTree> source, List<Type> argTypes_) {
+	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, JavacNode source, List<Type> argTypes_) {
 		if (staticConstrRequired) {
 			ClassSymbol sym = ((JCClassDecl) typeNode.get()).sym;
 			Type returnType = sym == null ? null : sym.type;
-			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source.get());
+			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source);
 			injectMethod(typeNode, staticConstr, argTypes_, returnType);
 		}
 	}
@@ -342,7 +340,7 @@ public class HandleConstructor {
 			Name rawName = field.name;
 			List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(fieldNode);
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			JCExpression pType = cloneType(fieldNode.getTreeMaker(), field.vartype, source.get(), source.getContext());
+			JCExpression pType = cloneType(fieldNode.getTreeMaker(), field.vartype, source);
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, pType, null);
 			params.append(param);
 			if (hasNonNullAnnotations(fieldNode)) {
@@ -379,7 +377,7 @@ public class HandleConstructor {
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
-			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
+			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source);
 	}
 	
 	/**
@@ -450,7 +448,7 @@ public class HandleConstructor {
 		return true;
 	}
 	
-	public JCMethodDecl createStaticConstructor(String name, AccessLevel level, JavacNode typeNode, List<JavacNode> fields, JCTree source) {
+	public JCMethodDecl createStaticConstructor(String name, AccessLevel level, JavacNode typeNode, List<JavacNode> fields, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
@@ -475,7 +473,7 @@ public class HandleConstructor {
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
-			JCExpression pType = cloneType(maker, field.vartype, source, typeNode.getContext());
+			JCExpression pType = cloneType(maker, field.vartype, source);
 			List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(fieldNode);
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, pType, null);
@@ -487,6 +485,6 @@ public class HandleConstructor {
 		
 		JCMethodDecl methodDef = maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(typeNode, methodDef);
-		return recursiveSetGeneratedBy(methodDef, source, typeNode.getContext());
+		return recursiveSetGeneratedBy(methodDef, source);
 	}
 }

@@ -24,7 +24,6 @@ package lombok.javac.handlers.singulars;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
@@ -38,7 +37,7 @@ import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
 abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
-	protected List<JCStatement> createJavaUtilSetMapInitialCapacitySwitchStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType, JCTree source, String builderVariable) {
+	protected List<JCStatement> createJavaUtilSetMapInitialCapacitySwitchStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType, JavacNode source, String builderVariable) {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();
 		
@@ -88,7 +87,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 		return List.of(varDefStat, switchStat);
 	}
 	
-	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, JCTree source) {
+	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, JavacNode source) {
 		List<JCExpression> jceBlank = List.nil();
 
 		Name v1Name = mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName();
@@ -117,7 +116,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 		return maker.If(cond, thenPart, null);
 	}
 	
-	protected List<JCStatement> createJavaUtilSimpleCreationAndFillStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, boolean defineVar, boolean addInitialCapacityArg, boolean nullGuard, String targetType, JCTree source, String builderVariable) {
+	protected List<JCStatement> createJavaUtilSimpleCreationAndFillStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, boolean defineVar, boolean addInitialCapacityArg, boolean nullGuard, String targetType, JavacNode source, String builderVariable) {
 		List<JCExpression> jceBlank = List.nil();
 		Name thisName = builderType.toName(builderVariable);
 		

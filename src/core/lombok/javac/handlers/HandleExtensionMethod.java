@@ -202,6 +202,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 					if (!types.isAssignable(receiverType, firstArgType)) continue;
 					methodCall.args = methodCall.args.prepend(receiver);
 					methodCall.meth = chainDotsString(annotationNode, extensionProvider.toString() + "." + methodName);
+					recursiveSetGeneratedBy(methodCall.meth, methodCallNode);
 					return;
 				}
 			}
