@@ -32,7 +32,6 @@ import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
@@ -50,7 +49,7 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		return "java.util.Collections.emptyList";
 	}
 	
-	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
+	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JavacNode source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();
@@ -94,7 +93,7 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		statements.append(switchStat);
 	}
 	
-	private List<JCStatement> createListCopy(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, String builderVariable) {
+	private List<JCStatement> createListCopy(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source, String builderVariable) {
 		List<JCExpression> jceBlank = List.nil();
 		Name thisName = builderType.toName(builderVariable);
 		

@@ -39,7 +39,6 @@ import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -90,7 +89,7 @@ public class HandleLog {
 			}
 			
 			JCFieldAccess loggingType = selfType(typeNode);
-			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName.getName(), useStatic, loggerTopic);
+			createField(framework, typeNode, loggingType, annotationNode, logFieldName.getName(), useStatic, loggerTopic);
 			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
@@ -104,7 +103,7 @@ public class HandleLog {
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic, JCExpression loggerTopic) {
+	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JavacNode source, String logFieldName, boolean useStatic, JCExpression loggerTopic) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		LogDeclaration logDeclaration = framework.getDeclaration();
@@ -118,7 +117,7 @@ public class HandleLog {
 		
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 			maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
-			typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
+			typeNode.toName(logFieldName), loggerType, factoryMethodCall), source);
 		
 		injectFieldAndMarkGenerated(typeNode, fieldDecl);
 		return true;

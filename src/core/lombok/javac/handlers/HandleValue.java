@@ -72,7 +72,6 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 			JCModifiers jcm = ((JCClassDecl) typeNode.get()).mods;
 			if ((jcm.flags & Flags.FINAL) == 0) {
 				jcm.flags |= Flags.FINAL;
-				typeNode.rebuild();
 			}
 		}
 		handleFieldDefaults.generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);

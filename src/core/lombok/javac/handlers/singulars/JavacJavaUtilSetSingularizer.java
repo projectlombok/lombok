@@ -29,7 +29,6 @@ import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
@@ -46,7 +45,7 @@ public class JavacJavaUtilSetSingularizer extends JavacJavaUtilListSetSingulariz
 		return "java.util.Collections.emptySet";
 	}
 	
-	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
+	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JavacNode source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		
 		if (data.getTargetFqn().equals("java.util.Set")) {

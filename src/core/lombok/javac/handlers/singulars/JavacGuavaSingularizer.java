@@ -39,7 +39,6 @@ import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -62,7 +61,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return "builder";
 	}
 	
-	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source) {
+	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JavacNode source) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		String simpleTypeName = getSimpleTargetTypeName(data);
 		JCExpression type = JavacHandlerUtil.chainDots(builderType, "com", "google", "common", "collect", simpleTypeName, "Builder");
@@ -72,7 +71,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
+	@Override public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, JavacNode builderType, JavacNode source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
 		doGenerateMethods(cfv, data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker, access);
 	}
 	
@@ -83,7 +82,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 	
 	@Override
-	protected List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	protected List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		for (int i = 0; i < names.length; i++) {
@@ -93,7 +92,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 	
 	@Override
-	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
 		
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
@@ -124,7 +123,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return genTypeRef(builderType, getAddAllTypeName());
 	}
 	
-	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
+	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JavacNode source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
 		
@@ -156,7 +155,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 
 	@Override
-	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		List<JCExpression> jceBlank = List.nil();
 		
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());

@@ -39,7 +39,6 @@ import lombok.javac.JavacTreeMaker;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -48,7 +47,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import lombok.javac.Javac;
 
@@ -107,7 +105,7 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		}
 		
 		for (String exception : exceptions) {
-			contents = List.of(buildTryCatchBlock(methodNode, contents, exception, annotation.get()));
+			contents = List.of(buildTryCatchBlock(methodNode, contents, exception, annotation));
 		}
 		
 		method.body.stats = isConstructorCall ? List.of(constructorCall).appendList(contents) : contents;
@@ -122,11 +120,10 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		}
 	}
 	
-	public JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
+	public JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JavacNode source) {
 		JavacTreeMaker maker = node.getTreeMaker();
 		
-		Context context = node.getContext();
-		JCBlock tryBlock = setGeneratedBy(maker.Block(0, contents), source, context);
+		JCBlock tryBlock = setGeneratedBy(maker.Block(0, contents), source);
 		JCExpression varType = chainDots(node, exception.split("\\."));
 		
 		JCVariableDecl catchParam = maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER), node.toName("$ex"), varType, null);
@@ -134,7 +131,7 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		JCBlock catchBody = maker.Block(0, List.<JCStatement>of(maker.Throw(maker.Apply(
 				List.<JCExpression>nil(), lombokLombokSneakyThrowNameRef,
 				List.<JCExpression>of(maker.Ident(node.toName("$ex")))))));
-		JCTry tryStatement = maker.Try(tryBlock, List.of(recursiveSetGeneratedBy(maker.Catch(catchParam, catchBody), source, context)), null);
+		JCTry tryStatement = maker.Try(tryBlock, List.of(recursiveSetGeneratedBy(maker.Catch(catchParam, catchBody), source)), null);
 		if (JavacHandlerUtil.inNetbeansEditor(node)) {
 			//set span (start and end position) of the try statement and the main block
 			//this allows NetBeans to dive into the statement correctly:
@@ -146,6 +143,6 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 			Javac.storeEnd(tryBlock, endPos, top);
 			Javac.storeEnd(tryStatement, endPos, top);
 		}
-		return setGeneratedBy(tryStatement, source, context);
+		return setGeneratedBy(tryStatement, source);
 	}
 }

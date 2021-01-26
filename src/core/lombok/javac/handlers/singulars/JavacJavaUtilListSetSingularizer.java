@@ -37,7 +37,6 @@ import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -58,7 +57,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		return super.listMethodsToBeGenerated(data, builderType);
 	}
 	
-	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source) {
+	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JavacNode source) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		JCExpression type = JavacHandlerUtil.chainDots(builderType, "java", "util", "ArrayList");
 		type = addTypeArgs(1, false, builderType, type, data.getTypeArgs(), source);
@@ -67,7 +66,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
+	@Override public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, JavacNode builderType, JavacNode source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
 		doGenerateMethods(cfv, data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker, access);
 	}
 	
@@ -84,13 +83,13 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	}
 	
 	@Override
-	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		return new ListBuffer<JCStatement>()
 			.append(generateSingularMethodAddStatement(maker, builderType, data.getSingularName(), data.getPluralName().toString()));
 	}
 	
 	@Override
-	protected List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	protected List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		JCVariableDecl param = generateSingularMethodParameter(0, maker, data, builderType, source, data.getSingularName());
 		return List.of(param);
 	}
@@ -101,7 +100,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	}
 	
 	@Override
-	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		return createConstructBuilderVarIfNeeded(maker, data, builderType, false, source);
 	}
 	

@@ -42,7 +42,6 @@ import lombok.javac.JavacTreeMaker;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -141,7 +140,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 					}
 				}
 			}
-			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source.get());
+			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source);
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -156,7 +155,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	}
 	
 	static JCMethodDecl createToString(JavacNode typeNode, Collection<Included<JavacNode, ToString.Include>> members,
-		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JavacNode source) {
 		
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
@@ -256,7 +255,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		JCMethodDecl methodDef = maker.MethodDef(mods, typeNode.toName("toString"), returnType,
 			List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(typeNode, methodDef);
-		return recursiveSetGeneratedBy(methodDef, source, typeNode.getContext());
+		return recursiveSetGeneratedBy(methodDef, source);
 	}
 	
 	public static String getTypeName(JavacNode typeNode) {

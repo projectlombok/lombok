@@ -111,7 +111,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		// and if they exist, create a new method in the class: 'private static <T> T lombok$nullCheck(T expr, String msg) {if (expr == null) throw NPE; return expr;}' and
 		// wrap all references to it in the super/this to a call to this method.
 		
-		JCStatement nullCheck = recursiveSetGeneratedBy(generateNullCheck(annotationNode.getTreeMaker(), paramNode, annotationNode), ast, annotationNode.getContext());
+		JCStatement nullCheck = recursiveSetGeneratedBy(generateNullCheck(annotationNode.getTreeMaker(), paramNode, annotationNode), annotationNode);
 		
 		if (nullCheck == null) {
 			// @NonNull applied to a primitive. Kinda pointless. Let's generate a warning.

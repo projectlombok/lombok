@@ -71,7 +71,7 @@ public class HandleHelper extends JavacAnnotationHandler<Helper> {
 		else throw new IllegalArgumentException("Can't set statements on node type: " + tree.getClass());
 	}
 	
-	@Override public void handle(AnnotationValues<Helper> annotation, JCAnnotation ast, JavacNode annotationNode) {
+	@Override public void handle(AnnotationValues<Helper> annotation, JCAnnotation ast, final JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.HELPER_FLAG_USAGE, "@Helper");
 		
 		deleteAnnotationIfNeccessary(annotationNode, Helper.class);
@@ -120,6 +120,7 @@ public class HandleHelper extends JavacAnnotationHandler<Helper> {
 				JCIdent jci = (JCIdent) jcmi.meth;
 				if (Arrays.binarySearch(knownMethodNames_, jci.name.toString()) < 0) return;
 				jcmi.meth = maker.Select(maker.Ident(helperName), jci.name);
+				recursiveSetGeneratedBy(jcmi.meth, annotationNode);
 				helperUsed[0] = true;
 			}
 		};
@@ -144,6 +145,7 @@ public class HandleHelper extends JavacAnnotationHandler<Helper> {
 			JCExpression init = maker.NewClass(null, List.<JCExpression>nil(), maker.Ident(annotatedType_.name), List.<JCExpression>nil(), null);
 			JCExpression varType = maker.Ident(annotatedType_.name);
 			JCVariableDecl decl = maker.VarDef(maker.Modifiers(Flags.FINAL), helperName, varType, init);
+			recursiveSetGeneratedBy(decl, annotationNode);
 			newStatements.append(decl);
 		}
 		setStatementsOfJcNode(containingBlock.get(), newStatements.toList());

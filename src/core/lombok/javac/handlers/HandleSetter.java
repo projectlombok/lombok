@@ -220,7 +220,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			List<JCAnnotation> annotations = d.mods.annotations;
 			if (annotations == null) annotations = List.nil();
 			JCAnnotation anno = treeMaker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil());
-			recursiveSetGeneratedBy(anno, source.get(), field.getContext());
+			recursiveSetGeneratedBy(anno, source);
 			d.mods.annotations = annotations.prepend(anno);
 		}
 		return d;
@@ -239,7 +239,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			List<JCAnnotation> annotations = d.mods.annotations;
 			if (annotations == null) annotations = List.nil();
 			JCAnnotation anno = treeMaker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil());
-			recursiveSetGeneratedBy(anno, source.get(), field.getContext());
+			recursiveSetGeneratedBy(anno, source);
 			d.mods.annotations = annotations.prepend(anno);
 		}
 		return d;
@@ -265,7 +265,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(copyableAnnotations);
 		
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
-		JCExpression pType = cloneType(treeMaker, fieldDecl.vartype, source.get(), source.getContext());
+		JCExpression pType = cloneType(treeMaker, fieldDecl.vartype, source);
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), paramName, pType, null);
 		
 		if (!hasNonNullAnnotations(field) && !hasNonNullAnnotations(field, onParam)) {
@@ -309,7 +309,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
 		}
 		if (returnStatement != null) createRelevantNonNullAnnotation(source, methodDef);
-		JCMethodDecl decl = recursiveSetGeneratedBy(methodDef, source.get(), field.getContext());
+		JCMethodDecl decl = recursiveSetGeneratedBy(methodDef, source);
 		copyJavadoc(field, decl, CopyJavadoc.SETTER, returnStatement != null);
 		return decl;
 	}

@@ -34,7 +34,6 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
@@ -194,12 +193,12 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			//fallthrough
 		}
 		
-		JCMethodDecl equalsMethod = createEquals(typeNode, members, callSuper, fieldAccess, needsCanEqual, source.get(), onParam);
+		JCMethodDecl equalsMethod = createEquals(typeNode, members, callSuper, fieldAccess, needsCanEqual, source, onParam);
 		
 		injectMethod(typeNode, equalsMethod);
 		
 		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source.get(), onParam);
+			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source, onParam);
 			injectMethod(typeNode, canEqualMethod);
 		}
 		
@@ -209,23 +208,23 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				source.addWarning(msg);
 				cacheHashCode = false;
 			} else {
-				createHashCodeCacheField(typeNode, source.get());
+				createHashCodeCacheField(typeNode, source);
 			}
 		}
 		
-		JCMethodDecl hashCodeMethod = createHashCode(typeNode, members, callSuper, cacheHashCode, fieldAccess, source.get());
+		JCMethodDecl hashCodeMethod = createHashCode(typeNode, members, callSuper, cacheHashCode, fieldAccess, source);
 		injectMethod(typeNode, hashCodeMethod);
 	}
 
-	private void createHashCodeCacheField(JavacNode typeNode, JCTree source) {
+	private void createHashCodeCacheField(JavacNode typeNode, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.PRIVATE | Flags.TRANSIENT);
 		JCVariableDecl hashCodeCacheField = maker.VarDef(mods, typeNode.toName(HASH_CODE_CACHE_NAME), maker.TypeIdent(CTC_INT), null);
 		injectFieldAndMarkGenerated(typeNode, hashCodeCacheField);
-		recursiveSetGeneratedBy(hashCodeCacheField, source, typeNode.getContext());
+		recursiveSetGeneratedBy(hashCodeCacheField, source);
 	}
 	
-	public JCMethodDecl createHashCode(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, boolean cacheHashCode, FieldAccess fieldAccess, JCTree source) {
+	public JCMethodDecl createHashCode(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, boolean cacheHashCode, FieldAccess fieldAccess, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
@@ -364,7 +363,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		JCBlock body = maker.Block(0, statements.toList());
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("hashCode"), returnType,
-			List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source, typeNode.getContext());
+			List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
 	}
 
 	public JCExpressionStatement createResultCalculation(JavacNode typeNode, JCExpression expr) {
@@ -426,7 +425,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		return maker.TypeApply(expr, wildcards.toList());
 	}
 	
-	public JCMethodDecl createEquals(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, FieldAccess fieldAccess, boolean needsCanEqual, JCTree source, List<JCAnnotation> onParam) {
+	public JCMethodDecl createEquals(JavacNode typeNode, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members, boolean callSuper, FieldAccess fieldAccess, boolean needsCanEqual, JavacNode source, List<JCAnnotation> onParam) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		Name oName = typeNode.toName("o");
@@ -560,10 +559,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		}
 		
 		JCBlock body = maker.Block(0, statements.toList());
-		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("equals"), returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source, typeNode.getContext());
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("equals"), returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source);
 	}
 
-	public JCMethodDecl createCanEqual(JavacNode typeNode, JCTree source, List<JCAnnotation> onParam) {
+	public JCMethodDecl createCanEqual(JavacNode typeNode, JavacNode source, List<JCAnnotation> onParam) {
 		/* protected boolean canEqual(final java.lang.Object other) {
 		 *     return other instanceof Outer.Inner.MyType;
 		 * }
@@ -588,7 +587,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCBlock body = maker.Block(0, List.<JCStatement>of(
 			maker.Return(maker.TypeTest(maker.Ident(otherName), createTypeReference(typeNode, false)))));
 		
-		return recursiveSetGeneratedBy(maker.MethodDef(mods, canEqualName, returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source, typeNode.getContext());
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, canEqualName, returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source);
 	}
 	
 	public JCStatement generateCompareFloatOrDouble(JCExpression thisDotField, JCExpression otherDotField,

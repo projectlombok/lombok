@@ -349,7 +349,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		JCStatement body = useReturn ? maker.Return(delegateCall) : maker.Exec(delegateCall);
 		JCBlock bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(body));
 		
-		return recursiveSetGeneratedBy(maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null), annotation.get(), annotation.getContext());
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null), annotation);
 	}
 	
 	public static <T> com.sun.tools.javac.util.List<T> toList(ListBuffer<T> collection) {

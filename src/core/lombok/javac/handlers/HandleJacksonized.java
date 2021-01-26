@@ -107,7 +107,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		JavacTreeMaker maker = annotatedNode.getTreeMaker();
 
 		// Now lets find the generated builder class.
-		String builderClassName = getBuilderClassName(ast, annotationNode, annotatedNode, td, builderAnnotation, maker);
+		String builderClassName = getBuilderClassName(annotationNode, annotatedNode, td, builderAnnotation, maker);
 
 		JCClassDecl builderClass = null;
 		for (JCTree member : td.getMembers()) {
@@ -132,11 +132,15 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
 		JCExpression assign = maker.Assign(maker.Ident(annotationNode.toName("builder")), builderClassReference);
 		JCAnnotation annotationJsonDeserialize = maker.Annotation(jsonDeserializeType, List.of(assign));
+		recursiveSetGeneratedBy(annotationJsonDeserialize, annotationNode);
 		td.mods.annotations = td.mods.annotations.append(annotationJsonDeserialize);
 		
 		// Copy annotations from the class to the builder class.
 		List<JCAnnotation> copyableAnnotations = findJacksonAnnotationsOnClass(tdNode);
 		List<JCAnnotation> copiedAnnotations = copyAnnotations(copyableAnnotations);
+		for (JCAnnotation anno : copiedAnnotations) {
+			recursiveSetGeneratedBy(anno, annotationNode);
+		}
 		builderClass.mods.annotations = builderClass.mods.annotations.appendList(copiedAnnotations);
 		
 		// Insert @JsonPOJOBuilder on the builder class.
@@ -144,6 +148,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
 		JCExpression buildMethodNameExpr = maker.Assign(maker.Ident(annotationNode.toName("buildMethodName")), maker.Literal(buildMethodName));
 		JCAnnotation annotationJsonPOJOBuilder = maker.Annotation(jsonPOJOBuilderType, List.of(withPrefixExpr, buildMethodNameExpr));
+		recursiveSetGeneratedBy(annotationJsonPOJOBuilder, annotatedNode);
 		builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPOJOBuilder);
 
 		// @SuperBuilder? Make it package-private!
@@ -151,7 +156,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			builderClass.mods.flags = builderClass.mods.flags & ~Flags.PRIVATE;
  	}
 
-	private String getBuilderClassName(JCAnnotation ast, JavacNode annotationNode, JavacNode annotatedNode, JCClassDecl td, AnnotationValues<Builder> builderAnnotation, JavacTreeMaker maker) {
+	private String getBuilderClassName(JavacNode annotationNode, JavacNode annotatedNode, JCClassDecl td, AnnotationValues<Builder> builderAnnotation, JavacTreeMaker maker) {
 		String builderClassName = builderAnnotation != null ? 
 			builderAnnotation.getInstance().builderClassName() : null;
 		if (builderClassName == null || builderClassName.isEmpty()) {
@@ -166,7 +171,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 				JCExpression returnType = fillParametersFrom.restype;
 				List<JCTypeParameter> typeParams = fillParametersFrom.typarams;
 				if (returnType instanceof JCTypeApply) {
-					returnType = cloneType(maker, returnType, ast, annotationNode.getContext());
+					returnType = cloneType(maker, returnType, annotatedNode);
 				}
 				replacement = HandleBuilder.returnTypeToBuilderClassName(annotationNode, td, returnType, typeParams);
 			} else {

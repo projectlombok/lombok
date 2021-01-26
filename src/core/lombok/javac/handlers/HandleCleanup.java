@@ -52,7 +52,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
@@ -129,10 +128,9 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
 		
-		Context context = annotationNode.getContext();
-		JCBlock finalizer = recursiveSetGeneratedBy(maker.Block(0, List.<JCStatement>of(ifNotNullCleanup)), ast, context);
+		JCBlock finalizer = recursiveSetGeneratedBy(maker.Block(0, List.<JCStatement>of(ifNotNullCleanup)), annotationNode);
 		
-		newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0, tryBlock.toList()), ast, context), List.<JCCatch>nil(), finalizer), ast, context));
+		newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0, tryBlock.toList()), annotationNode), List.<JCCatch>nil(), finalizer), annotationNode));
 		
 		if (blockNode instanceof JCBlock) {
 			((JCBlock)blockNode).stats = newStatements.toList();
