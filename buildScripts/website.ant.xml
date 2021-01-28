@@ -57,7 +57,7 @@ such as applying the templates to produce the website, converting the changelog 
 		<echo>Live full versionstring : ${lombok.fullversion.live}</echo>
 	</target>
 	
-	<target name="changelog.build" depends="version, deps, compile.support" description="Turns the current changelog (doc/changelog.txt) into HTML">
+	<target name="changelog.build" depends="version, deps, compile.support" description="Turns the current changelog (doc/changelog.markdown) into HTML">
 		<mkdir dir="build/website" />
 		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
