@@ -556,7 +556,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			}
 		}
 		
-		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateUnique() ? List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
+		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateSideEffectFree() ? List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), annsOnMethod);
 		
 		// Create a constructor that has just the builder as parameter.
@@ -608,9 +608,12 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 		typeParameterNames.add(wildcard);
 		typeParameterNames.add(wildcard);
-		JCTypeApply returnType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderAbstractClassName), false, List.<JCTypeParameter>nil()), typeParameterNames.toList());
+		// And return type annotations.
+		List<JCAnnotation> annsOnParamType = List.nil();
+		if (job.checkerFramework.generateUnique()) annsOnParamType = List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
+		JCTypeApply returnType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderAbstractClassName), false, List.<JCTypeParameter>nil(), annsOnParamType), typeParameterNames.toList());
 		
-		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateUnique() ? List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
+		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateSideEffectFree() ? List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
 		JCMethodDecl methodDef = maker.MethodDef(maker.Modifiers(modifiers, annsOnMethod), job.toName(job.builderMethodName), returnType, copyTypeParams(job.sourceNode, job.typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(job.parentType, methodDef);
 		return methodDef;
@@ -647,7 +650,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		typeParameterNames.add(wildcard);
 		JCTypeApply returnType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderAbstractClassName), false, List.<JCTypeParameter>nil()), typeParameterNames.toList());
 		
-		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateUnique() ? List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
+		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateSideEffectFree() ? List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
 		JCMethodDecl methodDef = maker.MethodDef(maker.Modifiers(modifiers, annsOnMethod), job.toName(TO_BUILDER_METHOD_NAME), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(job.parentType, methodDef);
 		return methodDef;
