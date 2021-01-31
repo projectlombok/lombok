@@ -141,30 +141,6 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		boolean isDirectDescendantOfObject = isDirectDescendantOfObject(typeNode);
 		
-		if (isDirectDescendantOfObject && callSuper) {
-			source.addError("Generating equals/hashCode with a supercall to java.lang.Object is pointless.");
-			return;
-		}
-		
-		if (implicitCallSuper && !isDirectDescendantOfObject) {
-			CallSuperType cst = typeNode.getAst().readConfiguration(ConfigurationKeys.EQUALS_AND_HASH_CODE_CALL_SUPER);
-			if (cst == null) cst = CallSuperType.WARN;
-			
-			switch (cst) {
-			default:
-			case WARN:
-				source.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
-				callSuper = false;
-				break;
-			case SKIP:
-				callSuper = false;
-				break;
-			case CALL:
-				callSuper = true;
-				break;
-			}
-		}
-		
 		boolean isFinal = (((JCClassDecl) typeNode.get()).mods.flags & Flags.FINAL) != 0;
 		boolean needsCanEqual = !isFinal || !isDirectDescendantOfObject;
 		MemberExistsResult equalsExists = methodExists("equals", typeNode, 1);
@@ -191,6 +167,30 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		case NOT_EXISTS:
 		default:
 			//fallthrough
+		}
+		
+		if (isDirectDescendantOfObject && callSuper) {
+			source.addError("Generating equals/hashCode with a supercall to java.lang.Object is pointless.");
+			return;
+		}
+		
+		if (implicitCallSuper && !isDirectDescendantOfObject) {
+			CallSuperType cst = typeNode.getAst().readConfiguration(ConfigurationKeys.EQUALS_AND_HASH_CODE_CALL_SUPER);
+			if (cst == null) cst = CallSuperType.WARN;
+			
+			switch (cst) {
+			default:
+			case WARN:
+				source.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
+				callSuper = false;
+				break;
+			case SKIP:
+				callSuper = false;
+				break;
+			case CALL:
+				callSuper = true;
+				break;
+			}
 		}
 		
 		JCMethodDecl equalsMethod = createEquals(typeNode, members, callSuper, fieldAccess, needsCanEqual, source, onParam);
