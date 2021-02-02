@@ -115,6 +115,12 @@ public class HandleVal extends JavacASTAdapter {
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
+		if (localNode.getSourceVersion() >= 10) {
+			local.vartype = null;
+			localNode.getAst().setChanged();
+			return;
+		}
+		
 		if (JavacResolution.platformHasTargetTyping()) {
 			local.vartype = localNode.getAst().getTreeMaker().Ident(localNode.getAst().toName("___Lombok_VAL_Attrib__"));
 		} else {

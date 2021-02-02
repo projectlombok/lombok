@@ -1,3 +1,4 @@
+// version :9
 import lombok.*;
 class TrickyDoNothing {
 	@interface Getter {}

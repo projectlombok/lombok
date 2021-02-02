@@ -1,4 +1,4 @@
-// version 8:
+// version 8:9
 import java.io.Serializable;
 
 class ValLambda {

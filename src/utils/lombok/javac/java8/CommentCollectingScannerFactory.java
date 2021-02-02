@@ -21,6 +21,7 @@
  */
 package lombok.javac.java8;
 
+import java.nio.Buffer;
 import java.nio.CharBuffer;
 
 import com.sun.tools.javac.parser.Scanner;
@@ -79,7 +80,7 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 		int limit;
 		if (input instanceof CharBuffer && ((CharBuffer) input).hasArray()) {
 			CharBuffer cb = (CharBuffer) input;
-			cb.compact().flip();
+			((Buffer)cb.compact()).flip();
 			array = cb.array();
 			limit = cb.limit();
 		} else {
