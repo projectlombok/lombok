@@ -5,10 +5,10 @@ public class ValSwitchExpression {
     super();
   }
   public void method(int arg) {
-    final @val int x =     switch (arg) {
+    final @val var x =     switch (arg) {
     default ->
         {
-          final @val java.lang.String s = "string";
+          final @val var s = "string";
           yield arg;
         }
     };

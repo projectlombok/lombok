@@ -1,3 +1,4 @@
+// version :9
 class ValLub {
 	public void easyLub() {
 		java.util.Map<String, Number> m = java.util.Collections.emptyMap();

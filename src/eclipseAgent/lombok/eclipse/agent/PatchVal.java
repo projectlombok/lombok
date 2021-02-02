@@ -204,6 +204,8 @@ public class PatchVal {
 		boolean var = isVar(local, scope);
 		if (!(val || var)) return false;
 		
+		if (hasNativeVarSupport(scope)) return false;
+		
 		if (val) {
 			StackTraceElement[] st = new Throwable().getStackTrace();
 			for (int i = 0; i < st.length - 2 && i < 10; i++) {
@@ -281,12 +283,22 @@ public class PatchVal {
 		return is(local.type, scope, "lombok.val");
 	}
 	
+	private static boolean hasNativeVarSupport(Scope scope) {
+		long sl = scope.problemReporter().options.sourceLevel >> 16;
+		long cl = scope.problemReporter().options.complianceLevel >> 16;
+		if (sl == 0) sl = cl;
+		if (cl == 0) cl = sl;
+		return Math.min((int)(sl - 44), (int)(cl - 44)) >= 10;
+	}
+	
 	public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
 		if (forEach.elementVariable == null) return false;
 		
 		boolean val = isVal(forEach.elementVariable, scope);
 		boolean var = isVar(forEach.elementVariable, scope);
 		if (!(val || var)) return false;
+		
+		if (hasNativeVarSupport(scope)) return false;
 		
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
 		if (component == null) return false;

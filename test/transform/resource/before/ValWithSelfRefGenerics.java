@@ -1,3 +1,4 @@
+// version :9
 import lombok.val;
 public class ValWithSelfRefGenerics {
 	public void run(Thing<? extends Comparable<?>> thing, Thing<?> thing2, java.util.List<? extends Number> z) {

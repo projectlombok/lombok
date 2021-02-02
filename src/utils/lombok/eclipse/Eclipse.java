@@ -224,8 +224,11 @@ public class Eclipse {
 		int highestVersionSoFar = 0;
 		for (Field f : ClassFileConstants.class.getDeclaredFields()) {
 			try {
-				if (f.getName().startsWith("JDK1_")) {
-					int thisVersion = Integer.parseInt(f.getName().substring("JDK1_".length()));
+				if (f.getName().startsWith("JDK")) {
+					String versionString = f.getName().substring("JDK".length());
+					if (versionString.startsWith("1_")) versionString = versionString.substring("1_".length());
+					
+					int thisVersion = Integer.parseInt(versionString);
 					if (thisVersion > highestVersionSoFar) {
 						highestVersionSoFar = thisVersion;
 						latestEcjCompilerVersionConstantCached = (Long) f.get(null);
