@@ -2,11 +2,11 @@ Lombok Changelog
 ----------------
 
 ### v1.18.19 "Edgy Guinea Pig"
-* No changes yet.
+* POTENTIAL BUGFIX: lombok + errorprone could cause `IllegalArgumentException` if using the `MissingSummay` bug pattern. [Issue #2730](https://github.com/rzwitserloot/lombok/issues/2612).
 
 ### v1.18.18 (January 28th, 2021)
 * BUGFIX: Various tools using ecj under the hood (including intellij) could cause corrupt class files to be generated. [PR #2637](https://github.com/rzwitserloot/lombok/pull/2637), [lombok-intellij-plugin issue #969](https://github.com/mplushnikov/lombok-intellij-plugin/issues/969).
-* BUGFIX: Netbeans would not work with 1.18.16 anymore. [Issue #2612](https://github.com/rzwitserloot/lombok/issues/2612)
+* BUGFIX: Netbeans would not work with 1.18.16 anymore. [Issue #2612](https://github.com/rzwitserloot/lombok/issues/2612).
 * BUGFIX: `@ExtensionMethod` support in ecj improved when generics are involved. [Issue #2648](https://github.com/rzwitserloot/lombok/issues/2648), [PR #2658](https://github.com/rzwitserloot/lombok/pull/2658) thanks to __@Rawi01__.
 * PLATFORM: using `lombok.config` files when compiling with sbt 1.4 now works again. [Issue #2645](https://github.com/rzwitserloot/lombok/issues/2645)
 
