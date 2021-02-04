@@ -219,8 +219,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 				if (supported.length() > 0) supported.append(", ");
 				supported.append(proc.getName());
 			}
-			procEnv.getMessager().printMessage(Kind.WARNING, String.format("You aren't using a compiler supported by lombok, so lombok will not work and has been disabled.\n" +
+			if (procEnv.getClass().getName().equals("com.google.turbine.processing.TurbineProcessingEnvironment")) {
+				procEnv.getMessager().printMessage(Kind.ERROR, String.format("Turbine is not currently supported by lombok."));
+			} else {
+				procEnv.getMessager().printMessage(Kind.WARNING, String.format("You aren't using a compiler supported by lombok, so lombok will not work and has been disabled.\n" +
 					"Your processor is: %s\nLombok supports: %s", procEnv.getClass().getName(), supported));
+			}
 		}
 	}
 	
