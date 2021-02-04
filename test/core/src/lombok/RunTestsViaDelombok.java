@@ -99,6 +99,10 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 					try {
 						if (tree instanceof JCModifiers) return;
 						
+						if (!Javac.validateDocComment(unit, tree)) {
+							fail("Start position of doc comment (" + Javac.getDocComment(unit, tree) + ") of " + tree + " not set");
+						}
+						
 						if (tree.pos == -1) {
 							fail("Start position of " + tree + " not set");
 						}

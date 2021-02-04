@@ -89,7 +89,7 @@ public class DocCommentIntegrator {
 			((Map<JCTree, String>) map_).put(node, docCommentContent);
 			return true;
 		} else if (Javac.instanceOfDocCommentTable(map_)) {
-			CommentAttacher_8.attach(node, docCommentContent, map_);
+			CommentAttacher_8.attach(node, docCommentContent, cmt.pos, map_);
 			return true;
 		}
 		
@@ -98,7 +98,7 @@ public class DocCommentIntegrator {
 	
 	/* Container for code which will cause class loader exceptions on javac below 8. By being in a separate class, we avoid the problem. */
 	private static class CommentAttacher_8 {
-		static void attach(final JCTree node, String docCommentContent, Object map_) {
+		static void attach(final JCTree node, String docCommentContent, final int pos, Object map_) {
 			final String docCommentContent_ = docCommentContent;
 			((DocCommentTable) map_).putComment(node, new Comment() {
 				@Override public String getText() {
@@ -106,7 +106,7 @@ public class DocCommentIntegrator {
 				}
 				
 				@Override public int getSourcePos(int index) {
-					return -1;
+					return pos + index;
 				}
 				
 				@Override public CommentStyle getStyle() {

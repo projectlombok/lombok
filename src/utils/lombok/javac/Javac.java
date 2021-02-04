@@ -279,6 +279,17 @@ public class Javac {
 		return null;
 	}
 	
+	/**
+	 * Checks if the javadoc comment associated with {@code tree} has a position set.
+	 * 
+	 * Returns true if there is no javadoc comment on the node, or it has position (position isn't -1).
+	 */
+	public static boolean validateDocComment(JCCompilationUnit cu, JCTree tree) {
+		Object dc = getDocComments(cu);
+		if (!instanceOfDocCommentTable(dc)) return true;
+		return JavadocOps_8.validateJavadoc(dc, tree);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static void setDocComment(JCCompilationUnit cu, JCTree node, String javadoc) {
 		if (javadoc == null) return;
@@ -302,6 +313,12 @@ public class Javac {
 			return javadoc.getText();
 		}
 		
+		public static boolean validateJavadoc(Object dc, JCTree node) {
+			DocCommentTable dct = (DocCommentTable) dc;
+			Comment javadoc = dct.getComment(node);
+			return javadoc == null || javadoc.getText() == null || javadoc.getSourcePos(0) >= 0;
+		}
+		
 		static void setJavadoc(Object dc, JCTree node, String javadoc) {
 			DocCommentTable dct = (DocCommentTable) dc;
 			Comment newCmt = createJavadocComment(javadoc, node);
@@ -315,7 +332,7 @@ public class Javac {
 				}
 				
 				@Override public int getSourcePos(int index) {
-					return -1;
+					return field == null ? -1 : field.getStartPosition();
 				}
 				
 				@Override public CommentStyle getStyle() {
