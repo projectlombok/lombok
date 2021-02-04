@@ -78,7 +78,7 @@ class CheckerFrameworkSuperBuilder {
     private static @java.lang.SuppressWarnings("all") int $default$x() {
       return 5;
     }
-    protected @java.lang.SuppressWarnings("all") Parent(final CheckerFrameworkSuperBuilder.Parent.ParentBuilder<?, ?> b) {
+    protected @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") Parent(final CheckerFrameworkSuperBuilder.Parent.ParentBuilder<?, ?> b) {
       super();
       if (b.x$set)
           this.x = b.x$value;
@@ -99,7 +99,7 @@ class CheckerFrameworkSuperBuilder {
       }
       this.names = names;
     }
-    public static @java.lang.SuppressWarnings("all") CheckerFrameworkSuperBuilder.Parent. @org.checkerframework.common.aliasing.qual.Unique ParentBuilder<?, ?> builder() {
+    public static @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkSuperBuilder.Parent. @org.checkerframework.common.aliasing.qual.Unique ParentBuilder<?, ?> builder() {
       return new CheckerFrameworkSuperBuilder.Parent.ParentBuilderImpl();
     }
   }
@@ -148,7 +148,7 @@ class CheckerFrameworkSuperBuilder {
     private static @java.lang.SuppressWarnings("all") int $default$a() {
       return 1;
     }
-    protected @java.lang.SuppressWarnings("all") ZChild(final CheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<?, ?> b) {
+    protected @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") ZChild(final CheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<?, ?> b) {
       super(b);
       if (b.a$set)
           this.a = b.a$value;
@@ -156,7 +156,7 @@ class CheckerFrameworkSuperBuilder {
           this.a = CheckerFrameworkSuperBuilder.ZChild.$default$a();
       this.b = b.b;
     }
-    public static @java.lang.SuppressWarnings("all") CheckerFrameworkSuperBuilder.ZChild. @org.checkerframework.common.aliasing.qual.Unique ZChildBuilder<?, ?> builder() {
+    public static @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") CheckerFrameworkSuperBuilder.ZChild. @org.checkerframework.common.aliasing.qual.Unique ZChildBuilder<?, ?> builder() {
       return new CheckerFrameworkSuperBuilder.ZChild.ZChildBuilderImpl();
     }
   }

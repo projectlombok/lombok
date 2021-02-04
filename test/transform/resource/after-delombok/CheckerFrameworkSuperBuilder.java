@@ -1,4 +1,3 @@
-// skip-idempotent
 import java.util.List;
 class CheckerFrameworkSuperBuilder {
 	public static class Parent {
@@ -128,7 +127,7 @@ class CheckerFrameworkSuperBuilder {
 		}
 		@org.checkerframework.dataflow.qual.SideEffectFree
 		@java.lang.SuppressWarnings("all")
-		public static CheckerFrameworkSuperBuilder.Parent.ParentBuilder<?, ?> builder() {
+		public static CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.common.aliasing.qual.Unique ParentBuilder<?, ?> builder() {
 			return new CheckerFrameworkSuperBuilder.Parent.ParentBuilderImpl();
 		}
 	}
@@ -211,7 +210,7 @@ class CheckerFrameworkSuperBuilder {
 		}
 		@org.checkerframework.dataflow.qual.SideEffectFree
 		@java.lang.SuppressWarnings("all")
-		public static CheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<?, ?> builder() {
+		public static CheckerFrameworkSuperBuilder.ZChild.@org.checkerframework.common.aliasing.qual.Unique ZChildBuilder<?, ?> builder() {
 			return new CheckerFrameworkSuperBuilder.ZChild.ZChildBuilderImpl();
 		}
 	}

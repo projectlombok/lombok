@@ -606,6 +606,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 		
 		constructor.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
+		if (job.checkerFramework.generateSideEffectFree()) {
+			constructor.annotations = new Annotation[] {generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
+		}
 		
 		constructor.traverse(new SetGeneratedByVisitor(job.source), typeDeclaration.scope);
 		
@@ -635,6 +638,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		AllocationExpression invoke = new AllocationExpression();
 		invoke.type = namePlusTypeParamsToTypeReference(job.parentType, job.builderImplClassNameArr, false, job.typeParams, p);
 		out.statements = new Statement[] {new ReturnStatement(invoke, pS, pE)};
+		if (job.checkerFramework.generateSideEffectFree()) {
+			out.annotations = new Annotation[] {generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
+		}
 		
 		createRelevantNonNullAnnotation(job.parentType, out);
 		out.traverse(new SetGeneratedByVisitor(job.source), ((TypeDeclaration) job.parentType.get()).scope);
@@ -673,6 +679,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		invokeFillMethod.selector = FILL_VALUES_METHOD_NAME;
 		invokeFillMethod.arguments = new Expression[] {new ThisReference(0, 0)};
 		out.statements = new Statement[] {new ReturnStatement(invokeFillMethod, pS, pE)};
+		if (job.checkerFramework.generateSideEffectFree()) {
+			out.annotations = new Annotation[] {generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
+		}
 		
 		createRelevantNonNullAnnotation(job.parentType, out);
 		out.traverse(new SetGeneratedByVisitor(job.source), ((TypeDeclaration) job.parentType.get()).scope);
