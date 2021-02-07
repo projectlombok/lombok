@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -697,13 +697,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "handleDelegateForType", "boolean", "java.lang.Object"))
 				.build());
 		
-		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.setSymbolDuringMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.SelectionRequestor", "acceptSourceMethod"))
 				.callToWrap(new Hook("org.eclipse.jdt.core.IType", "getMethods", "org.eclipse.jdt.core.IMethod[]"))
 				.symbol("lombok.skipdelegates")
 				.build());
 		
-		sm.addScript(ScriptBuilder.addField()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
 				.fieldName("$delegateMethods")
 				.fieldType("Ljava/util/Map;")
 				.setPublic()
@@ -711,10 +711,10 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.targetClass("org.eclipse.jdt.internal.core.CompilationUnit")
 				.build());
 		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.SourceTypeElementInfo", "getChildren", "org.eclipse.jdt.core.IJavaElement[]"))
 				.request(StackRequest.RETURN_VALUE, StackRequest.THIS)
-				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "getChildren", "java.lang.Object[]", "java.lang.Object", "java.lang.Object"))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "addGeneratedDelegateMethods", "java.lang.Object[]", "java.lang.Object", "java.lang.Object"))
 				.build());
 	}
 	
