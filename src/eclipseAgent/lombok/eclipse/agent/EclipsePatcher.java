@@ -772,11 +772,12 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		final String EXPRESSION_SIG = "org.eclipse.jdt.internal.compiler.ast.Expression";
 		final String BLOCKSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
 		final String TYPEBINDING_SIG = "org.eclipse.jdt.internal.compiler.lookup.TypeBinding";
+		final String OBJECT_SIG = "java.lang.Object";
 		
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget(LOCALDECLARATION_SIG, "resolve", "void", BLOCKSCOPE_SIG))
 				.request(StackRequest.THIS, StackRequest.PARAM1)
-				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Val", "handleValForLocalDeclaration", "boolean", LOCALDECLARATION_SIG, BLOCKSCOPE_SIG))
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Val", "handleValForLocalDeclaration", "boolean", OBJECT_SIG, OBJECT_SIG))
 				.build());
 		
 		sm.addScript(ScriptBuilder.replaceMethodCall()
@@ -784,18 +785,20 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.methodToReplace(new Hook(EXPRESSION_SIG, "resolveType", TYPEBINDING_SIG, BLOCKSCOPE_SIG))
 				.requestExtra(StackRequest.THIS)
 				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$Val", "skipResolveInitializerIfAlreadyCalled2", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG, LOCALDECLARATION_SIG))
+				.transplant()
 				.build());
 		
 		sm.addScript(ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget(FOREACHSTATEMENT_SIG, "resolve", "void", BLOCKSCOPE_SIG))
 				.methodToReplace(new Hook(EXPRESSION_SIG, "resolveType", TYPEBINDING_SIG, BLOCKSCOPE_SIG))
 				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$Val", "skipResolveInitializerIfAlreadyCalled", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG))
+				.transplant()
 				.build());
 		
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget(FOREACHSTATEMENT_SIG, "resolve", "void", BLOCKSCOPE_SIG))
 				.request(StackRequest.THIS, StackRequest.PARAM1)
-				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Val", "handleValForForEach", "boolean", FOREACHSTATEMENT_SIG, BLOCKSCOPE_SIG))
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Val", "handleValForForEach", "boolean", OBJECT_SIG, OBJECT_SIG))
 				.build());
 	}
 	
@@ -843,33 +846,33 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			.request(StackRequest.RETURN_VALUE)
 			.request(StackRequest.THIS)
 			.request(StackRequest.PARAM1)
-			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD, "resolveType", OBJECT_SIG, OBJECT_SIG, MESSAGE_SEND_SIG, BLOCK_SCOPE_SIG))
+			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD, "resolveType", OBJECT_SIG, OBJECT_SIG, OBJECT_SIG, OBJECT_SIG))
 			.cast()
 			.build());
 		
 		sm.addScript(replaceMethodCall()
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
 			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "errorNoMethodFor", "void", MESSAGE_SEND_SIG, TYPE_BINDING_SIG, TYPE_BINDINGS_SIG))
-			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "errorNoMethodFor", "void", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, TYPE_BINDING_SIG, TYPE_BINDINGS_SIG))
+			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "errorNoMethodFor", "void", OBJECT_SIG, OBJECT_SIG, OBJECT_SIG, OBJECT_SIG))
 			.build());
 		
 		sm.addScript(replaceMethodCall()
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
 			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "invalidMethod", "void", MESSAGE_SEND_SIG, METHOD_BINDING_SIG))
-			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "invalidMethod", "void", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG))
+			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "invalidMethod", "void", OBJECT_SIG, OBJECT_SIG, OBJECT_SIG))
 			.build());
 		
 		// Since eclipse mars; they added a param.
 		sm.addScript(replaceMethodCall()
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
 			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "invalidMethod", "void", MESSAGE_SEND_SIG, METHOD_BINDING_SIG, SCOPE_SIG))
-			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "invalidMethod", "void", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG, SCOPE_SIG))
+			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "invalidMethod", "void", OBJECT_SIG, OBJECT_SIG, OBJECT_SIG, OBJECT_SIG))
 			.build());
 		
 		sm.addScript(replaceMethodCall()
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
 			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "nonStaticAccessToStaticMethod", "void", AST_NODE, METHOD_BINDING_SIG))
-			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "nonStaticAccessToStaticMethod", "void", PROBLEM_REPORTER_SIG, AST_NODE, METHOD_BINDING_SIG, MESSAGE_SEND_SIG))
+			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "nonStaticAccessToStaticMethod", "void", OBJECT_SIG, OBJECT_SIG, OBJECT_SIG, OBJECT_SIG))
 			.requestExtra(StackRequest.THIS)
 			.build());
 		

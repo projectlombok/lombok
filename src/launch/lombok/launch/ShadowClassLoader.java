@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 The Project Lombok Authors.
+ * Copyright (C) 2014-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -102,14 +103,12 @@ class ShadowClassLoader extends ClassLoader {
 	private final List<String> parentExclusion = new ArrayList<String>();
 	private final List<String> highlanders = new ArrayList<String>();
 	
-	private final List<ClassLoader> prependedLoaders = new ArrayList<ClassLoader>();
+	private final Set<ClassLoader> prependedParentLoaders = Collections.newSetFromMap(new IdentityHashMap<ClassLoader, Boolean>());
 	
-	public void prepend(ClassLoader loader) {
+	public void prependParent(ClassLoader loader) {
 		if (loader == null) return;
-		for (ClassLoader cl : prependedLoaders) {
-			if (cl == loader) return;
-		}
-		prependedLoaders.add(loader);
+		if (loader == getParent()) return;
+		prependedParentLoaders.add(loader);
 	}
 	
 	/**
@@ -539,23 +538,25 @@ class ShadowClassLoader extends ClassLoader {
 		}
 		
 		String fileNameOfClass = name.replace(".", "/") + ".class";
-		for (ClassLoader pre : prependedLoaders) {
-			try {
-				URL res = pre.getResource(fileNameOfClass);
-				if (res == null) continue;
-				return urlToDefineClass(name, res, resolve);
-			} catch (Exception e) {
-				continue;
-			}
-		}
-		
 		URL res = getResource_(fileNameOfClass, true);
 		if (res == null) {
-			if (!exclusionListMatch(fileNameOfClass)) try {
-				return super.loadClass(name, resolve);
-			} catch (ClassNotFoundException cnfe) {
-				res = getResource_("secondaryLoading.SCL." + sclSuffix + "/" + name.replace(".", "/") + ".SCL." + sclSuffix, true);
-				if (res == null) throw cnfe;
+			if (!exclusionListMatch(fileNameOfClass)) {
+				try {
+					// First search in the prepended classloaders, the class might be their already
+					for (ClassLoader pre : prependedParentLoaders) {
+						try {
+							Class<?> loadClass = pre.loadClass(name);
+							if (loadClass != null) return loadClass;
+						} catch (Throwable e) {
+							continue;
+						}
+					}
+					
+					return super.loadClass(name, resolve);
+				} catch (ClassNotFoundException cnfe) {
+					res = getResource_("secondaryLoading.SCL." + sclSuffix + "/" + name.replace(".", "/") + ".SCL." + sclSuffix, true);
+					if (res == null) throw cnfe;
+				}
 			}
 		}
 		if (res == null) throw new ClassNotFoundException(name);
