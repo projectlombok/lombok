@@ -587,6 +587,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		/* Set generated flag for QualifiedNames */
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM4)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlagForName", "void",
@@ -595,6 +596,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM4)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlagForName", "void",
