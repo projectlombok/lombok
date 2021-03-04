@@ -25,8 +25,6 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
-import java.util.Arrays;
-
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -158,37 +156,28 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		ASTNode source = sourceNode.get();
 		
 		TypeDeclaration typeDeclaration = ((TypeDeclaration) typeNode.get());
-		long p = (long) source.sourceStart << 32 | source.sourceEnd;
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(((CompilationUnitDeclaration) typeNode.top().get()).compilationResult);
 		
 		constructor.modifiers = ClassFileConstants.AccPrivate;
 		constructor.selector = typeDeclaration.name;
 		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
-		constructor.constructorCall.sourceStart = source.sourceStart;
-		constructor.constructorCall.sourceEnd = source.sourceEnd;
 		constructor.thrownExceptions = null;
 		constructor.typeParameters = null;
 		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
-		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
 		constructor.arguments = null;
 		
-		AllocationExpression exception = new AllocationExpression();
-		setGeneratedBy(exception, source);
 		long[] ps = new long[JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION.length];
-		Arrays.fill(ps, p);
+		AllocationExpression exception = new AllocationExpression();
 		exception.type = new QualifiedTypeReference(JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION, ps);
-		setGeneratedBy(exception.type, source);
 		exception.arguments = new Expression[] {
-				new StringLiteral(UNSUPPORTED_MESSAGE, source.sourceStart, source.sourceEnd, 0)
+				new StringLiteral(UNSUPPORTED_MESSAGE, 0, 0, 0)
 		};
-		setGeneratedBy(exception.arguments[0], source);
-		ThrowStatement throwStatement = new ThrowStatement(exception, source.sourceStart, source.sourceEnd);
-		setGeneratedBy(throwStatement, source);
+		ThrowStatement throwStatement = new ThrowStatement(exception, 0, 0);
 		
 		constructor.statements = new Statement[] {throwStatement};
 		
+		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		injectMethod(typeNode, constructor);
 	}
 }
