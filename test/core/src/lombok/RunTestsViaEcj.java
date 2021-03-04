@@ -83,6 +83,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
+		warnings.put(CompilerOptions.OPTION_ReportIndirectStaticAccess, "warning");
+		warnings.put(CompilerOptions.OPTION_ReportNonStaticAccessToStatic, "warning");
 		int ecjVersion = Eclipse.getEcjCompilerVersion();
 		warnings.put(CompilerOptions.OPTION_Source, (ecjVersion < 9 ? "1." : "") + ecjVersion);
 		options.set(warnings);

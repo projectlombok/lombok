@@ -55,6 +55,7 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SuperReference;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -143,14 +144,17 @@ public class PatchExtensionMethod {
 		private final ProblemReporter problemReporter;
 		private ASTNode location;
 		private MethodBinding method;
+		private ReferenceContext referenceContext;
 		
 		PostponedNonStaticAccessToStaticMethodError(ProblemReporter problemReporter, ASTNode location, MethodBinding method) {
 			this.problemReporter = problemReporter;
 			this.location = location;
 			this.method = method;
+			this.referenceContext = problemReporter.referenceContext;
 		}
 
 		public void fire() {
+			problemReporter.referenceContext = this.referenceContext;
 			problemReporter.nonStaticAccessToStaticMethod(location, method);
 		}
 	}
