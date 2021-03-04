@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2012-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -152,8 +152,9 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		
 		@Override
 		public Void visitMethodInvocation(final MethodInvocationTree tree, final Void p) {
+			super.visitMethodInvocation(tree, p);
 			handleMethodCall((JCMethodInvocation) tree);
-			return super.visitMethodInvocation(tree, p);
+			return null;
 		}
 		
 		private void handleMethodCall(final JCMethodInvocation methodCall) {
