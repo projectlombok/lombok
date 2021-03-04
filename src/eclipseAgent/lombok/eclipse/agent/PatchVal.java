@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,32 +68,7 @@ public class PatchVal {
 	// This is half of the work for 'val' support - the other half is in PatchValEclipse. This half is enough for ecj.
 	// Creates a copy of the 'initialization' field on a LocalDeclaration if the type of the LocalDeclaration is 'val', because the completion parser will null this out,
 	// which in turn stops us from inferring the intended type for 'val x = 5;'. We look at the copy.
-	// Also patches local declaration to not call .resolveType() on the initializer expression if we've already done so (calling it twice causes weird errors),
-	// and patches .resolve() on LocalDeclaration itself to just-in-time replace the 'val' vartype with the right one.
-	
-	public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
-		if (expr.resolvedType != null) return expr.resolvedType;
-		try {
-			return expr.resolveType(scope);
-		} catch (NullPointerException e) {
-			return null;
-		} catch (ArrayIndexOutOfBoundsException e) {
-			// This will occur internally due to for example 'val x = mth("X");', where mth takes 2 arguments.
-			return null;
-		}
-	}
-	
-	public static TypeBinding skipResolveInitializerIfAlreadyCalled2(Expression expr, BlockScope scope, LocalDeclaration decl) {
-		if (decl != null && LocalDeclaration.class.equals(decl.getClass()) && expr.resolvedType != null) return expr.resolvedType;
-		try {
-			return expr.resolveType(scope);
-		} catch (NullPointerException e) {
-			return null;
-		} catch (ArrayIndexOutOfBoundsException e) {
-			// This will occur internally due to for example 'val x = mth("X");', where mth takes 2 arguments.
-			return null;
-		}
-	}
+	// Also patches .resolve() on LocalDeclaration itself to just-in-time replace the 'val' vartype with the right one.
 	
 	public static boolean matches(String key, char[] array) {
 		if (array == null || key.length() != array.length) return false;

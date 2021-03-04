@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -148,7 +148,9 @@ public class PatchDelegate {
 		
 		CompilationUnitDeclaration cud = scope.compilationUnitScope().referenceContext;
 		if (scope == scope.compilationUnitScope().topLevelTypes[0].scope) {
-			cleanupDelegateMethods(cud);
+			if (eclipseAvailable) {
+				EclipseOnlyMethods.cleanupDelegateMethods(cud);
+			}
 		}
 		
 		if (!hasDelegateMarkedFieldsOrMethods(scope.referenceContext)) return false;
@@ -195,23 +197,13 @@ public class PatchDelegate {
 				}
 			} finally {
 				stack.remove(stack.size() - 1);
-				if (stack.isEmpty()) {
-					notifyDelegateMethodsAdded(cud);
+				if (stack.isEmpty() && eclipseAvailable) {
+					EclipseOnlyMethods.notifyDelegateMethodsAdded(cud);
 				}
 			}
 		}
 		
 		return false;
-	}
-	
-	public static IJavaElement[] getChildren(IJavaElement[] returnValue, SourceTypeElementInfo javaElement) {
-		if (Symbols.hasSymbol("lombok.skipdelegates")) return returnValue;
-		
-		List<SourceMethod> delegateMethods = getDelegateMethods((SourceType) javaElement.getHandle());
-		if (delegateMethods != null) {
-			return concat(returnValue, delegateMethods.toArray(new IJavaElement[0]), IJavaElement.class);
-		}
-		return returnValue;
 	}
 	
 	/**
@@ -459,11 +451,7 @@ public class PatchDelegate {
 	
 	private static void generateDelegateMethods(EclipseNode typeNode, List<BindingTuple> methods, DelegateReceiver delegateReceiver) {
 		CompilationUnitDeclaration top = (CompilationUnitDeclaration) typeNode.top().get();
-		
-		String qualifiedName = new String(CharOperation.concatWith(getQualifiedInnerName(typeNode.up(), typeNode.getName().toCharArray()), '$'));
-		SourceType sourceType = getSourceType(top, qualifiedName);
-		List<SourceMethod> delegateSourceMethods = getDelegateMethods(sourceType);
-		
+		List<MethodDeclaration> addedMethods = new ArrayList<MethodDeclaration>();
 		for (BindingTuple pair : methods) {
 			EclipseNode annNode = typeNode.getAst().get(pair.responsible);
 			MethodDeclaration method = createDelegateMethod(pair.fieldName, typeNode, pair, top.compilationResult, annNode, delegateReceiver);
@@ -471,11 +459,11 @@ public class PatchDelegate {
 				SetGeneratedByVisitor visitor = new SetGeneratedByVisitor(annNode.get());
 				method.traverse(visitor, ((TypeDeclaration)typeNode.get()).scope);
 				injectMethod(typeNode, method);
-				
-				if (delegateSourceMethods != null) {
-					delegateSourceMethods.add(DelegateSourceMethod.forMethodDeclaration(sourceType, method));
-				}
+				addedMethods.add(method);
 			}
+		}
+		if (eclipseAvailable) {
+			EclipseOnlyMethods.collectGeneratedDelegateMethods(top, typeNode, addedMethods);
 		}
 	}
 	
@@ -722,127 +710,159 @@ public class PatchDelegate {
 		return method;
 	}
 	
-	private static void cleanupDelegateMethods(CompilationUnitDeclaration cud) {
-		CompilationUnit compilationUnit = getCompilationUnit(cud);
-		if (compilationUnit != null) {
-			EclipseAugments.CompilationUnit_delegateMethods.clear(compilationUnit);
+	private static boolean eclipseAvailable = true;
+	static {
+		try {
+			CompilationUnit.class.getName();
+		} catch (Throwable t) {
+			eclipseAvailable = false;
 		}
 	}
 	
-	private static boolean javaModelManagerAvailable = true;
-	private static void notifyDelegateMethodsAdded(CompilationUnitDeclaration cud) {
-		CompilationUnit compilationUnit = getCompilationUnit(cud);
-		if (compilationUnit != null && javaModelManagerAvailable) {
-			try {
+	public static Object[] addGeneratedDelegateMethods(Object[] returnValue, Object javaElement) {
+		if (Symbols.hasSymbol("lombok.skipdelegates")) return returnValue;
+		if (!eclipseAvailable) return returnValue;
+		
+		return EclipseOnlyMethods.addGeneratedDelegateMethodsToChildren(returnValue, javaElement);
+	}
+	
+	public static class EclipseOnlyMethods {
+		private static void cleanupDelegateMethods(CompilationUnitDeclaration cud) {
+			CompilationUnit compilationUnit = getCompilationUnit(cud);
+			if (compilationUnit != null) {
+				EclipseAugments.CompilationUnit_delegateMethods.clear(compilationUnit);
+			}
+		}
+
+		public static void collectGeneratedDelegateMethods(CompilationUnitDeclaration top, EclipseNode typeNode, List<MethodDeclaration> addedMethods) {
+			String qualifiedName = new String(CharOperation.concatWith(getQualifiedInnerName(typeNode.up(), typeNode.getName().toCharArray()), '$'));
+			SourceType sourceType = getSourceType(top, qualifiedName);
+			List<SourceMethod> generatedMethods = getGeneratedMethods(sourceType);
+			if (generatedMethods == null) return;
+			
+			for (MethodDeclaration md : addedMethods) {
+				generatedMethods.add(DelegateSourceMethod.forMethodDeclaration(sourceType, md));
+			}
+		}
+		
+		public static Object[] addGeneratedDelegateMethodsToChildren(Object[] returnValue, Object javaElement) {
+			List<SourceMethod> delegateMethods = getGeneratedMethods((SourceType) ((SourceTypeElementInfo) javaElement).getHandle());
+			if (delegateMethods != null) {
+				return concat((IJavaElement[]) returnValue, delegateMethods.toArray(new IJavaElement[0]), IJavaElement.class);
+			}
+			return returnValue;
+		}
+		
+		private static void notifyDelegateMethodsAdded(CompilationUnitDeclaration cud) {
+			CompilationUnit compilationUnit = getCompilationUnit(cud);
+			if (compilationUnit != null) {
 				DeltaProcessor deltaProcessor = JavaModelManager.getJavaModelManager().getDeltaProcessor();
 				deltaProcessor.fire(new JavaElementDelta(compilationUnit), ElementChangedEvent.POST_CHANGE);
-			} catch (NoClassDefFoundError e) {
-				javaModelManagerAvailable = false;
 			}
 		}
-	}
-	
-	private static CompilationUnit getCompilationUnit(Object iCompilationUnit) {
-		if (iCompilationUnit instanceof CompilationUnit) {
-			CompilationUnit compilationUnit = (CompilationUnit) iCompilationUnit;
-			return compilationUnit.originalFromClone();
-		}
-		return null;
-	}
-	
-	private static CompilationUnit getCompilationUnit(CompilationUnitDeclaration cud) {
-		return getCompilationUnit(cud.compilationResult.compilationUnit);
-	}
-	
-	private static final class DelegateSourceMethod extends SourceMethod {
-		private DelegateSourceMethodInfo sourceMethodInfo;
-
-		private static DelegateSourceMethod forMethodDeclaration(JavaElement parent, MethodDeclaration method) {
-			Argument[] arguments = method.arguments != null ? method.arguments : new Argument[0];
-			String[] parameterTypes = new String[arguments.length];
-			for (int i = 0; i < arguments.length; i++) {
-				parameterTypes[i] = Signature.createTypeSignature(CharOperation.concatWith(arguments[i].type.getParameterizedTypeName(), '.'), false);
+		
+		private static CompilationUnit getCompilationUnit(Object iCompilationUnit) {
+			if (iCompilationUnit instanceof CompilationUnit) {
+				CompilationUnit compilationUnit = (CompilationUnit) iCompilationUnit;
+				return compilationUnit.originalFromClone();
 			}
-			return new DelegateSourceMethod(parent, new String(method.selector), parameterTypes, method);
+			return null;
 		}
 		
-		private DelegateSourceMethod(JavaElement parent, String name, String[] parameterTypes, MethodDeclaration md) {
-			super(parent, name, parameterTypes);
-			sourceMethodInfo = new DelegateSourceMethodInfo(this, md);
+		private static CompilationUnit getCompilationUnit(CompilationUnitDeclaration cud) {
+			return getCompilationUnit(cud.compilationResult.compilationUnit);
 		}
 		
-		@Override public Object getElementInfo() throws JavaModelException {
-			return sourceMethodInfo;
-		}
-		
-		/**
-		 * Disable refactoring for delegate methods
-		 */
-		@Override public boolean isReadOnly() {
-			return true;
-		}
-		
-		/**
-		 * This is required to prevent duplicate entries in the outline
-		 */
-		@Override public boolean equals(Object o) {
-			return this == o;
-		}
-		
-		public static final class DelegateSourceMethodInfo extends SourceMethodInfo {
-			DelegateSourceMethodInfo(DelegateSourceMethod delegateSourceMethod, MethodDeclaration md) {
-				int pS = md.sourceStart;
-				int pE = md.sourceEnd;
-				
-				Argument[] methodArguments = md.arguments != null ? md.arguments : new Argument[0];
-				char[][] argumentNames = new char[methodArguments.length][];
-				arguments = new ILocalVariable[methodArguments.length];
-				for (int i = 0; i < methodArguments.length; i++) {
-					Argument argument = methodArguments[i];
-					argumentNames[i] = argument.name;
-					arguments[i] = new LocalVariable(delegateSourceMethod, new String(argument.name), pS, pE, pS, pS, delegateSourceMethod.getParameterTypes()[i], argument.annotations, argument.modifiers, true);
+		private static final class DelegateSourceMethod extends SourceMethod {
+			private DelegateSourceMethodInfo sourceMethodInfo;
+	
+			private static DelegateSourceMethod forMethodDeclaration(JavaElement parent, MethodDeclaration method) {
+				Argument[] arguments = method.arguments != null ? method.arguments : new Argument[0];
+				String[] parameterTypes = new String[arguments.length];
+				for (int i = 0; i < arguments.length; i++) {
+					parameterTypes[i] = Signature.createTypeSignature(CharOperation.concatWith(arguments[i].type.getParameterizedTypeName(), '.'), false);
 				}
-				setArgumentNames(argumentNames);
-				
-				setSourceRangeStart(pS);
-				setSourceRangeEnd(pE);
-				setNameSourceStart(pS);
-				setNameSourceEnd(pE);
-				
-				setExceptionTypeNames(CharOperation.NO_CHAR_CHAR);
-				setReturnType(md.returnType == null ? new char[]{'v', 'o','i', 'd'} : CharOperation.concatWith(md.returnType.getParameterizedTypeName(), '.'));
-				setFlags(md.modifiers);
+				return new DelegateSourceMethod(parent, new String(method.selector), parameterTypes, method);
 			}
-		}
-	}
-	
-	private static List<SourceMethod> getDelegateMethods(SourceType sourceType) {
-		if (sourceType != null) {
-			CompilationUnit compilationUnit = getCompilationUnit(sourceType.getCompilationUnit());
-			if (compilationUnit != null) {
-				ConcurrentMap<String, List<SourceMethod>> map = EclipseAugments.CompilationUnit_delegateMethods.setIfAbsent(compilationUnit, new ConcurrentHashMap<String, List<SourceMethod>>());
-				List<SourceMethod> newList = new ArrayList<SourceMethod>();
-				List<SourceMethod> oldList = map.putIfAbsent(sourceType.getTypeQualifiedName(), newList);
-				return oldList != null ? oldList : newList;
+			
+			private DelegateSourceMethod(JavaElement parent, String name, String[] parameterTypes, MethodDeclaration md) {
+				super(parent, name, parameterTypes);
+				sourceMethodInfo = new DelegateSourceMethodInfo(this, md);
 			}
-		}
-		return null;
-	}
-	
-	private static SourceType getSourceType(CompilationUnitDeclaration cud, String typeName) {
-		CompilationUnit compilationUnit = getCompilationUnit(cud);
-		if (compilationUnit != null) {
-			try {
-				for (IType type : compilationUnit.getAllTypes()) {
-					if (type instanceof SourceType && type.getTypeQualifiedName().equals(typeName)) {
-						return (SourceType) type;
+			
+			@Override public Object getElementInfo() throws JavaModelException {
+				return sourceMethodInfo;
+			}
+			
+			/**
+			 * Disable refactoring for delegate methods
+			 */
+			@Override public boolean isReadOnly() {
+				return true;
+			}
+			
+			/**
+			 * This is required to prevent duplicate entries in the outline
+			 */
+			@Override public boolean equals(Object o) {
+				return this == o;
+			}
+			
+			public static final class DelegateSourceMethodInfo extends SourceMethodInfo {
+				DelegateSourceMethodInfo(DelegateSourceMethod delegateSourceMethod, MethodDeclaration md) {
+					int pS = md.sourceStart;
+					int pE = md.sourceEnd;
+					
+					Argument[] methodArguments = md.arguments != null ? md.arguments : new Argument[0];
+					char[][] argumentNames = new char[methodArguments.length][];
+					arguments = new ILocalVariable[methodArguments.length];
+					for (int i = 0; i < methodArguments.length; i++) {
+						Argument argument = methodArguments[i];
+						argumentNames[i] = argument.name;
+						arguments[i] = new LocalVariable(delegateSourceMethod, new String(argument.name), pS, pE, pS, pS, delegateSourceMethod.getParameterTypes()[i], argument.annotations, argument.modifiers, true);
 					}
+					setArgumentNames(argumentNames);
+					
+					setSourceRangeStart(pS);
+					setSourceRangeEnd(pE);
+					setNameSourceStart(pS);
+					setNameSourceEnd(pE);
+					
+					setExceptionTypeNames(CharOperation.NO_CHAR_CHAR);
+					setReturnType(md.returnType == null ? new char[]{'v', 'o','i', 'd'} : CharOperation.concatWith(md.returnType.getParameterizedTypeName(), '.'));
+					setFlags(md.modifiers);
 				}
-			} catch (JavaModelException e) {
-				// Ignore
 			}
 		}
-		return null;
+		
+		private static List<SourceMethod> getGeneratedMethods(SourceType sourceType) {
+			if (sourceType != null) {
+				CompilationUnit compilationUnit = getCompilationUnit(sourceType.getCompilationUnit());
+				if (compilationUnit != null) {
+					ConcurrentMap<String, List<SourceMethod>> map = EclipseAugments.CompilationUnit_delegateMethods.setIfAbsent(compilationUnit, new ConcurrentHashMap<String, List<SourceMethod>>());
+					List<SourceMethod> newList = new ArrayList<SourceMethod>();
+					List<SourceMethod> oldList = map.putIfAbsent(sourceType.getTypeQualifiedName(), newList);
+					return oldList != null ? oldList : newList;
+				}
+			}
+			return null;
+		}
+		
+		private static SourceType getSourceType(CompilationUnitDeclaration cud, String typeName) {
+			CompilationUnit compilationUnit = getCompilationUnit(cud);
+			if (compilationUnit != null) {
+				try {
+					for (IType type : compilationUnit.getAllTypes()) {
+						if (type instanceof SourceType && type.getTypeQualifiedName().equals(typeName)) {
+							return (SourceType) type;
+						}
+					}
+				} catch (JavaModelException e) {
+					// Ignore
+				}
+			}
+			return null;
+		}
 	}
 	
 	private static final class Reflection {

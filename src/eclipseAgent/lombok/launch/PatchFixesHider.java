@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,20 +43,14 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.search.SearchMatch;
-import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
-import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
-import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
-import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 import org.eclipse.jdt.internal.core.SourceField;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
@@ -116,6 +110,15 @@ final class PatchFixesHider {
 			}
 		}
 		
+		public static Method findMethod(Class<?> type, String name, String... parameterTypes) {
+			for (Method m : type.getDeclaredMethods()) {
+				if (name.equals(m.getName()) && sameTypes(m.getParameterTypes(), parameterTypes)) {
+					return m;
+				}
+			}
+			throw sneakyThrow(new NoSuchMethodException(type.getName() + "::" + name));
+		}
+		
 		public static Method findMethodAnyArgs(Class<?> type, String name) {
 			for (Method m : type.getDeclaredMethods()) if (name.equals(m.getName())) return m;
 			throw sneakyThrow(new NoSuchMethodException(type.getName() + "::" + name));
@@ -140,6 +143,14 @@ final class PatchFixesHider {
 		@SuppressWarnings("unchecked")
 		private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
 			throw (T)t;
+		}
+		
+		private static boolean sameTypes(Class<?>[] types, String[] typeNames) {
+			if (types.length != typeNames.length) return false;
+			for (int i = 0; i < types.length; i++) {
+				if (!types[i].getName().equals(typeNames[i])) return false;
+			}
+			return true;
 		}
 	}
 	
@@ -193,7 +204,6 @@ final class PatchFixesHider {
 		}
 		
 		public static void transform(Object parser, Object ast) throws IOException {
-			Main.prependClassLoader(parser.getClass().getClassLoader());
 			init(parser.getClass().getClassLoader());
 			Util.invokeMethod(TRANSFORM, parser, ast);
 		}
@@ -207,20 +217,20 @@ final class PatchFixesHider {
 	/** Contains patch code to support {@code @Delegate} */
 	public static final class Delegate {
 		private static final Method HANDLE_DELEGATE_FOR_TYPE;
-		private static final Method GET_CHILDREN;
+		private static final Method ADD_GENERATED_DELEGATE_METHODS;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegatePortal");
 			HANDLE_DELEGATE_FOR_TYPE = Util.findMethod(shadowed, "handleDelegateForType", Object.class);
-			GET_CHILDREN = Util.findMethod(shadowed, "getChildren", Object.class, Object.class);
+			ADD_GENERATED_DELEGATE_METHODS = Util.findMethod(shadowed, "addGeneratedDelegateMethods", Object.class, Object.class);
 		}
 		
 		public static boolean handleDelegateForType(Object classScope) {
 			return (Boolean) Util.invokeMethod(HANDLE_DELEGATE_FOR_TYPE, classScope);
 		}
 		
-		public static Object[] getChildren(Object returnValue, Object javaElement) {
-			return (Object[]) Util.invokeMethod(GET_CHILDREN, returnValue, javaElement);
+		public static Object[] addGeneratedDelegateMethods(Object returnValue, Object javaElement) {
+			return (Object[]) Util.invokeMethod(ADD_GENERATED_DELEGATE_METHODS, returnValue, javaElement);
 		}
 	}
 	
@@ -258,38 +268,67 @@ final class PatchFixesHider {
 	
 	/** Contains patch code to support {@code val} (eclipse and ecj) */
 	public static final class Val {
-		private static final Method SKIP_RESOLVE_INITIALIZER_IF_ALREADY_CALLED;
-		private static final Method SKIP_RESOLVE_INITIALIZER_IF_ALREADY_CALLED2;
+		private static final String BLOCK_SCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
+		private static final String LOCAL_DECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";
+		private static final String FOREACH_STATEMENT_SIG = "org.eclipse.jdt.internal.compiler.ast.ForeachStatement";
+		
 		private static final Method HANDLE_VAL_FOR_LOCAL_DECLARATION;
 		private static final Method HANDLE_VAL_FOR_FOR_EACH;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchVal");
-			SKIP_RESOLVE_INITIALIZER_IF_ALREADY_CALLED = Util.findMethod(shadowed, "skipResolveInitializerIfAlreadyCalled", Expression.class, BlockScope.class);
-			SKIP_RESOLVE_INITIALIZER_IF_ALREADY_CALLED2 = Util.findMethod(shadowed, "skipResolveInitializerIfAlreadyCalled2", Expression.class, BlockScope.class, LocalDeclaration.class);
-			HANDLE_VAL_FOR_LOCAL_DECLARATION = Util.findMethod(shadowed, "handleValForLocalDeclaration", LocalDeclaration.class, BlockScope.class);
-			HANDLE_VAL_FOR_FOR_EACH = Util.findMethod(shadowed, "handleValForForEach", ForeachStatement.class, BlockScope.class);
+			HANDLE_VAL_FOR_LOCAL_DECLARATION = Util.findMethod(shadowed, "handleValForLocalDeclaration", LOCAL_DECLARATION_SIG, BLOCK_SCOPE_SIG);
+			HANDLE_VAL_FOR_FOR_EACH = Util.findMethod(shadowed, "handleValForForEach", FOREACH_STATEMENT_SIG, BLOCK_SCOPE_SIG);
 		}
 		
-		public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
-			return (TypeBinding) Util.invokeMethod(SKIP_RESOLVE_INITIALIZER_IF_ALREADY_CALLED, expr, scope);
-		}
-		
-		public static TypeBinding skipResolveInitializerIfAlreadyCalled2(Expression expr, BlockScope scope, LocalDeclaration decl) {
-			return (TypeBinding) Util.invokeMethod(SKIP_RESOLVE_INITIALIZER_IF_ALREADY_CALLED2, expr, scope, decl);
-		}
-		
-		public static boolean handleValForLocalDeclaration(LocalDeclaration local, BlockScope scope) {
+		public static boolean handleValForLocalDeclaration(Object local, Object scope) {
 			return (Boolean) Util.invokeMethod(HANDLE_VAL_FOR_LOCAL_DECLARATION, local, scope);
 		}
 		
-		public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
+		public static boolean handleValForForEach(Object forEach, Object scope) {
 			return (Boolean) Util.invokeMethod(HANDLE_VAL_FOR_FOR_EACH, forEach, scope);
+		}
+		
+		/** 
+		 * Patches local declaration to not call .resolveType() on the initializer expression if we've already done so (calling it twice causes weird errors) 
+		 * This and the next method must be transplanted so that the return type is loaded in the correct class loader
+		 */
+		public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
+			if (expr.resolvedType != null) return expr.resolvedType;
+			try {
+				return expr.resolveType(scope);
+			} catch (NullPointerException e) {
+				return null;
+			} catch (ArrayIndexOutOfBoundsException e) {
+				// This will occur internally due to for example 'val x = mth("X");', where mth takes 2 arguments.
+				return null;
+			}
+		}
+		
+		public static TypeBinding skipResolveInitializerIfAlreadyCalled2(Expression expr, BlockScope scope, LocalDeclaration decl) {
+			if (decl != null && LocalDeclaration.class.equals(decl.getClass()) && expr.resolvedType != null) return expr.resolvedType;
+			try {
+				return expr.resolveType(scope);
+			} catch (NullPointerException e) {
+				return null;
+			} catch (ArrayIndexOutOfBoundsException e) {
+				// This will occur internally due to for example 'val x = mth("X");', where mth takes 2 arguments.
+				return null;
+			}
 		}
 	}
 	
 	/** Contains patch code to support {@code @ExtensionMethod} */
 	public static final class ExtensionMethod {
+		private static final String MESSAGE_SEND_SIG = "org.eclipse.jdt.internal.compiler.ast.MessageSend";
+		private static final String TYPE_BINDING_SIG = "org.eclipse.jdt.internal.compiler.lookup.TypeBinding";
+		private static final String SCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.Scope";
+		private static final String BLOCK_SCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
+		private static final String TYPE_BINDINGS_SIG = "[Lorg.eclipse.jdt.internal.compiler.lookup.TypeBinding;";
+		private static final String PROBLEM_REPORTER_SIG = "org.eclipse.jdt.internal.compiler.problem.ProblemReporter";
+		private static final String METHOD_BINDING_SIG = "org.eclipse.jdt.internal.compiler.lookup.MethodBinding";
+		private static final String AST_NODE_SIG = "org.eclipse.jdt.internal.compiler.ast.ASTNode";
+		
 		private static final Method RESOLVE_TYPE;
 		private static final Method ERROR_NO_METHOD_FOR;
 		private static final Method INVALID_METHOD, INVALID_METHOD2;
@@ -297,30 +336,30 @@ final class PatchFixesHider {
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchExtensionMethod");
-			RESOLVE_TYPE = Util.findMethod(shadowed, "resolveType", Object.class, MessageSend.class, BlockScope.class);
-			ERROR_NO_METHOD_FOR = Util.findMethod(shadowed, "errorNoMethodFor", ProblemReporter.class, MessageSend.class, TypeBinding.class, TypeBinding[].class);
-			INVALID_METHOD = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class);
-			INVALID_METHOD2 = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class, Scope.class);
-			NON_STATIC_ACCESS_TO_STATIC_METHOD = Util.findMethod(shadowed, "nonStaticAccessToStaticMethod", ProblemReporter.class, ASTNode.class, MethodBinding.class, MessageSend.class);
+			RESOLVE_TYPE = Util.findMethod(shadowed, "resolveType", TYPE_BINDING_SIG, MESSAGE_SEND_SIG, BLOCK_SCOPE_SIG);
+			ERROR_NO_METHOD_FOR = Util.findMethod(shadowed, "errorNoMethodFor", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, TYPE_BINDING_SIG, TYPE_BINDINGS_SIG);
+			INVALID_METHOD = Util.findMethod(shadowed, "invalidMethod", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG);
+			INVALID_METHOD2 = Util.findMethod(shadowed, "invalidMethod", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG, SCOPE_SIG);
+			NON_STATIC_ACCESS_TO_STATIC_METHOD = Util.findMethod(shadowed, "nonStaticAccessToStaticMethod", PROBLEM_REPORTER_SIG, AST_NODE_SIG, METHOD_BINDING_SIG, MESSAGE_SEND_SIG);
 		}
 		
-		public static Object resolveType(Object resolvedType, MessageSend methodCall, BlockScope scope) {
+		public static Object resolveType(Object resolvedType, Object methodCall, Object scope) {
 			return Util.invokeMethod(RESOLVE_TYPE, resolvedType, methodCall, scope);
 		}
 		
-		public static void errorNoMethodFor(ProblemReporter problemReporter, MessageSend messageSend, TypeBinding recType, TypeBinding[] params) {
+		public static void errorNoMethodFor(Object problemReporter, Object messageSend, Object recType, Object params) {
 			Util.invokeMethod(ERROR_NO_METHOD_FOR, problemReporter, messageSend, recType, params);
 		}
 		
-		public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method) {
+		public static void invalidMethod(Object problemReporter, Object messageSend, Object method) {
 			Util.invokeMethod(INVALID_METHOD, problemReporter, messageSend, method);
 		}
 		
-		public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method, Scope scope) {
+		public static void invalidMethod(Object problemReporter, Object messageSend, Object method, Object scope) {
 			Util.invokeMethod(INVALID_METHOD2, problemReporter, messageSend, method, scope);
 		}
 		
-		public static void nonStaticAccessToStaticMethod(ProblemReporter problemReporter, ASTNode location, MethodBinding method, MessageSend messageSend) {
+		public static void nonStaticAccessToStaticMethod(Object problemReporter, Object location, Object method, Object messageSend) {
 			Util.invokeMethod(NON_STATIC_ACCESS_TO_STATIC_METHOD, problemReporter, location, method, messageSend);
 		}
 	}

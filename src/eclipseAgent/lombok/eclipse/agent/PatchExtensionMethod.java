@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 The Project Lombok Authors.
+ * Copyright (C) 2012-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -246,7 +246,7 @@ public class PatchExtensionMethod {
 		MessageSend_postponedErrors.set(messageSend, new PostponedNonStaticAccessToStaticMethodError(problemReporter, location, method));
 	}
 	
-	public static Object resolveType(Object resolvedType, MessageSend methodCall, BlockScope scope) {
+	public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
 		List<Extension> extensions = new ArrayList<Extension>();
 		TypeDeclaration decl = scope.classScope().referenceContext;
 		

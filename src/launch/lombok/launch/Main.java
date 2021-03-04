@@ -36,7 +36,7 @@ class Main {
 	
 	static synchronized void prependClassLoader(ClassLoader loader) {
 		getShadowClassLoader();
-		classLoader.prepend(loader);
+		classLoader.prependParent(loader);
 	}
 	
 	public static void main(String[] args) throws Throwable {
