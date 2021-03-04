@@ -110,7 +110,7 @@
 				formFail = true;
 			}
 			
-			if (!data.seats || isNaN(data.seats) || data.seats < 1) {
+			if (!data.seats || isNaN(data.seats) || data.seats < 10) {
 				$("#seats").focus();
 				showError("seats");
 				formFail = true;
