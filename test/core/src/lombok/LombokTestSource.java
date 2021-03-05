@@ -374,4 +374,8 @@ public class LombokTestSource {
 	public int minVersion() {
 		return Math.max(6, versionLowerLimit);
 	}
+	
+	public int maxVersion() {
+		return versionUpperLimit;
+	}
 }

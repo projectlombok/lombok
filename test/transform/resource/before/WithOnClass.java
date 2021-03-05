@@ -1,3 +1,5 @@
+//version 8:
+
 @lombok.With
 class WithOnClass1 {
 	@lombok.With(lombok.AccessLevel.NONE)

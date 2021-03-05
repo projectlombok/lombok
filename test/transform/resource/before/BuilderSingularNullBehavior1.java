@@ -1,3 +1,4 @@
+//version 8:
 //CONF: lombok.addNullAnnotations = checkerframework
 //CONF: lombok.nonNull.exceptionType = assertion
 import java.util.List;

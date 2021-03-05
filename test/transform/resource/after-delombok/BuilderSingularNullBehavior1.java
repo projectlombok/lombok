@@ -1,3 +1,4 @@
+//version 8:
 import java.util.List;
 import java.util.Collection;
 class BuilderSingularNullBehavior1 {

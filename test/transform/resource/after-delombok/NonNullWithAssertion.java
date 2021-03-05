@@ -1,3 +1,4 @@
+//version 8:
 public class NonNullWithAssertion {
 	@lombok.NonNull
 	private String test;

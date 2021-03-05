@@ -1,4 +1,4 @@
-//version 7:
+//version 8:
 //CONF: lombok.nonNull.exceptionType = Jdk
 import static java.util.Objects.*;
 public class NonNullWithJdk {

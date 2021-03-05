@@ -1,3 +1,4 @@
+//version 8:
 class DataOnLocalClass1 {
 	public static void main(String[] args) {
 		class Local {

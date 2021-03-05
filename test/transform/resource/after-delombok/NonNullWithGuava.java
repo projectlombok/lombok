@@ -1,3 +1,4 @@
+//version 8:
 import static com.google.common.base.Preconditions.*;
 public class NonNullWithGuava {
 	@lombok.NonNull

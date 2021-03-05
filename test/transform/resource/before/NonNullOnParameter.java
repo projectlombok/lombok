@@ -1,3 +1,4 @@
+//version 8:
 class NonNullOnParameter extends Thread {
 	NonNullOnParameter(@lombok.NonNull String arg) {
 		this(arg, "");

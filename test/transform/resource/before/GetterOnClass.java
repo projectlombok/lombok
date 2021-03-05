@@ -1,3 +1,4 @@
+//version 8:
 @lombok.Getter
 class GetterOnClass1 {
 	@lombok.Getter(lombok.AccessLevel.NONE)

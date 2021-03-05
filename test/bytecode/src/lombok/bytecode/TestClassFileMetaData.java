@@ -76,7 +76,7 @@ public class TestClassFileMetaData {
 	}
 	
 	
-	
+
 	@Test
 	public void testUsesClass() {
 		assertTrue(foo.usesClass("java/lang/System"));
@@ -199,7 +199,7 @@ public class TestClassFileMetaData {
 			
 			CompilationTask task = compiler.getTask(captureWarnings, null, diagnostics, options, null, Collections.singleton(new ContentBasedJavaFileObject(file.getPath(), readFileAsString(file))));
 			Boolean taskResult = task.call();
-			assertTrue("Compilation task didn't succeed: \n<Warnings and Errors>\n" + compilerErrors.toString() + "\n</Warnings and Errors>", taskResult);
+			assertTrue("Compilation task didn't succeed: \n<Warnings and Errors>\n" + compilerErrors.toString() + "\n" + captureWarnings.toString() + "\n</Warnings and Errors>", taskResult);
 			return PostCompilerApp.readFile(new File(tempDir, file.getName().replaceAll("\\.java$", ".class")));
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);

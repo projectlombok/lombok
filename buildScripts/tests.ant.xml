@@ -81,6 +81,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<jvmarg value="-Xbootclasspath/a:${jdk6-rt.loc}" />
 			<jvmarg line="${test.limitmodules}" />
 			<jvmarg value="-Ddelombok.bootclasspath=${jdk6-rt.loc}" />
+			<jvmarg value="-Dsun.boot.class.path=${jdk6-rt.loc}" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />
@@ -97,6 +98,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<jvmarg value="-Xbootclasspath/a:${jdk8-rt.loc}" />
 			<jvmarg line="${test.limitmodules}" />
 			<jvmarg value="-Ddelombok.bootclasspath=${jdk8-rt.loc}" />
+			<jvmarg value="-Dsun.boot.class.path=${jdk8-rt.loc}" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />

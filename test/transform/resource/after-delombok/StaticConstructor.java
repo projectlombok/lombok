@@ -1,3 +1,4 @@
+//version 8:
 public class StaticConstructor {
 	String name;
 	@java.lang.SuppressWarnings("all")

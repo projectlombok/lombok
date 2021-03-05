@@ -1,3 +1,4 @@
+//version 8:
 class NonNullWithSneakyThrows {
 	void test(@lombok.NonNull String in) {
 		try {

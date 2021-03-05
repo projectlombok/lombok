@@ -1,3 +1,4 @@
+//version 8:
 @lombok.AllArgsConstructor @lombok.experimental.Accessors(prefix={"p", "_"}) class ConstructorsWithAccessors {
 	int plower;
 	int pUpper;
@@ -11,4 +12,3 @@
 	@lombok.NonNull Integer _huh;
 	@lombok.NonNull final Integer __huh2;
 }
-

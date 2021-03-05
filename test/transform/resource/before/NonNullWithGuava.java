@@ -1,3 +1,4 @@
+//version 8:
 //CONF: lombok.nonNull.exceptionType = Guava
 import static com.google.common.base.Preconditions.*;
 public class NonNullWithGuava {

@@ -1,3 +1,4 @@
+//version 8:
 import lombok.Data;
 class DataOnLocalClass1 {
 	public static void main(String[] args) {

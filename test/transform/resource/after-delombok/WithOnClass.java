@@ -1,3 +1,4 @@
+//version 8:
 class WithOnClass1 {
 	boolean isNone;
 	boolean isPublic;

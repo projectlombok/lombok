@@ -1,3 +1,4 @@
+//version 8:
 import java.lang.annotation.*;
 class NonNullPlain {
 	@lombok.NonNull

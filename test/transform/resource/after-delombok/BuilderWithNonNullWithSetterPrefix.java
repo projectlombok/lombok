@@ -1,3 +1,4 @@
+//version 8:
 class BuilderWithNonNullWithSetterPrefix {
 	@lombok.NonNull
 	private final String id;

@@ -1,3 +1,4 @@
+//version 8:
 //CONF: lombok.nonNull.exceptionType = Assertion
 
 public class NonNullWithAssertion {

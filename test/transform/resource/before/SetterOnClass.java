@@ -1,3 +1,4 @@
+//version 8:
 @lombok.Setter
 class SetterOnClass1 {
 	@lombok.Setter(lombok.AccessLevel.NONE)

@@ -1,3 +1,4 @@
+//version 8:
 class GetterOnClass1 {
 	boolean isNone;
 	boolean isPublic;
