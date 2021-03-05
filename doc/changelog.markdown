@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.19 "Edgy Guinea Pig"
+* Trying to use a lambda expression as parameter to an `@ExtensionMethod` did not work. [Issue #2741](https://github.com/rzwitserloot/lombok/issues/2741). (by __@Rawi01__).
 * POTENTIAL BUGFIX: lombok + errorprone could cause `IllegalArgumentException` if using the `MissingSummay` bug pattern. [Issue #2730](https://github.com/rzwitserloot/lombok/issues/2612).
 
 ### v1.18.18 (January 28th, 2021)
