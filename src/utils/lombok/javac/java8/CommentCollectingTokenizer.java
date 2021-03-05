@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ class CommentCollectingTokenizer extends JavaTokenizer {
 		prevEndPosition = pos();
 		if (textBlockStarts != null && (prevEndPosition - token.pos > 5) && token.getClass().getName().endsWith("$StringToken")) {
 			char[] start = reader.getRawCharacters(token.pos, token.pos + 3);
-			if (start[0] == '"' && start[1] == '"' && start[2] == '"') textBlockStarts.add(token.pos);
+			if (start[0] == '"' && start[1] == '"' && start[2] == '"') textBlockStarts.append(token.pos);
 		}
 		return token;
 	}

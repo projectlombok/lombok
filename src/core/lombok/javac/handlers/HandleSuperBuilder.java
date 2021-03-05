@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -168,7 +168,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Gather all fields of the class that should be set by the builder.
 		job.parentType = parent;
 		JCClassDecl td = (JCClassDecl) parent.get();
-		ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
 		ArrayList<JavacNode> nonFinalNonDefaultedFields = null;
 		
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
@@ -211,7 +210,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			}
 			addObtainVia(bfd, fieldNode);
 			job.builderFields.add(bfd);
-			allFields.append(fieldNode);
 		}
 		
 		job.typeParams = job.builderTypeParams = td.typarams;
@@ -234,8 +232,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			JCExpression annotatedClass = namePlusTypeParamsToTypeReference(maker, parent, job.typeParams);
 			JCTypeParameter c = maker.TypeParameter(parent.toName(classGenericName), List.<JCExpression>of(annotatedClass));
 			ListBuffer<JCExpression> typeParamsForBuilder = getTypeParamExpressions(job.typeParams, maker, job.sourceNode);
-			typeParamsForBuilder.add(maker.Ident(parent.toName(classGenericName)));
-			typeParamsForBuilder.add(maker.Ident(parent.toName(builderGenericName)));
+			typeParamsForBuilder.append(maker.Ident(parent.toName(classGenericName)));
+			typeParamsForBuilder.append(maker.Ident(parent.toName(builderGenericName)));
 			JCTypeApply typeApply = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, parent, job.getBuilderClassName(), false, List.<JCTypeParameter>nil()), typeParamsForBuilder.toList());
 			JCTypeParameter d = maker.TypeParameter(parent.toName(builderGenericName), List.<JCExpression>of(typeApply));
 			if (job.typeParams == null || job.typeParams.isEmpty()) {
@@ -452,19 +450,19 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Keep any type params of the annotated class.
 		ListBuffer<JCTypeParameter> allTypeParams = new ListBuffer<JCTypeParameter>();
-		allTypeParams.addAll(copyTypeParams(job.sourceNode, job.typeParams));
+		allTypeParams.appendList(copyTypeParams(job.sourceNode, job.typeParams));
 		// Add builder-specific type params required for inheritable builders.
 		// 1. The return type for the build() method, named "C", which extends the annotated class.
 		JCExpression annotatedClass = namePlusTypeParamsToTypeReference(maker, job.parentType, job.typeParams);
 		
-		allTypeParams.add(maker.TypeParameter(job.toName(classGenericName), List.<JCExpression>of(annotatedClass)));
+		allTypeParams.append(maker.TypeParameter(job.toName(classGenericName), List.<JCExpression>of(annotatedClass)));
 		// 2. The return type for all setter methods, named "B", which extends this builder class.
 		Name builderClassName = job.toName(job.builderClassName);
 		ListBuffer<JCExpression> typeParamsForBuilder = getTypeParamExpressions(job.typeParams, maker, job.sourceNode);
-		typeParamsForBuilder.add(maker.Ident(job.toName(classGenericName)));
-		typeParamsForBuilder.add(maker.Ident(job.toName(builderGenericName)));
+		typeParamsForBuilder.append(maker.Ident(job.toName(classGenericName)));
+		typeParamsForBuilder.append(maker.Ident(job.toName(builderGenericName)));
 		JCTypeApply typeApply = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, job.parentType, builderClassName, false, List.<JCTypeParameter>nil()), typeParamsForBuilder.toList());
-		allTypeParams.add(maker.TypeParameter(job.toName(builderGenericName), List.<JCExpression>of(typeApply)));
+		allTypeParams.append(maker.TypeParameter(job.toName(builderGenericName), List.<JCExpression>of(typeApply)));
 		
 		JCExpression extending = null;
 		if (superclassBuilderClass != null) {
@@ -472,8 +470,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			// 1. Add the type parameters of the superclass.
 			typeParamsForBuilder = getTypeParamExpressions(superclassTypeParams, maker, job.sourceNode);
 			// 2. Add the builder type params <C, B>.
-			typeParamsForBuilder.add(maker.Ident(job.toName(classGenericName)));
-			typeParamsForBuilder.add(maker.Ident(job.toName(builderGenericName)));
+			typeParamsForBuilder.append(maker.Ident(job.toName(classGenericName)));
+			typeParamsForBuilder.append(maker.Ident(job.toName(builderGenericName)));
 			extending = maker.TypeApply(superclassBuilderClass, typeParamsForBuilder.toList());
 		}
 		
@@ -491,9 +489,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Extend the abstract builder.
 		JCExpression extending = namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderAbstractClassName), false, List.<JCTypeParameter>nil());
-		// Add any type params of the annotated class.
-		ListBuffer<JCTypeParameter> allTypeParams = new ListBuffer<JCTypeParameter>();
-		allTypeParams.addAll(copyTypeParams(job.sourceNode, job.typeParams));
+		
 		// Add builder-specific type params required for inheritable builders.
 		// 1. The return type for the build() method (named "C" in the abstract builder), which is the annotated class.
 		JCExpression annotatedClass = namePlusTypeParamsToTypeReference(maker, job.parentType, job.typeParams);
@@ -501,8 +497,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCExpression builderImplClassExpression = namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderImplClassName), false, job.typeParams);
 		
 		ListBuffer<JCExpression> typeParamsForBuilder = getTypeParamExpressions(job.typeParams, maker, job.sourceNode);
-		typeParamsForBuilder.add(annotatedClass);
-		typeParamsForBuilder.add(builderImplClassExpression);
+		typeParamsForBuilder.append(annotatedClass);
+		typeParamsForBuilder.append(builderImplClassExpression);
 		extending = maker.TypeApply(extending, typeParamsForBuilder.toList());
 		
 		JCClassDecl builder = maker.ClassDef(mods, job.toName(job.builderImplClassName), copyTypeParams(job.parentType, job.typeParams), extending, List.<JCExpression>nil(), List.<JCTree>nil());
@@ -566,9 +562,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		ListBuffer<JCExpression> typeParamsForBuilderParameter = getTypeParamExpressions(job.typeParams, maker, job.sourceNode);
 		// Now add the <?, ?>.
 		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-		typeParamsForBuilderParameter.add(wildcard);
+		typeParamsForBuilderParameter.append(wildcard);
 		wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-		typeParamsForBuilderParameter.add(wildcard);
+		typeParamsForBuilderParameter.append(wildcard);
 		JCTypeApply paramType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, job.parentType, job.getBuilderClassName(), false, List.<JCTypeParameter>nil()), typeParamsForBuilderParameter.toList());
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags), builderVariableName, paramType, null);
 		params.append(param);
@@ -591,9 +587,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	private JCMethodDecl generateBuilderMethod(SuperBuilderJob job) {
 		JavacTreeMaker maker = job.getTreeMaker();
 		
-		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
-		for (JCTypeParameter typeParam : job.typeParams) typeArgs.append(maker.Ident(typeParam.name));
-		
 		JCExpression call = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderImplClassName), false, job.typeParams), List.<JCExpression>nil(), null);
 		JCStatement statement = maker.Return(call);
 		
@@ -603,11 +596,11 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Add any type params of the annotated class to the return type.
 		ListBuffer<JCExpression> typeParameterNames = new ListBuffer<JCExpression>();
-		typeParameterNames.addAll(typeParameterNames(maker, job.typeParams));
+		typeParameterNames.appendList(typeParameterNames(maker, job.typeParams));
 		// Now add the <?, ?>.
 		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-		typeParameterNames.add(wildcard);
-		typeParameterNames.add(wildcard);
+		typeParameterNames.append(wildcard);
+		typeParameterNames.append(wildcard);
 		// And return type annotations.
 		List<JCAnnotation> annsOnParamType = List.nil();
 		if (job.checkerFramework.generateUnique()) annsOnParamType = List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
@@ -630,9 +623,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	private JCMethodDecl generateToBuilderMethod(SuperBuilderJob job) {
 		JavacTreeMaker maker = job.getTreeMaker();
 		
-		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
-		for (JCTypeParameter typeParam : job.typeParams) typeArgs.append(maker.Ident(typeParam.name));
-		
 		JCExpression newClass = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderImplClassName), false, job.typeParams), List.<JCExpression>nil(), null);
 		List<JCExpression> methodArgs = List.<JCExpression>of(maker.Ident(job.toName("this")));
 		JCMethodInvocation invokeFillMethod = maker.Apply(List.<JCExpression>nil(), maker.Select(newClass, job.toName(FILL_VALUES_METHOD_NAME)), methodArgs);
@@ -643,11 +633,11 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Add any type params of the annotated class to the return type.
 		ListBuffer<JCExpression> typeParameterNames = new ListBuffer<JCExpression>();
-		typeParameterNames.addAll(typeParameterNames(maker, job.typeParams));
+		typeParameterNames.appendList(typeParameterNames(maker, job.typeParams));
 		// Now add the <?, ?>.
 		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-		typeParameterNames.add(wildcard);
-		typeParameterNames.add(wildcard);
+		typeParameterNames.append(wildcard);
+		typeParameterNames.append(wildcard);
 		JCTypeApply returnType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderAbstractClassName), false, List.<JCTypeParameter>nil()), typeParameterNames.toList());
 		
 		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateSideEffectFree() ? List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
@@ -731,9 +721,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		ListBuffer<JCExpression> typeParamsForBuilderParameter = getTypeParamExpressions(job.typeParams, maker, job.sourceNode);
 		// Now add the <?, ?>.
 		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-		typeParamsForBuilderParameter.add(wildcard);
+		typeParamsForBuilderParameter.append(wildcard);
 		wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-		typeParamsForBuilderParameter.add(wildcard);
+		typeParamsForBuilderParameter.append(wildcard);
 		JCTypeApply builderType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, job.parentType, job.getBuilderClassName(), false, List.<JCTypeParameter>nil()), typeParamsForBuilderParameter.toList());
 		JCVariableDecl paramBuilder = maker.VarDef(maker.Modifiers(Flags.PARAMETER | Flags.FINAL), job.toName(BUILDER_VARIABLE_NAME), builderType, null);
 		
@@ -1093,13 +1083,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		ListBuffer<JCExpression> typeParamsForBuilderParameter = new ListBuffer<JCExpression>();
 		for (JCTree typeParam : typeParams) {
 			if (typeParam instanceof JCTypeParameter) {
-				typeParamsForBuilderParameter.add(maker.Ident(((JCTypeParameter)typeParam).getName()));
+				typeParamsForBuilderParameter.append(maker.Ident(((JCTypeParameter)typeParam).getName()));
 			} else if (typeParam instanceof JCIdent) {
-				typeParamsForBuilderParameter.add(maker.Ident(((JCIdent)typeParam).getName()));
+				typeParamsForBuilderParameter.append(maker.Ident(((JCIdent)typeParam).getName()));
 			} else if (typeParam instanceof JCFieldAccess) {
-				typeParamsForBuilderParameter.add(copySelect(maker, (JCFieldAccess) typeParam));
+				typeParamsForBuilderParameter.append(copySelect(maker, (JCFieldAccess) typeParam));
 			} else if (typeParam instanceof JCTypeApply) {
-				typeParamsForBuilderParameter.add(cloneType(maker, (JCTypeApply)typeParam, source));
+				typeParamsForBuilderParameter.append(cloneType(maker, (JCTypeApply)typeParam, source));
 			}
 		}
 		return typeParamsForBuilderParameter;

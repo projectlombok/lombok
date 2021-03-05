@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -280,9 +280,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		if (addSuppressWarningsUnchecked) {
 			ListBuffer<JCExpression> suppressions = new ListBuffer<JCExpression>();
 			if (!Boolean.FALSE.equals(field.getAst().readConfiguration(ConfigurationKeys.ADD_SUPPRESSWARNINGS_ANNOTATIONS))) {
-				suppressions.add(treeMaker.Literal("all"));
+				suppressions.append(treeMaker.Literal("all"));
 			}
-			suppressions.add(treeMaker.Literal("unchecked"));
+			suppressions.append(treeMaker.Literal("unchecked"));
 			addAnnotation(decl.mods, field, source, "java.lang.SuppressWarnings", treeMaker.NewArray(null, List.<JCExpression>nil(), suppressions.toList()));
 		}
 		

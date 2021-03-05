@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2020 The Project Lombok Authors.
+ Copyright (C) 2020-2021 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<bootclasspath path="${jdk6-rt.loc}" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.eclipse-oxygen" />
+			<classpath refid="cp.javac6" />
 			<classpath refid="packing.basedirs.path" />
 			<classpath path="build/tests" />
 			<src path="test/core/src" />

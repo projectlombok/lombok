@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -298,7 +298,7 @@ public class JavacSingularsRecipes {
 		private void generateClearMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JavacNode source, AccessLevel access) {
 			JCStatement clearStatement = generateClearStatements(maker, data, builderType);
 			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-			statements.add(clearStatement);
+			statements.append(clearStatement);
 			
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil(), List.<JCAnnotation>nil(), access, null);
@@ -357,7 +357,7 @@ public class JavacSingularsRecipes {
 				JCExpression incomingIsNotNull = maker.Binary(CTC_NOT_EQUAL, maker.Ident(data.getPluralName()), maker.Literal(CTC_BOT, null));
 				JCStatement onNotNull = maker.Block(0, statements.toList());
 				statements = new ListBuffer<JCStatement>();
-				statements.add(maker.If(incomingIsNotNull, onNotNull, null));
+				statements.append(maker.If(incomingIsNotNull, onNotNull, null));
 			} else {
 				statements.prepend(JavacHandlerUtil.generateNullCheck(maker, null, data.getPluralName(), builderType, "%s cannot be null"));
 			}

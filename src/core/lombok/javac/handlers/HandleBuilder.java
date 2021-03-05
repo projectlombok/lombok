@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -608,10 +608,6 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	private JCMethodDecl generateToBuilderMethod(BuilderJob job, List<JCTypeParameter> typeParameters, String prefix) {
 		// return new ThingieBuilder<A, B>().setA(this.a).setB(this.b);
 		JavacTreeMaker maker = job.getTreeMaker();
-		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
-		for (JCTypeParameter typeParam : typeParameters) {
-			typeArgs.append(maker.Ident(typeParam.name));
-		}
 		
 		JCExpression call = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderClassName), !job.isStatic, job.builderTypeParams), List.<JCExpression>nil(), null);
 		JCExpression invoke = call;
@@ -804,13 +800,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	public JCMethodDecl generateBuilderMethod(BuilderJob job) {
 		//String builderClassName, JavacNode source, JavacNode type, List<JCTypeParameter> typeParams, AccessLevel access) {
 		//builderClassName, annotationNode, tdParent, typeParams, accessForOuters);
-
-		JavacTreeMaker maker = job.getTreeMaker();
 		
-		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
-		for (JCTypeParameter typeParam : job.typeParams) {
-			typeArgs.append(maker.Ident(typeParam.name));
-		}
+		JavacTreeMaker maker = job.getTreeMaker();
 		
 		JCExpression call;
 		if (job.isStatic) {
@@ -876,7 +867,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.createdFields.add(field);
 			}
 		}
-		for (JCVariableDecl gen : generated)  recursiveSetGeneratedBy(gen, job.sourceNode);
+		for (JCVariableDecl gen : generated) recursiveSetGeneratedBy(gen, job.sourceNode);
 	}
 	
 	public void makePrefixedSetterMethodsForBuilder(BuilderJob job, BuilderFieldData bfd, String prefix) {

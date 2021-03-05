@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2013 The Project Lombok Authors.
+ * Copyright (C) 2011-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -226,7 +226,7 @@ public final class CompilerMessageSuppressor {
 			ListBuffer<Object> newDeferredDiagnostics = new ListBuffer<Object>();
 			for (Object diag_ : deferredDiagnostics) {
 				if (!(diag_ instanceof JCDiagnostic)) {
-					newDeferredDiagnostics.add(diag_);
+					newDeferredDiagnostics.append(diag_);
 					continue;
 				}
 				JCDiagnostic diag = (JCDiagnostic) diag_;
@@ -234,7 +234,7 @@ public final class CompilerMessageSuppressor {
 				if (here >= startPos && here < endPos && diag.getSource() == sourcefile) {
 					// We eliminate it
 				} else {
-					newDeferredDiagnostics.add(diag);
+					newDeferredDiagnostics.append(diag);
 				}
 			}
 			field.set(receiver, newDeferredDiagnostics);
