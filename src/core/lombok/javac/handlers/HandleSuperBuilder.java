@@ -113,7 +113,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
-			builderClassName = fixBuilderClassName(node, "");
+			builderClassName = getBuilderClassNameTemplate(node, null);
 		}
 		
 		void setBuilderToImpl() {
@@ -257,11 +257,11 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		if (extendsClause instanceof JCFieldAccess) {
 			Name superclassName = ((JCFieldAccess) extendsClause).getIdentifier();
-			String builderClassNameTemplate = BuilderJob.fixBuilderClassName(annotationNode, "");
+			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(superclassName.toString(), builderClassNameTemplate);
 			superclassBuilderClass = parent.getTreeMaker().Select((JCFieldAccess) extendsClause, parent.toName(superclassBuilderClassName));
 		} else if (extendsClause != null) {
-			String builderClassNameTemplate = BuilderJob.fixBuilderClassName(annotationNode, "");
+			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(extendsClause.toString(), builderClassNameTemplate);
 			superclassBuilderClass = chainDots(parent, extendsClause.toString(), superclassBuilderClassName);
 		}

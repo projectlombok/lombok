@@ -273,7 +273,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (extendsClause instanceof QualifiedTypeReference) {
 			QualifiedTypeReference qualifiedTypeReference = (QualifiedTypeReference)extendsClause;
 			char[] superclassClassName = qualifiedTypeReference.getLastToken();
-			String builderClassNameTemplate = BuilderJob.fixBuilderClassName(annotationNode, "");
+			String builderClassNameTemplate = BuilderJob.fixBuilderClassName(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(superclassClassName, builderClassNameTemplate);
 			
 			char[][] tokens = Arrays.copyOf(qualifiedTypeReference.tokens, qualifiedTypeReference.tokens.length + 1);
