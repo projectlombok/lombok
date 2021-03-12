@@ -1,3 +1,4 @@
+//version 8:
 //CONF: lombok.addNullAnnotations = spring
 //CONF: lombok.nonNull.exceptionType = JDK
 import java.util.List;

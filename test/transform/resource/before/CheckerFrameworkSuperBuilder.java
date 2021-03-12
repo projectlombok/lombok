@@ -1,3 +1,4 @@
+//version 8:
 //CONF: checkerframework = 4.0
 import java.util.List;
 import lombok.Singular;

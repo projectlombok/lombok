@@ -1,4 +1,4 @@
-//version 8
+//version 8:
 import java.lang.annotation.*;
 
 @lombok.EqualsAndHashCode

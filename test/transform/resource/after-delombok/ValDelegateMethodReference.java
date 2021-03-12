@@ -1,3 +1,4 @@
+//version 8:
 import java.util.function.Function;
 
 public class ValDelegateMethodReference {

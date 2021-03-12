@@ -1,3 +1,4 @@
+//version 8:
 public class WithByTypes<T> {
 	private final int a;
 	private final long b;

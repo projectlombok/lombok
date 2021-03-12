@@ -1,3 +1,4 @@
+//version 8:
 @lombok.RequiredArgsConstructor
 @lombok.experimental.FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 @lombok.experimental.WithBy

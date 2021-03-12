@@ -1,3 +1,4 @@
+//version 8:
 //CONF: lombok.addNullAnnotations = eclipse
 @lombok.EqualsAndHashCode
 @lombok.ToString

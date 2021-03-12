@@ -1,3 +1,4 @@
+// version 8:
 class GetterLazyArguments {
 	static String fun() {
 		return null;

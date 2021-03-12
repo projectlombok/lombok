@@ -1,3 +1,4 @@
+//version 8:
 class CheckerFrameworkBasic {
 	private final int x;
 	private final int y;

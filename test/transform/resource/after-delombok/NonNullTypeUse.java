@@ -1,3 +1,4 @@
+//version 8:
 import lombok.NonNull;
 class NonNullTypeUse {
 	void test1(@NonNull String[][][] args) {

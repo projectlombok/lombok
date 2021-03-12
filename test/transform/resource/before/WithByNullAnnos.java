@@ -1,3 +1,4 @@
+//version 8:
 //CONF: lombok.addNullAnnotations=checkerframework
 import java.util.List;
 @lombok.RequiredArgsConstructor

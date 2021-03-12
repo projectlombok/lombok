@@ -52,6 +52,9 @@
 		<dependency org="com.google.flogger" name="flogger" rev="0.2" conf="test->default; sources" />
 		<dependency org="com.google.guava" name="guava" rev="18.0" conf="test->default; sources" />
 		<dependency org="com.google.code.findbugs" name="findbugs" rev="3.0.1" conf="test->master" />
+		<dependency org="org.springframework" name="spring-core" rev="5.3.4" conf="test->master" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.10.0" conf="test->master" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.10.0" conf="test->master" />
 		
 		<!-- build tooling -->
 		<dependency org="com.hierynomus" name="sshj" rev="0.26.0" conf="buildtools->default" />
