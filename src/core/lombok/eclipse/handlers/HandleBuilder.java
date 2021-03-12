@@ -183,14 +183,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			
 			builderMethodName = ann.builderMethodName();
 			buildMethodName = ann.buildMethodName();
-			setBuilderClassName(fixBuilderClassName(node, ann.builderClassName()));
+			setBuilderClassName(getBuilderClassNameTemplate(node, ann.builderClassName()));
 			toBuilder = ann.toBuilder();
 			
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
 		}
 		
-		static String fixBuilderClassName(EclipseNode node, String override) {
+		static String getBuilderClassNameTemplate(EclipseNode node, String override) {
 			if (override != null && !override.isEmpty()) return override;
 			override = node.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
 			if (override != null && !override.isEmpty()) return override;

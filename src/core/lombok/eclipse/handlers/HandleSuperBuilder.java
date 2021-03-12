@@ -123,7 +123,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
-			builderClassName = fixBuilderClassName(node, "");
+			builderClassName = getBuilderClassNameTemplate(node, null);
 		}
 		
 		EclipseNode builderAbstractType;
@@ -273,7 +273,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (extendsClause instanceof QualifiedTypeReference) {
 			QualifiedTypeReference qualifiedTypeReference = (QualifiedTypeReference)extendsClause;
 			char[] superclassClassName = qualifiedTypeReference.getLastToken();
-			String builderClassNameTemplate = BuilderJob.fixBuilderClassName(annotationNode, null);
+			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(superclassClassName, builderClassNameTemplate);
 			
 			char[][] tokens = Arrays.copyOf(qualifiedTypeReference.tokens, qualifiedTypeReference.tokens.length + 1);
@@ -291,7 +291,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			superclassBuilderClass = new ParameterizedQualifiedTypeReference(tokens, typeArgsForTokens, 0, poss);
 		} else if (extendsClause != null) {
 			char[] superclassClassName = extendsClause.getTypeName()[0];
-			String builderClassNameTemplate = BuilderJob.fixBuilderClassName(annotationNode, "");
+			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(superclassClassName, builderClassNameTemplate);
 			
 			char[][] tokens = new char[][] {superclassClassName, superclassBuilderClassName.toCharArray()};
