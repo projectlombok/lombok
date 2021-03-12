@@ -1206,7 +1206,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
 					if (!def.isConstructor()) continue;
 					if (isTolerate(type, def)) continue;
-					if (def.arguments.length != 1) continue;
+					if (def.arguments == null || def.arguments.length != 1) continue;
 					
 					// Cannot use typeMatches() here, because the parameter could be fully-qualified, partially-qualified, or not qualified.
 					// A string-compare of the last part should work. If it's a false-positive, users could still @Tolerate it.
