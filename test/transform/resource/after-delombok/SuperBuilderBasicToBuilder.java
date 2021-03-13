@@ -35,7 +35,7 @@ public class SuperBuilderBasicToBuilder {
 				b.obtainViaField(instance.field1);
 				b.obtainViaMethod(instance.method());
 				b.obtainViaStaticMethod(SuperBuilderBasicToBuilder.Parent.staticMethod(instance));
-				b.items(instance.items == null ? java.util.Collections.emptyList() : instance.items);
+				b.items(instance.items == null ? java.util.Collections.<String>emptyList() : instance.items);
 			}
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();

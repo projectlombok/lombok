@@ -731,7 +731,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Call the builder's setter methods to fill the values from the instance.
 		for (BuilderFieldData bfd : job.builderFields) {
-			JCExpressionStatement exec = createSetterCallWithInstanceValue(bfd, job.parentType, maker, setterPrefix);
+			JCExpressionStatement exec = createSetterCallWithInstanceValue(bfd, job, setterPrefix);
 			body.append(exec);
 		}
 		
@@ -740,22 +740,23 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return maker.MethodDef(modifiers, name, returnType, copyTypeParams(job.builderType, job.typeParams), List.of(paramInstance, paramBuilder), List.<JCExpression>nil(), bodyBlock, null);
 	}
 	
-	private JCExpressionStatement createSetterCallWithInstanceValue(BuilderFieldData bfd, JavacNode type, JavacTreeMaker maker, String setterPrefix) {
+	private JCExpressionStatement createSetterCallWithInstanceValue(BuilderFieldData bfd, SuperBuilderJob job, String setterPrefix) {
+		JavacTreeMaker maker = job.getTreeMaker();
 		JCExpression[] tgt = new JCExpression[bfd.singularData == null ? 1 : 2];
 		if (bfd.obtainVia == null || !bfd.obtainVia.field().isEmpty()) {
 			for (int i = 0; i < tgt.length; i++) {
-				tgt[i] = maker.Select(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME)), bfd.obtainVia == null ? bfd.rawName : type.toName(bfd.obtainVia.field()));
+				tgt[i] = maker.Select(maker.Ident(job.toName(INSTANCE_VARIABLE_NAME)), bfd.obtainVia == null ? bfd.rawName : job.toName(bfd.obtainVia.field()));
 			}
 		} else {
 			if (bfd.obtainVia.isStatic()) {
 				for (int i = 0; i < tgt.length; i++) {
-					JCExpression typeRef = namePlusTypeParamsToTypeReference(maker, type, List.<JCTypeParameter>nil());
-					JCExpression c = maker.Select(typeRef, type.toName(bfd.obtainVia.method()));
-					tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>of(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME))));
+					JCExpression typeRef = namePlusTypeParamsToTypeReference(maker, job.parentType, List.<JCTypeParameter>nil());
+					JCExpression c = maker.Select(typeRef, job.toName(bfd.obtainVia.method()));
+					tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>of(maker.Ident(job.toName(INSTANCE_VARIABLE_NAME))));
 				}
 			} else {
 				for (int i = 0; i < tgt.length; i++) {
-					JCExpression c = maker.Select(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME)), type.toName(bfd.obtainVia.method()));
+					JCExpression c = maker.Select(maker.Ident(job.toName(INSTANCE_VARIABLE_NAME)), job.toName(bfd.obtainVia.method()));
 					tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>nil());
 				}
 			}
@@ -766,13 +767,12 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			arg = tgt[0];
 		} else {
 			JCExpression eqNull = maker.Binary(CTC_EQUAL, tgt[0], maker.Literal(CTC_BOT, null));
-			String emptyMaker = bfd.singularData.getSingularizer().getEmptyMaker(bfd.singularData.getTargetFqn());
-			JCExpression emptyCollection = maker.Apply(List.<JCExpression>nil(), chainDots(type, emptyMaker.split("\\.")), List.<JCExpression>nil());
+			JCExpression emptyCollection = bfd.singularData.getSingularizer().getEmptyExpression(bfd.singularData.getTargetFqn(), maker, bfd.singularData, job.parentType, job.sourceNode);
 			arg = maker.Conditional(eqNull, emptyCollection, tgt[1]);
 		}
 		
 		String setterName = HandlerUtil.buildAccessorName(setterPrefix, bfd.name.toString());
-		JCMethodInvocation apply = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(type.toName(BUILDER_VARIABLE_NAME)), type.toName(setterName)), List.of(arg));
+		JCMethodInvocation apply = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(job.toName(BUILDER_VARIABLE_NAME)), job.toName(setterName)), List.of(arg));
 		JCExpressionStatement exec = maker.Exec(apply);
 		return exec;
 	}

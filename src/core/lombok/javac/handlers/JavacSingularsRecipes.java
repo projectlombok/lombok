@@ -501,5 +501,11 @@ public class JavacSingularsRecipes {
 		protected abstract int getTypeArgumentsCount();
 		
 		protected abstract String getEmptyMaker(String target);
+		
+		public JCExpression getEmptyExpression(String target, JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
+			String emptyMaker = getEmptyMaker(target);
+			List<JCExpression> typeArgs = createTypeArgs(getTypeArgumentsCount(), false, builderType, data.getTypeArgs(), source);
+			return maker.Apply(typeArgs, chainDots(builderType, emptyMaker.split("\\.")), List.<JCExpression>nil());
+		}
 	}
 }

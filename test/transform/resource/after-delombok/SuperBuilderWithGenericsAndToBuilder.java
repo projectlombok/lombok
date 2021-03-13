@@ -19,7 +19,7 @@ public class SuperBuilderWithGenericsAndToBuilder {
 			@java.lang.SuppressWarnings("all")
 			private static <A> void $fillValuesFromInstanceIntoBuilder(final SuperBuilderWithGenericsAndToBuilder.Parent<A> instance, final SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder<A, ?, ?> b) {
 				b.field1(instance.field1);
-				b.items(instance.items == null ? java.util.Collections.emptyMap() : instance.items);
+				b.items(instance.items == null ? java.util.Collections.<Integer, String>emptyMap() : instance.items);
 			}
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();

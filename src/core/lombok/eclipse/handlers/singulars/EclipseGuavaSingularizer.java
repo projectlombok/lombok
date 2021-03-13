@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -279,7 +279,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 	protected abstract String getAddMethodName();
 	protected abstract String getAddAllTypeName();
 	
-	protected int getTypeArgumentsCount() {
+	@Override protected int getTypeArgumentsCount() {
 		return getArgumentSuffixes().size();
 	}
 }

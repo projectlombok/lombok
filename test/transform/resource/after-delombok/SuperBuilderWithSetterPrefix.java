@@ -35,7 +35,7 @@ public class SuperBuilderWithSetterPrefix {
 				b.withObtainViaField(instance.field1);
 				b.withObtainViaMethod(instance.method());
 				b.withObtainViaStaticMethod(SuperBuilderWithSetterPrefix.Parent.staticMethod(instance));
-				b.withItems(instance.items == null ? java.util.Collections.emptyList() : instance.items);
+				b.withItems(instance.items == null ? java.util.Collections.<String>emptyList() : instance.items);
 			}
 			@java.lang.SuppressWarnings("all")
 			protected abstract B self();

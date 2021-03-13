@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -817,9 +817,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			ms.arguments = tgt;
 		} else {
 			Expression ifNull = new EqualExpression(tgt[0], new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
-			MessageSend emptyCollection = new MessageSend();
-			emptyCollection.receiver = generateQualifiedNameRef(source, bfd.singularData.getSingularizer().getEmptyMakerReceiver(bfd.singularData.getTargetFqn()));
-			emptyCollection.selector = bfd.singularData.getSingularizer().getEmptyMakerSelector(bfd.singularData.getTargetFqn());
+			MessageSend emptyCollection = bfd.singularData.getSingularizer().getEmptyExpression(bfd.singularData.getTargetFqn(), bfd.singularData, type, source);
 			ms.arguments = new Expression[] {new ConditionalExpression(ifNull, emptyCollection, tgt[1])};
 		}
 		ms.receiver = new SingleNameReference(BUILDER_VARIABLE_NAME, 0);
