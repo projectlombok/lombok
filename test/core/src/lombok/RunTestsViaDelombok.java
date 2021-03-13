@@ -63,7 +63,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version) throws Throwable {
+	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version, boolean idempotentCheck) throws Throwable {
 		delombok.setVerbose(true);
 		ChangedChecker cc = new ChangedChecker();
 		delombok.setFeedback(cc.feedback);
@@ -73,7 +73,9 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		
 		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, messages));
 		
-		delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor());
+		if (!idempotentCheck) {
+			delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor());
+		}
 		
 		delombok.addFile(file.getAbsoluteFile().getParentFile(), file.getName());
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());

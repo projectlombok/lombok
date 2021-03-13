@@ -91,7 +91,7 @@ public abstract class AbstractRunTests {
 					}
 				});
 				
-				boolean changed = transformCode(messages, writer, file, sourceDirectives_.getSpecifiedEncoding(), sourceDirectives_.getFormatPreferences(), sourceDirectives_.minVersion());
+				boolean changed = transformCode(messages, writer, file, sourceDirectives_.getSpecifiedEncoding(), sourceDirectives_.getFormatPreferences(), sourceDirectives_.minVersion(), params instanceof TestLombokFilesIdempotent);
 				boolean forceUnchanged = sourceDirectives_.forceUnchanged() || sourceDirectives_.isSkipCompareContent();
 				if (params.expectChanges() && !forceUnchanged && !changed) messages.add(new CompilerMessage(-1, -1, true, "not flagged modified"));
 				if (!params.expectChanges() && changed) messages.add(new CompilerMessage(-1, -1, true, "unexpected modification"));
@@ -101,7 +101,7 @@ public abstract class AbstractRunTests {
 		};
 	}
 	
-	protected abstract boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences, int minVersion) throws Throwable;
+	protected abstract boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences, int minVersion, boolean idempotentCheck) throws Throwable;
 	
 	protected String readFile(File file) throws IOException {
 		BufferedReader reader;
