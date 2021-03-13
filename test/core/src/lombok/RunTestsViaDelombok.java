@@ -53,6 +53,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
 
 import lombok.delombok.Delombok;
 import lombok.javac.CapturingDiagnosticListener;
@@ -63,7 +64,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version, boolean idempotentCheck) throws Throwable {
+	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version, boolean checkPositions) throws Throwable {
 		delombok.setVerbose(true);
 		ChangedChecker cc = new ChangedChecker();
 		delombok.setFeedback(cc.feedback);
@@ -73,9 +74,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		
 		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, messages));
 		
-		if (!idempotentCheck) {
-			delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor());
-		}
+		if (checkPositions) delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor(version));
 		
 		delombok.addFile(file.getAbsoluteFile().getParentFile(), file.getName());
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());
@@ -93,6 +92,12 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	}
 	
 	public static class ValidatePositionProcessor extends TreeProcessor {
+		private final int version;
+		
+		public ValidatePositionProcessor(int version) {
+			this.version = version;
+		}
+		
 		@Override void processCompilationUnit(final JCCompilationUnit unit) {
 			unit.accept(new TreeScanner() {
 				@Override public void scan(JCTree tree) {
@@ -105,10 +110,18 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 							fail("Start position of doc comment (" + Javac.getDocComment(unit, tree) + ") of " + tree + " not set");
 						}
 						
-						if (tree.pos == -1) {
+						boolean check = true;
+						if (version < 8 && tree instanceof TypeBoundKind) {
+							// TypeBoundKind works differently in java6, and as a consequence,
+							// the position is not set properly.
+							// Given status of j6/j7, not worth properly testing.
+							check = false;
+						}
+						
+						if (check && tree.pos == -1) {
 							fail("Start position of " + tree + " not set");
 						}
-						if (Javac.getEndPosition(tree, unit) == -1) {
+						if (check && Javac.getEndPosition(tree, unit) == -1) {
 							fail("End position of " + tree + " not set");
 						}
 					} finally {
