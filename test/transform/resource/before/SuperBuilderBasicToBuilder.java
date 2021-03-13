@@ -15,7 +15,7 @@ public class SuperBuilderBasicToBuilder {
 		private int method() {
 			return 2;
 		}
-
+		
 		private static String staticMethod(Parent instance) {
 			return "staticMethod";
 		}

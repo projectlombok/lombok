@@ -1,3 +1,4 @@
+//version 8: Jackson deps are at least Java7+.
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)

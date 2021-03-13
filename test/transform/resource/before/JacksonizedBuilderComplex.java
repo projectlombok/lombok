@@ -1,3 +1,4 @@
+//version 8: Jackson deps are at least Java7+.
 //CONF: lombok.builder.className = Test*Name
 import java.util.List;
 import lombok.Builder;

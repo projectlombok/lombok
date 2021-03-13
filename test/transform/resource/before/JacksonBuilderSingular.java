@@ -1,4 +1,4 @@
-//version 8:
+//version 8: Jackson deps are at least Java7+.
 import java.util.List;
 import java.util.Map;
 

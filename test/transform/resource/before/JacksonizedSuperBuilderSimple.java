@@ -1,3 +1,4 @@
+//version 8: Jackson deps are at least Java7+.
 public class JacksonizedSuperBuilderSimple {
 	@lombok.extern.jackson.Jacksonized
 	@lombok.experimental.SuperBuilder
