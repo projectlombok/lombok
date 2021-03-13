@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,10 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +50,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -98,7 +101,21 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 			this.version = version;
 		}
 		
+		private String craftFailMsg(String problematicNode, Deque<JCTree> astContext) {
+			StringBuilder msg = new StringBuilder(problematicNode).append(" position of node not set: ");
+			for (JCTree t : astContext) {
+				msg.append("\n  ").append(t.getClass().getSimpleName());
+				String asStr = t.toString();
+				if (asStr.length() < 80) msg.append(": ").append(asStr);
+				else if (t instanceof JCClassDecl) msg.append(": ").append(((JCClassDecl) t).name);
+				else if (t instanceof JCMethodDecl) msg.append(": ").append(((JCMethodDecl) t).name);
+				else if (t instanceof JCVariableDecl) msg.append(": ").append(((JCVariableDecl) t).name);
+			}
+			return msg.append("\n-------").toString();
+		}
+		
 		@Override void processCompilationUnit(final JCCompilationUnit unit) {
+			final Deque<JCTree> astContext = new ArrayDeque<JCTree>();
 			unit.accept(new TreeScanner() {
 				@Override public void scan(JCTree tree) {
 					if (tree == null) return;
@@ -118,14 +135,12 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 							check = false;
 						}
 						
-						if (check && tree.pos == -1) {
-							fail("Start position of " + tree + " not set");
-						}
-						if (check && Javac.getEndPosition(tree, unit) == -1) {
-							fail("End position of " + tree + " not set");
-						}
+						if (check && tree.pos == -1) fail(craftFailMsg("Start", astContext));
+						if (check && Javac.getEndPosition(tree, unit) == -1) fail(craftFailMsg("End", astContext));
 					} finally {
+						astContext.push(tree);
 						super.scan(tree);
+						astContext.pop();
 					}
 				}
 				
