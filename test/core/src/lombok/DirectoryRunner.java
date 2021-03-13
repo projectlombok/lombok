@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,6 +78,9 @@ public class DirectoryRunner extends Runner {
 		}
 		
 		public abstract boolean expectChanges();
+		public String testNamePrefix() {
+			return "";
+		}
 	}
 	
 	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {
@@ -114,8 +117,7 @@ public class DirectoryRunner extends Runner {
 		Throwable error = null;
 		try {
 			addTests(testClass);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			error = t;
 		}
 		this.failure = error;
@@ -124,7 +126,7 @@ public class DirectoryRunner extends Runner {
 	private void addTests(Class<?> testClass) throws Exception {
 		for (File file : params.getBeforeDirectory().listFiles(JAVA_FILE_FILTER)) {
 			if (!params.accept(file)) continue;
-			Description testDescription = Description.createTestDescription(testClass, file.getName());
+			Description testDescription = Description.createTestDescription(testClass, this.params.testNamePrefix() + file.getName());
 			description.addChild(testDescription);
 			tests.put(file.getName(), testDescription);
 		}
