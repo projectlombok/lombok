@@ -89,7 +89,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 	
 	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, JavacNode source) {
 		List<JCExpression> jceBlank = List.nil();
-
+		
 		Name v1Name = mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName();
 		Name v2Name = mapMode ? builderType.toName(data.getPluralName() + "$value") : null;
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), v1Name);

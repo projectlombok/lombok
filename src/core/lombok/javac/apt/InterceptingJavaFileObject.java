@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.CharsetDecoder;
@@ -35,7 +34,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
 
-import lombok.Lombok;
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
 import lombok.permit.Permit;
