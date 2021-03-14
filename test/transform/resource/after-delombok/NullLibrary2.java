@@ -1,3 +1,4 @@
+//version 8: springframework dep is too new to run on j6
 public class NullLibrary2 {
 	String foo;
 	@java.lang.Override

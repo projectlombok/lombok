@@ -92,7 +92,7 @@ public abstract class AbstractRunTests {
 					}
 				});
 				
-				boolean checkPositions = !(params instanceof TestLombokFilesIdempotent || params instanceof TestSourceFiles);
+				boolean checkPositions = !(params instanceof TestLombokFilesIdempotent || params instanceof TestSourceFiles) && !sourceDirectives_.isSkipCompareContent();
 				
 				boolean changed = transformCode(messages, writer, file, sourceDirectives_.getSpecifiedEncoding(), sourceDirectives_.getFormatPreferences(), sourceDirectives_.minVersion(), checkPositions);
 				boolean forceUnchanged = sourceDirectives_.forceUnchanged() || sourceDirectives_.isSkipCompareContent();

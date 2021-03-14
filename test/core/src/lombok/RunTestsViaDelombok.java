@@ -134,9 +134,15 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 							// Given status of j6/j7, not worth properly testing.
 							check = false;
 						}
+						if (version < 8 && tree instanceof JCIdent) {
+							// explicit `super()` invocations do not appear to have end pos in j6/7.
+							if ("super".equals("" + ((JCIdent) tree).name)) check = false;
+						}
 						
 						if (check && tree.pos == -1) fail(craftFailMsg("Start", astContext));
-						if (check && Javac.getEndPosition(tree, unit) == -1) fail(craftFailMsg("End", astContext));
+						if (check && Javac.getEndPosition(tree, unit) == -1) {
+							fail(craftFailMsg("End", astContext));
+						}
 					} finally {
 						astContext.push(tree);
 						super.scan(tree);

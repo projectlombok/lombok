@@ -1,3 +1,4 @@
+// version 8: In java6/7, lub types worked differently, so, the `arraysAsList` method has a slightly different inferred type there.
 import java.math.BigDecimal;
 import java.util.*;
 public class ValWeirdTypes<Z> {

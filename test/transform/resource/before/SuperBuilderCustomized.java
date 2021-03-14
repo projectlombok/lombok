@@ -1,3 +1,4 @@
+//version 8: Javac 6 will error out due to `ChildBuilder` not existing before properly running lombok. Giving j6 support status, not worth fixing.
 import java.util.List;
 
 public class SuperBuilderCustomized {
