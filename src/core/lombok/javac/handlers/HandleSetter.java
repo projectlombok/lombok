@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,7 @@ import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -60,7 +59,7 @@ import com.sun.tools.javac.util.Name;
 /**
  * Handles the {@code lombok.Setter} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (checkForTypeLevelSetter) {

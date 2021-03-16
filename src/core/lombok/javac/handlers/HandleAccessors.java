@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2012-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,6 @@ package lombok.javac.handlers;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import org.mangosdk.spi.ProviderFor;
-
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 
 import lombok.ConfigurationKeys;
@@ -34,8 +32,9 @@ import lombok.core.HandlerPriority;
 import lombok.experimental.Accessors;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.spi.Provides;
 
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(65536)
 public class HandleAccessors extends JavacAnnotationHandler<Accessors> {
 	@Override public void handle(AnnotationValues<Accessors> annotation, JCAnnotation ast, JavacNode annotationNode) {

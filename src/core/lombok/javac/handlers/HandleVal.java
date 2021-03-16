@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,7 @@ import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
 import lombok.javac.ResolutionResetNeeded;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symtab;
@@ -49,7 +48,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
-@ProviderFor(JavacASTVisitor.class)
+@Provides(JavacASTVisitor.class)
 @HandlerPriority(HANDLE_DELEGATE_PRIORITY + 100) // run slightly after HandleDelegate; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
 @ResolutionResetNeeded
 public class HandleVal extends JavacASTAdapter {

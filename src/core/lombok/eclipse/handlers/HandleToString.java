@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -67,11 +66,12 @@ import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.spi.Provides;
 
 /**
  * Handles the {@code ToString} annotation for eclipse.
  */
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	public void handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.TO_STRING_FLAG_USAGE, "@ToString");

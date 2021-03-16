@@ -75,7 +75,6 @@ import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -101,8 +100,9 @@ import lombok.eclipse.handlers.HandleBuilder.BuilderFieldData;
 import lombok.eclipse.handlers.HandleBuilder.BuilderJob;
 import lombok.experimental.NonFinal;
 import lombok.experimental.SuperBuilder;
+import lombok.spi.Provides;
 
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	private static final char[] SELF_METHOD_NAME = "self".toCharArray();

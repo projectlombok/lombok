@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,6 @@ package lombok.javac.handlers;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-
-import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -62,9 +60,10 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
+import lombok.spi.Provides;
 
 public class HandleConstructor {
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleNoArgsConstructor extends JavacAnnotationHandler<NoArgsConstructor> {
 		private static final String NAME = NoArgsConstructor.class.getSimpleName();
 		private HandleConstructor handleConstructor = new HandleConstructor();
@@ -86,7 +85,7 @@ public class HandleConstructor {
 		}
 	}
 	
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleRequiredArgsConstructor extends JavacAnnotationHandler<RequiredArgsConstructor> {
 		private static final String NAME = RequiredArgsConstructor.class.getSimpleName();
 		private HandleConstructor handleConstructor = new HandleConstructor();
@@ -136,7 +135,7 @@ public class HandleConstructor {
 		return fields.toList();
 	}
 	
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleAllArgsConstructor extends JavacAnnotationHandler<AllArgsConstructor> {
 		private static final String NAME = AllArgsConstructor.class.getSimpleName();
 		private HandleConstructor handleConstructor = new HandleConstructor();

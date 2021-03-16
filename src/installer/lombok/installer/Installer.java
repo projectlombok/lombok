@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2016 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,7 @@ import lombok.core.SpiLoadUtil;
 import lombok.core.Version;
 import lombok.installer.OsUtils.OS;
 import lombok.patcher.ClassRootFinder;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
@@ -105,7 +104,7 @@ public class Installer {
 		return a.equals(b);
 	}
 	
-	@ProviderFor(LombokApp.class)
+	@Provides
 	public static class GraphicalInstallerApp extends LombokApp {
 		@Override public String getAppName() {
 			return "installer";
@@ -124,7 +123,7 @@ public class Installer {
 		}
 	}
 	
-	@ProviderFor(LombokApp.class)
+	@Provides
 	public static class CommandLineInstallerApp extends LombokApp {
 		@Override public String getAppName() {
 			return "install";
@@ -139,7 +138,7 @@ public class Installer {
 		}
 	}
 	
-	@ProviderFor(LombokApp.class)
+	@Provides
 	public static class CommandLineUninstallerApp extends LombokApp {
 		@Override public String getAppName() {
 			return "uninstall";

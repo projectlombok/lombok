@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
-import org.mangosdk.spi.ProviderFor;
-
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 
 import lombok.Lombok;
@@ -36,11 +34,12 @@ import lombok.core.PrintAST;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.spi.Provides;
 
 /**
  * Handles the {@code lombok.core.PrintAST} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(536870912) // 2^29; this handler is customarily run at the very end.
 public class HandlePrintAST extends JavacAnnotationHandler<PrintAST> {
 	@Override public void handle(AnnotationValues<PrintAST> annotation, JCAnnotation ast, JavacNode annotationNode) {

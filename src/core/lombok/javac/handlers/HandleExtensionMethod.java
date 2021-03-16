@@ -39,8 +39,7 @@ import lombok.experimental.ExtensionMethod;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.util.TreeScanner;
@@ -65,7 +64,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 /**
  * Handles the {@link ExtensionMethod} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(66560) // 2^16 + 2^10; we must run AFTER HandleVal which is at 2^16
 public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMethod> {
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,6 @@ import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
@@ -49,6 +48,7 @@ import lombok.core.handlers.LoggingFramework;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
+import lombok.spi.Provides;
 
 public class HandleLog {
 	private static final IdentifierName LOG = IdentifierName.valueOf("log");
@@ -203,7 +203,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.apachecommons.CommonsLog} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleCommonsLog extends EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_COMMONS_FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -214,7 +214,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.java.Log} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleJulLog extends EclipseAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JUL_FLAG_USAGE, "@java.Log", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -225,7 +225,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.log4j.Log4j} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleLog4jLog extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J_FLAG_USAGE, "@Log4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -236,7 +236,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.log4j.Log4j2} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleLog4j2Log extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J2_FLAG_USAGE, "@Log4j2", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -247,7 +247,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.slf4j.Slf4j} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_SLF4J_FLAG_USAGE, "@Slf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -258,7 +258,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.slf4j.XSlf4j} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleXSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_XSLF4J_FLAG_USAGE, "@XSlf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -269,7 +269,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.jbosslog.JBossLog} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleJBossLog extends EclipseAnnotationHandler<lombok.extern.jbosslog.JBossLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.jbosslog.JBossLog> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JBOSSLOG_FLAG_USAGE, "@JBossLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -280,7 +280,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.flogger.Flogger} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleFloggerLog extends EclipseAnnotationHandler<lombok.extern.flogger.Flogger> {
 		@Override public void handle(AnnotationValues<lombok.extern.flogger.Flogger> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_FLOGGER_FLAG_USAGE, "@Flogger", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -291,7 +291,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.CustomLog} annotation for Eclipse.
 	 */
-	@ProviderFor(EclipseAnnotationHandler.class)
+	@Provides
 	public static class HandleCustomLog extends EclipseAnnotationHandler<lombok.CustomLog> {
 		@Override public void handle(AnnotationValues<lombok.CustomLog> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_CUSTOM_FLAG_USAGE, "@CustomLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");

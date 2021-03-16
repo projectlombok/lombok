@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,6 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.JavacTreeMaker.TreeTag.treeTag;
 import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-
-import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssert;
@@ -58,8 +56,9 @@ import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.spi.Provides;
 
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 	@Override public void handle(AnnotationValues<NonNull> annotation, JCAnnotation ast, JavacNode annotationNode) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,14 @@ import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Delegate;
+import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.mangosdk.spi.ProviderFor;
 
 /**
  * This class just handles basic error cases. The real meat of eclipse '@Delegate' support is in {@code PatchDelegate}.
  */
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleDelegate extends EclipseAnnotationHandler<Delegate> {
 	public void handle(AnnotationValues<Delegate> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.DELEGATE_FLAG_USAGE, "@Delegate");

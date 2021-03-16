@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@ import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
+import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.mangosdk.spi.ProviderFor;
 
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 @HandlerPriority(65536)
 public class HandleAccessors extends EclipseAnnotationHandler<Accessors> {
 	@Override public void handle(AnnotationValues<Accessors> annotation, Annotation ast, EclipseNode annotationNode) {

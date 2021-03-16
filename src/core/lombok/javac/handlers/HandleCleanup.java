@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,7 @@ import lombok.delombok.LombokOptionsFactory;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -59,7 +58,7 @@ import com.sun.tools.javac.util.Name;
 /**
  * Handles the {@code lombok.Cleanup} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 	@Override public void handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.CLEANUP_FLAG_USAGE, "@Cleanup");

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,11 @@ import lombok.core.LombokImmutableList;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
+import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.mangosdk.spi.ProviderFor;
 
-@ProviderFor(EclipseSingularizer.class)
+@Provides(EclipseSingularizer.class)
 public class EclipseJavaUtilSetSingularizer extends EclipseJavaUtilListSetSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return LombokImmutableList.of("java.util.Set", "java.util.SortedSet", "java.util.NavigableSet");

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Project Lombok Authors.
+ * Copyright (C) 2018-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,9 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import lombok.installer.IdeLocationProvider;
+import lombok.spi.Provides;
 
-import org.mangosdk.spi.ProviderFor;
-
-@ProviderFor(IdeLocationProvider.class)
+@Provides(IdeLocationProvider.class)
 public class STS4LocationProvider extends EclipseProductLocationProvider {
 	
 	private static final EclipseProductDescriptor STS4 = new StandardProductDescriptor("Spring Tools Suite 4",

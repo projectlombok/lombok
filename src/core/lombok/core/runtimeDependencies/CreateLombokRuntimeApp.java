@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,7 @@ import java.util.zip.ZipEntry;
 
 import lombok.core.LombokApp;
 import lombok.core.SpiLoadUtil;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
@@ -48,7 +47,7 @@ import com.zwitserloot.cmdreader.Mandatory;
 import com.zwitserloot.cmdreader.Requires;
 import com.zwitserloot.cmdreader.Shorthand;
 
-@ProviderFor(LombokApp.class)
+@Provides
 public class CreateLombokRuntimeApp extends LombokApp {
 	private List<RuntimeDependencyInfo> infoObjects;
 	

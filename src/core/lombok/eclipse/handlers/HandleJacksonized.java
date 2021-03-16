@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,6 @@ import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.Builder;
 import lombok.ConfigurationKeys;
@@ -50,13 +49,15 @@ import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
+import lombok.spi.Provides;
 
 /**
  * This (ecj) handler deals with {@code @Jacksonized} modifying the (already
  * generated) {@code @Builder} or {@code @SuperBuilder} to conform to Jackson's
  * needs for builders.
  */
-@ProviderFor(EclipseAnnotationHandler.class) @HandlerPriority(-512) // Above Handle(Super)Builder's level (builders must be already generated).
+@Provides
+@HandlerPriority(-512) // Above Handle(Super)Builder's level (builders must be already generated).
 public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 
 	private static final char[][] JSON_POJO_BUILDER_ANNOTATION = Eclipse.fromQualifiedName("com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder");

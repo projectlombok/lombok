@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,12 @@ package lombok.javac.handlers.singulars;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import org.mangosdk.spi.ProviderFor;
-
 import lombok.core.LombokImmutableList;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -39,7 +38,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
-@ProviderFor(JavacSingularizer.class)
+@Provides(JavacSingularizer.class)
 public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.lang.Iterable");

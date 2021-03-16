@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2010-2020 The Project Lombok Authors.
+ Copyright (C) 2010-2021 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 	
 	<target name="eclipse.projectfiles" depends="deps">
 		<ivy:eclipsegen source="1.6" srcout="bin/main">
+			<srcdir dir="src/spiProcessor" />
 			<srcdir dir="src/core" />
 			<srcdir dir="src/core8" />
 			<srcdir dir="src/launch" />

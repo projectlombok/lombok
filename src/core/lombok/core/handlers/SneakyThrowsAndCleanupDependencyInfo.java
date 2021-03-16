@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import lombok.core.runtimeDependencies.RuntimeDependencyInfo;
+import lombok.spi.Provides;
 
-import org.mangosdk.spi.ProviderFor;
-
-@ProviderFor(RuntimeDependencyInfo.class)
+@Provides
 public class SneakyThrowsAndCleanupDependencyInfo implements RuntimeDependencyInfo {
 	@Override public List<String> getRuntimeDependencies() {
 		return Arrays.asList(

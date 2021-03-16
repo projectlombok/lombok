@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,11 @@
  */
 package lombok.eclipse.handlers.singulars;
 
-import org.mangosdk.spi.ProviderFor;
-
 import lombok.core.LombokImmutableList;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
+import lombok.spi.Provides;
 
-@ProviderFor(EclipseSingularizer.class)
+@Provides(EclipseSingularizer.class)
 public class EclipseGuavaTableSingularizer extends EclipseGuavaSingularizer {
 	private static final LombokImmutableList<String> SUFFIXES =
 		LombokImmutableList.of("rowKey", "columnKey", "value");

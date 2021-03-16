@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 The Project Lombok Authors.
+ * Copyright (C) 2012-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,7 @@ import lombok.Value;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -45,7 +44,7 @@ import com.sun.tools.javac.util.List;
 /**
  * Handles the {@code lombok.Value} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends JavacAnnotationHandler<Value> {
 	private HandleFieldDefaults handleFieldDefaults = new HandleFieldDefaults();

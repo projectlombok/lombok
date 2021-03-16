@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,7 @@ import lombok.javac.handlers.JavacSingularsRecipes.ExpressionMaker;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -48,7 +47,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
-@ProviderFor(JavacSingularizer.class)
+@Provides(JavacSingularizer.class)
 public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");

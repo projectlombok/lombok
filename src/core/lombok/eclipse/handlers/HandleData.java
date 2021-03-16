@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,16 +32,16 @@ import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
+import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.mangosdk.spi.ProviderFor;
 
 /**
  * Handles the {@code lombok.Data} annotation for eclipse.
  */
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleData extends EclipseAnnotationHandler<Data> {
 	private HandleGetter handleGetter = new HandleGetter();
 	private HandleSetter handleSetter = new HandleSetter();

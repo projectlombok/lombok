@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,7 @@ import lombok.core.AnnotationValues;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.util.List;
@@ -39,7 +38,7 @@ import com.sun.tools.javac.util.List;
 /**
  * Handles the {@code lombok.Data} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleData extends JavacAnnotationHandler<Data> {
 	private HandleConstructor handleConstructor = new HandleConstructor();
 	private HandleGetter handleGetter = new HandleGetter();

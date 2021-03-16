@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,7 @@ import java.util.List;
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.LombokApp;
 import lombok.core.PostCompiler;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
@@ -43,7 +42,7 @@ import com.zwitserloot.cmdreader.Mandatory;
 import com.zwitserloot.cmdreader.Sequential;
 import com.zwitserloot.cmdreader.Shorthand;
 
-@ProviderFor(LombokApp.class)
+@Provides
 public class PostCompilerApp extends LombokApp {
 	@Override public List<String> getAppAliases() {
 		return Arrays.asList("post", "postcompile");

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 The Project Lombok Authors.
+ * Copyright (C) 2012-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,7 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Type;
@@ -62,7 +61,7 @@ import com.sun.tools.javac.util.Name;
 /**
  * Handles the {@code lombok.With} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleWith extends JavacAnnotationHandler<With> {
 	public void generateWithForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelWith) {
 		if (checkForTypeLevelWith) {

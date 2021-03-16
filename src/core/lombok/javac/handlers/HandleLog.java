@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,7 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -154,7 +153,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.apachecommons.CommonsLog} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleCommonsLog extends JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_COMMONS_FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -165,7 +164,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.java.Log} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleJulLog extends JavacAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JUL_FLAG_USAGE, "@java.Log", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -176,7 +175,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.log4j.Log4j} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleLog4jLog extends JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J_FLAG_USAGE, "@Log4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -187,7 +186,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.log4j.Log4j2} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleLog4j2Log extends JavacAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J2_FLAG_USAGE, "@Log4j2", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -198,7 +197,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.slf4j.Slf4j} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_SLF4J_FLAG_USAGE, "@Slf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -209,7 +208,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.slf4j.XSlf4j} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleXSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_XSLF4J_FLAG_USAGE, "@XSlf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -220,7 +219,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.jbosslog.JBossLog} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleJBossLog extends JavacAnnotationHandler<lombok.extern.jbosslog.JBossLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.jbosslog.JBossLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JBOSSLOG_FLAG_USAGE, "@JBossLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -231,7 +230,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.extern.flogger.Flogger} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleFloggerLog extends JavacAnnotationHandler<lombok.extern.flogger.Flogger> {
 		@Override public void handle(AnnotationValues<lombok.extern.flogger.Flogger> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_FLOGGER_FLAG_USAGE, "@Flogger", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
@@ -242,7 +241,7 @@ public class HandleLog {
 	/**
 	 * Handles the {@link lombok.CustomLog} annotation for javac.
 	 */
-	@ProviderFor(JavacAnnotationHandler.class)
+	@Provides
 	public static class HandleCustomLog extends JavacAnnotationHandler<lombok.CustomLog> {
 		@Override public void handle(AnnotationValues<lombok.CustomLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_CUSTOM_FLAG_USAGE, "@CustomLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");

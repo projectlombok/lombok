@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019 The Project Lombok Authors.
+ * Copyright (C) 2014-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,6 @@ import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -54,8 +53,9 @@ import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 import lombok.experimental.FieldNameConstants;
+import lombok.spi.Provides;
 
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldNameConstants> {
 	private static final IdentifierName FIELDS = IdentifierName.valueOf("Fields");
 

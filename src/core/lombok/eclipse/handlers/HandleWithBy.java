@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Project Lombok Authors.
+ * Copyright (C) 2020-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,6 @@ import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -63,8 +62,9 @@ import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.WithBy;
+import lombok.spi.Provides;
 
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
 	public boolean generateWithByForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelWithBy) {
 		if (checkForTypeLevelWithBy) {

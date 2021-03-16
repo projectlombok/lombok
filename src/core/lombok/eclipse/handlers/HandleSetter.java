@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -56,12 +57,11 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-import org.mangosdk.spi.ProviderFor;
 
 /**
  * Handles the {@code lombok.Setter} annotation for eclipse.
  */
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 	public boolean generateSetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelSetter, List<Annotation> onMethod, List<Annotation> onParam) {
 		if (checkForTypeLevelSetter) {

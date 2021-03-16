@@ -50,7 +50,6 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
 import lombok.core.LombokImmutableList;
@@ -62,8 +61,9 @@ import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.StatementMaker;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.TypeReferenceMaker;
 import lombok.eclipse.handlers.HandleNonNull;
+import lombok.spi.Provides;
 
-@ProviderFor(EclipseSingularizer.class)
+@Provides(EclipseSingularizer.class)
 public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");

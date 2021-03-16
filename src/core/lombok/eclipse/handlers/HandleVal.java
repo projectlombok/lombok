@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
+import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
@@ -39,12 +40,11 @@ import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.mangosdk.spi.ProviderFor;
 
 /*
  * This class just handles 3 basic error cases. The real meat of eclipse 'val' support is in {@code PatchVal} and {@code PatchValEclipse}.
  */
-@ProviderFor(EclipseASTVisitor.class)
+@Provides(EclipseASTVisitor.class)
 @DeferUntilPostDiet
 @HandlerPriority(65536) // 2^16; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
 public class HandleVal extends EclipseASTAdapter {

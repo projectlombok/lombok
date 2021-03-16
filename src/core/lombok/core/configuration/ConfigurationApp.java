@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2020 The Project Lombok Authors.
+ * Copyright (C) 2014-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.mangosdk.spi.ProviderFor;
-
 import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
 import com.zwitserloot.cmdreader.Excludes;
@@ -56,8 +54,9 @@ import com.zwitserloot.cmdreader.Shorthand;
 import lombok.ConfigurationKeys;
 import lombok.core.LombokApp;
 import lombok.core.configuration.ConfigurationParser.Collector;
+import lombok.spi.Provides;
 
-@ProviderFor(LombokApp.class)
+@Provides
 public class ConfigurationApp extends LombokApp {
 	private static final URI NO_CONFIG = URI.create("");
 	

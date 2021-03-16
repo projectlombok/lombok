@@ -43,8 +43,7 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.JavacTreeMaker.TypeTag;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Type;
@@ -71,7 +70,7 @@ import com.sun.tools.javac.util.Name;
 /**
  * Handles the {@code lombok.Getter} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	public void generateGetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelGetter, List<JCAnnotation> onMethod) {
 		if (checkForTypeLevelGetter) {

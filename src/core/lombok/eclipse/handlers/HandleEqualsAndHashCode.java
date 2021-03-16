@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,7 @@ import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
+import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -89,12 +90,11 @@ import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-import org.mangosdk.spi.ProviderFor;
 
 /**
  * Handles the {@code EqualsAndHashCode} annotation for eclipse.
  */
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndHashCode> {
 	
 	private static final String HASH_CODE_CACHE_NAME = "$hashCodeCache";

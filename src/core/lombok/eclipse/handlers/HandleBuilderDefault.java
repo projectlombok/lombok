@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018 The Project Lombok Authors.
+ * Copyright (C) 2017-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@ package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.Builder;
 import lombok.core.AST.Kind;
@@ -32,8 +31,9 @@ import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.SuperBuilder;
+import lombok.spi.Provides;
 
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 @HandlerPriority(-1025) //HandleBuilder's level, minus one.
 public class HandleBuilderDefault extends EclipseAnnotationHandler<Builder.Default> {
 	@Override public void handle(AnnotationValues<Builder.Default> annotation, Annotation ast, EclipseNode annotationNode) {

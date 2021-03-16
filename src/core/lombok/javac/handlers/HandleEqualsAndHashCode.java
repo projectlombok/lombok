@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-
-import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
@@ -70,11 +68,12 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
+import lombok.spi.Provides;
 
 /**
  * Handles the {@code lombok.EqualsAndHashCode} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHashCode> {
 	private static final String RESULT_NAME = "result";
 	private static final String PRIME_NAME = "PRIME";

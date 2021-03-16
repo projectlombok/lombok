@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 The Project Lombok Authors.
+ * Copyright (C) 2012-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -57,9 +58,8 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
-import org.mangosdk.spi.ProviderFor;
 
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleWith extends EclipseAnnotationHandler<With> {
 	public boolean generateWithForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelWith) {
 		if (checkForTypeLevelWith) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,9 @@ import java.util.zip.ZipEntry;
 
 import lombok.Lombok;
 import lombok.patcher.ClassRootFinder;
+import lombok.spi.Provides;
 
-import org.mangosdk.spi.ProviderFor;
-
-@ProviderFor(LombokApp.class)
+@Provides
 public class PublicApiCreatorApp extends LombokApp {
 	@Override public String getAppName() {
 		return "publicApi";

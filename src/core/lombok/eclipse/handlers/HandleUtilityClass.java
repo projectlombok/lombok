@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,6 @@ import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
@@ -52,12 +51,13 @@ import lombok.core.AST.Kind;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.UtilityClass;
+import lombok.spi.Provides;
 
 /**
  * Handles the {@code lombok.experimental.UtilityClass} annotation for eclipse.
  */
+@Provides
 @HandlerPriority(-4096) //-2^12; to ensure @FieldDefaults picks up on the 'static' we set here.
-@ProviderFor(EclipseAnnotationHandler.class)
 public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 	@Override public void handle(AnnotationValues<UtilityClass> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.UTILITY_CLASS_FLAG_USAGE, "@UtilityClass");

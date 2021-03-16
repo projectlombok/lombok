@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,6 @@ import org.eclipse.jdt.internal.compiler.ast.SynchronizedStatement;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.ConfigurationKeys;
 import lombok.NonNull;
@@ -57,9 +56,10 @@ import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.spi.Provides;
 
 @DeferUntilPostDiet
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	private static final char[] REQUIRE_NON_NULL = "requireNonNull".toCharArray();

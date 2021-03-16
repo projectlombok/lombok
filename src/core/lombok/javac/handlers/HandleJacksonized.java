@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Project Lombok Authors.
+ * Copyright (C) 2020-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,6 @@ package lombok.javac.handlers;
 import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import org.mangosdk.spi.ProviderFor;
-
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -49,13 +47,14 @@ import lombok.extern.jackson.Jacksonized;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.spi.Provides;
 
 /**
  * This (javac) handler deals with {@code @Jacksonized} modifying the (already
  * generated) {@code @Builder} or {@code @SuperBuilder} to conform to Jackson's
  * needs for builders.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(-512) // Above Handle(Super)Builder's level (builders must be already generated).
 public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	

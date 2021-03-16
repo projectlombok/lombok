@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Project Lombok Authors.
+ * Copyright (C) 2018-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,10 @@ package lombok.installer.eclipse;
 
 import java.util.Collections;
 
-import org.mangosdk.spi.ProviderFor;
-
 import lombok.installer.IdeLocationProvider;
+import lombok.spi.Provides;
 
-@ProviderFor(IdeLocationProvider.class)
+@Provides(IdeLocationProvider.class)
 public class AngularIDELocationProvider extends EclipseProductLocationProvider {
 	
 	private static final EclipseProductDescriptor ANGULAR = new StandardProductDescriptor(

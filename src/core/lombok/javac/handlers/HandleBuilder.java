@@ -30,8 +30,6 @@ import java.util.ArrayList;
 
 import javax.lang.model.element.Modifier;
 
-import org.mangosdk.spi.ProviderFor;
-
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -81,8 +79,9 @@ import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
 import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
+import lombok.spi.Provides;
 
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	private HandleConstructor handleConstructor = new HandleConstructor();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2016 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,9 @@ package lombok.installer.eclipse;
 import java.util.Collections;
 
 import lombok.installer.IdeLocationProvider;
+import lombok.spi.Provides;
 
-import org.mangosdk.spi.ProviderFor;
-
-@ProviderFor(IdeLocationProvider.class)
+@Provides(IdeLocationProvider.class)
 public class JbdsLocationProvider extends EclipseProductLocationProvider {
 	
 	private static final EclipseProductDescriptor JBDS = new StandardProductDescriptor(

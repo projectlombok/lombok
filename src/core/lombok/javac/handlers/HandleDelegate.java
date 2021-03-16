@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,6 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import org.mangosdk.spi.ProviderFor;
-
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
@@ -82,8 +80,9 @@ import lombok.javac.JavacResolution.TypeNotConvertibleException;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.ResolutionResetNeeded;
 import lombok.permit.Permit;
+import lombok.spi.Provides;
 
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(HandleDelegate.HANDLE_DELEGATE_PRIORITY) //2^16; to make sure that we also delegate generated methods.
 @ResolutionResetNeeded
 public class HandleDelegate extends JavacAnnotationHandler<Delegate> {

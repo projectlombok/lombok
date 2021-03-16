@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,9 @@ package lombok.javac.handlers.singulars;
 
 import lombok.core.LombokImmutableList;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
+import lombok.spi.Provides;
 
-import org.mangosdk.spi.ProviderFor;
-
-@ProviderFor(JavacSingularizer.class)
+@Provides(JavacSingularizer.class)
 public class JavacGuavaMapSingularizer extends JavacGuavaSingularizer {
 	// TODO cgcc.ImmutableMultimap, cgcc.ImmutableListMultimap, cgcc.ImmutableSetMultimap
 	// TODO cgcc.ImmutableClassToInstanceMap

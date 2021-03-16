@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 The Project Lombok Authors.
+ * Copyright (C) 2012-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,7 @@ import lombok.experimental.PackagePrivate;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
@@ -46,7 +45,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 /**
  * Handles the {@code lombok.FieldDefaults} annotation for javac.
  */
-@ProviderFor(JavacASTVisitor.class)
+@Provides(JavacASTVisitor.class)
 @HandlerPriority(-2048) //-2^11; to ensure @Value picks up on messing with the fields' 'final' state, run earlier.
 public class HandleFieldDefaults extends JavacASTAdapter {
 	public boolean generateFieldDefaultsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean makeFinal, boolean checkForTypeLevelFieldDefaults) {

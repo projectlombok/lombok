@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 The Project Lombok Authors.
+ * Copyright (C) 2015-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,6 @@ import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
 import static lombok.javac.Javac.CTC_VOID;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import org.mangosdk.spi.ProviderFor;
-
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -50,12 +48,13 @@ import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.spi.Provides;
 
 /**
  * Handles the {@code @UtilityClass} annotation for javac.
  */
 @HandlerPriority(-4096) //-2^12; to ensure @FieldDefaults picks up on the 'static' we set here.
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 	@Override public void handle(AnnotationValues<UtilityClass> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.UTILITY_CLASS_FLAG_USAGE, "@UtilityClass");

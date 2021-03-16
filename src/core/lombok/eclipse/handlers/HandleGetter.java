@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ import java.util.Map;
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.experimental.Delegate;
+import lombok.spi.Provides;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
@@ -73,12 +74,11 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-import org.mangosdk.spi.ProviderFor;
 
 /**
  * Handles the {@code lombok.Getter} annotation for eclipse.
  */
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 

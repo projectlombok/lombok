@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021 The Project Lombok Authors.
+ * Copyright (C) 2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,25 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.installer.eclipse;
+package lombok.spi;
 
-import java.util.Collections;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import lombok.installer.IdeLocationProvider;
-import lombok.spi.Provides;
-
-@Provides(IdeLocationProvider.class)
-public class RhdsLocationProvider extends EclipseProductLocationProvider {
-	
-	private static final EclipseProductDescriptor RHDS = new StandardProductDescriptor(
-			"Red Hat JBoss Developer Studio",
-			"devstudio",
-			"studio",
-			RhdsLocationProvider.class.getResource("rhds.png"),
-			Collections.<String>emptySet()
-	); 
-	
-	public RhdsLocationProvider() {
-		super(RHDS);
-	}
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.SOURCE)
+public @interface Provides {
+	Class<?>[] value() default {};
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019 The Project Lombok Authors.
+ * Copyright (C) 2014-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,7 @@ import lombok.experimental.FieldNameConstants;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
-
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
@@ -53,7 +52,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameConstants> {
 	private static final IdentifierName FIELDS = IdentifierName.valueOf("Fields");
 

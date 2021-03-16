@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +74,6 @@ import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -98,8 +97,9 @@ import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.experimental.NonFinal;
+import lombok.spi.Provides;
 
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	private HandleConstructor handleConstructor = new HandleConstructor();
