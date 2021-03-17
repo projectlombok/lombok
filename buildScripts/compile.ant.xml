@@ -62,7 +62,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		<pathelement path="${packing.basedirs.colon}" />
 	</path>
 	
-	<target name="-compile.spiProcessor" depends="version, -setup.build" description="Compiles the services file generating processor">
+	<target name="create.spiProcessor" depends="version, -setup.build" description="Compiles the services file generating processor">
 		<ivy:compile destdir="build/spiProcessor" source="1.8" target="1.8" ecj="true">
 			<src path="src/spiProcessor" />
 			<classpath location="build/spiProcessor" />
@@ -74,7 +74,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		</jar>
 	</target>
 	
-	<target name="compile" depends="version, deps, -setup.build, -compile.spiProcessor" description="Compiles the code">
+	<target name="compile" depends="version, deps, -setup.build, create.spiProcessor" description="Compiles the code">
 		<!--
 			1. Compile stubs.
 			2. Compile transplants.

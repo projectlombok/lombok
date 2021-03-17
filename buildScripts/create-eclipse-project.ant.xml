@@ -24,7 +24,7 @@
 This buildfile is part of projectlombok.org. It creates the infrastructure needed to develop lombok on eclipse.
 	</description>
 	
-	<target name="eclipse" depends="eclipse.projectfiles, eclipse.testtarget.default" description="Downloads dependencies, create eclipse project files, as well as debug/run test targets. Open this directory as project in eclipse (via import... existing projects)" />
+	<target name="eclipse" depends="create.spiProcessor, eclipse.projectfiles, eclipse.testtarget.default" description="Downloads dependencies, create eclipse project files, as well as debug/run test targets. Open this directory as project in eclipse (via import... existing projects)" />
 	
 	<target name="eclipse.projectfiles" depends="deps">
 		<ivy:eclipsegen source="1.6" srcout="bin/main">
@@ -53,7 +53,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			<settings>
 				<url url="https://projectlombok.org/downloads/lombok.eclipse.settings" />
 			</settings>
-			<apt location="lib/build/projectlombok.org-spi.jar" />
+			<apt location="build/spiProcessor.jar" />
 		</ivy:eclipsegen>
 	</target>
 	
