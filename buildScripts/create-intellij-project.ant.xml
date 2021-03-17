@@ -34,9 +34,12 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 		invoking ant, all will be well.
 		<input>Press return to continue</input>
 		<ivy:intellijgen>
-			<conf name="build" sources="contrib" />
-			<conf name="test" sources="contrib" />
+			<conf name="build" sources="sources" />
+			<conf name="javac6" sources="sources" />
+			<conf name="test" sources="sources" />
+			<conf name="buildTools" sources="sources" />
 			<module name="lombok" depends="build, test">
+				<srcdir dir="src/spiProcessor" />
 				<srcdir dir="src/core" />
 				<srcdir dir="src/core8" />
 				<srcdir dir="src/launch" />
