@@ -23,36 +23,51 @@ package lombok.javac.java8;
 
 import java.nio.CharBuffer;
 
-import lombok.javac.CommentInfo;
-import lombok.javac.CommentInfo.EndConnection;
-import lombok.javac.CommentInfo.StartConnection;
-
 import com.sun.tools.javac.parser.JavaTokenizer;
 import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.parser.Tokens.Comment;
-import com.sun.tools.javac.parser.Tokens.Token;
 import com.sun.tools.javac.parser.Tokens.Comment.CommentStyle;
+import com.sun.tools.javac.parser.Tokens.Token;
 import com.sun.tools.javac.parser.UnicodeReader;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 
+import lombok.javac.CommentInfo;
+import lombok.javac.CommentInfo.EndConnection;
+import lombok.javac.CommentInfo.StartConnection;
+
 class CommentCollectingTokenizer extends JavaTokenizer {
+	
+	private static final boolean tokenizerIsUnicodeReader = JavaTokenizer.class.getSuperclass().getSimpleName().equals("UnicodeReader");
+	
 	private int prevEndPosition = 0;
 	private final ListBuffer<CommentInfo> comments = new ListBuffer<CommentInfo>();
 	private final ListBuffer<Integer> textBlockStarts;
 	private int endComment = 0;
 	
-	CommentCollectingTokenizer(ScannerFactory fac, char[] buf, int inputLength, boolean findTextBlocks) {
+	static CommentCollectingTokenizer create(ScannerFactory fac, char[] buf, int inputLength, boolean findTextBlocks) {
+		if (tokenizerIsUnicodeReader) {
+			return new CommentCollectingTokenizer(fac, buf, inputLength, findTextBlocks, true);
+		}
+		return new CommentCollectingTokenizer(fac, buf, inputLength, findTextBlocks);
+	}
+	
+	// pre java 16
+	private CommentCollectingTokenizer(ScannerFactory fac, char[] buf, int inputLength, boolean findTextBlocks) {
 		super(fac, new PositionUnicodeReader(fac, buf, inputLength));
 		textBlockStarts = findTextBlocks ? new ListBuffer<Integer>() : null;
 	}
 
-	CommentCollectingTokenizer(ScannerFactory fac, CharBuffer buf, boolean findTextBlocks) {
-		super(fac, new PositionUnicodeReader(fac, buf));
+	// from java 16
+	private CommentCollectingTokenizer(ScannerFactory fac, char[] buf, int inputLength, boolean findTextBlocks, boolean java16Signature) {
+		super(fac, buf, inputLength);
 		textBlockStarts = findTextBlocks ? new ListBuffer<Integer>() : null;
 	}
 	
 	int pos() {
+		if (tokenizerIsUnicodeReader) {
+			return position();
+		}
 		return ((PositionUnicodeReader) reader).pos();
 	}
 	
@@ -60,7 +75,7 @@ class CommentCollectingTokenizer extends JavaTokenizer {
 		Token token = super.readToken();
 		prevEndPosition = pos();
 		if (textBlockStarts != null && (prevEndPosition - token.pos > 5) && token.getClass().getName().endsWith("$StringToken")) {
-			char[] start = reader.getRawCharacters(token.pos, token.pos + 3);
+			char[] start = reader().getRawCharacters(token.pos, token.pos + 3);
 			if (start[0] == '"' && start[1] == '"' && start[2] == '"') textBlockStarts.append(token.pos);
 		}
 		return token;
@@ -70,7 +85,7 @@ class CommentCollectingTokenizer extends JavaTokenizer {
 	protected Comment processComment(int pos, int endPos, CommentStyle style) {
 		int prevEndPos = Math.max(prevEndPosition, endComment);
 		endComment = endPos;
-		String content = new String(reader.getRawCharacters(pos, endPos));
+		String content = new String(reader().getRawCharacters(pos, endPos));
 		StartConnection start = determineStartConnection(prevEndPos, pos);
 		EndConnection end = determineEndConnection(endPos); 
 
@@ -85,7 +100,7 @@ class CommentCollectingTokenizer extends JavaTokenizer {
 		for (int i = pos;; i++) {
 			char c;
 			try {
-				c = reader.getRawCharacters(i, i + 1)[0];
+				c = reader().getRawCharacters(i, i + 1)[0];
 			} catch (IndexOutOfBoundsException e) {
 				c = '\n';
 			}
@@ -104,7 +119,7 @@ class CommentCollectingTokenizer extends JavaTokenizer {
 		if (from == to) {
 			return StartConnection.DIRECT_AFTER_PREVIOUS;
 		}
-		char[] between = reader.getRawCharacters(from, to);
+		char[] between = reader().getRawCharacters(from, to);
 		if (isNewLine(between[between.length - 1])) {
 			return StartConnection.START_OF_LINE;
 		}
@@ -126,6 +141,13 @@ class CommentCollectingTokenizer extends JavaTokenizer {
 	
 	public List<Integer> getTextBlockStarts() {
 		return textBlockStarts == null ? List.<Integer>nil() : textBlockStarts.toList();
+	}
+	
+	private UnicodeReader reader() {
+		if (tokenizerIsUnicodeReader) {
+			return (UnicodeReader) (Object) this;
+		}
+		return reader;
 	}
 	
 	static class PositionUnicodeReader extends UnicodeReader {

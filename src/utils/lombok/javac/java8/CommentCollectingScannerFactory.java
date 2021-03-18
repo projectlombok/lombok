@@ -72,11 +72,13 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 		super(context);
 	}
 	
+	@SuppressWarnings("all")
 	@Override
 	public Scanner newScanner(CharSequence input, boolean keepDocComments) {
 		char[] array;
 		if (input instanceof CharBuffer && ((CharBuffer) input).hasArray()) {
-			array = ((CharBuffer) input).compact().flip().array();
+			// yes, the char[] cast is necessary
+			array = (char[]) ((CharBuffer) input).compact().flip().array();
 		} else {
 			array = input.toString().toCharArray();
 		}
@@ -85,6 +87,6 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 	
 	@Override
 	public Scanner newScanner(char[] input, int inputLength, boolean keepDocComments) {
-		return new CommentCollectingScanner(this, new CommentCollectingTokenizer(this, input, inputLength, findTextBlocks));
+		return new CommentCollectingScanner(this, CommentCollectingTokenizer.create(this, input, inputLength, findTextBlocks));
 	}
 }
