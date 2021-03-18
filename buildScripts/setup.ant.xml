@@ -25,7 +25,7 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	</description>
 	
 	<!-- increment this number to force a clean of the 'build' dir -->
-	<property name="build.version" value="2020-12-04_001" />
+	<property name="build.version" value="2021-03-18_001" />
 	
 	<property name="pattern.jdk11plus" value="^(\d\d\d+|1[1-9]|[2-9]\d)(\..*)?$" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />

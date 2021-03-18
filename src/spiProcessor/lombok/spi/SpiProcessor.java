@@ -222,7 +222,7 @@ public class SpiProcessor extends AbstractProcessor {
 		}
 		
 		for (TypeMirror spiType : spiTypes) {
-			String spiTypeName = toElement(spiType).getQualifiedName().toString();
+			String spiTypeName = createProperQualifiedName(toElement(spiType));
 			String createProperQualifiedName = createProperQualifiedName(elem);
 			data.getService(spiTypeName).addProvider(createProperQualifiedName);
 		}
