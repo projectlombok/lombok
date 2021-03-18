@@ -1,6 +1,6 @@
 FROM ubuntu:18.04 as downloader
 
-ARG jdk=13
+ARG jdk=16
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
@@ -22,7 +22,7 @@ WORKDIR workspace
 
 ADD shared/ ./
 
-ARG jdk=13
+ARG jdk=16
 ADD maven/files/jdk-${jdk} ./
 
 COPY --from=downloader /lombok.jar /workspace/classpath/lombok.jar

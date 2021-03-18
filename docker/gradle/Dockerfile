@@ -1,6 +1,6 @@
 FROM ubuntu:18.04 as downloader
 
-ARG jdk=13
+ARG jdk=16
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
@@ -26,7 +26,7 @@ ADD gradle/files/ ./
 COPY --from=downloader /lombok.jar /workspace/classpath/lombok.jar
 COPY --from=downloader /lombok.jar /workspace/modules/lombok.jar
 
-ARG jdk=13
+ARG jdk=16
 ENV JDK_VERSION=${jdk}
 ENV JAVA_HOME=/opt/jdk
 ENV GRADLE_HOME=/opt/gradle/gradle

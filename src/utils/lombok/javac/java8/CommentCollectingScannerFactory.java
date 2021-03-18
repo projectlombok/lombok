@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019 The Project Lombok Authors.
+ * Copyright (C) 2011-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,11 +74,12 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 	
 	@Override
 	public Scanner newScanner(CharSequence input, boolean keepDocComments) {
-		if (input instanceof CharBuffer) {
-			CharBuffer buf = (CharBuffer) input;
-			return new CommentCollectingScanner(this, new CommentCollectingTokenizer(this, buf, findTextBlocks));
+		char[] array;
+		if (input instanceof CharBuffer && ((CharBuffer) input).hasArray()) {
+			array = ((CharBuffer) input).compact().flip().array();
+		} else {
+			array = input.toString().toCharArray();
 		}
-		char[] array = input.toString().toCharArray();
 		return newScanner(array, array.length, keepDocComments);
 	}
 	
