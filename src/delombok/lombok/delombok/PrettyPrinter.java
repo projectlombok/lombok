@@ -1385,9 +1385,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	void printBindingPattern(JCTree tree) {
-		print((JCExpression) readObject(tree, "vartype", null));
+		JCTree var = readObject(tree, "var", tree);
+		print((JCExpression) readObject(var, "vartype", null));
 		print(" ");
-		print((Name) readObject(tree, "name", null));
+		print((Name) readObject(var, "name", null));
 	}
 	
 	@Override public void visitTry(JCTry tree) {
