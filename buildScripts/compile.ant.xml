@@ -50,7 +50,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		<echo level="info">Lombok version: ${lombok.version} (${lombok.fullversion})</echo>
 	</target>
 	
-	<property name="packing.basedirs" value="build/lombok-transplants,build/lombok-utils,build/lombok-utils6,build/lombok-main,build/lombok-main8" />
+	<property name="packing.basedirs" value="build/lombok-transplants,build/lombok-utils,build/lombok-utils6,build/lombok-main,build/lombok-main8,build/lombok-deps" />
 	<loadresource property="packing.basedirs.colon">
 		<propertyresource name="packing.basedirs" />
 		<filterchain><tokenfilter>
