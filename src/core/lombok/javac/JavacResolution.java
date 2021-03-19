@@ -71,6 +71,16 @@ public class JavacResolution {
 	private final Attr attr;
 	private final CompilerMessageSuppressor messageSuppressor;
 	
+	private static final Method isLocal;
+	
+	static {
+		Method local = Permit.permissiveGetMethod(TypeSymbol.class, "isLocal");
+		if (local == null) {
+			local = Permit.permissiveGetMethod(TypeSymbol.class, "isDirectlyOrIndirectlyLocal");
+		}
+		isLocal = local;
+	}
+	
 	public JavacResolution(Context context) {
 		attr = Attr.instance(context);
 		messageSuppressor = new CompilerMessageSuppressor(context);
@@ -352,6 +362,15 @@ public class JavacResolution {
 		return a.compareTo(b);
 	}
 	
+	private static boolean isLocalType(TypeSymbol symbol) {
+		try {
+			return (Boolean) Permit.invoke(isLocal, symbol);
+		}
+		catch (Exception e) {
+			return false;
+		}
+	}
+	
 	private static JCExpression typeToJCTree0(Type type, JavacAST ast, boolean allowCompound, boolean allowVoid, boolean allowCapture) throws TypeNotConvertibleException {
 		// NB: There's such a thing as maker.Type(type), but this doesn't work very well; it screws up anonymous classes, captures, and adds an extra prefix dot for some reason too.
 		//  -- so we write our own take on that here.
@@ -450,7 +469,7 @@ public class JavacResolution {
 		}
 		
 		String qName;
-		if (symbol.isLocal()) {
+		if (isLocalType(symbol)) {
 			qName = symbol.getSimpleName().toString();
 		} else if (symbol.type != null && symbol.type.getEnclosingType() != null && typeTag(symbol.type.getEnclosingType()).equals(typeTag("CLASS"))) {
 			replacement = typeToJCTree0(type.getEnclosingType(), ast, false, false, false);

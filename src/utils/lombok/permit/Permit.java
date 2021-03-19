@@ -122,6 +122,14 @@ public class Permit {
 		return setAccessible(m);
 	}
 	
+	public static Method permissiveGetMethod(Class<?> c, String mName, Class<?>... parameterTypes) {
+		try {
+			return getMethod(c, mName, parameterTypes);
+		} catch (Exception ignore) {
+			return null;
+		}
+	}
+	
 	public static Field getField(Class<?> c, String fName) throws NoSuchFieldException {
 		Field f = null;
 		Class<?> oc = c;
