@@ -67,16 +67,16 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	<target name="test.javac6" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac6 as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with lowest supported javac: 1.6.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">
+			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+			<classpath location="build/ant" />
 			<jvmarg value="-Xbootclasspath/a:${jdk6-rt.loc}" />
 			<jvmarg line="${test.limitmodules}" />
 			<jvmarg value="-Ddelombok.bootclasspath=${jdk6-rt.loc}" />
 			<jvmarg value="-Dsun.boot.class.path=${jdk6-rt.loc}" />
-			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />
 			<classpath refid="cp.javac6" />
 			<classpath refid="packing.basedirs.path" />
-			<classpath location="build/ant" />
 			<classpath location="build/tests" />
 			<classpath location="build/teststubs" />
 			<test name="lombok.TestJavac" />
@@ -86,11 +86,12 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	<target name="test.javac8" depends="test.formatter.compile, test.compile, deps.jdk8-runtime" description="runs the tests on your default VM, using javac8 as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with javac: 1.8.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">
+			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
 			<jvmarg value="-Xbootclasspath/a:${jdk8-rt.loc}" />
 			<jvmarg line="${test.limitmodules}" />
 			<jvmarg value="-Ddelombok.bootclasspath=${jdk8-rt.loc}" />
 			<jvmarg value="-Dsun.boot.class.path=${jdk8-rt.loc}" />
-			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+			<classpath location="build/ant" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />
 			<classpath refid="cp.javac8" />
@@ -108,7 +109,8 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<echo>Running TestJavac with JVM ${jvm.loc.@{version}}.</echo>
 		
 			<junit haltonfailure="yes" fork="true" forkmode="once" jvm="${jvm.loc.@{version}}/bin/${exe.java}">
-			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+				<classpath location="build/ant" />
 				<classpath refid="cp.test" />
 				<classpath refid="cp.stripe" />
 				<classpath refid="packing.basedirs.path" />
@@ -131,6 +133,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<echo>Running TestJavac on JVM${ant.java.version}, with the javac built into your VM distributon.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">
 			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+			<classpath location="build/ant" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />
 			<classpath refid="packing.basedirs.path" />
@@ -145,10 +148,11 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<sequential>
 			<echo>Running TestEclipse on eclipse-@{version} on JVM${ant.java.version}.</echo>
 			<junit haltonfailure="yes" fork="true" forkmode="once">
+				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
 				<jvmarg value="-Xbootclasspath/a:${jdk8-rt.loc}" />
 				<jvmarg value="-Ddelombok.bootclasspath=${jdk8-rt.loc}" />
 				<jvmarg value="-javaagent:dist/lombok.jar" />
-				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+				<classpath location="build/ant" />
 				<classpath refid="cp.test" />
 				<classpath refid="cp.stripe" />
 				<classpath refid="cp.eclipse-@{version}" />
