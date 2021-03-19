@@ -110,7 +110,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		List<JCTypeParameter> builderTypeParams;
 		JavacNode sourceNode;
 		java.util.List<BuilderFieldData> builderFields;
-		AccessLevel accessInners, accessOuters;
+		AccessLevel accessInners, accessOuters, accessConstructor;
 		boolean oldFluent, oldChain, toBuilder;
 		
 		JavacNode builderType;
@@ -124,6 +124,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				accessOuters = AccessLevel.PUBLIC;
 			}
 			accessInners = accessOuters == AccessLevel.PROTECTED ? AccessLevel.PUBLIC : accessOuters;
+			accessConstructor = ann.constructorAccess();
+			if (accessConstructor == null) accessConstructor = AccessLevel.PACKAGE;
+			if (accessConstructor == AccessLevel.NONE) {
+				sourceNode.addError("AccessLevel.NONE is not valid for constructor");
+				accessConstructor = AccessLevel.PACKAGE;
+			}
 			
 			oldFluent = toBoolean(annValues.getActualExpression("fluent"), true);
 			oldChain = toBoolean(annValues.getActualExpression("chain"), true);
@@ -279,7 +285,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				allFields.append(fieldNode);
 			}
 			
-			handleConstructor.generateConstructor(parent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+			handleConstructor.generateConstructor(parent, job.accessConstructor, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
 			
 			buildMethodReturnType = namePlusTypeParamsToTypeReference(parent.getTreeMaker(), parent, td.typarams);
 			job.typeParams = job.builderTypeParams = td.typarams;
@@ -464,7 +470,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (constructorExists(job.builderType) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), job.builderType, List.<JavacNode>nil(), false, annotationNode);
+			JCMethodDecl cd = HandleConstructor.createConstructor(job.accessConstructor, List.<JCAnnotation>nil(), job.builderType, List.<JavacNode>nil(), false, annotationNode);
 			if (cd != null) injectMethod(job.builderType, cd);
 		}
 		

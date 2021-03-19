@@ -153,6 +153,14 @@ public @interface Builder {
 	 * @return The builder class will be generated with this access modifier.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
+	
+	/**
+	 * Sets the access level of the generated builder's parameterless constructor. By default the generated constructor's access level is {@code package}
+	 * Note: This does nothing if you write your own builder constructor (we won't change its access level).
+	 * 
+	 * @return The builder's constructor will be generated with this access modifier.
+	 */
+	AccessLevel constructorAccess() default lombok.AccessLevel.PACKAGE;
 
 	/**
 	 * Prefix to prepend to 'set' methods in the generated builder class.  By default, generated methods do not include a prefix.
