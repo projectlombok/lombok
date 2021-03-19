@@ -278,7 +278,6 @@ public class PrettyPrinter extends JCTree.Visitor {
 		aligned = false;
 	}
 	
-	
 	private void println() {
 		try {
 			out.write(LINE_SEP);

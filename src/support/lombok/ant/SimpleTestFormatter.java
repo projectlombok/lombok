@@ -42,13 +42,15 @@ public class SimpleTestFormatter implements JUnitResultFormatter {
     }
 
     @Override
-    public void setSystemError(String err) {
-        // don't echo test error output
+    public void setSystemError(String msg) {
+        if (msg.trim().isEmpty()) return;
+        out.println(msg);
     }
 
     @Override
-    public void setSystemOutput(String out) {
-        // don't echo test output
+    public void setSystemOutput(String msg) {
+        if (msg.trim().isEmpty()) return;
+        out.println(msg);
     }
 
     @Override
