@@ -88,6 +88,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<classpath refid="cp.javac6" />
 			<classpath refid="packing.basedirs.path" />
 			<classpath location="build/tests" />
+			<classpath location="build/teststubs" />
 			<test name="lombok.TestJavac" />
 		</junit>
 	</target>
@@ -105,6 +106,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<classpath refid="cp.javac8" />
 			<classpath refid="packing.basedirs.path" />
 			<classpath location="build/tests" />
+			<classpath location="build/teststubs" />
 			<test name="lombok.TestJavac" />
 		</junit>
 	</target>

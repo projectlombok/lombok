@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ public class TestClassFileMetaData {
 	public void testGetClassName() {
 		assertTrue(foo.containsUtf8("Foo"));
 		assertEquals("Foo", foo.getClassName());
-
+		
 		assertTrue(bar.containsUtf8("Bar"));
 		assertEquals("Bar", bar.getClassName());
 		
@@ -68,15 +68,13 @@ public class TestClassFileMetaData {
 	public void testGetSuperClassName() {
 		assertTrue(foo.containsUtf8("java/lang/Object"));
 		assertEquals("java/lang/Object", foo.getSuperClassName());
-
+		
 		assertEquals("java/lang/Object", bar.getSuperClassName());
 		assertEquals("java/lang/Object", baz.getSuperClassName());
 		
 		assertEquals("java/util/ArrayList", buux.getSuperClassName());
 	}
 	
-	
-
 	@Test
 	public void testUsesClass() {
 		assertTrue(foo.usesClass("java/lang/System"));
@@ -185,6 +183,22 @@ public class TestClassFileMetaData {
 	static byte[] compile(File file) {
 		try {
 			JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+			if (compiler == null) {
+				// The 'auto-find my compiler' code in java6 works because it hard-codes `c.s.t.j.a.JavacTool`, which we put on the classpath.
+				// On java8, it fails, because it looks for tools.jar, which won't be there.
+				// on J11+ place it succeeds again, as we run those on the real JDKs.
+				
+				// Thus, let's try this, in cae we're on java 8:
+				
+				try {
+					compiler = (JavaCompiler) Class.forName("com.sun.tools.javac.api.JavacTool").getConstructor().newInstance();
+				} catch (Exception e) {
+					compiler = null;
+				}
+			}
+			
+			if (compiler == null) throw new RuntimeException("No javac tool is available in this distribution. Using an old JRE perhaps?");
+			
 			File tempDir = getTempDir();
 			tempDir.mkdirs();
 			List<String> options = Arrays.asList("-proc:none", "-d", tempDir.getAbsolutePath());
