@@ -126,8 +126,14 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.javacX version="11" />
 	</target>
 	
+	<!-- For non-LTS versions, feel free to aggressively update these to the current non-LTS openjdk version, and delete them once they roll out of the 6month window. -->
+	
 	<target name="test.javac14" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac14 as underlying compiler">
 		<test.javacX version="14" />
+	</target>
+	
+	<target name="test.javac16" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac16 as underlying compiler">
+		<test.javacX version="16" />
 	</target>
 	
 	<target name="test.javacCurrent" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using its javac as underlying compiler">
