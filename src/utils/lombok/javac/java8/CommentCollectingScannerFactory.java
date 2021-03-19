@@ -75,8 +75,24 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 	@SuppressWarnings("all")
 	@Override
 	public Scanner newScanner(CharSequence input, boolean keepDocComments) {
-		char[] array = input.toString().toCharArray();
-		return newScanner(array, array.length, keepDocComments);
+		char[] array;
+		int limit;
+		if (input instanceof CharBuffer && ((CharBuffer) input).hasArray()) {
+			CharBuffer cb = (CharBuffer) input;
+			cb.compact().flip();
+			array = cb.array();
+			limit = cb.limit();
+		} else {
+			array = input.toString().toCharArray();
+			limit = array.length;
+		}
+		if (array.length == limit) {
+			// work around a bug where the last comment in a file falls away in this case.
+			char[] d = new char[limit + 1];
+			System.arraycopy(array, 0, d, 0, limit);
+			array = d;
+		}
+		return newScanner(array, limit, keepDocComments);
 	}
 	
 	@Override
