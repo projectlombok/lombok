@@ -61,6 +61,7 @@ import lombok.Lombok;
 import lombok.javac.CommentCatcher;
 import lombok.javac.Javac;
 import lombok.javac.LombokOptions;
+import lombok.javac.apt.LombokProcessor;
 import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.Symtab;
@@ -314,6 +315,7 @@ public class Delombok {
 				}
 			}
 			
+			LombokProcessor.addOpensForLombok();
 			delombok.delombok();
 		} catch (Exception e) {
 			if (!args.quiet) {

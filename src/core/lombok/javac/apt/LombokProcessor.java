@@ -480,7 +480,7 @@ public class LombokProcessor extends AbstractProcessor {
 	}
 	
 	/** Useful from jdk9 and up; required from jdk16 and up. This code is supposed to gracefully do nothing on jdk8 and below, as this operation isn't needed there. */
-	private static void addOpensForLombok() {
+	public static void addOpensForLombok() {
 		Class<?> cModule;
 		try {
 			cModule = Class.forName("java.lang.Module");
