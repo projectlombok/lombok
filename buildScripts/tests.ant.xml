@@ -55,25 +55,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<echo>run ecj11 with a test file to confirm agent injection works: OK</echo>
 	</target>
 	
-	<property name="test.addopens.raw">
-		--add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
-		--add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
-		--add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
-		--add-opens jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED
-		--add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED
-		--add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
-		--add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-		--add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED
-	</property>
 	<property name="test.limitmodules">--limit-modules java.base,jdk.unsupported</property>
-	
-	<loadresource property="test.addopens">
-		<propertyresource name="test.addopens.raw" />
-		<filterchain><tokenfilter>
-			<filetokenizer />
-			<replaceregex pattern="\s+" replace=" " flags="g" />
-		</tokenfilter></filterchain>
-	</loadresource>
 	
 	<target name="test.javac6" depends="test.compile" description="runs the tests on your default VM, using javac6 as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with lowest supported javac: 1.6.</echo>
@@ -118,7 +100,6 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<echo>Running TestJavac with JVM ${jvm.loc.@{version}}.</echo>
 		
 			<junit haltonfailure="yes" fork="true" forkmode="once" jvm="${jvm.loc.@{version}}/bin/${exe.java}">
-				<jvmarg line="${test.addopens}" />
 				<formatter type="plain" usefile="false" unless="tests.quiet" />
 				<classpath refid="cp.test" />
 				<classpath refid="cp.stripe" />
@@ -141,7 +122,6 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	<target name="test.javacCurrent" depends="test.compile" description="runs the tests on your default VM, using its javac as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with the javac built into your VM distributon.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">
-			<jvmarg line="${test.addopens}" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="cp.test" />
 			<classpath refid="cp.stripe" />
@@ -160,7 +140,6 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 				<jvmarg value="-Xbootclasspath/a:${jdk8-rt.loc}" />
 				<jvmarg value="-Ddelombok.bootclasspath=${jdk8-rt.loc}" />
 				<jvmarg value="-javaagent:dist/lombok.jar" />
-				<jvmarg line="${test.addopens}" />
 				<formatter type="plain" usefile="false" unless="tests.quiet" />
 				<classpath refid="cp.test" />
 				<classpath refid="cp.stripe" />
