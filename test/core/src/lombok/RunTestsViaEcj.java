@@ -228,6 +228,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		}
 		if (new File("bin/main").exists()) classpath.add("bin/main");
 		classpath.add("dist/lombok.jar");
+		classpath.add("build/teststubs");
 		if (bootRuntimePath == null || bootRuntimePath.isEmpty()) throw new IllegalStateException("System property delombok.bootclasspath is not set; set it to the rt of java6 or java8");
 		classpath.add(bootRuntimePath);
 		for (File f : new File("lib/test").listFiles()) {
