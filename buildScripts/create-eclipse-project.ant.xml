@@ -53,7 +53,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			<settings>
 				<url url="https://projectlombok.org/downloads/lombok.eclipse.settings" />
 			</settings>
-			<apt location="build/spiProcessor.jar" />
+			<apt location="dist/spiProcessor.jar" />
 		</ivy:eclipsegen>
 	</target>
 	

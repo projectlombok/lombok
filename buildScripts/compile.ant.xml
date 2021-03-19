@@ -69,7 +69,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		</ivy:compile>
 		<mkdir dir="build/spiProcessor/META-INF/services" />
 		<echo file="build/spiProcessor/META-INF/services/javax.annotation.processing.Processor">lombok.spi.SpiProcessor</echo>
-		<jar destfile="build/spiProcessor.jar">
+		<jar destfile="dist/spiProcessor.jar">
 			<fileset dir="build/spiProcessor" />
 		</jar>
 	</target>
@@ -172,8 +172,8 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 			<classpath refid="cp.build" />
 			<classpath refid="cp.eclipse-oxygen" />
 			<classpath refid="cp.javac6" />
-			<classpath path="build/lombok-utils:build/lombok-utils6:build/lombok-main:build/spiProcessor.jar" />
-			<annotationProcessor jar="build/spiProcessor.jar" processor="lombok.spi.SpiProcessor" />
+			<classpath path="build/lombok-utils:build/lombok-utils6:build/lombok-main:dist/spiProcessor.jar" />
+			<annotationProcessor jar="dist/spiProcessor.jar" processor="lombok.spi.SpiProcessor" />
 		</ivy:compile>
 		
 		<!-- This is really part of the eclipse agent, but references lombok, so that had to be compiled first -->
