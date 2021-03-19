@@ -75,13 +75,7 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 	@SuppressWarnings("all")
 	@Override
 	public Scanner newScanner(CharSequence input, boolean keepDocComments) {
-		char[] array;
-		if (input instanceof CharBuffer && ((CharBuffer) input).hasArray()) {
-			// yes, the char[] cast is necessary
-			array = (char[]) ((CharBuffer) input).compact().flip().array();
-		} else {
-			array = input.toString().toCharArray();
-		}
+		char[] array = input.toString().toCharArray();
 		return newScanner(array, array.length, keepDocComments);
 	}
 	
