@@ -26,9 +26,10 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	
 	<target name="test.formatter.compile" depends="deps">
 		<mkdir dir="build/ant" />
-		<javac includeantruntime="true" srcdir="src/support" includes="**/SimpleTestFormatter.java" destdir="build/ant">
+		<ivy:compile ecj="true" srcdir="src/support" includes="**/SimpleTestFormatter.java" destdir="build/ant" source="1.6" target="1.6">
+			<classpath refid="cp.build" />
 			<classpath refid="cp.test" />
-		</javac>
+		</ivy:compile>
 	</target>
 	
 	<target name="test.compile" depends="deps, compile" description="compiles the tests" unless="skip.tests">
