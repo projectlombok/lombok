@@ -16,7 +16,7 @@ class ExtensionMethodFunctional {
 		test.consume(s -> System.out.println("1: " + s), s -> System.out.println("2: " + s));
 		test.consume(System.out::println, System.out::println);
 		
-		Stream.of("a", "b", "c").map(String::toUpperCase).toList();
+		Stream.of("a", "b", "c").map(String::toUpperCase).toList1();
 		List<Integer> i2 = Stream.of("a", "b", "c").map(String::toUpperCase).toList2();
 	}
 	
@@ -36,7 +36,7 @@ class ExtensionMethodFunctional {
 			}
 		}
 		
-		public static <T> List<T> toList(Stream<T> stream) {
+		public static <T> List<T> toList1(Stream<T> stream) {
 			return (List<T>) stream.collect(Collectors.toList());
 		}
 		

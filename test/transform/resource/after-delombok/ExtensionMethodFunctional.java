@@ -11,7 +11,7 @@ class ExtensionMethodFunctional {
 		test = ExtensionMethodFunctional.Extensions.map(test, s -> ExtensionMethodFunctional.Extensions.reverse(s));
 		ExtensionMethodFunctional.Extensions.consume(test, s -> System.out.println("1: " + s), s -> System.out.println("2: " + s));
 		ExtensionMethodFunctional.Extensions.consume(test, System.out::println, System.out::println);
-		ExtensionMethodFunctional.Extensions.toList(Stream.of("a", "b", "c").map(String::toUpperCase));
+		ExtensionMethodFunctional.Extensions.toList1(Stream.of("a", "b", "c").map(String::toUpperCase));
 		List<Integer> i2 = ExtensionMethodFunctional.Extensions.toList2(Stream.of("a", "b", "c").map(String::toUpperCase));
 	}
 
@@ -31,7 +31,7 @@ class ExtensionMethodFunctional {
 			}
 		}
 		
-		public static <T> List<T> toList(Stream<T> stream) {
+		public static <T> List<T> toList1(Stream<T> stream) {
 			return (List<T>) stream.collect(Collectors.toList());
 		}
 
