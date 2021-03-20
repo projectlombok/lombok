@@ -36,7 +36,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import lombok.core.LombokApp;
-import lombok.javac.apt.LombokProcessor;
 import lombok.permit.Permit;
 import lombok.spi.Provides;
 
@@ -174,7 +173,6 @@ public class DelombokApp extends LombokApp {
 	}
 	
 	private void runDirectly(List<String> args) {
-		LombokProcessor.addOpensForLombok();
 		Delombok.main(args.toArray(new String[0]));
 	}
 	
