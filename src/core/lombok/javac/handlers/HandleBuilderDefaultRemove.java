@@ -35,7 +35,7 @@ import lombok.javac.JavacNode;
 import lombok.spi.Provides;
 
 @Provides
-@HandlerPriority(65536)
+@HandlerPriority(32768)
 @AlreadyHandledAnnotations
 public class HandleBuilderDefaultRemove extends JavacAnnotationHandler<Builder.Default> {
 	@Override public void handle(AnnotationValues<Default> annotation, JCAnnotation ast, JavacNode annotationNode) {

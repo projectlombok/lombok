@@ -34,7 +34,7 @@ import lombok.javac.JavacNode;
 import lombok.spi.Provides;
 
 @Provides
-@HandlerPriority(65536)
+@HandlerPriority(32768)
 @AlreadyHandledAnnotations
 public class HandleSuperBuilderRemove extends JavacAnnotationHandler<SuperBuilder> {
 	@Override public void handle(AnnotationValues<SuperBuilder> annotation, JCAnnotation ast, JavacNode annotationNode) {
