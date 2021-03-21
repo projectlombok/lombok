@@ -168,6 +168,10 @@ public class Delombok {
 		private boolean help;
 	}
 	
+	static {
+		LombokProcessor.addOpensForLombok();
+	}
+	
 	private static String indentAndWordbreak(String in, int indent, int maxLen) {
 		StringBuilder out = new StringBuilder();
 		StringBuilder line = new StringBuilder();
@@ -315,7 +319,6 @@ public class Delombok {
 				}
 			}
 			
-			LombokProcessor.addOpensForLombok();
 			delombok.delombok();
 		} catch (Exception e) {
 			if (!args.quiet) {

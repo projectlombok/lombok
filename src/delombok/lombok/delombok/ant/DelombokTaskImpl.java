@@ -30,7 +30,6 @@ import java.util.List;
 
 import lombok.delombok.Delombok;
 import lombok.delombok.Delombok.InvalidFormatOptionException;
-import lombok.javac.apt.LombokProcessor;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Location;
@@ -46,10 +45,6 @@ public class DelombokTaskImpl {
 	private String encoding;
 	private Path path;
 	private List<String> formatOptions = new ArrayList<String>();
-	
-	static {
-		LombokProcessor.addOpensForLombok();
-	}
 	
 	public void execute(Location location) throws BuildException {
 		if (fromDir == null && path == null) throw new BuildException("Either 'from' attribute, or nested <fileset> tags are required.");

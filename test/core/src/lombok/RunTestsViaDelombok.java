@@ -62,14 +62,9 @@ import lombok.delombok.Delombok;
 import lombok.javac.CapturingDiagnosticListener;
 import lombok.javac.Javac;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
-import lombok.javac.apt.LombokProcessor;
 
 public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
-	
-	static {
-		LombokProcessor.addOpensForLombok();
-	}
 	
 	@Override
 	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version, boolean checkPositions) throws Throwable {
