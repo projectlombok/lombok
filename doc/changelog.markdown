@@ -4,7 +4,9 @@ Lombok Changelog
 ### v1.18.19 "Edgy Guinea Pig"
 * PLATFORM: JDK16 support added. [Issue #2681](https://github.com/mplushnikov/lombok-intellij-plugin/issues/2681).
 * BUGFIX: Trying to use a lambda expression as parameter to an `@ExtensionMethod` did not work. [Issue #2741](https://github.com/rzwitserloot/lombok/issues/2741). (by __@Rawi01__).
-* POTENTIAL BUGFIX: lombok + errorprone could cause `IllegalArgumentException` if using the `MissingSummay` bug pattern. [Issue #2730](https://github.com/rzwitserloot/lombok/issues/2612).
+* BUGFIX: `@SuperBuilder` with an existing constructor caused issues in eclipse. [Issue #2704](https://github.com/rzwitserloot/lombok/issues/2704). (by [@JanRieke](https://github.com/rzwitserloot/lombok/pull/2770)).
+* BUGFIX: Using `@SuperBuilder` with a handwritten builder class caused issues. [Issue #2701](https://github.com/rzwitserloot/lombok/issues/2701). (by [@JanRieke](https://github.com/rzwitserloot/lombok/pull/2772)).
+* POTENTIAL BUGFIX: lombok + errorprone could cause `IllegalArgumentException` if using the `MissingSummary` bug pattern. [Issue #2730](https://github.com/rzwitserloot/lombok/issues/2730).
 
 ### v1.18.18 (January 28th, 2021)
 * BUGFIX: Various tools using ecj under the hood (including intellij) could cause corrupt class files to be generated. [PR #2637](https://github.com/rzwitserloot/lombok/pull/2637), [lombok-intellij-plugin issue #969](https://github.com/mplushnikov/lombok-intellij-plugin/issues/969).
