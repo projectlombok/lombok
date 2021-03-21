@@ -4,17 +4,17 @@ import java.util.Map;
 
 public class ValExample {
 	public String example() {
-		final ArrayList<String> example = new ArrayList<String>();
+		final ArrayList<String> example = new ArrayList<>();
 		example.add("Hello, World!");
 		final String foo = example.get(0);
 		return foo.toLowerCase();
 	}
 	
 	public void example2() {
-		final HashMap<Integer, String> map = new HashMap<Integer, String>();
+		final HashMap<Integer, String> map = new HashMap<>();
 		map.put(0, "zero");
 		map.put(5, "five");
-		for (final Map.Entry<Integer, String> entry : map.entrySet()) {
+		for (final Map.Entry<> entry : map.entrySet()) {
 			System.out.printf("%d: %s\n", entry.getKey(), entry.getValue());
 		}
 	}
