@@ -302,7 +302,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				if (sd == null) continue;
 				JavacSingularizer singularizer = sd.getSingularizer();
 				if (singularizer == null) continue;
-				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(job.builderType, sd)) {
+				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(job.builderAbstractType, sd)) {
 					bfd.singularData = null;
 				}
 			}
