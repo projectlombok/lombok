@@ -1,5 +1,5 @@
 public @lombok.experimental.SuperBuilder class SuperBuilderWithExistingConstructor {
-  public static abstract @java.lang.SuppressWarnings("all") class SuperBuilderWithExistingConstructor<C extends SuperBuilderWithExistingConstructor, B extends SuperBuilderWithExistingConstructor.SuperBuilderWithExistingConstructorBuilder<C, B>> {
+  public static abstract @java.lang.SuppressWarnings("all") class SuperBuilderWithExistingConstructorBuilder<C extends SuperBuilderWithExistingConstructor, B extends SuperBuilderWithExistingConstructor.SuperBuilderWithExistingConstructorBuilder<C, B>> {
     public SuperBuilderWithExistingConstructorBuilder() {
       super();
     }
