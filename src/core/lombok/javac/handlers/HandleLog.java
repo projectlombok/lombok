@@ -31,6 +31,7 @@ import lombok.core.configuration.IdentifierName;
 import lombok.core.configuration.LogDeclaration;
 import lombok.core.configuration.LogDeclaration.LogFactoryParameter;
 import lombok.core.handlers.LoggingFramework;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -74,9 +75,14 @@ public class HandleLog {
 				return;
 			}
 			
+			if (isRecord(typeNode) && !useStatic) {
+				annotationNode.addError("Logger fields must be static in records.");
+				return;
+			}
+			
 			Object valueGuess = annotation.getValueGuess("topic");
 			JCExpression loggerTopic = (JCExpression) annotation.getActualExpression("topic");
-
+			
 			if (valueGuess instanceof String && ((String) valueGuess).trim().isEmpty()) loggerTopic = null;
 			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
 				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");
@@ -118,7 +124,14 @@ public class HandleLog {
 			maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
 			typeNode.toName(logFieldName), loggerType, factoryMethodCall), source);
 		
-		injectFieldAndMarkGenerated(typeNode, fieldDecl);
+		if (isRecord(typeNode) && Javac.getJavaCompilerVersion() < 16) {
+			// This is a workaround for https://bugs.openjdk.java.net/browse/JDK-8243057
+			
+			injectField(typeNode, fieldDecl);
+		} else {
+			injectFieldAndMarkGenerated(typeNode, fieldDecl);
+		}
+		
 		return true;
 	}
 	

@@ -75,6 +75,12 @@ public class Javac {
 	
 	private static final AtomicInteger compilerVersion = new AtomicInteger(-1);
 	
+	/* This section includes flags that would ordinarily be in Flags, but which are 'too new' (we don't compile against older versions of javac for compatibility). */
+	public static final long RECORD = 1L << 61; // ClassSymbols, MethodSymbols, VarSymbols (Marks types as being records, as well as the 'fields' in the compact declaration, and the canonical constructor)
+	public static final long COMPACT_RECORD_CONSTRUCTOR = 1L << 51; // MethodSymbols (the 'implicit' many-args constructor that records have)
+	public static final long UNINITIALIZED_FIELD = 1L << 51; // VarSymbols (To identify fields that the compact record constructor won't initialize)
+	public static final long GENERATED_MEMBER = 1L << 24; // MethodSymbols, VarSymbols (marks methods and the constructor generated in records)
+	
 	/**
 	 * Returns the version of this java compiler, i.e. the JDK that it shipped in. For example, for javac v1.7, this returns {@code 7}.
 	 */

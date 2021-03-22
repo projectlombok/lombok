@@ -95,9 +95,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.EQUALS_AND_HASH_CODE_DO_NOT_USE_GETTERS);
 		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
 		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
-
+		
 		boolean cacheHashCode = ann.cacheStrategy() == CacheStrategy.LAZY;
-
+		
 		generateMethods(typeNode, annotationNode, members, callSuper, true, cacheHashCode, fieldAccess, onParam);
 	}
 	
@@ -118,13 +118,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	public void generateMethods(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, EqualsAndHashCode.Include>> members,
 		Boolean callSuper, boolean whineIfExists, boolean cacheHashCode, FieldAccess fieldAccess, List<JCAnnotation> onParam) {
 		
-		boolean notAClass = true;
-		if (typeNode.get() instanceof JCClassDecl) {
-			long flags = ((JCClassDecl) typeNode.get()).mods.flags;
-			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-		}
-		
-		if (notAClass) {
+		if (!isClass(typeNode)) {
 			source.addError("@EqualsAndHashCode is only supported on a class.");
 			return;
 		}

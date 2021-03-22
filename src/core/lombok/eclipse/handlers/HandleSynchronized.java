@@ -148,6 +148,11 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 			return;
 		}
 		
+		EclipseNode typeNode = upToTypeNode(annotationNode);
+		if (!isClassOrEnum(typeNode)) {
+			annotationNode.addError("@Synchronized is legal only on methods in classes and enums.");
+			return;
+		}
 		boolean[] isStatic = { method.isStatic() };
 		char[] lockName = createLockField(annotation, annotationNode, isStatic, true);
 		if (lockName == null) return;
@@ -163,7 +168,6 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		
 		Expression lockVariable;
 		if (isStatic[0]) {
-			EclipseNode typeNode = upToTypeNode(annotationNode);
 			char[][] n = getQualifiedInnerName(typeNode, lockName);
 			long[] ps = new long[n.length];
 			Arrays.fill(ps, pos);

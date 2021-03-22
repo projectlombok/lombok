@@ -194,12 +194,7 @@ public class HandleConstructor {
 	}
 	
 	static boolean checkLegality(EclipseNode typeNode, EclipseNode errorNode, String name) {
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
-		
-		if (typeDecl == null || notAClass) {
+		if (!isClassOrEnum(typeNode)) {
 			errorNode.addError(name + " is only supported on a class or an enum.");
 			return false;
 		}

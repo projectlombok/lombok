@@ -159,14 +159,15 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		List<JCExpression> superclassTypeParams = List.nil();
 		boolean addCleaning = false;
 		
-		if (!(parent.get() instanceof JCClassDecl)) {
-			annotationNode.addError("@SuperBuilder is only supported on types.");
+		if (!isClass(parent)) {
+			annotationNode.addError("@SuperBuilder is only supported on classes.");
 			return;
 		}
 		
-		// Gather all fields of the class that should be set by the builder.
 		job.parentType = parent;
 		JCClassDecl td = (JCClassDecl) parent.get();
+		
+		// Gather all fields of the class that should be set by the builder.
 		ArrayList<JavacNode> nonFinalNonDefaultedFields = null;
 		
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));

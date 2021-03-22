@@ -51,9 +51,8 @@ public class HandleData extends JavacAnnotationHandler<Data> {
 		
 		deleteAnnotationIfNeccessary(annotationNode, Data.class);
 		JavacNode typeNode = annotationNode.up();
-		boolean notAClass = !isClass(typeNode);
 		
-		if (notAClass) {
+		if (!isClass(typeNode)) {
 			annotationNode.addError("@Data is only supported on a class.");
 			return;
 		}

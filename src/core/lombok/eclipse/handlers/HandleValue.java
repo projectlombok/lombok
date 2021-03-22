@@ -59,16 +59,11 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		Value ann = annotation.getInstance();
 		EclipseNode typeNode = annotationNode.up();
 		
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
-		
-		if (typeDecl == null || notAClass) {
+		if (!isClass(typeNode)) {
 			annotationNode.addError("@Value is only supported on a class.");
 			return;
 		}
+		TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
 		
 		// Make class final.
 		if (!hasAnnotation(NonFinal.class, typeNode)) {

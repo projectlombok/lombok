@@ -56,12 +56,7 @@ public class HandleFieldDefaults extends JavacASTAdapter {
 			}
 		}
 		
-		JCClassDecl typeDecl = null;
-		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
-		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
-		
-		if (typeDecl == null || notAClass) {
+		if (!isClassOrEnum(typeNode)) {
 			errorNode.addError("@FieldDefaults is only supported on a class or an enum.");
 			return false;
 		}

@@ -81,6 +81,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 @Provides
 public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
+	private static final String GETTER_NODE_NOT_SUPPORTED_ERR = "@Getter is only supported on a class, an enum, or a field.";
 
 	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter, List<Annotation> onMethod) {
 		if (checkForTypeLevelGetter) {
@@ -90,14 +91,8 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			}
 		}
 		
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
-		
-		if (typeDecl == null || notAClass) {
-			pos.addError("@Getter is only supported on a class, an enum, or a field.");
+		if (!isClassOrEnum(typeNode)) {
+			pos.addError(GETTER_NODE_NOT_SUPPORTED_ERR);
 			return false;
 		}
 		
@@ -171,8 +166,9 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	
 	public void createGetterForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
+		
 		if (fieldNode.getKind() != Kind.FIELD) {
-			errorNode.addError("@Getter is only supported on a class or a field.");
+			errorNode.addError(GETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
 		

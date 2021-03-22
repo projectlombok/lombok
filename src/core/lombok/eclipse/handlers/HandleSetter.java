@@ -63,6 +63,8 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
  */
 @Provides
 public class HandleSetter extends EclipseAnnotationHandler<Setter> {
+	private static final String SETTER_NODE_NOT_SUPPORTED_ERR = "@Setter is only supported on a class or a field.";
+	
 	public boolean generateSetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelSetter, List<Annotation> onMethod, List<Annotation> onParam) {
 		if (checkForTypeLevelSetter) {
 			if (hasAnnotation(Setter.class, typeNode)) {
@@ -71,14 +73,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			}
 		}
 		
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
-		
-		if (typeDecl == null || notAClass) {
-			pos.addError("@Setter is only supported on a class or a field.");
+		if (!isClass(typeNode)) {
+			pos.addError(SETTER_NODE_NOT_SUPPORTED_ERR);
 			return false;
 		}
 		
@@ -148,7 +144,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		ASTNode source = sourceNode.get();
 		if (fieldNode.getKind() != Kind.FIELD) {
-			sourceNode.addError("@Setter is only supported on a class or a field.");
+			sourceNode.addError(SETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
 		

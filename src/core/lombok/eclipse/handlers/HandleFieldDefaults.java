@@ -63,13 +63,7 @@ public class HandleFieldDefaults extends EclipseASTAdapter {
 			}
 		}
 		
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
-		
-		if (typeDecl == null || notAClass) {
+		if (!isClassOrEnum(typeNode)) {
 			pos.addError("@FieldDefaults is only supported on a class or an enum.");
 			return false;
 		}

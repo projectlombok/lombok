@@ -51,7 +51,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCIf;
@@ -72,6 +71,8 @@ import com.sun.tools.javac.util.Name;
  */
 @Provides
 public class HandleGetter extends JavacAnnotationHandler<Getter> {
+	private static final String GETTER_NODE_NOT_SUPPORTED_ERR = "@Getter is only supported on a class, an enum, or a field.";
+	
 	public void generateGetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelGetter, List<JCAnnotation> onMethod) {
 		if (checkForTypeLevelGetter) {
 			if (hasAnnotation(Getter.class, typeNode)) {
@@ -80,13 +81,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			}
 		}
 		
-		JCClassDecl typeDecl = null;
-		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
-		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
-		
-		if (typeDecl == null || notAClass) {
-			errorNode.addError("@Getter is only supported on a class, an enum, or a field.");
+		if (!isClassOrEnum(typeNode)) {
+			errorNode.addError(GETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
 		
@@ -170,7 +166,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			JavacNode fieldNode, JavacNode source, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
 		
 		if (fieldNode.getKind() != Kind.FIELD) {
-			source.addError("@Getter is only supported on a class or a field.");
+			source.addError(GETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
 		

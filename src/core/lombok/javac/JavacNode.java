@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -183,16 +183,6 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		//Static and instance initializers
 		if (node instanceof JCBlock) return parent instanceof JCClassDecl;
 		
-		return false;
-	}
-	
-	@Override protected boolean fieldContainsAnnotation(JCTree field, JCTree annotation) {
-		if (!(field instanceof JCVariableDecl)) return false;
-		JCVariableDecl f = (JCVariableDecl) field;
-		if (f.mods.annotations == null) return false;
-		for (JCAnnotation childAnnotation : f.mods.annotations) {
-			if (childAnnotation == annotation) return true;
-		}
 		return false;
 	}
 	

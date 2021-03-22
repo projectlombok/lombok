@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020 The Project Lombok Authors.
+ * Copyright (C) 2016-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -514,10 +514,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 		boolean isInterface = (tree.mods.flags & INTERFACE) != 0;
 		boolean isAnnotationInterface = isInterface && (tree.mods.flags & ANNOTATION) != 0;
 		boolean isEnum = (tree.mods.flags & ENUM) != 0;
+		boolean isRecord = (tree.mods.flags & RECORD) != 0;
 		
 		if (isAnnotationInterface) print("@interface ");
 		else if (isInterface) print("interface ");
 		else if (isEnum) print("enum ");
+		else if (isRecord) print("record ");
 		else print("class ");
 		
 		print(tree.name);
@@ -540,6 +542,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(tree.implementing, ", ");
 		}
 		
+		if (isRecord) printRecordConstructor(tree.defs);
+		
 		println(" {");
 		indent++;
 		printClassMembers(tree.defs, isEnum, isInterface);
@@ -547,6 +551,23 @@ public class PrettyPrinter extends JCTree.Visitor {
 		indent--;
 		aPrintln("}", tree);
 		currentTypeName = prevTypeName;
+	}
+	
+	private void printRecordConstructor(List<JCTree> members) {
+		boolean first = true;
+		print("(");
+		for (JCTree member : members) {
+			if (member instanceof JCVariableDecl) {
+			JCVariableDecl variableDecl = (JCVariableDecl) member;
+				if ((variableDecl.mods.flags & GENERATED_MEMBER) != 0) {
+					if (!first) print(", ");
+					first = false;
+					printAnnotations(variableDecl.mods.annotations, false);
+					printVarDef0(variableDecl);
+				}
+			}
+		}
+		print(")");
 	}
 	
 	private void printClassMembers(List<JCTree> members, boolean isEnum, boolean isInterface) {
@@ -578,6 +599,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 				JCTree init = ((JCVariableDecl) member).init;
 				typeOfPrevEnumMember = init instanceof JCNewClass && ((JCNewClass) init).def != null ? 2 : 1;
 			} else if (member instanceof JCVariableDecl) {
+				if ((((JCVariableDecl) member).mods.flags & GENERATED_MEMBER) != 0) continue;
 				if (prefType != null && prefType != JCVariableDecl.class) println();
 				if (isInterface) flagMod = -1L & ~(PUBLIC | STATIC | FINAL);
 				print(member);

@@ -125,7 +125,6 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 	@Override public void handle(AnnotationValues<WithBy> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.WITHBY_FLAG_USAGE, "@WithBy");
 		
-		Collection<JavacNode> fields = annotationNode.upFromAnnotationToFields();
 		deleteAnnotationIfNeccessary(annotationNode, WithBy.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 		JavacNode node = annotationNode.up();
@@ -137,7 +136,7 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createWithByForFields(level, fields, annotationNode, true, onMethod);
+			createWithByForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod);
 			break;
 		case TYPE:
 			if (!onMethod.isEmpty()) annotationNode.addError("'onMethod' is not supported for @WithBy on a type.");

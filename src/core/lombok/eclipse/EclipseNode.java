@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -141,16 +141,6 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 		default:
 			throw new AssertionError("Unexpected kind during node traversal: " + getKind());
 		}
-	}
-	
-	@Override protected boolean fieldContainsAnnotation(ASTNode field, ASTNode annotation) {
-		if (!(field instanceof FieldDeclaration)) return false;
-		FieldDeclaration f = (FieldDeclaration) field;
-		if (f.annotations == null) return false;
-		for (Annotation childAnnotation : f.annotations) {
-			if (childAnnotation == annotation) return true;
-		}
-		return false;
 	}
 	
 	/** {@inheritDoc} */

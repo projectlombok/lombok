@@ -180,10 +180,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		List<EclipseNode> nonFinalNonDefaultedFields = null;
 		
-		if (!(parent.get() instanceof TypeDeclaration)) {
-			annotationNode.addError("@SuperBuilder is only supported on types.");
+		if (!isClass(parent)) {
+			annotationNode.addError("@SuperBuilder is only supported on classes.");
 			return;
 		}
+		
 		job.parentType = parent;
 		TypeDeclaration td = (TypeDeclaration) parent.get();
 		

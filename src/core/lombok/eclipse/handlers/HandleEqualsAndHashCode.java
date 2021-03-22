@@ -144,18 +144,12 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	public void generateMethods(EclipseNode typeNode, EclipseNode errorNode, List<Included<EclipseNode, EqualsAndHashCode.Include>> members,
 		Boolean callSuper, boolean whineIfExists, boolean cacheHashCode, FieldAccess fieldAccess, List<Annotation> onParam) {
 		
-		TypeDeclaration typeDecl = null;
-		
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
-		
-		if (typeDecl == null || notAClass) {
+		if (!isClass(typeNode)) {
 			errorNode.addError("@EqualsAndHashCode is only supported on a class.");
 			return;
 		}
 		
+		TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
 		boolean implicitCallSuper = callSuper == null;
 		
 		if (callSuper == null) {

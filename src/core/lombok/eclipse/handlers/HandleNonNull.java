@@ -26,6 +26,7 @@ import static lombok.eclipse.Eclipse.isPrimitive;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -47,18 +48,19 @@ import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
+import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.NonNull;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.eclipse.DeferUntilPostDiet;
+import lombok.eclipse.EcjAugments;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.spi.Provides;
 
-@DeferUntilPostDiet
 @Provides
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
@@ -66,6 +68,7 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	private static final char[] CHECK_NOT_NULL = "checkNotNull".toCharArray();
 	
 	public static final HandleNonNull INSTANCE = new HandleNonNull();
+	private HandleConstructor handleConstructor = new HandleConstructor();
 	
 	public void fix(EclipseNode method) {
 		for (EclipseNode m : method.down()) {
@@ -81,6 +84,17 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	}
 	
 	@Override public void handle(AnnotationValues<NonNull> annotation, Annotation ast, EclipseNode annotationNode) {
+		// Generating new methods is only possible during diet parse but modifying existing methods requires a full parse.
+		// As we need both for @NonNull we reset the handled flag during diet parse.
+		if (!annotationNode.isCompleteParse()) {
+			EclipseNode typeNode = upToTypeNode(annotationNode);
+			if (isRecordField(annotationNode.up()) && !lombokConstructorExists(typeNode)) {
+				handleConstructor.generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, null, SkipIfConstructorExists.NO, Collections.<Annotation>emptyList(), annotationNode);
+			}
+			EcjAugments.ASTNode_handled.clear(ast);
+			return;
+		}
+		
 		handle0(ast, annotationNode, false);
 	}
 	

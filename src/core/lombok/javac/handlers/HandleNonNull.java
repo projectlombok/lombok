@@ -49,6 +49,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
+import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.NonNull;
 import lombok.core.AST.Kind;
@@ -56,11 +57,14 @@ import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.spi.Provides;
 
 @Provides
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
+	private HandleConstructor handleConstructor = new HandleConstructor();
+	
 	@Override public void handle(AnnotationValues<NonNull> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.NON_NULL_FLAG_USAGE, "@NonNull");
 		
@@ -121,6 +125,14 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		List<JCStatement> statements = declaration.body.stats;
 		
 		String expectedName = paramNode.getName();
+		
+		JavacNode typeNode = upToTypeNode(annotationNode);
+		
+		if ((declaration.mods.flags & RECORD) != 0) {
+			if (!lombokConstructorExists(typeNode)) {
+				handleConstructor.generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, null, SkipIfConstructorExists.NO, annotationNode);
+			}
+		}
 		
 		/* Abort if the null check is already there, delving into try and synchronized statements */ {
 			List<JCStatement> stats = statements;

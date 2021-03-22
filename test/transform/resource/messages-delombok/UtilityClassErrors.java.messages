@@ -1,4 +1,4 @@
 4 @UtilityClasses cannot have declared constructors.
 7 @UtilityClass cannot be placed on a method local or anonymous inner class, or any class nested in such a class.
-12 @UtilityClass is only supported on a class (can't be an interface, enum, or annotation).
+12 @UtilityClass is only supported on a class.
 17 @UtilityClass automatically makes the class static, however, this class cannot be made static.

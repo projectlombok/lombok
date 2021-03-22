@@ -52,7 +52,7 @@ import lombok.spi.Provides;
 
 public class HandleLog {
 	private static final IdentifierName LOG = IdentifierName.valueOf("log");
-
+	
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
@@ -82,10 +82,15 @@ public class HandleLog {
 				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
-
+			
+			if (isRecord(owner) && !useStatic) {
+				annotationNode.addError("Logger fields must be static in records.");
+				return;
+			}
+			
 			Object valueGuess = annotation.getValueGuess("topic");
 			Expression loggerTopic = (Expression) annotation.getActualExpression("topic");
-
+			
 			if (valueGuess instanceof String && ((String) valueGuess).trim().isEmpty()) loggerTopic = null;
 			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
 				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");

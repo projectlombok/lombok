@@ -192,6 +192,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	@Override public void handle(AnnotationValues<Builder> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		final String BUILDER_NODE_NOT_SUPPORTED_ERR = "@Builder is only supported on classes, records, constructors, and methods.";
+		
 		handleFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
 		BuilderJob job = new BuilderJob();
 		job.sourceNode = annotationNode;
@@ -229,6 +231,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		ArrayList<JavacNode> nonFinalNonDefaultedFields = null;
 		
 		if (parent.get() instanceof JCClassDecl) {
+			if (!isClass(parent) && !isRecord(parent)) {
+				annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
+				return;
+			}
+			
 			job.parentType = parent;
 			JCClassDecl td = (JCClassDecl) parent.get();
 			
@@ -279,7 +286,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				allFields.append(fieldNode);
 			}
 			
-			handleConstructor.generateConstructor(parent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+			if (!isRecord(parent)) {
+				// Records ship with a canonical constructor that acts as @AllArgsConstructor - just use that one.
+				
+				handleConstructor.generateConstructor(parent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+			}
 			
 			buildMethodReturnType = namePlusTypeParamsToTypeReference(parent.getTreeMaker(), parent, td.typarams);
 			job.typeParams = job.builderTypeParams = td.typarams;
@@ -387,7 +398,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				}
 			}
 		} else {
-			annotationNode.addError("@Builder is only supported on types, constructors, and methods.");
+			annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
 		

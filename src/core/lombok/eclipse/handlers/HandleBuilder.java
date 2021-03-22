@@ -253,6 +253,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	@Override public void handle(AnnotationValues<Builder> annotation, Annotation ast, EclipseNode annotationNode) {
+		final String BUILDER_NODE_NOT_SUPPORTED_ERR = "@Builder is only supported on classes, records, constructors, and methods.";
+		
 		handleFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
 		BuilderJob job = new BuilderJob();
 		job.sourceNode = annotationNode;
@@ -288,6 +290,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		List<EclipseNode> nonFinalNonDefaultedFields = null;
 		
 		if (parent.get() instanceof TypeDeclaration) {
+			if (!isClass(parent) && !isRecord(parent)) {
+				annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
+				return;
+			}
+			
 			job.parentType = parent;
 			TypeDeclaration td = (TypeDeclaration) parent.get();
 			
@@ -336,8 +343,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				allFields.add(fieldNode);
 			}
 			
-			handleConstructor.generateConstructor(parent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
-				Collections.<Annotation>emptyList(), annotationNode);
+			if (!isRecord(parent)) {
+				// Records ship with a canonical constructor that acts as @AllArgsConstructor - just use that one.
+				
+				handleConstructor.generateConstructor(parent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
+					Collections.<Annotation>emptyList(), annotationNode);
+			}
 			
 			job.typeParams = job.builderTypeParams = td.typeParameters;
 			buildMethodReturnType = job.createBuilderParentTypeReference();
@@ -446,7 +457,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 			}
 		} else {
-			annotationNode.addError("@Builder is only supported on types, constructors, and methods.");
+			annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
 		

@@ -61,6 +61,8 @@ import com.sun.tools.javac.util.Name;
  */
 @Provides
 public class HandleSetter extends JavacAnnotationHandler<Setter> {
+	private static final String SETTER_NODE_NOT_SUPPORTED_ERR = "@Setter is only supported on a class or a field.";
+	
 	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (checkForTypeLevelSetter) {
 			if (hasAnnotation(Setter.class, typeNode)) {
@@ -69,13 +71,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			}
 		}
 		
-		JCClassDecl typeDecl = null;
-		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
-		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-		
-		if (typeDecl == null || notAClass) {
-			errorNode.addError("@Setter is only supported on a class or a field.");
+		if (!isClass(typeNode)) {
+			errorNode.addError(SETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
 		
@@ -149,7 +146,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	
 	public void createSetterForField(AccessLevel level, JavacNode fieldNode, JavacNode sourceNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (fieldNode.getKind() != Kind.FIELD) {
-			fieldNode.addError("@Setter is only supported on a class or a field.");
+			fieldNode.addError(SETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
 		

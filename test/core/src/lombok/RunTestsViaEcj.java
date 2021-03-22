@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,6 +85,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportIndirectStaticAccess, "warning");
 		warnings.put(CompilerOptions.OPTION_ReportNonStaticAccessToStatic, "warning");
+		warnings.put("org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures", "enabled");
+		warnings.put("org.eclipse.jdt.core.compiler.problem.reportPreviewFeatures", "ignore");
 		int ecjVersion = Eclipse.getEcjCompilerVersion();
 		warnings.put(CompilerOptions.OPTION_Source, (ecjVersion < 9 ? "1." : "") + ecjVersion);
 		options.set(warnings);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,11 @@ public class Eclipse {
 	 * any method, field, or initializer you create!
 	 */
 	public static final int ECLIPSE_DO_NOT_TOUCH_FLAG = ASTNode.Bit24;
+	
+	/* This section includes flags that would ordinarily be in ClassFileConstants, but which are 'too new' (we don't compile against older versions of ecj/eclipse for compatibility). */
+	public static final int AccRecord = ASTNode.Bit25;
+	public static final int IsCanonicalConstructor = ASTNode.Bit10; // For record declarations, and presumably later on any constructor matching the destructor.
+	public static final int IsImplicit = ASTNode.Bit11; // the generated statements in the compact constructor of a record.
 	
 	private static final Pattern SPLIT_AT_DOT = Pattern.compile("\\.");
 	
@@ -239,9 +244,14 @@ public class Eclipse {
 		
 		for (Field f : CompilerOptions.class.getDeclaredFields()) {
 			try {
-				if (f.getName().startsWith("VERSION_1_")) {
-					ecjCompilerVersionCached = Math.max(ecjCompilerVersionCached, Integer.parseInt(f.getName().substring("VERSION_1_".length())));
-				}
+				String fName = f.getName();
+				String versionNumber = null;
+				if (fName.startsWith("VERSION_1_")) {
+					versionNumber = fName.substring("VERSION_1_".length());
+				} else if (fName.startsWith("VERSION_")) {
+					versionNumber = fName.substring("VERSION_".length());
+				} else continue;
+				ecjCompilerVersionCached = Math.max(ecjCompilerVersionCached, Integer.parseInt(versionNumber));
 			} catch (Exception ignore) {}
 		}
 		
