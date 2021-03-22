@@ -132,7 +132,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		ASTNode source;
 		EclipseNode sourceNode;
 		List<BuilderFieldData> builderFields;
-		AccessLevel accessInners, accessOuters;
+		AccessLevel accessInners, accessOuters, accessConstructor;
 		boolean oldFluent, oldChain, toBuilder;
 		
 		EclipseNode builderType;
@@ -176,6 +176,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				accessOuters = AccessLevel.PUBLIC;
 			}
 			accessInners = accessOuters == AccessLevel.PROTECTED ? AccessLevel.PUBLIC : accessOuters;
+			accessConstructor = ann.constructorAccess();
+			if (accessConstructor == null) accessConstructor = AccessLevel.PACKAGE;
+			if (accessConstructor == AccessLevel.NONE) {
+				sourceNode.addError("AccessLevel.NONE is not valid for constructor");
+				accessConstructor = AccessLevel.PACKAGE;
+			}
 			
 			// These exist just to support the 'old' lombok.experimental.Builder, which had these properties. lombok.Builder no longer has them.
 			oldFluent = toBoolean(annValues.getActualExpression("fluent"), true);
@@ -336,7 +342,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				allFields.add(fieldNode);
 			}
 			
-			handleConstructor.generateConstructor(parent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
+			handleConstructor.generateConstructor(parent, job.accessConstructor, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
 				Collections.<Annotation>emptyList(), annotationNode);
 			
 			job.typeParams = job.builderTypeParams = td.typeParameters;
@@ -526,7 +532,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		if (constructorExists(job.builderType) == MemberExistsResult.NOT_EXISTS) {
 			ConstructorDeclaration cd = HandleConstructor.createConstructor(
-				AccessLevel.PACKAGE, job.builderType, Collections.<EclipseNode>emptyList(), false,
+				job.accessConstructor, job.builderType, Collections.<EclipseNode>emptyList(), false,
 				annotationNode, Collections.<Annotation>emptyList());
 			if (cd != null) injectMethod(job.builderType, cd);
 		}
