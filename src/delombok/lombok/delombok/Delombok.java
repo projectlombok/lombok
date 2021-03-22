@@ -60,6 +60,7 @@ import javax.tools.JavaFileObject;
 import lombok.Lombok;
 import lombok.javac.CommentCatcher;
 import lombok.javac.Javac;
+import lombok.javac.JavacAugments;
 import lombok.javac.LombokOptions;
 import lombok.javac.apt.LombokProcessor;
 import lombok.permit.Permit;
@@ -69,8 +70,11 @@ import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.file.BaseFileManager;
 import com.sun.tools.javac.main.Arguments;
 import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.ListBuffer;
 import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
 import com.zwitserloot.cmdreader.Excludes;
@@ -795,6 +799,16 @@ public class Delombok {
 				if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), "unchanged (skipped)");
 				continue;
 			}
+			ListBuffer<JCTree> newDefs = new ListBuffer<JCTree>();
+			for (JCTree def : unit.defs) {
+				if (def instanceof JCImport) {
+					Boolean b = JavacAugments.JCImport_deletable.get((JCImport) def);
+					if (b == null || !b.booleanValue()) newDefs.append(def);
+				} else {
+					newDefs.append(def);
+				}
+			}
+			unit.defs = newDefs.toList();
 			if (verbose) feedback.printf("File: %s [%s%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged", force && !options.isChanged(unit) ? " (forced)" : "");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = createUnicodeEscapeWriter(presetWriter);

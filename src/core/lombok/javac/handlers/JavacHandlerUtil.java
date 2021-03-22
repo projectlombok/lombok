@@ -103,6 +103,7 @@ import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
 import lombok.experimental.Tolerate;
 import lombok.javac.Javac;
+import lombok.javac.JavacAugments;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.permit.Permit;
@@ -537,21 +538,18 @@ public class JavacHandlerUtil {
 	public static void deleteImportFromCompilationUnit(JavacNode node, String name) {
 		if (inNetbeansEditor(node)) return;
 		if (!node.shouldDeleteLombokAnnotations()) return;
-		ListBuffer<JCTree> newDefs = new ListBuffer<JCTree>();
 		
 		JCCompilationUnit unit = (JCCompilationUnit) node.top().get();
 		
 		for (JCTree def : unit.defs) {
-			boolean delete = false;
-			if (def instanceof JCImport) {
-				JCImport imp0rt = (JCImport)def;
-				delete = (!imp0rt.staticImport && imp0rt.qualid.toString().equals(name));
-			}
-			if (!delete) newDefs.append(def);
+			if (!(def instanceof JCImport)) continue;
+			JCImport imp0rt = (JCImport) def;
+			if (imp0rt.staticImport) continue;
+			if (!imp0rt.qualid.toString().equals(name)) continue;
+			JavacAugments.JCImport_deletable.set(imp0rt, true);
 		}
-		unit.defs = newDefs.toList();
 	}
-
+	
 	private static List<JCAnnotation> filterList(List<JCAnnotation> annotations, JCTree jcTree) {
 		ListBuffer<JCAnnotation> newAnnotations = new ListBuffer<JCAnnotation>();
 		for (JCAnnotation ann : annotations) {
