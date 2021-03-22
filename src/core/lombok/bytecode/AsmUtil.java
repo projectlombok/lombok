@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ class AsmUtil {
 		ClassReader reader = new ClassReader(byteCode);
 		ClassWriter writer = new FixedClassWriter(reader, 0);
 		
-		ClassVisitor visitor = new ClassVisitor(Opcodes.ASM7, writer) {
+		ClassVisitor visitor = new ClassVisitor(Opcodes.ASM9, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 				return new JSRInlinerAdapter(super.visitMethod(access, name, desc, signature, exceptions), access, name, desc, signature, exceptions);
 			}

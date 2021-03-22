@@ -1,5 +1,5 @@
+// version 14:
 import lombok.NonNull;
-
 record NonNullOnRecord(@NonNull String a, @NonNull String b) {
 	public void method(@NonNull String param) {
 		if (param == null) {
@@ -7,7 +7,6 @@ record NonNullOnRecord(@NonNull String a, @NonNull String b) {
 		}
 		String asd = "a";
 	}
-
 	@java.lang.SuppressWarnings("all")
 	public NonNullOnRecord(@NonNull final String a, @NonNull final String b) {
 		if (a == null) {

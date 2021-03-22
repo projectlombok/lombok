@@ -4,5 +4,5 @@
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
-record SupeBuilderOnRecord(String a, String b) {
+record SuperBuilderOnRecord(String a, String b) {
 }

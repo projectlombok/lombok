@@ -1,6 +1,6 @@
+// version 14:
 import java.util.Collection;
 import java.util.List;
-
 record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends Number> scarves, @SuppressWarnings("all") List rawList) {
 	@java.lang.SuppressWarnings("all")
 	public static class BuilderSingularOnRecordBuilder<T> {
@@ -10,18 +10,15 @@ record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends Number>
 		private java.util.ArrayList<Number> scarves;
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<java.lang.Object> rawList;
-
 		@java.lang.SuppressWarnings("all")
 		BuilderSingularOnRecordBuilder() {
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> child(final T child) {
 			if (this.children == null) this.children = new java.util.ArrayList<T>();
 			this.children.add(child);
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> children(final java.util.Collection<? extends T> children) {
 			if (children == null) {
@@ -31,20 +28,17 @@ record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends Number>
 			this.children.addAll(children);
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> clearChildren() {
 			if (this.children != null) this.children.clear();
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> scarf(final Number scarf) {
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.add(scarf);
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> scarves(final java.util.Collection<? extends Number> scarves) {
 			if (scarves == null) {
@@ -54,20 +48,17 @@ record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends Number>
 			this.scarves.addAll(scarves);
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> clearScarves() {
 			if (this.scarves != null) this.scarves.clear();
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> rawList(final java.lang.Object rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.add(rawList);
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> rawList(final java.util.Collection<?> rawList) {
 			if (rawList == null) {
@@ -77,13 +68,11 @@ record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends Number>
 			this.rawList.addAll(rawList);
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> clearRawList() {
 			if (this.rawList != null) this.rawList.clear();
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularOnRecord<T> build() {
 			java.util.List<T> children;
@@ -121,14 +110,12 @@ record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends Number>
 			}
 			return new BuilderSingularOnRecord<T>(children, scarves, rawList);
 		}
-
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
 			return "BuilderSingularOnRecord.BuilderSingularOnRecordBuilder(children=" + this.children + ", scarves=" + this.scarves + ", rawList=" + this.rawList + ")";
 		}
 	}
-
 	@java.lang.SuppressWarnings("all")
 	public static <T> BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> builder() {
 		return new BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T>();
