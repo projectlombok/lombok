@@ -812,21 +812,31 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(tree.name);
 		}
 		
+		boolean argsLessConstructor = false;
+		if (isConstructor && (tree.mods.flags & COMPACT_RECORD_CONSTRUCTOR) != 0) {
+			argsLessConstructor = true;
+			for (JCVariableDecl param : tree.params) {
+				if ((param.mods.flags & GENERATED_MEMBER) == 0) argsLessConstructor = false;
+			}
+		}
+		
 		boolean first = true;
-		print("(");
-		
-		JCVariableDecl recvparam = readObject(tree, "recvparam", null);
-		if (recvparam != null) {
-			printVarDefInline(recvparam);
-			first = false;
+		if (!argsLessConstructor) {
+			print("(");
+			
+			JCVariableDecl recvparam = readObject(tree, "recvparam", null);
+			if (recvparam != null) {
+				printVarDefInline(recvparam);
+				first = false;
+			}
+			
+			for (JCVariableDecl param : tree.params) {
+				if (!first) print(", ");
+				first = false;
+				printVarDefInline(param);
+			}
+			print(")");
 		}
-		
-		for (JCVariableDecl param : tree.params) {
-			if (!first) print(", ");
-			first = false;
-			printVarDefInline(param);
-		}
-		print(")");
 		
 		if (tree.thrown.nonEmpty()) {
 			print(" throws ");
