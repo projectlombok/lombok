@@ -7,11 +7,11 @@
 	
 	<@f.overview>
 		<p>
-			You can use <code>@NonNull</code> on the parameter of a method or constructor to have lombok generate a null-check statement for you.
+			You can use <code>@NonNull</code> on a record component, or a parameter of a method or constructor. This will cause to lombok generate a null-check statement for you.
 		</p><p>
-			Lombok has always treated various annotations generally named <code>@NonNull</code> on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via for example <a href="/features/Data"><code>@Data</code></a>. Now, however, using lombok's own <code>@lombok.NonNull</code> on a parameter results in the insertion of just the null-check statement inside your own method or constructor.
+			Lombok has always treated various annotations generally named <code>@NonNull</code> on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via for example <a href="/features/Data"><code>@Data</code></a>. However, using lombok's own <code>@lombok.NonNull</code> on a parameter or record component results in the insertion of the null-check at the top of that method.
 		</p><p>
-			The null-check looks like <code>if (param == null) throw new NullPointerException("param is marked @NonNull but is null");</code> and will be inserted at the very top of your method. For constructors, the null-check will be inserted immediately following any explicit <code>this()</code> or <code>super()</code> calls.
+			The null-check looks like <code>if (param == null) throw new NullPointerException("param is marked @NonNull but is null");</code> and will be inserted at the very top of your method. For constructors, the null-check will be inserted immediately following any explicit <code>this()</code> or <code>super()</code> calls. For record components, the null-check will be inserted in the 'compact constructor' (the one that has no argument list at all), which will be generated if you have no constructor. If you have written out the record constructor in long form (with parameters matching your components exactly), then nothing happens - you'd have to annotate the parameters of this long-form constructor instead.
 		</p><p>
 			If a null-check is already present at the top, no additional null-check will be generated.
 		</p>

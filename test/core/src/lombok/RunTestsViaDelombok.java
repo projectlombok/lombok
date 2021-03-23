@@ -120,6 +120,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 				@Override public void scan(JCTree tree) {
 					if (tree == null) return;
 					if (tree instanceof JCMethodDecl && (((JCMethodDecl) tree).mods.flags & Flags.GENERATEDCONSTR) != 0) return;
+					astContext.push(tree);
 					try {
 						if (tree instanceof JCModifiers) return;
 						
@@ -139,14 +140,19 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 							if ("super".equals("" + ((JCIdent) tree).name)) check = false;
 						}
 						
+						if (tree instanceof JCVariableDecl && (((JCVariableDecl) tree).mods.flags & Javac.GENERATED_MEMBER) != 0) return;
+						
 						if (check && tree.pos == -1) fail(craftFailMsg("Start", astContext));
+						
 						if (check && Javac.getEndPosition(tree, unit) == -1) {
 							fail(craftFailMsg("End", astContext));
 						}
 					} finally {
-						astContext.push(tree);
-						super.scan(tree);
-						astContext.pop();
+						try {
+							super.scan(tree);
+						} finally {
+							astContext.pop();
+						}
 					}
 				}
 				
