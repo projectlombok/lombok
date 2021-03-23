@@ -28,6 +28,7 @@
 		<conf name="ecj8" />
 		<conf name="ecj11" />
 		<conf name="ecj14" />
+		<conf name="ecj16" />
 		
 		<conf name="eclipse-oxygen" />
 		<conf name="eclipse-202006" />
@@ -76,6 +77,7 @@
 		
 		<!-- ecjs -->
 		
+		<dependency org="org.eclipse.jdt" name="ecj" rev="3.25.0" conf="ecj16->master" />
 		<dependency org="org.eclipse.jdt" name="ecj" rev="3.22.0.v20200530-2032" conf="ecj14->master" />
 		<dependency org="org.eclipse.jdt" name="ecj" rev="3.16.0" conf="ecj11->master" />
 		<!-- until oct 2016, ecj was released under org 'org.eclipse.jdt.core.compiler', and the versioning followed eclipse's versions. -->

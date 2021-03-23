@@ -110,6 +110,11 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		};
 	}
 	
+	private ICompilationUnit getSourceUnit(File file, String source) {
+		if (eclipseAvailable()) return new TestCompilationUnitEclipse(file.getName(), source);
+		return new TestCompilationUnitEcj(file.getName(), source);
+	}
+	
 	@Override
 	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences, int minVersion, boolean checkPositions) throws Throwable {
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
@@ -124,11 +129,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		char[] sourceArray = source.toCharArray();
 		final ICompilationUnit sourceUnit;
 		try {
-			if (eclipseAvailable()) {
-				sourceUnit = new TestCompilationUnitEclipse(file.getName(), source);
-			} else {
-				sourceUnit = new TestCompilationUnitEcj(file.getName(), source);
-			}
+			sourceUnit = getSourceUnit(file, source);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			return false;

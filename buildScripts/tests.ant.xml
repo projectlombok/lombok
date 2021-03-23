@@ -55,7 +55,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		</ivy:compile>
 	</target>
 	
-	<target name="test.ecj11" depends="deps, dist" description="Runs a few ecj-specific tests" unless="skip.tests">
+	<target name="test.ecj11.call" depends="deps, dist" description="Runs a few ecj-specific tests" unless="skip.tests">
 		<java jar="lib/ecj11/org.eclipse.jdt-ecj.jar" fork="true" failonerror="true">
 			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
 			<arg line="-source 1.6 -target 1.6 -cp dist/lombok.jar test/ecj/SimpleTest.java" />
@@ -165,6 +165,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 				<classpath refid="cp.eclipse-@{version}" />
 				<classpath refid="packing.basedirs.path" />
 				<classpath location="build/tests" />
+				<classpath location="build/teststubs" />
 				<test name="lombok.TestEclipse" />
 			</junit>
 		</sequential>
@@ -177,6 +178,42 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	<target name="test.eclipse-202006" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the 2020-03 release of eclipse">
 		<fetchdep.eclipse version="202006" />
 		<test.eclipse-X version="202006" />
+	</target>
+	
+	<macrodef name="test.ecj-X">
+		<attribute name="version" />
+		<sequential>
+			<echo>Running TestEclipse on ecj-@{version} on JVM${ant.java.version}.</echo>
+			<junit haltonfailure="yes" fork="true" forkmode="once">
+				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+				<jvmarg value="-Xbootclasspath/a:${jdk8-rt.loc}" />
+				<jvmarg value="-Ddelombok.bootclasspath=${jdk8-rt.loc}" />
+				<jvmarg value="-javaagent:dist/lombok.jar" />
+				<classpath location="build/ant" />
+				<classpath refid="cp.test" />
+				<classpath refid="cp.stripe" />
+				<classpath refid="cp.ecj@{version}" />
+				<classpath refid="packing.basedirs.path" />
+				<classpath location="build/tests" />
+				<classpath location="build/teststubs" />
+				<test name="lombok.TestEclipse" />
+			</junit>
+		</sequential>
+	</macrodef>
+	
+	<target name="test.ecj11" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
+		<fetchdep.ecj version="11" />
+		<test.ecj-X version="11" />
+	</target>
+	
+	<target name="test.ecj14" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
+		<fetchdep.ecj version="14" />
+		<test.ecj-X version="14" />
+	</target>
+	
+	<target name="test.ecj16" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
+		<fetchdep.ecj version="16" />
+		<test.ecj-X version="16" />
 	</target>
 	
 	<target name="test" depends="test.javacCurrent, test.eclipse-202006" description="runs the tests against the default JVM, javac, and eclipse" />
