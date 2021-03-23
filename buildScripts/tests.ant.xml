@@ -83,7 +83,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	
 	<property name="test.limitmodules">--limit-modules java.base,jdk.unsupported</property>
 	
-	<target name="test.javac6" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac6 as underlying compiler">
+	<target name="test.javac6" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using javac6 as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with lowest supported javac: 1.6.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">
 			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
@@ -102,7 +102,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		</junit>
 	</target>
 	
-	<target name="test.javac8" depends="test.formatter.compile, test.compile, deps.jdk8-runtime" description="runs the tests on your default VM, using javac8 as underlying compiler">
+	<target name="test.javac8" depends="test.compile, test.formatter.compile, deps.jdk8-runtime" description="runs the tests on your default VM, using javac8 as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with javac: 1.8.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">
 			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
@@ -140,21 +140,21 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		</sequential>
 	</macrodef>
 	
-	<target name="test.javac11" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac11 as underlying compiler">
+	<target name="test.javac11" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using javac11 as underlying compiler">
 		<test.javacX version="11" />
 	</target>
 	
-	<target name="test.javac17" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac17 as underlying compiler">
+	<target name="test.javac17" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using javac17 as underlying compiler">
 		<test.javacX version="17" />
 	</target>
 	
 	<!-- For non-LTS versions, feel free to aggressively update these to the current non-LTS openjdk version, and delete them once they roll out of the 6 month window. -->
 	
-	<target name="test.javac20" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac20 as underlying compiler">
+	<target name="test.javac20" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using javac20 as underlying compiler">
 		<test.javacX version="20" />
 	</target>
 	
-	<target name="test.javacCurrent" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using its javac as underlying compiler">
+	<target name="test.javacCurrent" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using its javac as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with the javac built into your VM distributon.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">
 			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
@@ -194,21 +194,21 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		</sequential>
 	</macrodef>
 	
-	<target name="test.eclipse-202212" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the 2022-12 release of eclipse">
+	<target name="test.eclipse-202212" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the 2022-12 release of eclipse">
 		<fetchdep.eclipse version="202212" />
 		<test.eclipse-X version="202212" />
 	</target>
 	
-	<target name="test.eclipse-oxygen" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the oxygen release of eclipse">
+	<target name="test.eclipse-oxygen" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the oxygen release of eclipse">
 		<test.eclipse-X version="oxygen" />
 	</target>
 	
-	<target name="test.eclipse-202006" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the 2020-06 release of eclipse">
+	<target name="test.eclipse-202006" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the 2020-06 release of eclipse">
 		<fetchdep.eclipse version="202006" />
 		<test.eclipse-X version="202006" />
 	</target>
 	
-	<target name="test.eclipse-202006-jdk8" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the 2020-06 release of eclipse with compiler compliance level 8">
+	<target name="test.eclipse-202006-jdk8" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the 2020-06 release of eclipse with compiler compliance level 8">
 		<fetchdep.eclipse version="202006" />
 		<test.eclipse-X version="202006" compiler.compliance.level="8" />
 	</target>
@@ -243,11 +243,11 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		</sequential>
 	</macrodef>
 	
-	<target name="test.eclipse-oxygen-full" depends="test.formatter.compile, test.eclipse.compile, deps.eclipse.oxygen" description="runs the full eclipse tests on your default VM, testing the oxygen release of eclipse">
+	<target name="test.eclipse-oxygen-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.oxygen" description="runs the full eclipse tests on your default VM, testing the oxygen release of eclipse">
 		<test.eclipse-X-full version="oxygen" />
 	</target>
 	
-	<target name="test.eclipse-2022-03-full" depends="test.formatter.compile, test.eclipse.compile, deps.eclipse.2022-03" description="runs the full eclipse tests on your default VM, testing the 2022-03 release of eclipse">
+	<target name="test.eclipse-2022-03-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.2022-03" description="runs the full eclipse tests on your default VM, testing the 2022-03 release of eclipse">
 		<test.eclipse-X-full version="2022-03" />
 	</target>
 	
@@ -272,22 +272,22 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		</sequential>
 	</macrodef>
 	
-	<target name="test.ecj11" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
+	<target name="test.ecj11" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the ecj11 release">
 		<fetchdep.ecj version="11" />
 		<test.ecj-X version="11" />
 	</target>
 	
-	<target name="test.ecj14" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj14 release">
+	<target name="test.ecj14" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the ecj14 release">
 		<fetchdep.ecj version="14" />
 		<test.ecj-X version="14" />
 	</target>
 	
-	<target name="test.ecj16" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj16 release">
+	<target name="test.ecj16" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the ecj16 release">
 		<fetchdep.ecj version="16" />
 		<test.ecj-X version="16" />
 	</target>
 	
-	<target name="test.ecj19" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj19 release">
+	<target name="test.ecj19" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the ecj19 release">
 		<fetchdep.ecj version="19" />
 		<test.ecj-X version="19" />
 	</target>
