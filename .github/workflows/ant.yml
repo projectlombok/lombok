@@ -1,0 +1,107 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ivyCache
+            lib
+          key: ${{ runner.os }}-${{ hashFiles('**/ivy.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+        
+      - name: Build with Ant
+        run: ant -noinput dist
+        
+      - uses: actions/upload-artifact@v2
+        with:
+          name: lombok.jar
+          path: dist/lombok.jar
+    
+  
+  test-javac:
+    runs-on: ubuntu-latest
+    strategy: 
+      matrix: 
+        jdk: [8, 9, 10, 11, 12, 13, 14, 15, 16]
+        goal: [javacCurrent]
+        include:
+          - jdk: 8
+            goal: javac6
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.jdk }}
+      
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ivyCache
+            lib
+          key: ${{ runner.os }}-${{ hashFiles('**/ivy.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+        
+      - name: Run tests
+        run: ant -noinput test.${{ matrix.goal }}
+        
+      
+      
+  test-eclipse:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy: 
+      matrix: 
+        version: [eclipse-oxygen, eclipse-202006, ecj11, ecj14, ecj16]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      
+      - uses: actions/download-artifact@v2
+        with:
+          name: lombok.jar
+          path: dist/lombok.jar
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ivyCache
+            lib
+          key: ${{ runner.os }}-${{ hashFiles('**/ivy.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+          
+      - name: Build with Ant
+        run: ant -noinput -buildfile build.xml test.${{ matrix.version }}
