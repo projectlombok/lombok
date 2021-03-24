@@ -30,7 +30,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
-import lombok.StandardException;
+import lombok.experimental.StandardException;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.delombok.LombokOptionsFactory;
@@ -39,13 +39,13 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil.*;
-import org.mangosdk.spi.ProviderFor;
+import lombok.spi.Provides;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.Javac.CTC_VOID;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 public class HandleStandardException extends JavacAnnotationHandler<StandardException> {
 	private static final String NAME = StandardException.class.getSimpleName();
 
@@ -161,7 +161,6 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		if (isEnum) level = AccessLevel.PRIVATE;
 		
 		boolean addConstructorProperties;
-
 		if (fieldsToParam.isEmpty()) {
 			addConstructorProperties = false;
 		} else {
@@ -194,7 +193,7 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		}
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
-			maker.Block(0L, statements.toList()), null), source.get(), typeNode.getContext());
+			maker.Block(0L, statements.toList()), null), source);
 	}
 
 	public static boolean isLocalType(JavacNode type) {

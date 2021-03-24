@@ -1,6 +1,8 @@
-@lombok.StandardException class EmptyException extends Exception {
+import lombok.experimental.StandardException;
+
+@StandardException class EmptyException extends Exception {
 }
-@lombok.StandardException class NoArgsException extends Exception {
+@StandardException class NoArgsException extends Exception {
 	public NoArgsException() {
 	}
 }

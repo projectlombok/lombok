@@ -23,16 +23,16 @@ package lombok.eclipse.handlers;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
-import lombok.StandardException;
+import lombok.experimental.StandardException;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.*;
+import lombok.spi.Provides;
 import org.eclipse.jdt.internal.compiler.ast.*;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.mangosdk.spi.ProviderFor;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -42,7 +42,7 @@ import static lombok.eclipse.Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 import static lombok.eclipse.Eclipse.pos;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
-@ProviderFor(EclipseAnnotationHandler.class)
+@Provides
 public class HandleStandardException extends EclipseAnnotationHandler<StandardException> {
 	private static final String NAME = StandardException.class.getSimpleName();
 
@@ -175,12 +175,10 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 
 	@SuppressWarnings("deprecation") public static ConstructorDeclaration createConstructor(
 			AccessLevel level, EclipseNode type, Collection<SuperParameter> parameters, EclipseNode sourceNode) {
-
 		ASTNode source = sourceNode.get();
 		TypeDeclaration typeDeclaration = ((TypeDeclaration) type.get());
 
 		boolean isEnum = (((TypeDeclaration) type.get()).modifiers & ClassFileConstants.AccEnum) != 0;
-		
 		if (isEnum) level = AccessLevel.PRIVATE;
 
 		boolean addConstructorProperties;
