@@ -531,6 +531,9 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(tree.typarams, ", ");
 			print(">");
 		}
+		
+		if (isRecord) printRecordConstructor(tree.defs);
+		
 		JCTree extendsClause = getExtendsClause(tree);
 		if (extendsClause != null) {
 			print(" extends ");
@@ -541,8 +544,6 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(isInterface ? " extends " : " implements ");
 			print(tree.implementing, ", ");
 		}
-		
-		if (isRecord) printRecordConstructor(tree.defs);
 		
 		println(" {");
 		indent++;
