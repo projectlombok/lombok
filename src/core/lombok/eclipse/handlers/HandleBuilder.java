@@ -183,14 +183,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			
 			builderMethodName = ann.builderMethodName();
 			buildMethodName = ann.buildMethodName();
-			setBuilderClassName(fixBuilderClassName(node, ann.builderClassName()));
+			setBuilderClassName(getBuilderClassNameTemplate(node, ann.builderClassName()));
 			toBuilder = ann.toBuilder();
 			
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
 		}
 		
-		static String fixBuilderClassName(EclipseNode node, String override) {
+		static String getBuilderClassNameTemplate(EclipseNode node, String override) {
 			if (override != null && !override.isEmpty()) return override;
 			override = node.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
 			if (override != null && !override.isEmpty()) return override;
@@ -202,8 +202,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		String replaceBuilderClassName(char[] name) {
-			if (builderClassName.indexOf('*') == -1) return builderClassName;
-			return builderClassName.replace("*", new String(name));
+			return replaceBuilderClassName(name, builderClassName);
+		}
+
+		String replaceBuilderClassName(char[] name, String template) {
+			if (template.indexOf('*') == -1) return template;
+			return template.replace("*", new String(name));
 		}
 		
 		String replaceBuilderClassName(String name) {

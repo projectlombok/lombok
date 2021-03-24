@@ -130,7 +130,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			
 			builderMethodName = ann.builderMethodName();
 			buildMethodName = ann.buildMethodName();
-			builderClassName = fixBuilderClassName(node, ann.builderClassName());
+			builderClassName = getBuilderClassNameTemplate(node, ann.builderClassName());
 			toBuilder = ann.toBuilder();
 			
 			if (builderMethodName == null) builderMethodName = "builder";
@@ -138,7 +138,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (builderClassName == null) builderClassName = "";
 		}
 		
-		static String fixBuilderClassName(JavacNode node, String override) {
+		static String getBuilderClassNameTemplate(JavacNode node, String override) {
 			if (override != null && !override.isEmpty()) return override;
 			override = node.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
 			if (override != null && !override.isEmpty()) return override;
@@ -146,8 +146,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		String replaceBuilderClassName(Name name) {
-			if (builderClassName.indexOf('*') == -1) return builderClassName;
-			return builderClassName.replace("*", name.toString());
+			return replaceBuilderClassName(name.toString(), builderClassName);
+		}
+		
+		String replaceBuilderClassName(String name, String template) {
+			if (template.indexOf('*') == -1) return template;
+			return template.replace("*", name);
 		}
 		
 		JCExpression createBuilderParentTypeReference() {
