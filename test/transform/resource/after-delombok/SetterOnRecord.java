@@ -1,3 +1,3 @@
 // version 14:
-record SetterOnRecord(String a, String b) {
+public record SetterOnRecord(String a, String b) {
 }

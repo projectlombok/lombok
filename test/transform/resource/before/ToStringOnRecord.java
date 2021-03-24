@@ -3,5 +3,5 @@
 import lombok.ToString;
 
 @ToString
-record ToStringOnRecord(String a, String b) {
+public record ToStringOnRecord(String a, String b) {
 }

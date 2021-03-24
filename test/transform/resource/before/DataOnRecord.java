@@ -3,5 +3,5 @@
 import lombok.Data;
 
 @Data
-record DataOnRecord(String a, String b) {
+public record DataOnRecord(String a, String b) {
 }

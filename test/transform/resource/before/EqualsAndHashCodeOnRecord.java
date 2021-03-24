@@ -3,5 +3,5 @@
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-record EqualsAndHashCodeOnRecord(String a, String b) {
+public record EqualsAndHashCodeOnRecord(String a, String b) {
 }

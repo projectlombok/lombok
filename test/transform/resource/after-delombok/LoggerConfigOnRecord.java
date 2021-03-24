@@ -1,3 +1,3 @@
 // version 14:
-record LoggerConfigOnRecord(String a, String b) {
+public record LoggerConfigOnRecord(String a, String b) {
 }

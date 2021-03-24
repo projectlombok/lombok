@@ -1,6 +1,6 @@
 // version 14:
 import lombok.NonNull;
-record NonNullOnRecord3(@NonNull String a) {
+public record NonNullOnRecord3(@NonNull String a) {
 	public NonNullOnRecord3(String a) {
 		this.a = a;
 	}

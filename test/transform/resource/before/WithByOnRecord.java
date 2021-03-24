@@ -3,5 +3,5 @@
 import lombok.experimental.WithBy;
 
 @WithBy
-record WithByOnRecord(String a, String b) {
+public record WithByOnRecord(String a, String b) {
 }

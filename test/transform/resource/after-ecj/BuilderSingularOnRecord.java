@@ -3,7 +3,7 @@ import java.util.Collection;
 import java.util.List;
 import lombok.Builder;
 import lombok.Singular;
-@Builder record BuilderSingularOnRecord(List children, Collection scarves, List rawList)<T> {
+public @Builder record BuilderSingularOnRecord(List children, Collection scarves, List rawList)<T> {
   public static @java.lang.SuppressWarnings("all") class BuilderSingularOnRecordBuilder<T> {
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<T> children;
     private @java.lang.SuppressWarnings("all") java.util.ArrayList<Number> scarves;

@@ -1,7 +1,7 @@
 // version 14:
 import lombok.experimental.FieldNameConstants;
 import lombok.AccessLevel;
-@FieldNameConstants(level = AccessLevel.PACKAGE) record FieldNameConstantsOnRecord(String iAmADvdPlayer, int $skipMe, int andMe, String butPrintMePlease) {
+public @FieldNameConstants(level = AccessLevel.PACKAGE) record FieldNameConstantsOnRecord(String iAmADvdPlayer, int $skipMe, int andMe, String butPrintMePlease) {
   static final @java.lang.SuppressWarnings("all") class Fields {
     public static final java.lang.String iAmADvdPlayer = "iAmADvdPlayer";
     public static final java.lang.String butPrintMePlease = "butPrintMePlease";

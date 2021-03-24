@@ -1,3 +1,3 @@
 // version 14:
-record ConstructorsOnRecord(String a, String b) {
+public record ConstructorsOnRecord(String a, String b) {
 }

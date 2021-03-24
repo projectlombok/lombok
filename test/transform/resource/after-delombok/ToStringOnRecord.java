@@ -1,3 +1,3 @@
 // version 14:
-record ToStringOnRecord(String a, String b) {
+public record ToStringOnRecord(String a, String b) {
 }

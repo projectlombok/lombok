@@ -156,7 +156,12 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		CompilationUnitDeclaration cud = compilationUnit_.get();
 		
 		if (cud == null) result.append("---- No CompilationUnit provided by ecj ----");
-		else result.append(cud.toString());
+		else {
+			String output = cud.toString();
+			// starting somewhere around ecj16, the print code is a bit too cavalier with printing modifiers.
+			output = output.replace("non-sealed @val", "@val");
+			result.append(output);
+		}
 		
 		if (eclipseAvailable()) {
 			EclipseDomConversion.toDomAst(cud, sourceArray);

@@ -120,7 +120,7 @@ public class PatchVal {
 	public static boolean couldBe(ImportReference[] imports, String key, TypeReference ref) {
 		String[] keyParts = key.split("\\.");
 		if (ref instanceof SingleTypeReference) {
-			char[] token = ((SingleTypeReference)ref).token;
+			char[] token = ((SingleTypeReference) ref).token;
 			if (!matches(keyParts[keyParts.length - 1], token)) return false;
 			if (imports == null) return true;
 			top:
@@ -140,7 +140,7 @@ public class PatchVal {
 		}
 		
 		if (ref instanceof QualifiedTypeReference) {
-			char[][] tokens = ((QualifiedTypeReference)ref).tokens;
+			char[][] tokens = ((QualifiedTypeReference) ref).tokens;
 			if (keyParts.length != tokens.length) return false;
 			for(int i = 0; i < tokens.length; ++i) {
 				String part = keyParts[i];
@@ -270,7 +270,6 @@ public class PatchVal {
 		if (val) local.modifiers |= ClassFileConstants.AccFinal;
 		local.annotations = addValAnnotation(local.annotations, local.type, scope);
 		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(local.type, 3));
-		
 		return false;
 	}
 	

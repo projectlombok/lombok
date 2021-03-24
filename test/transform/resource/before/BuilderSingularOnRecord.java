@@ -7,5 +7,5 @@ import lombok.Builder;
 import lombok.Singular;
 
 @Builder
-record BuilderSingularOnRecord<T>(@Singular List<T> children, @Singular Collection<? extends Number> scarves, @SuppressWarnings("all") @Singular("rawList") List rawList) {
+public record BuilderSingularOnRecord<T>(@Singular List<T> children, @Singular Collection<? extends Number> scarves, @SuppressWarnings("all") @Singular("rawList") List rawList) {
 }

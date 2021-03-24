@@ -1,5 +1,5 @@
 // version 14:
-record WithOnRecord(String a, String b) {
+public record WithOnRecord(String a, String b) {
 	/**
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */

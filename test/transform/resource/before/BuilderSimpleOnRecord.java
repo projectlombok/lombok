@@ -3,5 +3,5 @@
 import java.util.List;
 
 @lombok.Builder(access = lombok.AccessLevel.PROTECTED)
-record BuilderSimpleOnRecord<T>(List<T> l, String a) {
+public record BuilderSimpleOnRecord<T>(List<T> l, String a) {
 }

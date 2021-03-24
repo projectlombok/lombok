@@ -1,6 +1,6 @@
 // version 14:
 import lombok.experimental.WithBy;
-record WithByOnRecordComponent(String a, String b) {
+public record WithByOnRecordComponent(String a, String b) {
 /* Implicit */  private final String a;
 /* Implicit */  private final String b;
   public WithByOnRecordComponent( String a, String b) {

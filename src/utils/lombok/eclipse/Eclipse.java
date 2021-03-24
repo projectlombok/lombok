@@ -60,10 +60,12 @@ public class Eclipse {
 	 */
 	public static final int ECLIPSE_DO_NOT_TOUCH_FLAG = ASTNode.Bit24;
 	
-	/* This section includes flags that would ordinarily be in ClassFileConstants, but which are 'too new' (we don't compile against older versions of ecj/eclipse for compatibility). */
-	public static final int AccRecord = ASTNode.Bit25;
-	public static final int IsCanonicalConstructor = ASTNode.Bit10; // For record declarations, and presumably later on any constructor matching the destructor.
-	public static final int IsImplicit = ASTNode.Bit11; // the generated statements in the compact constructor of a record.
+	/* This section includes flags that are in ecj files too new vs. the deps we compile against.
+	 * Specifically: org.eclipse.jdt.internal.compiler.ast.ASTNode and org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers
+	 */
+	public static final int AccRecord = ASTNode.Bit25; // ECM.AccRecord
+	public static final int IsCanonicalConstructor = ASTNode.Bit10; // ASTNode.IsCanonicalConstructor
+	public static final int IsImplicit = ASTNode.Bit11; // ASTNode.IsImplicit
 	
 	private static final Pattern SPLIT_AT_DOT = Pattern.compile("\\.");
 	

@@ -1,6 +1,6 @@
-// version 14:
+// version 16:
 import lombok.NonNull;
-record NonNullOnRecord(@NonNull String a, @NonNull String b) {
+public record NonNullOnRecord(@NonNull String a, @NonNull String b) {
 	@java.lang.SuppressWarnings("all")
 	public NonNullOnRecord {
 		if (a == null) {

@@ -1,3 +1,3 @@
 // version 14:
-record ValueOnRecord(String a, String b) {
+public record ValueOnRecord(String a, String b) {
 }

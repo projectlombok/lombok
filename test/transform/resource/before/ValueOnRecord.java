@@ -3,5 +3,5 @@
 import lombok.Value;
 
 @Value
-record ValueOnRecord(String a, String b) {
+public record ValueOnRecord(String a, String b) {
 }

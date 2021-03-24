@@ -1,6 +1,6 @@
 // version 14:
 import java.util.List;
-record BuilderSimpleOnRecord<T>(List<T> l, String a) {
+public record BuilderSimpleOnRecord<T>(List<T> l, String a) {
 	@java.lang.SuppressWarnings("all")
 	protected static class BuilderSimpleOnRecordBuilder<T> {
 		@java.lang.SuppressWarnings("all")

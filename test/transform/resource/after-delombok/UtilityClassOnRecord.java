@@ -1,3 +1,3 @@
 // version 14:
-record UtilityClassOnRecord(String a, String b) {
+public record UtilityClassOnRecord(String a, String b) {
 }

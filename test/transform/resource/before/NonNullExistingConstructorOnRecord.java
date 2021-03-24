@@ -2,8 +2,8 @@
 
 import lombok.NonNull;
 
-record NonNullOnRecord(@NonNull String a, @NonNull String b) {
-	public NonNullOnRecord(@NonNull String b) {
+public record NonNullExistingConstructorOnRecord(@NonNull String a, @NonNull String b) {
+	public NonNullExistingConstructorOnRecord(@NonNull String b) {
 		this("default", b);
 	}
 }

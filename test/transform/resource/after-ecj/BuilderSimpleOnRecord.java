@@ -1,16 +1,22 @@
 // version 14:
 import java.util.List;
-@lombok.Builder(access = lombok.AccessLevel.PROTECTED) record BuilderSimpleOnRecord(List l, String a)<T> {
+public @lombok.Builder(access = lombok.AccessLevel.PROTECTED) record BuilderSimpleOnRecord(List l, String a)<T> {
   protected static @java.lang.SuppressWarnings("all") class BuilderSimpleOnRecordBuilder<T> {
     private @java.lang.SuppressWarnings("all") List<T> l;
     private @java.lang.SuppressWarnings("all") String a;
     @java.lang.SuppressWarnings("all") BuilderSimpleOnRecordBuilder() {
       super();
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderSimpleOnRecord.BuilderSimpleOnRecordBuilder<T> l(final List<T> l) {
       this.l = l;
       return this;
     }
+    /**
+     * @return {@code this}.
+     */
     public @java.lang.SuppressWarnings("all") BuilderSimpleOnRecord.BuilderSimpleOnRecordBuilder<T> a(final String a) {
       this.a = a;
       return this;

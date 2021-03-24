@@ -815,9 +815,6 @@ public class PrettyPrinter extends JCTree.Visitor {
 		boolean argsLessConstructor = false;
 		if (isConstructor && (tree.mods.flags & COMPACT_RECORD_CONSTRUCTOR) != 0) {
 			argsLessConstructor = true;
-			for (JCVariableDecl param : tree.params) {
-				if ((param.mods.flags & GENERATED_MEMBER) == 0) argsLessConstructor = false;
-			}
 		}
 		
 		boolean first = true;

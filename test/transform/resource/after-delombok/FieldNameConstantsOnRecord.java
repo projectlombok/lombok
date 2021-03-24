@@ -1,5 +1,5 @@
 // version 14:
-record FieldNameConstantsOnRecord(String iAmADvdPlayer, int $skipMe, int andMe, String butPrintMePlease) {
+public record FieldNameConstantsOnRecord(String iAmADvdPlayer, int $skipMe, int andMe, String butPrintMePlease) {
 	static double skipMeToo;
 	@java.lang.SuppressWarnings("all")
 	static final class Fields {

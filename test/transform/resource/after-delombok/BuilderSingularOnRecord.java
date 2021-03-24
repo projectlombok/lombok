@@ -1,7 +1,7 @@
 // version 14:
 import java.util.Collection;
 import java.util.List;
-record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends Number> scarves, @SuppressWarnings("all") List rawList) {
+public record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends Number> scarves, @SuppressWarnings("all") List rawList) {
 	@java.lang.SuppressWarnings("all")
 	public static class BuilderSingularOnRecordBuilder<T> {
 		@java.lang.SuppressWarnings("all")

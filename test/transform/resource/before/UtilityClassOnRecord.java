@@ -3,5 +3,5 @@
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-record UtilityClassOnRecord(String a, String b) {
+public record UtilityClassOnRecord(String a, String b) {
 }

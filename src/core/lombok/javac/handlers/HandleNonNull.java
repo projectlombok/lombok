@@ -219,6 +219,8 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 			
 			JCVariableDecl fDecl = (JCVariableDecl) annotationNode.up().get();
 			if ((fDecl.mods.flags & RECORD) != 0) {
+				// well, these kinda double as parameters (of the compact constructor), so we do some work here.
+				
 				List<JCMethodDecl> compactConstructors = addCompactConstructorIfNeeded(annotationNode.up().up(), annotationNode);
 				for (JCMethodDecl ctr : compactConstructors) {
 					addNullCheckIfNeeded(ctr, annotationNode.up(), annotationNode);

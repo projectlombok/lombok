@@ -4,5 +4,5 @@
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-record LoggerConfigOnRecord(String a, String b) {
+public record LoggerConfigOnRecord(String a, String b) {
 }

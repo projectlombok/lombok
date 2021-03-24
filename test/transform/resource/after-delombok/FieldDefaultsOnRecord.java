@@ -1,3 +1,3 @@
 // version 14:
-record FieldDefaultsOnRecord(String a, String b) {
+public record FieldDefaultsOnRecord(String a, String b) {
 }

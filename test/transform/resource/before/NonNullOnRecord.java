@@ -2,5 +2,5 @@
 
 import lombok.NonNull;
 
-record NonNullOnRecord(@NonNull String a, @NonNull String b) {
+public record NonNullOnRecord(@NonNull String a, @NonNull String b) {
 }

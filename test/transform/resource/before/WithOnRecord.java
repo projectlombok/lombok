@@ -3,5 +3,5 @@
 import lombok.With;
 
 @With
-record WithOnRecord(String a, String b) {
+public record WithOnRecord(String a, String b) {
 }

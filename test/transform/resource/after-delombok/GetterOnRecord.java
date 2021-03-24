@@ -1,3 +1,3 @@
 // version 14:
-record GetterOnRecord(String a, String b) {
+public record GetterOnRecord(String a, String b) {
 }

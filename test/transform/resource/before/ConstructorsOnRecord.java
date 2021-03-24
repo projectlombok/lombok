@@ -7,5 +7,5 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @NoArgsConstructor
-record ConstructorsOnRecord(String a, String b) {
+public record ConstructorsOnRecord(String a, String b) {
 }
