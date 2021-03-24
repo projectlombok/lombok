@@ -40,11 +40,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy: 
       matrix: 
-        jdk: [8, 9, 10, 11, 12, 13, 14, 15, 16]
+        jdk: [11, 12, 13, 14, 15, 16]
         goal: [javacCurrent]
         include:
-          - jdk: 8
+          - jdk: 11
             goal: javac6
+          - jdk: 11
+            goal: javac8
       fail-fast: false
 
     steps:
@@ -72,7 +74,6 @@ jobs:
       
       
   test-eclipse:
-    needs: build
     runs-on: ubuntu-latest
     strategy: 
       matrix: 
@@ -87,11 +88,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      
-      - uses: actions/download-artifact@v2
-        with:
-          name: lombok.jar
-          path: dist/lombok.jar
 
       - name: Cache dependencies
         uses: actions/cache@v2
@@ -104,4 +100,4 @@ jobs:
             ${{ runner.os }}-
           
       - name: Build with Ant
-        run: ant -noinput -buildfile build.xml test.${{ matrix.version }}
+        run: ant -noinput dist test.${{ matrix.version }}
