@@ -58,7 +58,7 @@ public class HandleVal extends JavacASTAdapter {
 	}
 	
 	@SuppressWarnings("deprecation") @Override
-	public void visitLocal(JavacNode localNode, JCVariableDecl local) {
+	public void endVisitLocal(JavacNode localNode, JCVariableDecl local) {
 		JCTree typeTree = local.vartype;
 		if (typeTree == null) return;
 		String typeTreeToString = typeTree.toString();
