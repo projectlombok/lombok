@@ -2,11 +2,12 @@
 
 [_(general configuration and options)_](../readme.md)
 
-### `ARG ant=1.10.7`
+### `ARG ant=1.10.9`
 
 The ant version to be used. Supported values:
 
-- `1.10.7` (default)
+- `1.10.9` (default)
+- `1.10.7`
 - `1.10.6`
 - `1.10.1`
 
