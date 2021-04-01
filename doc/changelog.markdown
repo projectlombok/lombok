@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.21 "Edgy Guinea Pig"
+* There is no edge release at the moment; 1.18.20 is the most recent version.
+
 ### v1.18.20 (April 2nd, 2021)
 * PLATFORM: JDK16 support added. [Issue #2681](https://github.com/rzwitserloot/lombok/issues/2681).
 * PLATFORM: All lombok features updated to act in a sane fashion with JDK16's _record_ feature. In particular, you can annotate record components with `@NonNull` to have lombok add null checks to your compact constructor (which will be created if need be).
