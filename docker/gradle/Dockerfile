@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as downloader
+FROM ubuntu:20.04 as downloader
 
 ARG jdk=16
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
@@ -7,11 +7,11 @@ RUN provision/jdk/java-${jdk}.sh
 ARG lombokjar=lombok.jar
 ADD https://projectlombok.org/downloads/${lombokjar} /lombok.jar
 
-ARG gradle=6.2.2
+ARG gradle=6.8.3
 ADD provision/gradle/gradle-${gradle}.sh provision/gradle/gradle-${gradle}.sh
 RUN provision/gradle/gradle-${gradle}.sh
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 COPY --from=downloader /opt/gradle/ /opt/gradle/
 COPY --from=downloader /opt/jdk/ /opt/jdk/
