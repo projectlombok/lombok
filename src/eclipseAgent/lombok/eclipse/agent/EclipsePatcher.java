@@ -208,28 +208,9 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	
 	private static void patchDisableLombokForCodeCleanup(ScriptManager sm) {
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.DoStatement"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.EnhancedForStatement"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.ForStatement"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.IfStatement"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.WhileStatement"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$ThisQualifierVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.MethodInvocation"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$ThisQualifierVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.FieldAccess"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.MethodInvocation"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.TypeDeclaration"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.QualifiedName"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFix$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
-			// since JDT 3.20
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$ThisQualifierVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.MethodInvocation"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$ThisQualifierVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.FieldAccess"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.MethodInvocation"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.TypeDeclaration"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.QualifiedName"))
-			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeStyleFixCore$CodeStyleVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
-			// if a generated node has children we can just ignore them as well;
-			.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
-			.request(StackRequest.PARAM1)
-			.valueMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "returnFalse", "boolean", "java.lang.Object"))
+			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTNode", "accept", "void", "org.eclipse.jdt.core.dom.ASTVisitor"))
+			.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isRefactoringVisitorAndGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.core.dom.ASTVisitor"))
+			.request(StackRequest.THIS, StackRequest.PARAM1)
 			.build());
 	}
 	
@@ -365,6 +346,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.TempOccurrenceAnalyzer", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.RenameAnalyzeUtil$ProblemNodeFinder$NameNodeVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.RenameTypeParameterProcessor$RenameTypeParameterVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
 				.valueMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "returnTrue", "boolean", "java.lang.Object"))
 				.request(StackRequest.PARAM1)
@@ -586,6 +568,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		/* Set generated flag for QualifiedNames */
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM4)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlagForName", "void",
@@ -594,6 +577,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM4)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "setIsGeneratedFlagForName", "void",

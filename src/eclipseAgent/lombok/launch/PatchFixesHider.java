@@ -413,7 +413,25 @@ final class PatchFixesHider {
 			}
 			return result;
 		}
-
+		
+		public static boolean isRefactoringVisitorAndGenerated(org.eclipse.jdt.core.dom.ASTNode node, org.eclipse.jdt.core.dom.ASTVisitor visitor) {
+			if (visitor == null) return false;
+			
+			String className = visitor.getClass().getName();
+			if (!(className.startsWith("org.eclipse.jdt.internal.corext.fix") || className.startsWith("org.eclipse.jdt.internal.ui.fix"))) return false;
+			
+			boolean result = false;
+			try {
+				result = ((Boolean)node.getClass().getField("$isGenerated").get(node)).booleanValue();
+				if (!result && node.getParent() != null && node.getParent() instanceof org.eclipse.jdt.core.dom.QualifiedName) {
+					result = isGenerated(node.getParent());
+				}
+			} catch (Exception e) {
+				// better to assume it isn't generated
+			}
+			return result;
+		}
+		
 		public static boolean isListRewriteOnGeneratedNode(org.eclipse.jdt.core.dom.rewrite.ListRewrite rewrite) {
 			return isGenerated(rewrite.getParent());
 		}
