@@ -1,12 +1,13 @@
 Lombok Changelog
 ----------------
 
-### v1.18.19 "Edgy Guinea Pig"
-* PLATFORM: JDK16 support added. [Issue #2681](https://github.com/mplushnikov/lombok-intellij-plugin/issues/2681).
+### v1.18.20 (April 2nd, 2021)
+* PLATFORM: JDK16 support added. [Issue #2681](https://github.com/rzwitserloot/lombok/issues/2681).
 * PLATFORM: All lombok features updated to act in a sane fashion with JDK16's _record_ feature. In particular, you can annotate record components with `@NonNull` to have lombok add null checks to your compact constructor (which will be created if need be).
 * BUGFIX: Trying to use a lambda expression as parameter to an `@ExtensionMethod` did not work. [Issue #2741](https://github.com/rzwitserloot/lombok/issues/2741). (by __@Rawi01__).
 * BUGFIX: `@SuperBuilder` with an existing constructor caused issues in eclipse. [Issue #2704](https://github.com/rzwitserloot/lombok/issues/2704). (by [@JanRieke](https://github.com/rzwitserloot/lombok/pull/2770)).
 * BUGFIX: Using `@SuperBuilder` with a handwritten builder class caused issues. [Issue #2701](https://github.com/rzwitserloot/lombok/issues/2701). (by [@JanRieke](https://github.com/rzwitserloot/lombok/pull/2772)).
+* BUGFIX: Lombok interacts properly with the new save actions in eclipse 2021-03.
 * POTENTIAL BUGFIX: lombok + errorprone could cause `IllegalArgumentException` if using the `MissingSummary` bug pattern. [Issue #2730](https://github.com/rzwitserloot/lombok/issues/2730).
 
 ### v1.18.18 (January 28th, 2021)
