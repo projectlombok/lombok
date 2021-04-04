@@ -1545,6 +1545,42 @@ public class EclipseHandlerUtil {
 		return call;
 	}
 	
+	/**
+	 * Creates an expression that calls a method on an external object whose
+	 * argument reads the field(Will either be {@code this.field} or
+	 * {@code this.getField()} depending on whether or not there's a getter).
+	 */
+	static Expression createFieldAccessor(EclipseNode field, FieldAccess fieldAccess, ASTNode source, String className, char[] methodName) {
+		
+		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		className = className.substring(0, className.length() - 6);
+		String[] classNames = className.split("\\.");
+		long[] poss = {p};
+		char[][] tokens = new char[classNames.length][];
+		for (int i = 0; i < classNames.length; i++) {
+			tokens[i] = classNames[i].toCharArray();
+		}
+		
+		QualifiedTypeReference qtr = new QualifiedTypeReference(tokens, poss);
+		
+		AllocationExpression allocationExpression = new AllocationExpression();
+		allocationExpression.type = qtr;
+		
+		Expression[] arguments = {createFieldAccessor(field, fieldAccess, source)};
+		
+		MessageSend call = new MessageSend();
+		setGeneratedBy(call, source);
+		call.sourceStart = pS;
+		call.statementEnd = call.sourceEnd = pE;
+		call.receiver = allocationExpression;
+		setGeneratedBy(call.receiver, source);
+		call.selector = methodName;
+		call.arguments = arguments;
+		return call;
+	}
+	
 	static Expression createFieldAccessor(EclipseNode field, FieldAccess fieldAccess, ASTNode source, char[] receiver) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;

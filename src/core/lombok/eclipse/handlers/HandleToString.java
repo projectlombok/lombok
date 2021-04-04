@@ -231,7 +231,13 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			if (memberNode.getKind() == Kind.METHOD) {
 				memberAccessor = createMethodAccessor(memberNode, source);
 			} else {
-				memberAccessor = createFieldAccessor(memberNode, fieldAccess, source);
+				if (memberNode.hasAnnotation(ToString.Format.class)) {
+					AnnotationValues<ToString.Format> annot = memberNode.findAnnotation(ToString.Format.class);
+					String className = annot.getRawExpression("formatter").toString();
+					memberAccessor = createFieldAccessor(memberNode, fieldAccess, source, className, "format".toCharArray());
+				} else {
+					memberAccessor = createFieldAccessor(memberNode, fieldAccess, source);
+				}
 			}
 			
 			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
