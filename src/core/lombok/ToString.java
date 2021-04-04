@@ -89,6 +89,17 @@ public @interface ToString {
 	boolean onlyExplicitlyIncluded() default false;
 	
 	/**
+	 * Configure the behavior of how this member is rendered in the
+	 * {@code toString}; you should implement the {@code ToStringFormatter};
+	 * interface then override the format method.
+	 */
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Format {
+		Class<? extends ToStringFormatter> formatter();
+	}
+	
+	/**
 	 * If present, do not include this field in the generated {@code toString}.
 	 */
 	@Target(ElementType.FIELD)
