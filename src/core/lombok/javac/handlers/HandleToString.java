@@ -206,7 +206,13 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			if (memberNode.getKind() == Kind.METHOD) {
 				memberAccessor = createMethodAccessor(maker, memberNode);
 			} else {
-				memberAccessor = createFieldAccessor(maker, memberNode, fieldAccess);
+				if (memberNode.hasAnnotation(ToString.Format.class)) {
+					AnnotationValues<ToString.Format> annot = memberNode.findAnnotation(ToString.Format.class);
+					String className = annot.getRawExpression("formatter").toString();
+					memberAccessor = createFieldAccessor(maker, memberNode, fieldAccess, className, typeNode.toName("format"));
+				} else {
+					memberAccessor = createFieldAccessor(maker, memberNode, fieldAccess);
+				}
 			}
 			
 			JCExpression memberType = getFieldType(memberNode, fieldAccess);

@@ -67,6 +67,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
@@ -985,6 +986,34 @@ public class JavacHandlerUtil {
 		if (receiver == null) receiver = maker.Ident(field.toName("this"));
 		JCMethodInvocation call = maker.Apply(List.<JCExpression>nil(),
 			maker.Select(receiver, getter.name), List.<JCExpression>nil());
+		return call;
+	}
+	
+	/**
+	 * Creates an expression that calls a method on an external object whose
+	 * argument reads the field(Will either be {@code this.field} or
+	 * {@code this.getField()} depending on whether or not there's a getter).
+	 */
+	static JCExpression createFieldAccessor(JavacTreeMaker maker, JavacNode field, FieldAccess fieldAccess, String className, Name methodName) {
+		
+		className = className.substring(0, className.length() - 6);
+		String[] classNames = className.split("\\.");
+		Name name = field.toName(classNames[0]);
+		JCIdent firstPackage = maker.Ident(name);
+		JCExpression qualifiedNameClass = firstPackage;
+		for (int i = 1; i < classNames.length; i++) {
+			name = field.toName(classNames[i]);
+			JCFieldAccess nextPackage = maker.Select(qualifiedNameClass, name);
+			qualifiedNameClass = nextPackage;
+		}
+		
+		JCNewClass newClass = maker.NewClass(null, List.<JCExpression>nil(), qualifiedNameClass, List.<JCExpression>nil(), null);
+		
+		JCFieldAccess callMethod = maker.Select(newClass, methodName);
+		
+		List<JCExpression> args = List.of(createFieldAccessor(maker, field, fieldAccess));
+		
+		JCMethodInvocation call = maker.Apply(null, callMethod, args);
 		return call;
 	}
 	
