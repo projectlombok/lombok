@@ -90,7 +90,7 @@ public @interface ToString {
 	
 	/**
 	 * Configure the behavior of how this member is rendered in the
-	 * {@code toString}; you should implement the {@code ToStringFormatter};
+	 * {@code toString}; You should implement the {@code ToStringFormatter};
 	 * interface then override the format method.
 	 */
 	@Target(ElementType.FIELD)
