@@ -1057,7 +1057,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	private void copyJavadocFromParam(EclipseNode from, MethodDeclaration to, TypeDeclaration type, String param) {
 		try {
 			CompilationUnitDeclaration cud = (CompilationUnitDeclaration) from.top().get();
-			String methodComment = getDocComment(cud, from.get());
+			String methodComment = getDocComment(from);
 			String newJavadoc = addReturnsThisIfNeeded(getParamJavadoc(methodComment, param));
 			setDocComment(cud, type, to, newJavadoc);
 		} catch (Exception ignore) {}

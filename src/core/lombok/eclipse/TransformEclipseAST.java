@@ -182,6 +182,7 @@ public class TransformEclipseAST {
 			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform entry");
 			long histoToken = lombokTracker == null ? 0L : lombokTracker.start();
 			EclipseAST existing = getAST(ast, false);
+			existing.setSource(parser.scanner.getSource());
 			new TransformEclipseAST(existing).go();
 			if (lombokTracker != null) lombokTracker.end(histoToken);
 			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform exit");

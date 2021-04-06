@@ -95,7 +95,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.CaptureBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
@@ -2689,11 +2688,13 @@ public class EclipseHandlerUtil {
 		return annotations;
 	}
 	
-	public static String getDocComment(CompilationUnitDeclaration cud, ASTNode node) {
-		ICompilationUnit compilationUnit = cud.compilationResult.compilationUnit;
+	public static String getDocComment(EclipseNode eclipseNode) {
+		if (eclipseNode.getAst().getSource() == null) return null;
+		
+		final ASTNode node = eclipseNode.get();
 		if (node instanceof FieldDeclaration) {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration) node;
-			char[] rawContent = CharOperation.subarray(compilationUnit.getContents(), fieldDeclaration.declarationSourceStart, fieldDeclaration.declarationSourceEnd);
+			char[] rawContent = CharOperation.subarray(eclipseNode.getAst().getSource(), fieldDeclaration.declarationSourceStart, fieldDeclaration.declarationSourceEnd);
 			String rawContentString = new String(rawContent);
 			int startIndex = rawContentString.indexOf("/**");
 			int endIndex = rawContentString.indexOf("*/");
@@ -2739,14 +2740,13 @@ public class EclipseHandlerUtil {
 	
 	public static enum CopyJavadoc {
 		VERBATIM {
-			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
-				return getDocComment(cu, node.get());
+			@Override public String apply(final EclipseNode node) {
+				return getDocComment(node);
 			}
 		},
 		GETTER {
-			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
-				final ASTNode n = node.get();
-				String javadoc = getDocComment(cu, n);
+			@Override public String apply(final EclipseNode node) {
+				String javadoc = getDocComment(node);
 				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new method's javadoc.
 				String out = getJavadocSection(javadoc, "GETTER");
 				final boolean sectionBased = out != null;
@@ -2757,26 +2757,25 @@ public class EclipseHandlerUtil {
 			}
 		},
 		SETTER {
-			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
-				return applySetter(cu, node, "SETTER");
+			@Override public String apply(final EclipseNode node) {
+				return applySetter(node, "SETTER");
 			}
 		},
 		WITH {
-			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
-				return addReturnsUpdatedSelfIfNeeded(applySetter(cu, node, "WITH|WITHER"));
+			@Override public String apply(final EclipseNode node) {
+				return addReturnsUpdatedSelfIfNeeded(applySetter(node, "WITH|WITHER"));
 			}
 		},
 		WITH_BY {
-			@Override public String apply(final CompilationUnitDeclaration cu, final EclipseNode node) {
-				return applySetter(cu, node, "WITHBY|WITH_BY");
+			@Override public String apply( final EclipseNode node) {
+				return applySetter(node, "WITHBY|WITH_BY");
 			}
 		};
 		
-		public abstract String apply(final CompilationUnitDeclaration cu, final EclipseNode node);
+		public abstract String apply(final EclipseNode node);
 		
-		private static String applySetter(final CompilationUnitDeclaration cu, EclipseNode node, String sectionName) {
-			final ASTNode n = node.get();
-			String javadoc = getDocComment(cu, n);
+		private static String applySetter(EclipseNode node, String sectionName) {
+			String javadoc = getDocComment(node);
 			// step 1: Check if there is a 'SETTER' section. If yes, that becomes the new method's javadoc.
 			String out = getJavadocSection(javadoc, sectionName);
 			final boolean sectionBased = out != null;
@@ -2824,7 +2823,7 @@ public class EclipseHandlerUtil {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
 		try {
 			CompilationUnitDeclaration cud = ((CompilationUnitDeclaration) from.top().get());
-			String newJavadoc = copyMode.apply(cud, from);
+			String newJavadoc = copyMode.apply(from);
 			if (forceAddReturn) {
 				newJavadoc = addReturnsThisIfNeeded(newJavadoc);
 			}
