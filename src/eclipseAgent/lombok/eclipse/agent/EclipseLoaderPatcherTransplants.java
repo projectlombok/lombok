@@ -77,6 +77,35 @@ public class EclipseLoaderPatcherTransplants {
 									if (len == bytes.length) throw new IllegalStateException("lombok.launch.ShadowClassLoader too large.");
 								}
 								in.close();
+								
+								try {
+									/* Since Java 16 reflective access to ClassLoader.defineClass is no longer permitted. The recommended solution 
+									 * is to use MethodHandles.lookup().defineClass which is useless here because it is limited to classes in the
+									 * same package. Fortunately this code gets transplanted into a ClassLoader and we can call the parent method
+									 * using a MethodHandle. To support old Java versions we use a reflective version of the code snippet below.
+									 * 
+									 * Lookup lookup = MethodHandles.lookup();
+									 * MethodType type = MethodType.methodType(Class.class, new Class[] {String.class, byte[].class, int.class, int.class});
+									 * MethodHandle method = lookup.findVirtual(original.getClass(), "defineClass", type);
+									 * shadowClassLoaderClass = (Class) method.invokeWithArguments(original, "lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)}) 
+									 */
+									Class methodHandles = Class.forName("java.lang.invoke.MethodHandles");
+									Class methodHandle = Class.forName("java.lang.invoke.MethodHandle");
+									Class methodType = Class.forName("java.lang.invoke.MethodType");
+									Class methodHandlesLookup = Class.forName("java.lang.invoke.MethodHandles$Lookup");
+									Method lookupMethod = methodHandles.getDeclaredMethod("lookup", null);
+									Method methodTypeMethod = methodType.getDeclaredMethod("methodType", new Class[] {Class.class, Class[].class});
+									Method findVirtualMethod = methodHandlesLookup.getDeclaredMethod("findVirtual", new Class[] {Class.class, String.class, methodType});
+									Method invokeMethod = methodHandle.getDeclaredMethod("invokeWithArguments", new Class[] {Object[].class});
+									
+									Object lookup = lookupMethod.invoke(null, null);
+									Object type = methodTypeMethod.invoke(null, new Object[] {Class.class, new Class[] {String.class, byte[].class, int.class, int.class}});
+									Object method = findVirtualMethod.invoke(lookup, new Object[] {original.getClass(), "defineClass", type});
+									shadowClassLoaderClass = (Class) invokeMethod.invoke(method, new Object[] {new Object[] {original, "lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)}});
+								} catch (ClassNotFoundException e) {
+									// Ignore, old Java
+								}
+								if (shadowClassLoaderClass == null)
 								{
 									Class[] paramTypes = new Class[4];
 									paramTypes[0] = "".getClass();
@@ -86,8 +115,8 @@ public class EclipseLoaderPatcherTransplants {
 									Method defineClassMethod = classLoaderClass.getDeclaredMethod("defineClass", paramTypes);
 									defineClassMethod.setAccessible(true);
 									shadowClassLoaderClass = (Class) defineClassMethod.invoke(original, new Object[] {"lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)});
-									original.getClass().getField("lombok$shadowLoaderClass").set(null, shadowClassLoaderClass);
 								}
+								original.getClass().getField("lombok$shadowLoaderClass").set(null, shadowClassLoaderClass);
 							} finally {
 								if (in != null) in.close();
 								jf.close();
