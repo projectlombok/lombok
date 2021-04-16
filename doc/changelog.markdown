@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.21 "Edgy Guinea Pig"
-* There is no edge release at the moment; 1.18.20 is the most recent version.
+* Added the `@StandardException` feature. [Pull Request #2702](https://github.com/rzwitserloot/lombok/pull/2702).
 
 ### v1.18.20 (April 2nd, 2021)
 * PLATFORM: JDK16 support added. [Issue #2681](https://github.com/rzwitserloot/lombok/issues/2681).

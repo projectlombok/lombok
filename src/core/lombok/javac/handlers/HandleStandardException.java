@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 The Project Lombok Authors.
+ * Copyright (C) 2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,174 +42,171 @@ import lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.spi.Provides;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
-import static lombok.javac.Javac.CTC_VOID;
+import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 @Provides
 public class HandleStandardException extends JavacAnnotationHandler<StandardException> {
-	private static final String NAME = StandardException.class.getSimpleName();
-
 	@Override
 	public void handle(AnnotationValues<StandardException> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.STANDARD_EXCEPTION_FLAG_USAGE, "@StandardException");
 		deleteAnnotationIfNeccessary(annotationNode, StandardException.class);
+		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 		JavacNode typeNode = annotationNode.up();
-		if (!checkLegality(typeNode, annotationNode)) return;
-
-		SuperParameter messageField = new SuperParameter("message", typeNode.getSymbolTable().stringType);
-		SuperParameter causeField = new SuperParameter("cause", typeNode.getSymbolTable().throwableType);
-
-		boolean skip = true;
-		generateConstructor(typeNode, AccessLevel.PUBLIC, List.<SuperParameter>nil(), skip, annotationNode);
-		generateConstructor(typeNode, AccessLevel.PUBLIC, List.of(messageField), skip, annotationNode);
-		generateConstructor(typeNode, AccessLevel.PUBLIC, List.of(causeField), skip, annotationNode);
-		generateConstructor(typeNode, AccessLevel.PUBLIC, List.of(messageField, causeField), skip, annotationNode);
-	}
-
-	private static boolean checkLegality(JavacNode typeNode, JavacNode errorNode) {
-		JCClassDecl typeDecl = null;
-		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
-		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
 		
-		if (typeDecl == null || notAClass) {
-			errorNode.addError(NAME + " is only supported on a class or an enum.");
-			return false;
+		if (!isClass(typeNode)) {
+			annotationNode.addError("@StandardException is only supported on a class.");
+			return;
 		}
 		
-		return true;
-	}
-
-	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<SuperParameter> fields,
-									boolean skipIfConstructorExists, JavacNode source) {
-		generate(typeNode, level, fields, skipIfConstructorExists, source);
-	}
-
-	private void generate(JavacNode typeNode, AccessLevel level, List<SuperParameter> fields, boolean skipIfConstructorExists,
-						  JavacNode source) {
-		ListBuffer<Type> argTypes = new ListBuffer<Type>();
-		for (SuperParameter field : fields) {
-			Type mirror = field.type;
-			if (mirror == null) {
-				argTypes = null;
-				break;
-			}
-			argTypes.append(mirror);
+		AccessLevel access = annotation.getInstance().access();
+		if (access == null) access = AccessLevel.PUBLIC;
+		if (access == AccessLevel.NONE) {
+			annotationNode.addError("AccessLevel.NONE is not valid here");
+			access = AccessLevel.PUBLIC;
 		}
-		List<Type> argTypes_ = argTypes == null ? null : argTypes.toList();
-
-		if (!(skipIfConstructorExists && constructorExists(typeNode, fields) != MemberExistsResult.NOT_EXISTS)) {
-			JCMethodDecl constr = createConstructor(level, typeNode, fields, source);
-			injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
-		}
+		
+		generateNoArgsConstructor(typeNode, access, annotationNode);
+		generateMsgOnlyConstructor(typeNode, access, annotationNode);
+		generateCauseOnlyConstructor(typeNode, access, annotationNode);
+		generateFullConstructor(typeNode, access, annotationNode);
 	}
-
-	public static MemberExistsResult constructorExists(JavacNode node, List<SuperParameter> parameters) {
+	
+	private void generateNoArgsConstructor(JavacNode typeNode, AccessLevel level, JavacNode source) {
+		if (hasConstructor(typeNode) != MemberExistsResult.NOT_EXISTS) return;
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		List<JCExpression> args = List.<JCExpression>of(maker.Literal(CTC_BOT, null), maker.Literal(CTC_BOT, null));
+		JCStatement thisCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(typeNode.toName("this")), args));
+		JCMethodDecl constr = createConstructor(level, typeNode, false, false, source, List.of(thisCall));
+		injectMethod(typeNode, constr, List.<Type>nil(), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+	}
+	
+	private void generateMsgOnlyConstructor(JavacNode typeNode, AccessLevel level, JavacNode source) {
+		if (hasConstructor(typeNode, String.class) != MemberExistsResult.NOT_EXISTS) return;
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		List<JCExpression> args = List.<JCExpression>of(maker.Ident(typeNode.toName("message")), maker.Literal(CTC_BOT, null));
+		JCStatement thisCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(typeNode.toName("this")), args));
+		JCMethodDecl constr = createConstructor(level, typeNode, true, false, source, List.of(thisCall));
+		injectMethod(typeNode, constr, List.<Type>of(typeNode.getSymbolTable().stringType), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+	}
+	
+	private void generateCauseOnlyConstructor(JavacNode typeNode, AccessLevel level, JavacNode source) {
+		if (hasConstructor(typeNode, Throwable.class) != MemberExistsResult.NOT_EXISTS) return;
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		Name causeName = typeNode.toName("cause");
+		
+		JCExpression causeDotGetMessage = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(causeName), typeNode.toName("getMessage")), List.<JCExpression>nil());
+		JCExpression msgExpression = maker.Conditional(maker.Binary(CTC_NOT_EQUAL, maker.Ident(causeName), maker.Literal(CTC_BOT, null)), causeDotGetMessage, maker.Literal(CTC_BOT, null));
+		
+		List<JCExpression> args = List.<JCExpression>of(msgExpression, maker.Ident(causeName));
+		JCStatement thisCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(typeNode.toName("this")), args));
+		JCMethodDecl constr = createConstructor(level, typeNode, false, true, source, List.of(thisCall));
+		injectMethod(typeNode, constr, List.<Type>of(typeNode.getSymbolTable().throwableType), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+	}
+	
+	private void generateFullConstructor(JavacNode typeNode, AccessLevel level, JavacNode source) {
+		if (hasConstructor(typeNode, String.class, Throwable.class) != MemberExistsResult.NOT_EXISTS) return;
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		Name causeName = typeNode.toName("cause");
+		Name superName = typeNode.toName("super");
+		
+		List<JCExpression> args = List.<JCExpression>of(maker.Ident(typeNode.toName("message")));
+		JCStatement superCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(superName), args));
+		JCExpression causeNotNull = maker.Binary(CTC_NOT_EQUAL, maker.Ident(causeName), maker.Literal(CTC_BOT, null));
+		JCStatement initCauseCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(superName), typeNode.toName("initCause")), List.<JCExpression>of(maker.Ident(causeName))));
+		JCStatement initCause = maker.If(causeNotNull, initCauseCall, null);
+		JCMethodDecl constr = createConstructor(level, typeNode, true, true, source, List.of(superCall, initCause));
+		injectMethod(typeNode, constr, List.<Type>of(typeNode.getSymbolTable().stringType, typeNode.getSymbolTable().throwableType), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+	}
+	
+	private static MemberExistsResult hasConstructor(JavacNode node, Class<?>... paramTypes) {
 		node = upToTypeNode(node);
-
+		
 		if (node != null && node.get() instanceof JCClassDecl) {
 			for (JCTree def : ((JCClassDecl) node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
 					JCMethodDecl md = (JCMethodDecl) def;
 					if (md.name.contentEquals("<init>") && (md.mods.flags & Flags.GENERATEDCONSTR) == 0) {
-						if (!paramsMatch(md.params, parameters)) continue;
+						if (!paramsMatch(node, md.params, paramTypes)) continue;
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
 			}
 		}
-
+		
 		return MemberExistsResult.NOT_EXISTS;
 	}
-
-	private static boolean paramsMatch(List<JCVariableDecl> params, List<SuperParameter> superParams) {
-		if (params == null) {
-			return superParams.size() == 0;
-		} else if (params.size() != superParams.size()) {
-			return false;
-		} else {
-			for (int i = 0; i < superParams.size(); i++) {
-				SuperParameter field = superParams.get(i);
-				JCVariableDecl param = params.get(i);
-				if (!param.getType().type.equals(field.type))
-					return false;
-			}
+	
+	private static boolean paramsMatch(JavacNode node, List<JCVariableDecl> a, Class<?>[] b) {
+		if (a == null) return b == null || b.length == 0;
+		if (b == null) return a.size() == 0;
+		if (a.size() != b.length) return false;
+		
+		for (int i = 0; i < a.size(); i++) {
+			JCVariableDecl param = a.get(i);
+			Class<?> c = b[i];
+			if (!typeMatches(c, node, param.vartype)) return false;
 		}
-
+		
 		return true;
 	}
 
-	public static void addConstructorProperties(JCModifiers mods, JavacNode node, List<SuperParameter> fields) {
-		if (fields.isEmpty()) return;
+	private static void addConstructorProperties(JCModifiers mods, JavacNode node, boolean msgParam, boolean causeParam) {
+		if (!msgParam && !causeParam) return;
 		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression constructorPropertiesType = chainDots(node, "java", "beans", "ConstructorProperties");
 		ListBuffer<JCExpression> fieldNames = new ListBuffer<JCExpression>();
-		for (SuperParameter field : fields) {
-			Name fieldName = node.toName(field.name);
-			fieldNames.append(maker.Literal(fieldName.toString()));
-		}
+		if (msgParam) fieldNames.append(maker.Literal("message"));
+		if (causeParam) fieldNames.append(maker.Literal("cause"));
 		JCExpression fieldNamesArray = maker.NewArray(null, List.<JCExpression>nil(), fieldNames.toList());
 		JCAnnotation annotation = maker.Annotation(constructorPropertiesType, List.of(fieldNamesArray));
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
-	@SuppressWarnings("deprecation") public static JCMethodDecl createConstructor(AccessLevel level, JavacNode typeNode,
-																				  List<SuperParameter> fieldsToParam, JavacNode source) {
+	@SuppressWarnings("deprecation") private static JCMethodDecl createConstructor(AccessLevel level, JavacNode typeNode, boolean msgParam, boolean causeParam, JavacNode source, List<JCStatement> statements) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
-		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
-		if (isEnum) level = AccessLevel.PRIVATE;
-		
 		boolean addConstructorProperties;
-		if (fieldsToParam.isEmpty()) {
+		if ((!msgParam && !causeParam) || isLocalType(typeNode) || !LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
 			addConstructorProperties = false;
 		} else {
 			Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES);
 			addConstructorProperties = v != null ? v.booleanValue() :
 				Boolean.FALSE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
 		}
-
-		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
-		ListBuffer<JCExpression> superArgs = new ListBuffer<JCExpression>();
 		
-		for (SuperParameter fieldNode : fieldsToParam) {
-			Name fieldName = source.toName(fieldNode.name);
+		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
+		
+		if (msgParam) {
+			Name fieldName = typeNode.toName("message");
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			JCExpression pType = maker.getUnderlyingTreeMaker().Ident(fieldNode.type.tsym);
+			JCExpression pType = genJavaLangTypeRef(typeNode, "String");
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags), fieldName, pType, null);
 			params.append(param);
-			superArgs.append(maker.Ident(fieldName));
 		}
-
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
-				maker.Ident(typeNode.toName("super")),
-				superArgs.toList());
-		statements.add(maker.Exec(callToSuper));
-
+		
+		if (causeParam) {
+			Name fieldName = typeNode.toName("cause");
+			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
+			JCExpression pType = genJavaLangTypeRef(typeNode, "Throwable");
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags), fieldName, pType, null);
+			params.append(param);
+		}
+		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
-		if (addConstructorProperties && !isLocalType(typeNode) && LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
-			addConstructorProperties(mods, typeNode, fieldsToParam);
-		}
+		if (addConstructorProperties) addConstructorProperties(mods, typeNode, msgParam, causeParam);
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
-			maker.Block(0L, statements.toList()), null), source);
+			maker.Block(0L, statements), null), source);
 	}
-
+	
 	public static boolean isLocalType(JavacNode type) {
 		Kind kind = type.up().getKind();
 		if (kind == Kind.COMPILATION_UNIT) return false;
 		if (kind == Kind.TYPE) return isLocalType(type.up());
 		return true;
-	}
-
-	private static class SuperParameter {
-		private final String name;
-		private final Type type;
-
-		private SuperParameter(String name, Type type) {
-			this.name = name;
-			this.type = type;
-		}
 	}
 }

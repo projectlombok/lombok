@@ -10,9 +10,19 @@
 
 	<@f.overview>
 		<p>
-			This annotation is intended to be used on subclasses of <code>java.util.Throwable</code>. For each of the four constructors in <code>Throwable</code>, it will generate a corresponding constructor in the target class, that simply forwards its argument to its super-counterpart.
+			Put this annotation on your own exception types (new classes that <code>extends Exception</code> or anything else that inherits from <code>Throwable</code>. This annotation will then generate up to 4 constructors:
+		</p><ul>
+			<li>A no-args constructor (<code>MyException()</code>), representing no message, and no cause.</li>
+			<li>A message-only constructor (<code>MyException(String message)</code>), representing the provided message, and no cause.</li>
+			<li>A cause-only constructor (<code>MyException(Throwable cause)</code>), which will copy the message from the cause, if there is one, and uses the provided cause.</li>
+			<li>A full constructor (<code>MyException(String message, Throwable cause)</code>).</li>
+		</ul>
+		<p>
+			Each constructor forwards to the full constructor; you can write any or all of these constructors manually in which case lombok
+			will not generate it. The full constructor, if it needs to be generated, will invoke <code>super(message);</code> and will then
+			invoke <code>super.initCause(cause);</code> if the cause is not null.
 		</p><p>
-			If any of those constructors is manually overriden, it is simply skipped. This allows applying special treatment such as annotations.
+			There are few reasons <em>not</em> to put this annotation on all your custom exceptions.
 		</p>
 	</@f.overview>
 
@@ -30,7 +40,14 @@
 
 	<@f.smallPrint>
 		<p>
-			Although such situation is unlikely to occur, this annotation can technically be applied to any class for which all four expected constructors are defined in a superclass.
+			Lombok will not check if you extend an actual exception type.
+		</p><p>
+			Lombok does not require that the class you inherit from has the <code>Throwable cause</code> variants, because not all exceptions
+			have these. However, the `<code>Parent(String message)</code>` constructor as well as the no-args constructor <em>must</em> exist.
+		</p><p>
+			There is a very slight functional difference: Normally, invoking <code>new SomeException(message, null)</code> will initialize
+			the cause to be <em>no cause</em>, and this cannot be later changed by invoking <code>initCause</code>. However, lombok's
+			standard exceptions <strong>do</strong> let you overwrite an explicit no-cause with <code>initCause</code> later.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

@@ -1,0 +1,2 @@
+4 The serializable class EmptyException does not declare a static final serialVersionUID field of type long
+6 The serializable class NoArgsException does not declare a static final serialVersionUID field of type long

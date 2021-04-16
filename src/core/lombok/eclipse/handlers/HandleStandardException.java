@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 The Project Lombok Authors.
+ * Copyright (C) 2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,129 +26,138 @@ import lombok.ConfigurationKeys;
 import lombok.experimental.StandardException;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import lombok.spi.Provides;
 import org.eclipse.jdt.internal.compiler.ast.*;
-import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.eclipse.Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-import static lombok.eclipse.Eclipse.pos;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 @Provides
 public class HandleStandardException extends EclipseAnnotationHandler<StandardException> {
-	private static final String NAME = StandardException.class.getSimpleName();
-
 	@Override
 	public void handle(AnnotationValues<StandardException> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.STANDARD_EXCEPTION_FLAG_USAGE, "@StandardException");
-
-		EclipseNode typeNode = annotationNode.up();
-		if (!checkLegality(typeNode, annotationNode)) return;
-
-		SuperParameter message = new SuperParameter("message", new SingleTypeReference("String".toCharArray(), pos(typeNode.get())));
-		SuperParameter cause = new SuperParameter("cause", new SingleTypeReference("Throwable".toCharArray(), pos(typeNode.get())));
-
-		boolean skip = true;
-		generateConstructor(
-				typeNode, AccessLevel.PUBLIC, Collections.<SuperParameter>emptyList(), skip, annotationNode);
-		generateConstructor(
-				typeNode, AccessLevel.PUBLIC, Collections.singletonList(message), skip, annotationNode);
-		generateConstructor(
-				typeNode, AccessLevel.PUBLIC, Collections.singletonList(cause), skip, annotationNode);
-		generateConstructor(
-			typeNode, AccessLevel.PUBLIC, Arrays.asList(message, cause), skip, annotationNode);
-	}
-
-	private static boolean checkLegality(EclipseNode typeNode, EclipseNode errorNode) {
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
 		
-		if (typeDecl == null || notAClass) {
-			errorNode.addError(HandleStandardException.NAME + " is only supported on a class or an enum.");
-			return false;
+		EclipseNode typeNode = annotationNode.up();
+		if (!isClass(typeNode)) {
+			annotationNode.addError("@StandardException is only supported on a class.");
+			return;
 		}
 		
-		return true;
-	}
-
-	public void generateConstructor(
-			EclipseNode typeNode, AccessLevel level, List<SuperParameter> parameters, boolean skipIfConstructorExists,
-			EclipseNode sourceNode) {
+		AccessLevel access = annotation.getInstance().access();
 		
-		generate(typeNode, level, parameters, skipIfConstructorExists, sourceNode);
+		generateNoArgsConstructor(typeNode, access, annotationNode);
+		generateMsgOnlyConstructor(typeNode, access, annotationNode);
+		generateCauseOnlyConstructor(typeNode, access, annotationNode);
+		generateFullConstructor(typeNode, access, annotationNode);
 	}
 	
-	public void generate(
-			EclipseNode typeNode, AccessLevel level, List<SuperParameter> parameters, boolean skipIfConstructorExists,
-			EclipseNode sourceNode) {
-		if (!(skipIfConstructorExists
-				&& constructorExists(typeNode, parameters) != MemberExistsResult.NOT_EXISTS)) {
-			ConstructorDeclaration constr = createConstructor(level, typeNode, parameters, sourceNode);
-			injectMethod(typeNode, constr);
-		}
+	private void generateNoArgsConstructor(EclipseNode typeNode, AccessLevel level, EclipseNode source) {
+		if (hasConstructor(typeNode) != MemberExistsResult.NOT_EXISTS) return;
+		int pS = source.get().sourceStart, pE = source.get().sourceEnd;
+		
+		ExplicitConstructorCall explicitCall = new ExplicitConstructorCall(ExplicitConstructorCall.This);
+		explicitCall.arguments = new Expression[] {new NullLiteral(pS, pE), new NullLiteral(pS, pE)};
+		ConstructorDeclaration constructor = createConstructor(level, typeNode, false, false, source, explicitCall, null);
+		injectMethod(typeNode, constructor);
 	}
-
+	
+	private void generateMsgOnlyConstructor(EclipseNode typeNode, AccessLevel level, EclipseNode source) {
+		if (hasConstructor(typeNode, String.class) != MemberExistsResult.NOT_EXISTS) return;
+		int pS = source.get().sourceStart, pE = source.get().sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		ExplicitConstructorCall explicitCall = new ExplicitConstructorCall(ExplicitConstructorCall.This);
+		explicitCall.arguments = new Expression[] {new SingleNameReference(MESSAGE, p), new NullLiteral(pS, pE)};
+		ConstructorDeclaration constructor = createConstructor(level, typeNode, true, false, source, explicitCall, null);
+		injectMethod(typeNode, constructor);
+	}
+	
+	private void generateCauseOnlyConstructor(EclipseNode typeNode, AccessLevel level, EclipseNode source) {
+		if (hasConstructor(typeNode, Throwable.class) != MemberExistsResult.NOT_EXISTS) return;
+		int pS = source.get().sourceStart, pE = source.get().sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		ExplicitConstructorCall explicitCall = new ExplicitConstructorCall(ExplicitConstructorCall.This);
+		Expression causeNotNull = new EqualExpression(new SingleNameReference(CAUSE, p), new NullLiteral(pS, pE), OperatorIds.NOT_EQUAL);
+		MessageSend causeDotGetMessage = new MessageSend();
+		causeDotGetMessage.sourceStart = pS; causeDotGetMessage.sourceEnd = pE;
+		causeDotGetMessage.receiver = new SingleNameReference(CAUSE, p);
+		causeDotGetMessage.selector = GET_MESSAGE;
+		Expression messageExpr = new ConditionalExpression(causeNotNull, causeDotGetMessage, new NullLiteral(pS, pE));
+		explicitCall.arguments = new Expression[] {messageExpr, new SingleNameReference(CAUSE, p)};
+		ConstructorDeclaration constructor = createConstructor(level, typeNode, false, true, source, explicitCall, null);
+		injectMethod(typeNode, constructor);
+	}
+	
+	private void generateFullConstructor(EclipseNode typeNode, AccessLevel level, EclipseNode source) {
+		if (hasConstructor(typeNode, String.class, Throwable.class) != MemberExistsResult.NOT_EXISTS) return;
+		int pS = source.get().sourceStart, pE = source.get().sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		ExplicitConstructorCall explicitCall = new ExplicitConstructorCall(ExplicitConstructorCall.Super);
+		explicitCall.arguments = new Expression[] {new SingleNameReference(MESSAGE, p)};
+		Expression causeNotNull = new EqualExpression(new SingleNameReference(CAUSE, p), new NullLiteral(pS, pE), OperatorIds.NOT_EQUAL);
+		MessageSend causeDotInitCause = new MessageSend();
+		causeDotInitCause.sourceStart = pS; causeDotInitCause.sourceEnd = pE;
+		causeDotInitCause.receiver = new SuperReference(pS, pE);
+		causeDotInitCause.selector = INIT_CAUSE;
+		causeDotInitCause.arguments = new Expression[] {new SingleNameReference(CAUSE, p)};
+		IfStatement ifs = new IfStatement(causeNotNull, causeDotInitCause, pS, pE);
+		ConstructorDeclaration constructor = createConstructor(level, typeNode, true, true, source, explicitCall, ifs);
+		injectMethod(typeNode, constructor);
+	}
+	
 	/**
 	 * Checks if a constructor with the provided parameters exists under the type node.
 	 */
-	public static MemberExistsResult constructorExists(EclipseNode node, List<SuperParameter> parameters) {
+	public static MemberExistsResult hasConstructor(EclipseNode node, Class<?>... paramTypes) {
 		node = upToTypeNode(node);
-		SuperParameter[] parameterArray = parameters.toArray(new SuperParameter[0]);
-
+		
 		if (node != null && node.get() instanceof TypeDeclaration) {
-			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
+			TypeDeclaration typeDecl = (TypeDeclaration) node.get();
 			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
 				if (def instanceof ConstructorDeclaration) {
-					if (!paramsMatch(node, def.arguments, parameterArray)) continue;
+					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
+					if (!paramsMatch(node, def.arguments, paramTypes)) continue;
 					return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}
 		}
-
+		
 		return MemberExistsResult.NOT_EXISTS;
 	}
-
-	private static boolean paramsMatch(EclipseNode node, Argument[] arguments, SuperParameter[] parameters) {
-		if (arguments == null) {
-			return parameters.length == 0;
-		} else if (arguments.length != parameters.length) {
-			return false;
-		} else {
-			for (int i = 0; i < parameters.length; i++) {
-				String fieldTypeName = Eclipse.toQualifiedName(parameters[i].type.getTypeName());
-				String argTypeName = Eclipse.toQualifiedName(arguments[i].type.getTypeName());
-
-				if (!typeNamesMatch(node, fieldTypeName, argTypeName))
-					return false;
-			}
+	
+	private static boolean paramsMatch(EclipseNode node, Argument[] a, Class<?>[] b) {
+		if (a == null) return b == null || b.length == 0;
+		if (b == null) return a.length == 0;
+		if (a.length != b.length) return false;
+		
+		for (int i = 0; i < a.length; i++) {
+			if (!typeMatches(b[i], node, a[i].type)) return false;
 		}
 		return true;
 	}
-
-	private static boolean typeNamesMatch(EclipseNode node, String a, String b) {
-		boolean isFqn = node.getImportListAsTypeResolver().typeMatches(node, a, b);
-		boolean reverseIsFqn = node.getImportListAsTypeResolver().typeMatches(node, b, a);
-		return isFqn || reverseIsFqn;
-	}
-
+	
 	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
-	public static Annotation[] createConstructorProperties(ASTNode source, Collection<SuperParameter> fields) {
-		if (fields.isEmpty()) return null;
+	private static final char[] MESSAGE = "message".toCharArray(), CAUSE = "cause".toCharArray(), GET_MESSAGE = "getMessage".toCharArray(), INIT_CAUSE = "initCause".toCharArray();
+	
+	public static Annotation[] createConstructorProperties(ASTNode source, boolean msgParam, boolean causeParam) {
+		if (!msgParam && !causeParam) return null;
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		long[] poss = new long[3];
 		Arrays.fill(poss, p);
+		
 		QualifiedTypeReference constructorPropertiesType = new QualifiedTypeReference(JAVA_BEANS_CONSTRUCTORPROPERTIES, poss);
 		setGeneratedBy(constructorPropertiesType, source);
 		SingleMemberAnnotation ann = new SingleMemberAnnotation(constructorPropertiesType, pS);
@@ -157,12 +166,16 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 		ArrayInitializer fieldNames = new ArrayInitializer();
 		fieldNames.sourceStart = pS;
 		fieldNames.sourceEnd = pE;
-		fieldNames.expressions = new Expression[fields.size()];
+		fieldNames.expressions = new Expression[(msgParam && causeParam) ? 2 : 1];
 		
 		int ctr = 0;
-		for (SuperParameter field : fields) {
-			char[] fieldName = field.name.toCharArray();
-			fieldNames.expressions[ctr] = new StringLiteral(fieldName, pS, pE, 0);
+		if (msgParam) {
+			fieldNames.expressions[ctr] = new StringLiteral(MESSAGE, pS, pE, 0);
+			setGeneratedBy(fieldNames.expressions[ctr], source);
+			ctr++;
+		}
+		if (causeParam) {
+			fieldNames.expressions[ctr] = new StringLiteral(CAUSE, pS, pE, 0);
 			setGeneratedBy(fieldNames.expressions[ctr], source);
 			ctr++;
 		}
@@ -172,59 +185,55 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 		setGeneratedBy(ann.memberValue, source);
 		return new Annotation[] { ann };
 	}
-
-	@SuppressWarnings("deprecation") public static ConstructorDeclaration createConstructor(
-			AccessLevel level, EclipseNode type, Collection<SuperParameter> parameters, EclipseNode sourceNode) {
+	
+	@SuppressWarnings("deprecation") public static ConstructorDeclaration createConstructor(AccessLevel level, EclipseNode typeNode, boolean msgParam, boolean causeParam, EclipseNode sourceNode, ExplicitConstructorCall explicitCall, Statement extra) {
 		ASTNode source = sourceNode.get();
-		TypeDeclaration typeDeclaration = ((TypeDeclaration) type.get());
-
-		boolean isEnum = (((TypeDeclaration) type.get()).modifiers & ClassFileConstants.AccEnum) != 0;
-		if (isEnum) level = AccessLevel.PRIVATE;
-
+		TypeDeclaration typeDeclaration = ((TypeDeclaration) typeNode.get());
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
 		boolean addConstructorProperties;
-		if (parameters.isEmpty()) {
+		if ((!msgParam && !causeParam) || isLocalType(typeNode)) {
 			addConstructorProperties = false;
 		} else {
-			Boolean v = type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES);
+			Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES);
 			addConstructorProperties = v != null ? v.booleanValue() :
-				Boolean.FALSE.equals(type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
+				Boolean.FALSE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
 		}
 		
-		ConstructorDeclaration constructor = new ConstructorDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		ConstructorDeclaration constructor = new ConstructorDeclaration(((CompilationUnitDeclaration) typeNode.top().get()).compilationResult);
 		
 		constructor.modifiers = toEclipseModifier(level);
 		constructor.selector = typeDeclaration.name;
 		constructor.thrownExceptions = null;
 		constructor.typeParameters = null;
 		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
-		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
+		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = pS;
+		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = pE;
 		constructor.arguments = null;
 		
 		List<Argument> params = new ArrayList<Argument>();
-		List<Expression> superArgs = new ArrayList<Expression>();
-
-		for (SuperParameter fieldNode : parameters) {
-			char[] fieldName = fieldNode.name.toCharArray();
-			long fieldPos = (((long) type.get().sourceStart) << 32) | type.get().sourceEnd;
-			Argument parameter = new Argument(fieldName, fieldPos, copyType(fieldNode.type, source), Modifier.FINAL);
+		
+		if (msgParam) {
+			TypeReference typeRef = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {p, p, p});
+			Argument parameter = new Argument(MESSAGE, p, typeRef, Modifier.FINAL);
 			params.add(parameter);
-			superArgs.add(new SingleNameReference(fieldName, 0));
 		}
-
-		// Super constructor call
-		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.Super);
-		constructor.constructorCall.arguments = superArgs.toArray(new Expression[0]);
-		constructor.constructorCall.sourceStart = source.sourceStart;
-		constructor.constructorCall.sourceEnd = source.sourceEnd;
-
+		if (causeParam) {
+			TypeReference typeRef = new QualifiedTypeReference(TypeConstants.JAVA_LANG_THROWABLE, new long[] {p, p, p});
+			Argument parameter = new Argument(CAUSE, p, typeRef, Modifier.FINAL);
+			params.add(parameter);
+		}
+		
+		explicitCall.sourceStart = pS;
+		explicitCall.sourceEnd = pE;
+		constructor.constructorCall = explicitCall;
+		constructor.statements = extra != null ? new Statement[] {extra} : null;
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[0]);
 		
 		Annotation[] constructorProperties = null;
-		if (addConstructorProperties && !isLocalType(type)) constructorProperties = createConstructorProperties(source, parameters);
-		constructor.annotations = copyAnnotations(source,
-				constructorProperties);
-
+		if (addConstructorProperties) constructorProperties = createConstructorProperties(source, msgParam, causeParam);
+		constructor.annotations = copyAnnotations(source, constructorProperties);
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		return constructor;
 	}
@@ -234,15 +243,5 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 		if (kind == Kind.COMPILATION_UNIT) return false;
 		if (kind == Kind.TYPE) return isLocalType(type.up());
 		return true;
-	}
-
-	private static class SuperParameter {
-		private final String name;
-		private final TypeReference type;
-
-		private SuperParameter(String name, TypeReference type) {
-			this.name = name;
-			this.type = type;
-		}
 	}
 }

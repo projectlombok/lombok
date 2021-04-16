@@ -1,16 +1,18 @@
 public class ExampleException extends Exception {
     public ExampleException() {
+        this(null, null);
     }
 
     public ExampleException(String message) {
-        super(message);
+        this(message, null);
     }
 
     public ExampleException(Throwable cause) {
-        super(cause);
+        this(cause != null ? cause.getMessage() : null, cause);
     }
 
     public ExampleException(String message, Throwable cause) {
-        super(message, cause);
+        super(message);
+        if (cause != null) super.initCause(cause);
     }
 }

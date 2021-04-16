@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2017 The Project Lombok Authors.
+ * Copyright (C) 2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.AccessLevel;
+
 /**
+ * Put on any class that extends some {@code java.lang.Throwable} type to add the 4 common exception constructors.
+ * 
+ * Specifically, all 4 constructors derived from the combinatorial explosion of {@code String message} and {@code Throwable cause}.
+ * You may write any or all of these 4 constructors by hand; lombok will only generate the missing ones.
+ * <p>
+ * All but the full {@code (String message, Throwable cause)} constructor are implemented as a {@code this(msg, cause)} call; it is therefore
+ * possibly to write code to run on construction by writing just the {@code (String message, Throwable cause)} constructor.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface StandardException {
+	/**
+	 * Sets the access level of the generated constuctors. By default, generated constructors are {@code public}.
+	 * Note: This does nothing if you write your own constructors (we won't change their access levels).
+	 * 
+	 * @return The constructors will be generated with this access modifier.
+	 */
+	AccessLevel access() default lombok.AccessLevel.PUBLIC;
 }
