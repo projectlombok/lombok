@@ -161,12 +161,12 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		
 		String typeName = getTypeName(type);
 		boolean isEnum = type.isEnumType();
-
+		
 		char[] suffix = ")".toCharArray();
 		String infixS = ", ";
 		char[] infix = infixS.toCharArray();
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		final int PLUS = OperatorIds.PLUS;
 		
 		String prefix;

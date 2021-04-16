@@ -250,6 +250,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		setGeneratedBy(hashCodeCacheDecl.type, source);
 	}
 	
+	private static final char[] HASH_CODE = "hashCode".toCharArray(), FLOAT_TO_INT_BITS = "floatToIntBits".toCharArray(), DOUBLE_TO_LONG_BITS = "doubleToLongBits".toCharArray();
+	
 	public MethodDeclaration createHashCode(EclipseNode type, Collection<Included<EclipseNode, EqualsAndHashCode.Include>> members, boolean callSuper, boolean cacheHashCode, ASTNode source, FieldAccess fieldAccess) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
@@ -373,7 +375,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					floatToIntBits.sourceStart = pS; floatToIntBits.sourceEnd = pE;
 					setGeneratedBy(floatToIntBits, source);
 					floatToIntBits.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_FLOAT);
-					floatToIntBits.selector = "floatToIntBits".toCharArray();
+					floatToIntBits.selector = FLOAT_TO_INT_BITS;
 					floatToIntBits.arguments = new Expression[] { fieldAccessor };
 					statements.add(createResultCalculation(source, floatToIntBits));
 				} else if (Arrays.equals(TypeConstants.DOUBLE, token)) {
@@ -382,7 +384,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					doubleToLongBits.sourceStart = pS; doubleToLongBits.sourceEnd = pE;
 					setGeneratedBy(doubleToLongBits, source);
 					doubleToLongBits.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_DOUBLE);
-					doubleToLongBits.selector = "doubleToLongBits".toCharArray();
+					doubleToLongBits.selector = DOUBLE_TO_LONG_BITS;
 					doubleToLongBits.arguments = new Expression[] { fieldAccessor };
 					statements.add(createLocalDeclaration(source, dollarFieldName, TypeReference.baseTypeReference(TypeIds.T_long, 0), doubleToLongBits));
 					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);
@@ -406,7 +408,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					hashCodeCall.sourceStart = pS; hashCodeCall.sourceEnd = pE;
 					setGeneratedBy(hashCodeCall, source);
 					hashCodeCall.receiver = copy1;
-					hashCodeCall.selector = "hashCode".toCharArray();
+					hashCodeCall.selector = HASH_CODE;
 					NullLiteral nullLiteral = new NullLiteral(pS, pE);
 					setGeneratedBy(nullLiteral, source);
 					EqualExpression objIsNull = new EqualExpression(copy2, nullLiteral, OperatorIds.EQUAL_EQUAL);
