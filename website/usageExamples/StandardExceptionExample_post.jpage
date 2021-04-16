@@ -1,0 +1,16 @@
+public class ExampleException extends Exception {
+    public ExampleException() {
+    }
+
+    public ExampleException(String message) {
+        super(message);
+    }
+
+    public ExampleException(Throwable cause) {
+        super(cause);
+    }
+
+    public ExampleException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
