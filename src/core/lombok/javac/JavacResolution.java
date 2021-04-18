@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020 The Project Lombok Authors.
+ * Copyright (C) 2011-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -45,6 +46,7 @@ import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Type.WildcardType;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.comp.ArgumentAttr;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
@@ -68,6 +70,7 @@ import lombok.core.debug.AssertionLogger;
 import lombok.permit.Permit;
 
 public class JavacResolution {
+	private final Context context;
 	private final Attr attr;
 	private final CompilerMessageSuppressor messageSuppressor;
 	
@@ -82,6 +85,7 @@ public class JavacResolution {
 	}
 	
 	public JavacResolution(Context context) {
+		this.context = context;
 		attr = Attr.instance(context);
 		messageSuppressor = new CompilerMessageSuppressor(context);
 	}
@@ -245,10 +249,19 @@ public class JavacResolution {
 		} catch (Throwable ignore) {
 			// This addresses issue #1553 which involves JDK9; if it doesn't exist, we probably don't need to set it.
 		}
-		if (tree instanceof JCBlock) attr.attribStat(tree, env);
-		else if (tree instanceof JCMethodDecl) attr.attribStat(((JCMethodDecl) tree).body, env);
-		else if (tree instanceof JCVariableDecl) attr.attribStat(tree, env);
-		else throw new IllegalStateException("Called with something that isn't a block, method decl, or variable decl");
+		
+		Map<?,?> cache = null;
+		try {
+			cache = ArgumentAttrReflect.enableTempCache(context);
+			
+			if (tree instanceof JCBlock) attr.attribStat(tree, env);
+			else if (tree instanceof JCMethodDecl) attr.attribStat(((JCMethodDecl) tree).body, env);
+			else if (tree instanceof JCVariableDecl) attr.attribStat(tree, env);
+			else throw new IllegalStateException("Called with something that isn't a block, method decl, or variable decl");
+		} finally {
+			ArgumentAttrReflect.restoreCache(cache, context);
+		}
+		
 	}
 	
 	public static class TypeNotConvertibleException extends Exception {
@@ -280,6 +293,43 @@ public class JavacResolution {
 		
 		public static Type Types_upperBound(Types types, Type type) {
 			return (Type) Permit.invokeSneaky(initError, UPPER_BOUND, types, type);
+		}
+	}
+	
+	/**
+	 * ArgumentAttr was added in Java 9 and caches some method arguments. Lombok should cleanup its changes after resolution.
+	 */
+	private static class ArgumentAttrReflect {
+		private static Field ARGUMENT_TYPE_CACHE;
+		
+		static {
+			if (Javac.getJavaCompilerVersion() >= 9) {
+				try {
+					ARGUMENT_TYPE_CACHE = Permit.getField(ArgumentAttr.class, "argumentTypeCache");
+				} catch (Exception ignore) {}
+			}
+		}
+		
+		public static Map<?, ?> enableTempCache(Context context) {
+			if (ARGUMENT_TYPE_CACHE == null) return null;
+			
+			ArgumentAttr argumentAttr = ArgumentAttr.instance(context);
+			try {
+				Map<?, ?> cache = (Map<?, ?>) Permit.get(ARGUMENT_TYPE_CACHE, argumentAttr);
+				Permit.set(ARGUMENT_TYPE_CACHE, argumentAttr, new LinkedHashMap<Object, Object>(cache));
+				return cache;
+			} catch (Exception ignore) { }
+			
+			return null;
+		}
+		
+		public static void restoreCache(Map<?, ?> cache, Context context) {
+			if (ARGUMENT_TYPE_CACHE == null) return;
+			
+			ArgumentAttr argumentAttr = ArgumentAttr.instance(context);
+			try {
+				Permit.set(ARGUMENT_TYPE_CACHE, argumentAttr, cache);
+			} catch (Exception ignore) { }
 		}
 	}
 	
