@@ -112,7 +112,7 @@ jobs:
           - {name: "maven",  cmd: "mvn compile"}
           - {name: "gradle", cmd: "gradle assemble"}
           - {name: "ant",    cmd: "ant dist"}
-          - {name: "bazel,   cmd "bazel build //:ProjectRunner"}
+          - {name: "bazel",  cmd: "bazel build //:ProjectRunner"}
       fail-fast: false
     env:
       IMAGE_NAME: lombok-${{ matrix.tool.name }}-jdk${{ matrix.jdk }}
