@@ -107,7 +107,7 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [8, 9, 10, 11, 12, 13, 14, 15, 16]
+        jdk: [8, 9, 10, 11, 12, 13, 16]
         tool: [maven, gradle, ant, bazel]
       fail-fast: false
       
@@ -124,4 +124,4 @@ jobs:
         run: docker build --build-arg jdk=${{ matrix.jdk }} -t lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} -f ${{ matrix.tool }}/Dockerfile .
         
       - name: Compile in container
-        run: docker run -v ./dist/lombok.jar:/workspace/lombok.jar lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} /bin/bash -c "cd /classpath; mvn compile"
+        run: docker run -v dist/lombok.jar:/workspace/lombok.jar lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} /bin/bash -c "cd /classpath; mvn compile"
