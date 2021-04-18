@@ -71,7 +71,7 @@ import lombok.spi.Provides;
 @Provides
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
-	private JCMethodDecl createRecordArgslessConstructor(JavacNode typeNode, JavacNode source) {
+	private JCMethodDecl createRecordArgslessConstructor(JavacNode typeNode, JavacNode source, JCMethodDecl existingCtr) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		java.util.List<JCVariableDecl> fields = new ArrayList<JCVariableDecl>();
@@ -94,8 +94,18 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(AccessLevel.PUBLIC) | COMPACT_RECORD_CONSTRUCTOR, List.<JCAnnotation>nil());
 		JCBlock body = maker.Block(0L, List.<JCStatement>nil());
-		JCMethodDecl constr = maker.MethodDef(mods, typeNode.toName("<init>"), null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), body, null);
-		return recursiveSetGeneratedBy(constr, source);
+		if (existingCtr == null) {
+			JCMethodDecl constr = maker.MethodDef(mods, typeNode.toName("<init>"), null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), body, null);
+			return recursiveSetGeneratedBy(constr, source);
+		} else {
+			existingCtr.mods = mods;
+			existingCtr.params = params.toList();
+			existingCtr.body = body;
+			existingCtr = recursiveSetGeneratedBy(existingCtr, source);
+			addSuppressWarningsAll(existingCtr.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(existingCtr)), typeNode.getContext());
+			addGenerated(existingCtr.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(existingCtr)), typeNode.getContext());
+			return existingCtr;
+		}
 	}
 	
 	/**
@@ -113,16 +123,17 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		JCClassDecl cDecl = (JCClassDecl) typeNode.get();
 		if ((cDecl.mods.flags & RECORD) == 0) return answer;
 		
-		ListBuffer<JCTree> newDefs = new ListBuffer<JCTree>();
 		boolean generateConstructor = false;
 		
+		JCMethodDecl existingCtr = null;
+		
 		for (JCTree def : cDecl.defs) {
-			boolean remove = false;
 			if (def instanceof JCMethodDecl) {
 				JCMethodDecl md = (JCMethodDecl) def;
 				if (md.name.contentEquals("<init>")) {
 					if ((md.mods.flags & Flags.GENERATEDCONSTR) != 0) {
-						remove = true;
+						existingCtr = md;
+						existingCtr.mods.flags = existingCtr.mods.flags & ~Flags.GENERATEDCONSTR;
 						generateConstructor = true;
 					} else {
 						if (!isTolerate(typeNode, md)) {
@@ -134,13 +145,16 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 					}
 				}
 			}
-			if (!remove) newDefs.append(def);
 		}
 		
 		if (generateConstructor) {
-			cDecl.defs = newDefs.toList();
-			JCMethodDecl ctr = createRecordArgslessConstructor(typeNode, source);
-			injectMethod(typeNode, ctr);
+			JCMethodDecl ctr;
+			if (existingCtr != null) {
+				ctr = createRecordArgslessConstructor(typeNode, source, existingCtr);
+			} else {
+				ctr = createRecordArgslessConstructor(typeNode, source, null);
+				injectMethod(typeNode, ctr);
+			}
 			answer = answer.prepend(ctr);
 		}
 		
