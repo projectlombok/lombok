@@ -101,3 +101,26 @@ jobs:
           
       - name: Build with Ant
         run: ant -noinput dist test.${{ matrix.version }}
+        
+  docker-integration-test:
+    runs-on: ubuntu-latest
+    strategy: 
+      matrix: 
+        jdk: [8, 9, 10, 11, 12, 13, 14, 15, 16]
+        tool: [maven, gradle, ant, bazel]
+      fail-fast: false
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - uses: actions/download-artifact@v2
+        with:
+          name: lombok.jar
+        
+      - name: Build container
+        working-directory: ./docker
+        run: docker build -t lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} -f ${{ matrix.tool }}/Dockerfile .
+        
+      - name: Compile in container
+        run: docker run -v ./dist/lombok.jar:/workspace/lombok.jar lombok-maven-jdk16 /bin/bash -c "cd /classpath; mvn compile"
