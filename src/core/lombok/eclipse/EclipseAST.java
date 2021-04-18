@@ -232,6 +232,14 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		}
 	}
 	
+	public void setSource(char[] source) {
+		this.source = source;
+	}
+	
+	public char[] getSource() {
+		return source;
+	}
+	
 	/**
 	 * Eclipse starts off with a 'diet' parse which leaves method bodies blank, amongst other shortcuts.
 	 * 
@@ -309,6 +317,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	}
 	
 	private final CompilationUnitDeclaration compilationUnitDeclaration;
+	private char[] source;
 	private boolean completeParse;
 	
 	private static String toFileName(CompilationUnitDeclaration ast) {
