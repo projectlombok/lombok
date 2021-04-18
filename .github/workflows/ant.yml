@@ -124,4 +124,4 @@ jobs:
         run: docker build --build-arg jdk=${{ matrix.jdk }} -t lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} -f ${{ matrix.tool }}/Dockerfile .
         
       - name: Compile in container
-        run: docker run -v dist/lombok.jar:/workspace/lombok.jar lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} /bin/bash -c "cd /classpath; mvn compile"
+        run: docker run -v $(pwd)/lombok.jar:/workspace/lombok.jar lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} /bin/bash -c "cd /classpath; mvn compile"
