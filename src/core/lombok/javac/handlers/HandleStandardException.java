@@ -22,7 +22,6 @@
 package lombok.javac.handlers;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.util.List;
@@ -34,7 +33,6 @@ import lombok.experimental.StandardException;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.delombok.LombokOptionsFactory;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -55,7 +53,7 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		JavacNode typeNode = annotationNode.up();
 		
 		if (!isClass(typeNode)) {
-			annotationNode.addError("@StandardException is only supported on a class.");
+			annotationNode.addError("@StandardException is only supported on a class");
 			return;
 		}
 		
@@ -85,7 +83,7 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		List<JCExpression> args = List.<JCExpression>of(maker.Literal(CTC_BOT, null), maker.Literal(CTC_BOT, null));
 		JCStatement thisCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(typeNode.toName("this")), args));
 		JCMethodDecl constr = createConstructor(level, typeNode, false, false, source, List.of(thisCall));
-		injectMethod(typeNode, constr, List.<Type>nil(), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+		injectMethod(typeNode, constr);
 	}
 	
 	private void generateMsgOnlyConstructor(JavacNode typeNode, AccessLevel level, JavacNode source) {
@@ -95,7 +93,7 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		List<JCExpression> args = List.<JCExpression>of(maker.Ident(typeNode.toName("message")), maker.Literal(CTC_BOT, null));
 		JCStatement thisCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(typeNode.toName("this")), args));
 		JCMethodDecl constr = createConstructor(level, typeNode, true, false, source, List.of(thisCall));
-		injectMethod(typeNode, constr, List.<Type>of(typeNode.getSymbolTable().stringType), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+		injectMethod(typeNode, constr);
 	}
 	
 	private void generateCauseOnlyConstructor(JavacNode typeNode, AccessLevel level, JavacNode source) {
@@ -109,7 +107,7 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		List<JCExpression> args = List.<JCExpression>of(msgExpression, maker.Ident(causeName));
 		JCStatement thisCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(typeNode.toName("this")), args));
 		JCMethodDecl constr = createConstructor(level, typeNode, false, true, source, List.of(thisCall));
-		injectMethod(typeNode, constr, List.<Type>of(typeNode.getSymbolTable().throwableType), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+		injectMethod(typeNode, constr);
 	}
 	
 	private void generateFullConstructor(JavacNode typeNode, AccessLevel level, JavacNode source) {
@@ -125,7 +123,7 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		JCStatement initCauseCall = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(superName), typeNode.toName("initCause")), List.<JCExpression>of(maker.Ident(causeName))));
 		JCStatement initCause = maker.If(causeNotNull, initCauseCall, null);
 		JCMethodDecl constr = createConstructor(level, typeNode, true, true, source, List.of(superCall, initCause));
-		injectMethod(typeNode, constr, List.<Type>of(typeNode.getSymbolTable().stringType, typeNode.getSymbolTable().throwableType), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+		injectMethod(typeNode, constr);
 	}
 	
 	private static MemberExistsResult hasConstructor(JavacNode node, Class<?>... paramTypes) {

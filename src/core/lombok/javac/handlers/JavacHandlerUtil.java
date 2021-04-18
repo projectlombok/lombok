@@ -1211,12 +1211,6 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	
-	@Deprecated
-	public static void injectMethod(JavacNode typeNode, JCMethodDecl method, List<Type> paramTypes, Type returnType) {
-		injectMethod(typeNode, method);
-	}
-	
 	/**
 	 * Adds the given new method declaration to the provided type AST Node.
 	 * Can also inject constructors.
