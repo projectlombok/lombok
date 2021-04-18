@@ -108,8 +108,14 @@ jobs:
     strategy: 
       matrix: 
         jdk: [8, 9, 10, 11, 12, 13, 16]
-        tool: [maven, gradle, ant, bazel]
+        tool: 
+          - {name: "maven",  cmd: "mvn compile"}
+          - {name: "gradle", cmd: "gradle assemble"}
+          - {name: "ant",    cmd: "ant dist"}
+          - {name: "bazel,   cmd "bazel build //:ProjectRunner"}
       fail-fast: false
+    env:
+      IMAGE_NAME: lombok-${{ matrix.tool.name }}-jdk${{ matrix.jdk }}
       
     steps:
       - name: Checkout
@@ -121,7 +127,7 @@ jobs:
         
       - name: Build container
         working-directory: ./docker
-        run: docker build --build-arg jdk=${{ matrix.jdk }} -t lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} -f ${{ matrix.tool }}/Dockerfile .
+        run: docker build --build-arg jdk=${{ matrix.jdk }} -t $IMAGE_NAME -f ${{ matrix.tool.name }}/Dockerfile .
         
       - name: Compile in container
-        run: docker run --entrypoint="" -v $(pwd)/lombok.jar:/workspace/lombok.jar lombok-${{ matrix.tool }}-jdk${{ matrix.jdk }} /bin/bash -c "cd classpath; mvn compile"
+        run: docker run --entrypoint="" -v $(pwd)/lombok.jar:/workspace/lombok.jar $IMAGE_NAME /bin/bash -c "cd classpath; ${{ matrix.tool.cmd }}"
