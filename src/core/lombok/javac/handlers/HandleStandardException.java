@@ -59,6 +59,12 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 			return;
 		}
 		
+		JCClassDecl classDef = (JCClassDecl) typeNode.get();
+		if (classDef.extending == null) {
+			annotationNode.addError("@StandardException requires that you extend a Throwable type");
+			return;
+		}
+		
 		AccessLevel access = annotation.getInstance().access();
 		if (access == null) access = AccessLevel.PUBLIC;
 		if (access == AccessLevel.NONE) {

@@ -48,7 +48,13 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 		
 		EclipseNode typeNode = annotationNode.up();
 		if (!isClass(typeNode)) {
-			annotationNode.addError("@StandardException is only supported on a class.");
+			annotationNode.addError("@StandardException is only supported on a class");
+			return;
+		}
+		
+		TypeDeclaration classDef = (TypeDeclaration) typeNode.get();
+		if (classDef.superclass == null) {
+			annotationNode.addError("@StandardException requires that you extend a Throwable type");
 			return;
 		}
 		
