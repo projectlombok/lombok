@@ -260,6 +260,9 @@ public class Javac {
 		}
 	}
 	
+	/**
+	 * In some versions, the field's type is {@code JCTree}, in others it is {@code JCExpression}, which at the JVM level are not the same.
+	 */
 	public static JCTree getExtendsClause(JCClassDecl decl) {
 		try {
 			return (JCTree) getExtendsClause.invoke(decl);

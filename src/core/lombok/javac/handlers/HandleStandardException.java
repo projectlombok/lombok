@@ -33,6 +33,7 @@ import lombok.experimental.StandardException;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.delombok.LombokOptionsFactory;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -57,8 +58,8 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 			return;
 		}
 		
-		JCClassDecl classDef = (JCClassDecl) typeNode.get();
-		if (classDef.extending == null) {
+		JCTree extending = Javac.getExtendsClause((JCClassDecl) typeNode.get());
+		if (extending == null) {
 			annotationNode.addError("@StandardException requires that you extend a Throwable type");
 			return;
 		}
