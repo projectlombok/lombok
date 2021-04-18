@@ -35,19 +35,21 @@ import java.util.Deque;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -57,11 +59,12 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
+import com.sun.tools.javac.tree.TreeScanner;
 
 import lombok.delombok.Delombok;
 import lombok.javac.CapturingDiagnosticListener;
-import lombok.javac.Javac;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
+import lombok.javac.Javac;
 
 public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
@@ -78,6 +81,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, messages));
 		
 		if (checkPositions) delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor(version));
+		delombok.addAdditionalAnnotationProcessor(new ValidateTypesProcessor());
 		
 		delombok.addFile(file.getAbsoluteFile().getParentFile(), file.getName());
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());
@@ -172,6 +176,57 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 						scan(((JCAssign) tree.args.head).rhs);
 					} else {
 						scan(tree.args);
+					}
+				}
+			});
+		}
+	}
+	
+	public static class ValidateTypesProcessor extends TreeProcessor {
+		@Override void processCompilationUnit(final JCCompilationUnit unit) {
+			final Stack<JCTree> parents = new Stack<JCTree>();
+			parents.add(unit);
+			
+			unit.accept(new TreeScanner() {
+				private JCTree parent;
+				@Override public void scan(JCTree tree) {
+					parent = parents.peek();
+					
+					parents.push(tree);
+					super.scan(tree);
+					parents.pop();
+				}
+				
+				@Override public void visitClassDef(JCClassDecl tree) {
+					// Skip anonymous or local classes, they have no symbol
+					if (!(parent instanceof JCClassDecl || parent instanceof JCCompilationUnit)) return;
+					
+					validateSymbol(tree, tree.sym);
+					super.visitClassDef(tree);
+				};
+
+				@Override public void visitMethodDef(JCMethodDecl tree) {
+					validateSymbol(tree, tree.sym);
+					super.visitMethodDef(tree);
+				}
+				
+				@Override public void visitVarDef(JCVariableDecl tree) {
+					// Skip non-field variables
+					if (!(parent instanceof JCClassDecl)) return;
+					
+					validateSymbol(tree, tree.sym);
+					super.visitVarDef(tree);
+				}
+				
+				private void validateSymbol(JCTree tree, Symbol sym) {
+					if (sym == null) {
+						fail("Missing symbol for " + tree);
+					}
+					// Skip top level classes
+					if (sym.owner.getKind() == ElementKind.PACKAGE) return;
+					
+					if (!sym.owner.getEnclosedElements().contains(sym)) {
+						fail(tree + " not added to parent");
 					}
 				}
 			});

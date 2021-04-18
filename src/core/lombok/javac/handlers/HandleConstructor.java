@@ -26,8 +26,6 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -55,7 +53,6 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.delombok.LombokOptionsFactory;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -243,30 +240,17 @@ public class HandleConstructor {
 		
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
 		
-		ListBuffer<Type> argTypes = new ListBuffer<Type>();
-		for (JavacNode fieldNode : fields) {
-			Type mirror = getMirrorForFieldType(fieldNode);
-			if (mirror == null) {
-				argTypes = null;
-				break;
-			}
-			argTypes.append(mirror);
-		}
-		List<Type> argTypes_ = argTypes == null ? null : argTypes.toList();
-
 		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
 			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
-			injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+			injectMethod(typeNode, constr);
 		}
-		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source, argTypes_);
+		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source);
 	}
 	
-	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, JavacNode source, List<Type> argTypes_) {
+	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, JavacNode source) {
 		if (staticConstrRequired) {
-			ClassSymbol sym = ((JCClassDecl) typeNode.get()).sym;
-			Type returnType = sym == null ? null : sym.type;
 			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source);
-			injectMethod(typeNode, staticConstr, argTypes_, returnType);
+			injectMethod(typeNode, staticConstr);
 		}
 	}
 	

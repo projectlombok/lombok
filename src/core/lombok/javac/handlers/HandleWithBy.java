@@ -45,8 +45,6 @@ import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -204,11 +202,8 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		long access = toJavacModifier(level);
 		
 		JCMethodDecl createdWithBy = createWithBy(access, fieldNode, fieldNode.getTreeMaker(), source, onMethod, makeAbstract);
-		ClassSymbol sym = ((JCClassDecl) fieldNode.up().get()).sym;
-		Type returnType = sym == null ? null : sym.type;
-		
 		recursiveSetGeneratedBy(createdWithBy, source);
-		injectMethod(typeNode, createdWithBy, List.<Type>of(getMirrorForFieldType(fieldNode)), returnType);
+		injectMethod(typeNode, createdWithBy);
 	}
 	
 	private static final LombokImmutableList<String> NAME_JUF_FUNCTION = LombokImmutableList.of("java", "util", "function", "Function");
