@@ -54,9 +54,6 @@ import org.eclipse.jdt.internal.compiler.parser.Parser;
  * (re)parse it. You should set Bit24 on any MethodDeclaration object you inject into the AST:
  * 
  * {@code methodDeclaration.bits |= ASTNode.Bit24; //0x800000}
- * 
- * @author rzwitserloot
- * @author rspilker
  */
 public class TransformEclipseAST {
 	private final EclipseAST ast;

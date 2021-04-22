@@ -266,8 +266,8 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 				try {
 					path = trees.getPath(element);
 				} catch (NullPointerException ignore) {
-					// Happens if a package-info.java dowsn't conatin a package declaration.
-					// https://github.com/rzwitserloot/lombok/issues/2184
+					// Happens if a package-info.java doesn't contain a package declaration.
+					// https://github.com/projectlombok/lombok/issues/2184
 					// We can safely ignore those, since they do not need any processing
 				}
 			}

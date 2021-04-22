@@ -45,7 +45,7 @@
         </instructions>
       </touchpointData>
       <licenses size='1'>
-        <license uri='https://raw.githubusercontent.com/rzwitserloot/lombok/master/LICENSE' url='https://raw.githubusercontent.com/rzwitserloot/lombok/master/LICENSE'>
+        <license uri='https://raw.githubusercontent.com/projectlombok/lombok/master/LICENSE' url='https://raw.githubusercontent.com/projectlombok/lombok/master/LICENSE'>
           Copyright (C) 2009-@YEAR@ The Project Lombok Authors.&#xA;&#xA;Permission is hereby granted, free of charge, to any person obtaining a copy&#xA;of this software and associated documentation files (the &quot;Software&quot;), to deal&#xA;in the Software without restriction, including without limitation the rights&#xA;to use, copy, modify, merge, publish, distribute, sublicense, and/or sell&#xA;copies of the Software, and to permit persons to whom the Software is&#xA;furnished to do so, subject to the following conditions:&#xA;&#xA;The above copyright notice and this permission notice shall be included in&#xA;all copies or substantial portions of the Software.&#xA;&#xA;THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR&#xA;IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,&#xA;FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE&#xA;AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER&#xA;LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,&#xA;OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN&#xA;THE SOFTWARE.
         </license>
       </licenses>
@@ -107,7 +107,7 @@
       </requires>
       <touchpoint id='null' version='0.0.0'/>
       <licenses size='1'>
-        <license uri='https://raw.githubusercontent.com/rzwitserloot/lombok/master/LICENSE' url='https://raw.githubusercontent.com/rzwitserloot/lombok/master/LICENSE'>
+        <license uri='https://raw.githubusercontent.com/projectlombok/lombok/master/LICENSE' url='https://raw.githubusercontent.com/projectlombok/lombok/master/LICENSE'>
           Copyright (C) 2009-@YEAR@ The Project Lombok Authors.&#xA;&#xA;Permission is hereby granted, free of charge, to any person obtaining a copy&#xA;of this software and associated documentation files (the &quot;Software&quot;), to deal&#xA;in the Software without restriction, including without limitation the rights&#xA;to use, copy, modify, merge, publish, distribute, sublicense, and/or sell&#xA;copies of the Software, and to permit persons to whom the Software is&#xA;furnished to do so, subject to the following conditions:&#xA;&#xA;The above copyright notice and this permission notice shall be included in&#xA;all copies or substantial portions of the Software.&#xA;&#xA;THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR&#xA;IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,&#xA;FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE&#xA;AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER&#xA;LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,&#xA;OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN&#xA;THE SOFTWARE.
         </license>
       </licenses>

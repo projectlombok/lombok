@@ -122,7 +122,7 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 			fieldDecl.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });
 			setGeneratedBy(fieldDecl.type, source);
 			fieldDecl.initialization = arrayAlloc;
-			// TODO temporary workaround for issue 290. https://github.com/rzwitserloot/lombok/issues/290
+			// TODO temporary workaround for issue 290. https://github.com/projectlombok/lombok/issues/290
 			// injectFieldSuppressWarnings(annotationNode.up().up(), fieldDecl);
 			injectField(annotationNode.up().up(), fieldDecl);
 		}

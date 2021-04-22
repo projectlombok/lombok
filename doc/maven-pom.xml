@@ -17,12 +17,12 @@
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:git:git://github.com/rzwitserloot/lombok.git</connection>
-		<url>http://github.com/rzwitserloot/lombok</url>
+		<connection>scm:git:git://github.com/projectlombok/lombok.git</connection>
+		<url>http://github.com/projectlombok/lombok</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>https://github.com/rzwitserloot/lombok/issues</url>
+		<url>https://github.com/projectlombok/lombok/issues</url>
 	</issueManagement>
 	<developers>
 		<developer>

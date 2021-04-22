@@ -79,7 +79,7 @@ rzwitserloot/com.zwitserloot.cmdreader
 
 ------------------------------------------------------------------------------
 
-rzwitserloot/lombok.patcher
+projectlombok/lombok.patcher
 
  Copyright (C) 2009-2021 The Project Lombok Authors.
  

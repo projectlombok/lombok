@@ -1,4 +1,4 @@
-PullRequest https://github.com/rzwitserloot/lombok/pull/2114 tries to fix issue https://github.com/rzwitserloot/lombok/issues/1976 but causes problems.
+PullRequest https://github.com/projectlombok/lombok/pull/2114 tries to fix issue https://github.com/projectlombok/lombok/issues/1976 but causes problems.
 
 The problem is that the fail-fast resolver applied by PR 2114 causes the following issue:
 
