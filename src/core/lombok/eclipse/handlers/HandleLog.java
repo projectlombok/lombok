@@ -302,7 +302,7 @@ public class HandleLog {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_CUSTOM_FLAG_USAGE, "@CustomLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
 			LogDeclaration logDeclaration = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_CUSTOM_DECLARATION);
 			if (logDeclaration == null) {
-				annotationNode.addError("The @CustomLog annotation is not configured; please set log.custom.declaration in lombok.config.");
+				annotationNode.addError("The @CustomLog annotation is not configured; please set lombok.log.custom.declaration in lombok.config.");
 				return;
 			}
 			LoggingFramework framework = new LoggingFramework(lombok.CustomLog.class, logDeclaration);
