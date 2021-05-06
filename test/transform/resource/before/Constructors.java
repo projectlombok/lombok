@@ -42,3 +42,7 @@
 	final String s;
 	byte z;
 }
+@lombok.NoArgsConstructor(throwing = {Exception.class}) class NoArgsConstructorThrowingSimple {
+}
+@lombok.NoArgsConstructor(throwing = {java.lang.Exception.class}) class NoArgsConstructorThrowingQualified {
+}

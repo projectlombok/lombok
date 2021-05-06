@@ -25,6 +25,8 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
+import java.util.Collection;
+
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -78,7 +80,9 @@ public class HandleConstructor {
 			if (level == AccessLevel.NONE) return;
 			String staticName = ann.staticName();
 			boolean force = ann.force();
-			handleConstructor.generateConstructor(typeNode, level, onConstructor, List.<JavacNode>nil(), force, staticName, SkipIfConstructorExists.NO, annotationNode);
+			List<JCExpression> thrownExceptions = getExceptionsThrown(typeNode, annotation.getRawExpressions("throwing"));
+			
+			handleConstructor.generateConstructor(typeNode, level, onConstructor, thrownExceptions, List.<JavacNode>nil(), force, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -102,8 +106,9 @@ public class HandleConstructor {
 			if (annotation.isExplicit("suppressConstructorProperties")) {
 				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
+			List<JCExpression> thrownExceptions = getExceptionsThrown(typeNode, annotation.getRawExpressions("throwing"));
 			
-			handleConstructor.generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
+			handleConstructor.generateConstructor(typeNode, level, onConstructor, thrownExceptions, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -152,7 +157,9 @@ public class HandleConstructor {
 			if (annotation.isExplicit("suppressConstructorProperties")) {
 				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
-			handleConstructor.generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
+			List<JCExpression> thrownExceptions = getExceptionsThrown(typeNode, annotation.getRawExpressions("throwing"));
+
+			handleConstructor.generateConstructor(typeNode, level, onConstructor, thrownExceptions, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -186,6 +193,16 @@ public class HandleConstructor {
 		return true;
 	}
 	
+	public static List<JCExpression> getExceptionsThrown(JavacNode typeNode, Collection<String> exceptionsRawNames) {
+		ListBuffer<JCExpression> exceptions = new ListBuffer<JCExpression>();
+		for (String exceptionName : exceptionsRawNames) {
+			if (exceptionName.endsWith(".class"))
+				exceptionName = exceptionName.substring(0, exceptionName.length() - 6);
+			exceptions.add(chainDots(typeNode, exceptionName.split("\\.")));
+		}
+		return exceptions.toList();
+	}
+	
 	public enum SkipIfConstructorExists {
 		YES, NO, I_AM_BUILDER;
 	}
@@ -196,7 +213,7 @@ public class HandleConstructor {
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
 		if (v == null || !v) return;
 		
-		generate(typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), List.<JavacNode>nil(), true, null, SkipIfConstructorExists.NO, source, true);
+		generate(typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), List.<JCExpression>nil(), List.<JavacNode>nil(), true, null, SkipIfConstructorExists.NO, source, true);
 	}
 	
 	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
@@ -208,10 +225,14 @@ public class HandleConstructor {
 	}
 	
 	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
-		generate(typeNode, level, onConstructor, fields, allToDefault, staticName, skipIfConstructorExists, source, false);
+		generate(typeNode, level, onConstructor, List.<JCExpression>nil(), fields, allToDefault, staticName, skipIfConstructorExists, source, false);
+	}
+	
+	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JCExpression> thrown, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
+		generate(typeNode, level, onConstructor, thrown, fields, allToDefault, staticName, skipIfConstructorExists, source, false);
 	}
 
-	private void generate(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source, boolean noArgs) {
+	private void generate(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JCExpression> thrown, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source, boolean noArgs) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
@@ -241,7 +262,7 @@ public class HandleConstructor {
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
 		
 		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
-			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
+			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, thrown, typeNode, fields, allToDefault, source);
 			injectMethod(typeNode, constr);
 		}
 		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source);
@@ -289,7 +310,7 @@ public class HandleConstructor {
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
-	@SuppressWarnings("deprecation") public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fieldsToParam, boolean forceDefaults, JavacNode source) {
+	@SuppressWarnings("deprecation") public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, List<JCExpression> thrown, JavacNode typeNode, List<JavacNode> fieldsToParam, boolean forceDefaults, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
@@ -354,7 +375,7 @@ public class HandleConstructor {
 		}
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
-			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
+			null, List.<JCTypeParameter>nil(), params.toList(), thrown,
 			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source);
 	}
 	

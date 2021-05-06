@@ -383,7 +383,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			}
 
 			// Create a simple constructor for the BuilderImpl class.
-			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PRIVATE, List.<JCAnnotation>nil(), job.builderImplType, List.<JavacNode>nil(), false, annotationNode);
+			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PRIVATE, List.<JCAnnotation>nil(), List.<JCExpression>nil(), job.builderImplType, List.<JavacNode>nil(), false, annotationNode);
 			if (cd != null) injectMethod(job.builderImplType, cd);
 			job.setBuilderToImpl();
 			

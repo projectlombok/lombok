@@ -96,3 +96,13 @@
     this.s = null;
   }
 }
+@lombok.NoArgsConstructor(throwing = {Exception.class} class NoArgsConstructorThrowingSimple {
+	public @java.lang.SuppressWarnings("all") NoArgsConstructorThrowingSimple() throws Exception {
+		super();
+	}
+}
+class NoArgsConstructorThrowingQualified {
+	public @java.lang.SuppressWarnings("all") NoArgsConstructorThrowingQualified() throws java.lang.Exception {
+		super();
+	}
+}

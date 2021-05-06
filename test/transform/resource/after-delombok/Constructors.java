@@ -100,3 +100,13 @@ class NoArgsConstructor2 {
 		this.s = null;
 	}
 }
+class NoArgsConstructorThrowingSimple {
+	@java.lang.SuppressWarnings("all")
+	public NoArgsConstructorThrowingSimple() throws Exception {
+	}
+}
+class NoArgsConstructorThrowingQualified {
+	@java.lang.SuppressWarnings("all")
+	public NoArgsConstructorThrowingQualified() throws java.lang.Exception {
+	}
+}

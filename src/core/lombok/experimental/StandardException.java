@@ -41,7 +41,7 @@ import lombok.AccessLevel;
 @Retention(RetentionPolicy.SOURCE)
 public @interface StandardException {
 	/**
-	 * Sets the access level of the generated constuctors. By default, generated constructors are {@code public}.
+	 * Sets the access level of the generated constructors. By default, generated constructors are {@code public}.
 	 * Note: This does nothing if you write your own constructors (we won't change their access levels).
 	 * 
 	 * @return The constructors will be generated with this access modifier.

@@ -80,6 +80,13 @@ public @interface NoArgsConstructor {
 	boolean force() default false;
 	
 	/**
+	 * Any throwable class listed here is appended to the generated constructor's {@code throws} clause.
+	 * 
+	 * @return The exception types that the generated constructor will declare to throw.
+	 */
+	Class<? extends Throwable>[] throwing() default {};
+	
+	/**
 	  * Placeholder annotation to enable the placement of annotations on the generated code.
 	  * @deprecated Don't use this annotation, ever - Read the documentation.
 	  */

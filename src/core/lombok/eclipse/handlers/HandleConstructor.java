@@ -73,6 +73,7 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
@@ -82,8 +83,7 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 
 public class HandleConstructor {
-	@Provides
-	public static class HandleNoArgsConstructor extends EclipseAnnotationHandler<NoArgsConstructor> {
+	@Provides public static class HandleNoArgsConstructor extends EclipseAnnotationHandler<NoArgsConstructor> {
 		private static final String NAME = NoArgsConstructor.class.getSimpleName();
 		private HandleConstructor handleConstructor = new HandleConstructor();
 		
@@ -101,12 +101,13 @@ public class HandleConstructor {
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor", annotationNode);
 			
-			handleConstructor.generateConstructor(typeNode, level, Collections.<EclipseNode>emptyList(), force, staticName, SkipIfConstructorExists.NO, onConstructor, annotationNode);
+			List<TypeReference> thrownExceptions = getExceptionsThrown(typeNode, annotation.getRawExpressions("throwing"));
+			
+			handleConstructor.generateConstructor(typeNode, level, Collections.<EclipseNode>emptyList(), force, staticName, SkipIfConstructorExists.NO, onConstructor, thrownExceptions, annotationNode);
 		}
 	}
 	
-	@Provides
-	public static class HandleRequiredArgsConstructor extends EclipseAnnotationHandler<RequiredArgsConstructor> {
+	@Provides public static class HandleRequiredArgsConstructor extends EclipseAnnotationHandler<RequiredArgsConstructor> {
 		private static final String NAME = RequiredArgsConstructor.class.getSimpleName();
 		private HandleConstructor handleConstructor = new HandleConstructor();
 		
@@ -125,9 +126,9 @@ public class HandleConstructor {
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor", annotationNode);
 			
-			handleConstructor.generateConstructor(
-				typeNode, level, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
-				onConstructor, annotationNode);
+			List<TypeReference> thrownExceptions = getExceptionsThrown(typeNode, annotation.getRawExpressions("throwing"));
+
+			handleConstructor.generateConstructor(typeNode, level, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, onConstructor, thrownExceptions, annotationNode);
 		}
 	}
 	
@@ -166,10 +167,9 @@ public class HandleConstructor {
 		return fields;
 	}
 	
-	@Provides
-	public static class HandleAllArgsConstructor extends EclipseAnnotationHandler<AllArgsConstructor> {
+	@Provides public static class HandleAllArgsConstructor extends EclipseAnnotationHandler<AllArgsConstructor> {
 		private static final String NAME = AllArgsConstructor.class.getSimpleName();
-
+		
 		private HandleConstructor handleConstructor = new HandleConstructor();
 		
 		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -187,9 +187,9 @@ public class HandleConstructor {
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor", annotationNode);
 			
-			handleConstructor.generateConstructor(
-				typeNode, level, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
-				onConstructor, annotationNode);
+			List<TypeReference> thrownExceptions = getExceptionsThrown(typeNode, annotation.getRawExpressions("throwing"));
+
+			handleConstructor.generateConstructor(typeNode, level, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, onConstructor, thrownExceptions, annotationNode);
 		}
 	}
 	
@@ -202,6 +202,30 @@ public class HandleConstructor {
 		return true;
 	}
 	
+	static List<TypeReference> getExceptionsThrown(EclipseNode typeNode, Collection<String> exceptionsRawNames) {
+		List<TypeReference> exceptions = new ArrayList<TypeReference>();
+		for (String exceptionName : exceptionsRawNames) {
+			if (exceptionName.endsWith(".class"))
+				exceptionName = exceptionName.substring(0, exceptionName.length() - 6);
+			
+			TypeReference typeReference;
+			if (exceptionName.indexOf('.') == -1) {
+				typeReference = new SingleTypeReference(exceptionName.toCharArray(), 0L);
+			} else {
+				String[] x = exceptionName.split("\\.");
+				char[][] elems = new char[x.length][];
+				long[] poss = new long[x.length];
+				Arrays.fill(poss, 0L);
+				for (int i = 0; i < x.length; i++) {
+					elems[i] = x[i].trim().toCharArray();
+				}
+				typeReference = new QualifiedTypeReference(elems, poss);
+			}
+			exceptions.add(typeReference);
+		}
+		return exceptions;
+	}
+	
 	public enum SkipIfConstructorExists {
 		YES, NO, I_AM_BUILDER;
 	}
@@ -212,43 +236,37 @@ public class HandleConstructor {
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
 		if (v == null || !v) return;
 		
-		generate(typeNode, AccessLevel.PRIVATE, Collections.<EclipseNode>emptyList(), true, null, SkipIfConstructorExists.NO, Collections.<Annotation>emptyList(), sourceNode, true);
+		generate(typeNode, AccessLevel.PRIVATE, Collections.<EclipseNode>emptyList(), true, null, SkipIfConstructorExists.NO, Collections.<Annotation>emptyList(), Collections.<TypeReference>emptyList(), sourceNode, true);
 	}
 	
-	public void generateRequiredArgsConstructor(
-			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
-			List<Annotation> onConstructor, EclipseNode sourceNode) {
+	public void generateRequiredArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
 		generateConstructor(typeNode, level, findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, onConstructor, sourceNode);
 	}
 	
-	public void generateAllArgsConstructor(
-			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
-			List<Annotation> onConstructor, EclipseNode sourceNode) {
+	public void generateAllArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
 		generateConstructor(typeNode, level, findAllFields(typeNode), false, staticName, skipIfConstructorExists, onConstructor, sourceNode);
 	}
 	
-	public void generateConstructor(
-		EclipseNode typeNode, AccessLevel level, List<EclipseNode> fieldsToParam, boolean forceDefaults, String staticName, SkipIfConstructorExists skipIfConstructorExists,
-		List<Annotation> onConstructor, EclipseNode sourceNode) {
-		
-		generate(typeNode, level, fieldsToParam, forceDefaults, staticName, skipIfConstructorExists, onConstructor, sourceNode, false);
+	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fieldsToParam, boolean forceDefaults, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, EclipseNode sourceNode) {	
+		generate(typeNode, level, fieldsToParam, forceDefaults, staticName, skipIfConstructorExists, onConstructor, Collections.<TypeReference>emptyList(), sourceNode, false);
 	}
 	
-	public void generate(
-			EclipseNode typeNode, AccessLevel level, List<EclipseNode> fieldsToParam, boolean forceDefaults, String staticName, SkipIfConstructorExists skipIfConstructorExists,
-			List<Annotation> onConstructor, EclipseNode sourceNode, boolean noArgs) {
-			
+	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fieldsToParam, boolean forceDefaults, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, List<TypeReference> thrownExceptions, EclipseNode sourceNode) {
+		
+		generate(typeNode, level, fieldsToParam, forceDefaults, staticName, skipIfConstructorExists, onConstructor, thrownExceptions, sourceNode, false);
+	}
+	
+	public void generate(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fieldsToParam, boolean forceDefaults, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, List<TypeReference> thrownExceptions, EclipseNode sourceNode, boolean noArgs) {
+		
 		ASTNode source = sourceNode.get();
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
-
+		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					boolean skipGeneration = (annotationTypeMatches(NoArgsConstructor.class, child) ||
-						annotationTypeMatches(AllArgsConstructor.class, child) ||
-						annotationTypeMatches(RequiredArgsConstructor.class, child));
+					boolean skipGeneration = (annotationTypeMatches(NoArgsConstructor.class, child) || annotationTypeMatches(AllArgsConstructor.class, child) || annotationTypeMatches(RequiredArgsConstructor.class, child));
 					
 					if (!skipGeneration && skipIfConstructorExists == SkipIfConstructorExists.YES) {
 						skipGeneration = annotationTypeMatches(Builder.class, child);
@@ -256,13 +274,17 @@ public class HandleConstructor {
 					
 					if (skipGeneration) {
 						if (staticConstrRequired) {
-							// @Data has asked us to generate a constructor, but we're going to skip this instruction, as an explicit 'make a constructor' annotation
-							// will take care of it. However, @Data also wants a specific static name; this will be ignored; the appropriate way to do this is to use
-							// the 'staticName' parameter of the @XArgsConstructor you've stuck on your type.
-							// We should warn that we're ignoring @Data's 'staticConstructor' param.
-							typeNode.addWarning(
-								"Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.",
-								source.sourceStart, source.sourceEnd);
+							// @Data has asked us to generate a constructor, but
+							// we're going to skip this instruction, as an
+							// explicit 'make a constructor' annotation
+							// will take care of it. However, @Data also wants a
+							// specific static name; this will be ignored; the
+							// appropriate way to do this is to use
+							// the 'staticName' parameter of the
+							// @XArgsConstructor you've stuck on your type.
+							// We should warn that we're ignoring @Data's
+							// 'staticConstructor' param.
+							typeNode.addWarning("Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.", source.sourceStart, source.sourceEnd);
 						}
 						return;
 					}
@@ -273,9 +295,7 @@ public class HandleConstructor {
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
 		
 		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
-			ConstructorDeclaration constr = createConstructor(
-				staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fieldsToParam, forceDefaults,
-				sourceNode, onConstructor);
+			ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fieldsToParam, forceDefaults, sourceNode, onConstructor, thrownExceptions);
 			injectMethod(typeNode, constr);
 		}
 		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, fieldsToParam, source);
@@ -292,7 +312,7 @@ public class HandleConstructor {
 		node = EclipseHandlerUtil.upToTypeNode(node);
 		
 		if (node != null && node.get() instanceof TypeDeclaration) {
-			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
+			TypeDeclaration typeDecl = (TypeDeclaration) node.get();
 			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
 				if (def instanceof ConstructorDeclaration) {
 					Argument[] arguments = ((ConstructorDeclaration) def).arguments;
@@ -310,7 +330,8 @@ public class HandleConstructor {
 		return false;
 	}
 	
-	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
+	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] {"java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray()};
+	
 	public static Annotation[] createConstructorProperties(ASTNode source, Collection<EclipseNode> fields) {
 		if (fields.isEmpty()) return null;
 		
@@ -339,10 +360,11 @@ public class HandleConstructor {
 		ann.memberValue = fieldNames;
 		setGeneratedBy(ann, source);
 		setGeneratedBy(ann.memberValue, source);
-		return new Annotation[] { ann };
+		return new Annotation[] {ann};
 	}
 	
 	private static final char[] DEFAULT_PREFIX = {'$', 'd', 'e', 'f', 'a', 'u', 'l', 't', '$'};
+	
 	private static final char[] prefixWith(char[] prefix, char[] name) {
 		char[] out = new char[prefix.length + name.length];
 		System.arraycopy(prefix, 0, out, 0, prefix.length);
@@ -352,7 +374,7 @@ public class HandleConstructor {
 	
 	@SuppressWarnings("deprecation") public static ConstructorDeclaration createConstructor(
 		AccessLevel level, EclipseNode type, Collection<EclipseNode> fieldsToParam, boolean forceDefaults,
-		EclipseNode sourceNode, List<Annotation> onConstructor) {
+		EclipseNode sourceNode, List<Annotation> onConstructor, List<TypeReference> thrownExceptions) {
 		
 		ASTNode source = sourceNode.get();
 		TypeDeclaration typeDeclaration = ((TypeDeclaration) type.get());
@@ -381,7 +403,7 @@ public class HandleConstructor {
 		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
 		constructor.constructorCall.sourceStart = source.sourceStart;
 		constructor.constructorCall.sourceEnd = source.sourceEnd;
-		constructor.thrownExceptions = null;
+		constructor.thrownExceptions = thrownExceptions.isEmpty() ? null : thrownExceptions.toArray(new TypeReference[0]);
 		constructor.typeParameters = null;
 		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
@@ -470,12 +492,12 @@ public class HandleConstructor {
 	
 	private static List<EclipseNode> fieldsNeedingBuilderDefaults(EclipseNode type, Collection<EclipseNode> fieldsToParam) {
 		List<EclipseNode> out = new ArrayList<EclipseNode>();
-		top:
-		for (EclipseNode node : type.down()) {
+		top: for (EclipseNode node : type.down()) {
 			if (node.getKind() != Kind.FIELD) continue top;
 			FieldDeclaration fd = (FieldDeclaration) node.get();
 			if ((fd.modifiers & ClassFileConstants.AccStatic) != 0) continue top;
-			for (EclipseNode ftp : fieldsToParam) if (node == ftp) continue top;
+			for (EclipseNode ftp : fieldsToParam)
+				if (node == ftp) continue top;
 			if (EclipseHandlerUtil.hasAnnotation(Builder.Default.class, node)) out.add(node);
 		}
 		return out;
@@ -483,14 +505,14 @@ public class HandleConstructor {
 	
 	private static List<EclipseNode> fieldsNeedingExplicitDefaults(EclipseNode type, Collection<EclipseNode> fieldsToParam) {
 		List<EclipseNode> out = new ArrayList<EclipseNode>();
-		top:
-		for (EclipseNode node : type.down()) {
+		top: for (EclipseNode node : type.down()) {
 			if (node.getKind() != Kind.FIELD) continue top;
 			FieldDeclaration fd = (FieldDeclaration) node.get();
 			if (fd.initialization != null) continue top;
 			if ((fd.modifiers & ClassFileConstants.AccFinal) == 0) continue top;
 			if ((fd.modifiers & ClassFileConstants.AccStatic) != 0) continue top;
-			for (EclipseNode ftp : fieldsToParam) if (node == ftp) continue top;
+			for (EclipseNode ftp : fieldsToParam)
+				if (node == ftp) continue top;
 			if (EclipseHandlerUtil.hasAnnotation(Builder.Default.class, node)) continue top;
 			out.add(node);
 		}
@@ -503,9 +525,8 @@ public class HandleConstructor {
 		char[] lastToken = type.getLastToken();
 		if (Arrays.equals(TypeConstants.BOOLEAN, lastToken)) return new FalseLiteral(s, e);
 		if (Arrays.equals(TypeConstants.CHAR, lastToken)) return new CharLiteral(new char[] {'\'', '\\', '0', '\''}, s, e);
-		if (Arrays.equals(TypeConstants.BYTE, lastToken) || Arrays.equals(TypeConstants.SHORT, lastToken) ||
-			Arrays.equals(TypeConstants.INT, lastToken)) return IntLiteral.buildIntLiteral(new char[] {'0'}, s, e);
-		if (Arrays.equals(TypeConstants.LONG, lastToken)) return LongLiteral.buildLongLiteral(new char[] {'0',  'L'}, s, e);
+		if (Arrays.equals(TypeConstants.BYTE, lastToken) || Arrays.equals(TypeConstants.SHORT, lastToken) || Arrays.equals(TypeConstants.INT, lastToken)) return IntLiteral.buildIntLiteral(new char[] {'0'}, s, e);
+		if (Arrays.equals(TypeConstants.LONG, lastToken)) return LongLiteral.buildLongLiteral(new char[] {'0', 'L'}, s, e);
 		if (Arrays.equals(TypeConstants.FLOAT, lastToken)) return new FloatLiteral(new char[] {'0', 'F'}, s, e);
 		if (Arrays.equals(TypeConstants.DOUBLE, lastToken)) return new DoubleLiteral(new char[] {'0', 'D'}, s, e);
 		
@@ -544,7 +565,8 @@ public class HandleConstructor {
 		List<Argument> params = new ArrayList<Argument>();
 		List<Expression> assigns = new ArrayList<Expression>();
 		AllocationExpression statement = new AllocationExpression();
-		statement.sourceStart = pS; statement.sourceEnd = pE;
+		statement.sourceStart = pS;
+		statement.sourceEnd = pE;
 		statement.type = copyType(constructor.returnType, source);
 		
 		for (EclipseNode fieldNode : fields) {
@@ -560,7 +582,7 @@ public class HandleConstructor {
 		
 		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[0]);
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[0]);
-		constructor.statements = new Statement[] { new ReturnStatement(statement, (int) (p >> 32), (int)p) };
+		constructor.statements = new Statement[] {new ReturnStatement(statement, (int) (p >> 32), (int) p)};
 		
 		createRelevantNonNullAnnotation(type, constructor);
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDecl.scope);

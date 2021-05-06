@@ -542,7 +542,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (constructorExists(job.builderType) == MemberExistsResult.NOT_EXISTS) {
 			ConstructorDeclaration cd = HandleConstructor.createConstructor(
 				AccessLevel.PACKAGE, job.builderType, Collections.<EclipseNode>emptyList(), false,
-				annotationNode, Collections.<Annotation>emptyList());
+				annotationNode, Collections.<Annotation>emptyList(), Collections.<TypeReference>emptyList());
 			if (cd != null) injectMethod(job.builderType, cd);
 		}
 		
