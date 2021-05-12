@@ -109,6 +109,8 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 			if (wipeSymAndType) {
 				copy.sym = null;
 				copy.type = null;
+			} else {
+				if (original.vartype != null) copy.vartype.type = original.vartype.type;
 			}
 		}
 		
