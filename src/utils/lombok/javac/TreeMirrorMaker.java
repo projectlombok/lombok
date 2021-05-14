@@ -32,8 +32,10 @@ import lombok.javac.JavacTreeMaker.TypeTag;
 import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeCopier;
+import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
@@ -110,7 +112,20 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 				copy.sym = null;
 				copy.type = null;
 			} else {
-				if (original.vartype != null) copy.vartype.type = original.vartype.type;
+				if (original.vartype != null) {
+					copy.vartype.type = original.vartype.type;
+					original.vartype.accept(new TreeScanner() {
+						@Override public void scan(JCTree tree) {
+							super.scan(tree);
+							originalToCopy.get(tree).type = tree.type;
+						}
+						
+						@Override public void visitSelect(JCFieldAccess tree) {
+							super.visitSelect(tree);
+							((JCFieldAccess) originalToCopy.get(tree)).sym = tree.sym;
+						}
+					});
+				}
 			}
 		}
 		
