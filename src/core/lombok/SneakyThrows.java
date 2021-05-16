@@ -39,14 +39,14 @@ import java.lang.annotation.Target;
  * Example:
  * <pre>
  * &#64;SneakyThrows(UnsupportedEncodingException.class)
- * public void utf8ToString(byte[] bytes) {
+ * public String utf8ToString(byte[] bytes) {
  *     return new String(bytes, "UTF-8");
  * }
  * </pre>
  * 
  * Becomes:
  * <pre>
- * public void utf8ToString(byte[] bytes) {
+ * public String utf8ToString(byte[] bytes) {
  *     try {
  *         return new String(bytes, "UTF-8");
  *     } catch (UnsupportedEncodingException $uniqueName) {
