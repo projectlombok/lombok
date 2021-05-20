@@ -188,6 +188,10 @@ public class JacksonExample {
 		</dt><dd>
 			Unless you explicitly pick the builder's class name with the <code>builderClassName</code> parameter, this name is chosen; any star in the name is replaced with the relevant return type.
 		</dd><dt>
+			<code>lombok.builder.setterPrefix</code> = [the prefix to prepend to generated <code>@Builder</code> setter method names] (default: not set)
+		</dt><dd>
+			Unless you explicitly pick the builder's setter prefix with the <code>setterPrefix</code> parameter, this prefix is chosen.
+		</dd><dt>
 			<code>lombok.builder.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@Builder</code> as a warning or error if configured.

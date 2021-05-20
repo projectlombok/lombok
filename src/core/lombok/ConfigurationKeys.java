@@ -301,6 +301,13 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<String> BUILDER_CLASS_NAME = new ConfigurationKey<String>("lombok.builder.className", "Default name of the generated builder class. A * is replaced with the name of the relevant type (default = *Builder).") {};
 	
 	/**
+	 * lombok configuration: {@code lombok.builder.setterPrefix} = &lt;String: prefix&gt;.
+	 *
+	 * For any usage of the {@code @Builder} annotation without an explicit {@code setterPrefix} parameter, this prefix is used.
+	 */
+	public static final ConfigurationKey<String> BUILDER_SETTER_PREFIX = new ConfigurationKey<String>("lombok.builder.setterPrefix", "The prefix to prepend to generated @Builder setter method names") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.builder.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
 	 * If set, <em>any</em> usage of {@code @Builder} results in a warning / error.
