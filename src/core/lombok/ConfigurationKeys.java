@@ -391,7 +391,7 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @Synchronized} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> SYNCHRONIZED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.synchronized.flagUsage", "Emit a warning or error if @Synchronized is used.") {};
-	
+
 	// ----- val -----
 	
 	/**
@@ -623,7 +623,16 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @Helper} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> HELPER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.helper.flagUsage", "Emit a warning or error if @Helper is used.") {};
-	
+
+	// ----- LOCKED -----
+
+	/**
+	 * lombok configuration: {@code lombok.locked.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 *
+	 * If set, <em>any</em> usage of {@code @Locked} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> LOCKED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.locked.flagUsage", "Emit a warning or error if @Locked is used.") {};
+
 	// ----- onX -----
 
 	/**
