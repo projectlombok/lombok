@@ -1286,6 +1286,7 @@ public class JavacHandlerUtil {
 		static Type classEnter(JCTree tree, JavacNode parent) {
 			Enter enter = Enter.instance(parent.getContext());
 			Env<AttrContext> classEnv = enter.getEnv((TypeSymbol) parent.getElement());
+			if (classEnv == null) return null;
 			Type type = (Type) Permit.invokeSneaky(classEnter, enter, tree, classEnv);
 			if (type == null) return null;
 			type.complete();
@@ -1902,7 +1903,7 @@ public class JavacHandlerUtil {
 	
 	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode parentType, Name typeName, boolean instance, List<JCTypeParameter> params, List<JCAnnotation> annotations) {
 		JCExpression r = null;
-		if (parentType != null && parentType.getKind() == Kind.TYPE) {
+		if (parentType != null && parentType.getKind() == Kind.TYPE && !parentType.getName().isEmpty()) {
 			JCClassDecl td = (JCClassDecl) parentType.get();
 			boolean outerInstance = instance && ((td.mods.flags & Flags.STATIC) == 0);
 			List<JCTypeParameter> outerParams = instance ? td.typarams : List.<JCTypeParameter>nil();
@@ -1979,6 +1980,13 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Returns {@code true} if the provided node is an actual class, an enum or a record and not some other type declaration (so, not an annotation definition or interface).
+	 */
+	public static boolean isClassEnumOrRecord(JavacNode typeNode) {
+		return isClassAndDoesNotHaveFlags(typeNode, Flags.INTERFACE | Flags.ANNOTATION);
+	}
+	
+	/**
 	 * Returns {@code true} if the provided node is a record declaration (so, not an annotation definition, interface, enum, or plain class).
 	 */
 	public static boolean isRecord(JavacNode typeNode) {
@@ -1992,6 +2000,21 @@ public class JavacHandlerUtil {
 		
 		long typeDeclflags = typeDecl == null ? 0 : typeDecl.mods.flags;
 		return (typeDeclflags & flags) == 0;
+	}
+	
+	/**
+	 * Returns {@code true} if the provided node supports static methods and types (top level or static class)
+	 */
+	public static boolean isStaticAllowed(JavacNode typeNode) {
+		boolean staticAllowed = true;
+		
+		while (typeNode.getKind() != Kind.COMPILATION_UNIT) {
+			if (!staticAllowed) return false;
+			
+			staticAllowed = typeNode.isStatic();
+			typeNode = typeNode.up();
+		}
+		return true;
 	}
 	
 	public static JavacNode upToTypeNode(JavacNode node) {

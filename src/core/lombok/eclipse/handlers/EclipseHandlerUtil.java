@@ -1042,7 +1042,7 @@ public class EclipseHandlerUtil {
 		res[count] = name;
 		
 		n = parent;
-		while (n != null && n.getKind() == Kind.TYPE && n.get() instanceof TypeDeclaration) {
+		while (count > 0) {
 			TypeDeclaration td = (TypeDeclaration) n.get();
 			res[--count] = td.name;
 			n = n.up();
@@ -2636,6 +2636,13 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
+	 * Returns {@code true} if the provided node is an actual class, an enum or a record and not some other type declaration (so, not an annotation definition or interface).
+	 */
+	public static boolean isClassEnumOrRecord(EclipseNode typeNode) {
+		return isTypeAndDoesNotHaveFlags(typeNode, ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation);
+	}
+	
+	/**
 	 * Returns {@code true} if the provided node is a record declaration (so, not an annotation definition, interface, enum, or plain class).
 	 */
 	public static boolean isRecord(EclipseNode typeNode) {
@@ -2660,6 +2667,21 @@ public class EclipseHandlerUtil {
 		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
 		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
 		return (modifiers & flags) == 0;
+	}
+	
+	/**
+	 * Returns {@code true} if the provided node supports static methods and types (top level or static class)
+	 */
+	public static boolean isStaticAllowed(EclipseNode typeNode) {
+		boolean staticAllowed = true;
+		
+		while (typeNode.getKind() != Kind.COMPILATION_UNIT) {
+			if (!staticAllowed) return false;
+			
+			staticAllowed = typeNode.isStatic();
+			typeNode = typeNode.up();
+		}
+		return true;
 	}
 	
 	public static AbstractVariableDeclaration[] getRecordComponents(TypeDeclaration typeDeclaration) {

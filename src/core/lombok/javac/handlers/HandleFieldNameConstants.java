@@ -57,14 +57,12 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 	private static final IdentifierName FIELDS = IdentifierName.valueOf("Fields");
 
 	public void generateFieldNameConstantsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean asEnum, IdentifierName innerTypeName, boolean onlyExplicit, boolean uppercase) {
-		JCClassDecl typeDecl = null;
-		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
-		
-		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
-		
-		if (typeDecl == null || notAClass) {
-			errorNode.addError("@FieldNameConstants is only supported on a class or an enum.");
+		if (!isClassEnumOrRecord(typeNode)) {
+			errorNode.addError("@FieldNameConstants is only supported on a class, an enum or a record.");
+			return;
+		}
+		if (!isStaticAllowed(typeNode)) {
+			errorNode.addError("@FieldNameConstants is not supported on non-static nested classes.");
 			return;
 		}
 		

@@ -184,6 +184,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			annotationNode.addError("@SuperBuilder is only supported on classes.");
 			return;
 		}
+		if (!isStaticAllowed(parent)) {
+			annotationNode.addError("@SuperBuilder is not supported on non-static nested classes.");
+			return;
+		}
 		
 		job.parentType = parent;
 		TypeDeclaration td = (TypeDeclaration) parent.get();

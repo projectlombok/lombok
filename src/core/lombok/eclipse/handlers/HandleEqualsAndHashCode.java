@@ -538,14 +538,15 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		if (addWildcards) genericsCount.add(arraySizeOf(((TypeDeclaration) type.get()).typeParameters));
 		boolean staticContext = (((TypeDeclaration) type.get()).modifiers & ClassFileConstants.AccStatic) != 0;
 		EclipseNode tNode = type.up();
-		if (!staticContext && tNode.getKind() == Kind.TYPE && (((TypeDeclaration) tNode.get()).modifiers & ClassFileConstants.AccInterface) != 0) staticContext = true;
 		
 		while (tNode != null && tNode.getKind() == Kind.TYPE) {
+			TypeDeclaration td = (TypeDeclaration) tNode.get();
+			if (td.name == null || td.name.length == 0) break;
 			list.add(tNode.getName());
-			if (addWildcards) genericsCount.add(staticContext ? 0 : arraySizeOf(((TypeDeclaration) tNode.get()).typeParameters));
-			if (!staticContext) staticContext = (((TypeDeclaration) tNode.get()).modifiers & Modifier.STATIC) != 0;
+			if (!staticContext && tNode.getKind() == Kind.TYPE && (td.modifiers & ClassFileConstants.AccInterface) != 0) staticContext = true;
+			if (addWildcards) genericsCount.add(staticContext ? 0 : arraySizeOf(td.typeParameters));
+			if (!staticContext) staticContext = (td.modifiers & Modifier.STATIC) != 0;
 			tNode = tNode.up();
-			if (!staticContext && tNode.getKind() == Kind.TYPE && (((TypeDeclaration) tNode.get()).modifiers & ClassFileConstants.AccInterface) != 0) staticContext = true;
 		}
 		Collections.reverse(list);
 		if (addWildcards) Collections.reverse(genericsCount);
