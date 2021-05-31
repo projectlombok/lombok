@@ -40,8 +40,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 public class HandleLocked extends EclipseAnnotationHandler<Locked> {
 	private static final String ANNOTATION_NAME = "@Locked";
 	private static final char[][] LOCK_CLASS = new char[][] { TypeConstants.JAVA, TypeConstants.UTIL,
-															  "concurrent".toCharArray(), "locks".toCharArray(),
-															  "ReentrantLock".toCharArray() };
+			"concurrent".toCharArray(), "locks".toCharArray(), "ReentrantLock".toCharArray() };
 
 	@Override public void handle(AnnotationValues<Locked> annotation, Annotation source, EclipseNode annotationNode) {
 		String annotationValue = annotation.getInstance().value();

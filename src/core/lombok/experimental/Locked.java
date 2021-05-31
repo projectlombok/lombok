@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReadWriteLock;
  * Because {@link Locked} uses a different type of lock from {@link Locked.Read} and {@link Locked.Write}, using both in
  * the same class using the default names will result in a compile time error.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Locked">the project lombok features page for &#64;Locked</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Locked">the project lombok features page for &#64;Locked</a>.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)

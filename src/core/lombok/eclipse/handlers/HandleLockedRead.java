@@ -41,8 +41,7 @@ public class HandleLockedRead extends EclipseAnnotationHandler<Locked.Read> {
 	private static final char[] LOCK_METHOD = "readLock".toCharArray();
 	private static final String ANNOTATION_NAME = "@Locked.Read";
 	private static final char[][] LOCK_CLASS = new char[][] { TypeConstants.JAVA, TypeConstants.UTIL,
-															  "concurrent".toCharArray(), "locks".toCharArray(),
-															  "ReentrantReadWriteLock".toCharArray() };
+			"concurrent".toCharArray(), "locks".toCharArray(), "ReentrantReadWriteLock".toCharArray() };
 
 	@Override public void handle(AnnotationValues<Locked.Read> annotation, Annotation source, EclipseNode annotationNode) {
 		String annotationValue = annotation.getInstance().value();

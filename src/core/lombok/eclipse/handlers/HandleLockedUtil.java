@@ -80,8 +80,7 @@ public final class HandleLockedUtil {
 		createLockField(annotationValue, annotationNode, lockClass, new boolean[] { method.isStatic() }, false);
 	}
 
-	private static char[] createLockField(String name, EclipseNode annotationNode, char[][] lockClass,
-										  boolean[] isStatic, boolean reportErrors) {
+	private static char[] createLockField(String name, EclipseNode annotationNode, char[][] lockClass, boolean[] isStatic, boolean reportErrors) {
 		char[] lockName = name.toCharArray();
 
 		Annotation source = (Annotation) annotationNode.get();
@@ -109,9 +108,8 @@ public final class HandleLockedUtil {
 					isStatic[0] = st;
 
 					if (exists == MemberExistsResult.EXISTS_BY_LOMBOK && !typeReferenceNameEquals(lockType, def.type)) {
-						annotationNode.addError("Expected field " + charArrToString(lockName) + " to be of type " +
-													lockType + " but got type " + def.type + "!" +
-													" Did you mix @Locked with @Locked.Read/Write on the same generated field?");
+						annotationNode.addError("Expected field " + new String(lockName) + " to be of type " + lockType +
+								" but got type " + def.type + "! Did you mix @Locked with @Locked.Read/Write on the same generated field?");
 						return null;
 					}
 					break;
@@ -136,11 +134,10 @@ public final class HandleLockedUtil {
 	}
 
 	/**
-	 * See {@link #handle(String, Annotation, EclipseNode, String, char[][],  char[])} for
+	 * See {@link #handle(String, Annotation, EclipseNode, String, char[][], char[])} for
 	 * {@code lockableMethodName = null}.
 	 */
-	public static void handle(String annotationValue, Annotation ast, EclipseNode annotationNode,
-							  String annotationName, char[][] lockClass) {
+	public static void handle(String annotationValue, Annotation ast, EclipseNode annotationNode, String annotationName, char[][] lockClass) {
 		handle(annotationValue, ast, annotationNode, annotationName, lockClass, null);
 	}
 
@@ -163,7 +160,7 @@ public final class HandleLockedUtil {
 	 * itself can be locked/unlocked.
 	 */
 	public static void handle(String annotationValue, Annotation source, EclipseNode annotationNode,
-							  String annotationName, char[][] lockClass, char[] lockableMethodName) {
+			String annotationName, char[][] lockClass, char[] lockableMethodName) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.LOCKED_FLAG_USAGE, annotationName);
 
 		int p1 = source.sourceStart -1;
@@ -171,8 +168,7 @@ public final class HandleLockedUtil {
 		long pos = (((long) p1) << 32) | p2;
 
 		EclipseNode methodNode = annotationNode.up();
-		if (methodNode == null || methodNode.getKind() != AST.Kind.METHOD ||
-			!(methodNode.get() instanceof MethodDeclaration)) {
+		if (methodNode == null || methodNode.getKind() != AST.Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration)) {
 			annotationNode.addError(annotationName + " is legal only on methods.");
 			return;
 		}
@@ -202,10 +198,8 @@ public final class HandleLockedUtil {
 		block.sourceEnd = method.bodyEnd;
 		block.sourceStart = method.bodyStart;
 
-		Statement acquireLock = getLockingStatement(source, typeNode, LOCK_METHOD, lockName,
-													lockableMethodName, isStatic[0], p1, p2, pos);
-		Statement unLock = getLockingStatement(source, typeNode, UNLOCK_METHOD, lockName,
-											   lockableMethodName, isStatic[0], p1, p2, pos);
+		Statement acquireLock = getLockingStatement(source, typeNode, LOCK_METHOD, lockName, lockableMethodName, isStatic[0], p1, p2, pos);
+		Statement unLock = getLockingStatement(source, typeNode, UNLOCK_METHOD, lockName, lockableMethodName, isStatic[0], p1, p2, pos);
 
 		TryStatement tryStatement = new TryStatement();
 		tryStatement.tryBlock = block;
@@ -222,8 +216,7 @@ public final class HandleLockedUtil {
 	}
 
 	private static Statement getLockingStatement(ASTNode source, EclipseNode typeNode, char[] lockMethod,
-												 char[] lockableObjectName, char[] lockableMethodName, boolean isStatic,
-												 int p1, int p2, long pos) {
+			char[] lockableObjectName, char[] lockableMethodName, boolean isStatic, int p1, int p2, long pos) {
 		MessageSend lockStat = setGeneratedBy(new MessageSend(), source);
 		lockStat.receiver = getLockable(source, typeNode, lockableObjectName, lockableMethodName, isStatic, p1, p2, pos);
 		lockStat.selector = lockMethod;
@@ -234,7 +227,7 @@ public final class HandleLockedUtil {
 	}
 
 	private static Expression getLockable(ASTNode source, EclipseNode typeNode, char[] lockName,
-										  char[] lockableMethodName, boolean isStatic, int p1, int p2, long pos) {
+			char[] lockableMethodName, boolean isStatic, int p1, int p2, long pos) {
 		Reference lockVariable;
 		if (isStatic) {
 			char[][] n = getQualifiedInnerName(typeNode, lockName);
@@ -260,11 +253,5 @@ public final class HandleLockedUtil {
 			lockable.sourceEnd = lockable.statementEnd = p2;
 		}
 		return setGeneratedBy(lockable, source);
-	}
-
-	private static String charArrToString(char[] arr) {
-		String str = "";
-		for (int idx = 0; idx < arr.length; ++idx) str += arr[idx];
-		return str;
 	}
 }

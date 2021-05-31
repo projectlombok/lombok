@@ -38,12 +38,10 @@ import static com.sun.tools.javac.tree.JCTree.*;
 public class HandleLockedWrite extends JavacAnnotationHandler<Locked.Write> {
 	private static final String LOCK_METHOD = "writeLock";
 	private static final String ANNOTATION_NAME = "@Locked.Write";
-	private static final String[] LOCK_CLASS = new String[]{"java", "util", "concurrent", "locks",
-															"ReentrantReadWriteLock"};
+	private static final String[] LOCK_CLASS = new String[]{"java", "util", "concurrent", "locks", "ReentrantReadWriteLock"};
 
 	@Override public void handle(AnnotationValues<Locked.Write> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		String annotationValue = annotation.getInstance().value();
-		HandleLockedUtil.handle(annotationValue, ast, annotationNode, Locked.Write.class,
-								ANNOTATION_NAME, LOCK_CLASS, LOCK_METHOD);
+		HandleLockedUtil.handle(annotationValue, ast, annotationNode, Locked.Write.class, ANNOTATION_NAME, LOCK_CLASS, LOCK_METHOD);
 	}
 }
