@@ -106,6 +106,7 @@ import lombok.javac.Javac;
 import lombok.javac.JavacAugments;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.permit.Permit;
 
 /**
@@ -2028,7 +2029,9 @@ public class JavacHandlerUtil {
 	private static JCExpression cloneType0(JavacTreeMaker maker, JCTree in) {
 		if (in == null) return null;
 		
-		if (in instanceof JCPrimitiveTypeTree) return (JCExpression) in;
+		if (in instanceof JCPrimitiveTypeTree) {
+			return maker.TypeIdent(TypeTag.typeTag(in));
+		}
 		
 		if (in instanceof JCIdent) {
 			return maker.Ident(((JCIdent) in).name);
