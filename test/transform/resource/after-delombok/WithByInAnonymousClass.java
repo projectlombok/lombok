@@ -1,3 +1,4 @@
+//version 8:
 public class WithByInAnonymousClass {
 	Object annonymous = new Object() {
 

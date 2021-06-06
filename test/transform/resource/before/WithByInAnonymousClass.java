@@ -1,3 +1,4 @@
+//version 8:
 import lombok.experimental.WithBy;
 
 public class WithByInAnonymousClass {
