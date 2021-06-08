@@ -1,7 +1,7 @@
 @lombok.Data
 public class SimpleTest {
 	private final String test;
-	private final int foo;
+	private final int f;
 	
 	public String bar() {
 		int val = getFoo() + 5;
