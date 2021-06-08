@@ -68,10 +68,8 @@ public class AssertionLogger {
 	private static synchronized void logToFile(String msg) {
 		if (msg == null) return;
 		
-		try {
-			OutputStream out = new FileOutputStream(LOG_PATH, true);
+		try(OutputStream out = new FileOutputStream(LOG_PATH, true)) {
 			out.write(msg.getBytes("UTF-8"));
-			out.close();
 		} catch (Exception e) {
 			throw new RuntimeException("assertion logging can't write to log file", e);
 		}
