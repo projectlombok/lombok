@@ -21,9 +21,17 @@
 		<p>
 			The <code>@Builder</code> annotation produces complex builder APIs for your classes.
 		</p><p>
-			<code>@Builder</code> lets you automatically produce the code required to have your class be instantiable with code such as:<br />
-			<code>Person.builder().name("Adam Savage").city("San Francisco").job("Mythbusters").job("Unchained Reaction").build();</code>
-		</p><p>
+			<code>@Builder</code> lets you automatically produce the code required to have your class be instantiable with code such as:
+		</p>
+		<ol class="snippet example">
+			<li>Person.builder()</li>
+			<li class="continued">.name("Adam Savage")</li>
+			<li class="continued">.city("San Francisco")</li>
+			<li class="continued">.job("Mythbusters")</li>
+			<li class="continued">.job("Unchained Reaction")</li>
+			<li class="continued">.build();</li>
+		</ol>
+		<p>
 			<code>@Builder</code> can be placed on a class, or on a constructor, or on a method. While the "on a class" and "on a constructor" mode are the most common use-case, <code>@Builder</code> is most easily explained with the "method" use-case.
 		</p><p>
 			A method annotated with <code>@Builder</code> (from now on called the <em>target</em>) causes the following 7 things to be generated:
@@ -46,7 +54,15 @@
 			</ul>
 			Each listed generated element will be silently skipped if that element already exists (disregarding parameter counts and looking only at names). This includes the <em>builder</em> itself: If that class already exists, lombok will simply start injecting fields and methods inside this already existing class, unless of course the fields / methods to be injected already exist. You may not put any other method (or constructor) generating lombok annotation on a builder class though; for example, you can not put <code>@EqualsAndHashCode</code> on the builder class.
 		</p><p>
-			<code>@Builder</code> can generate so-called 'singular' methods for collection parameters/fields. These take 1 element instead of an entire list, and add the element to the list. For example: <code>Person.builder().job("Mythbusters").job("Unchained Reaction").build();</code> would result in the <code>List&lt;String&gt; jobs</code> field to have 2 strings in it. To get this behavior, the field/parameter needs to be annotated with <code>@Singular</code>. The feature has <a href="#singular">its own documentation</a>.
+			<code>@Builder</code> can generate so-called 'singular' methods for collection parameters/fields. These take 1 element instead of an entire list, and add the element to the list. For example:
+		</p>
+		<ol class="snippet example">
+			<li>Person.builder()</li>
+			<li class="continued">.job("Mythbusters")</li>
+			<li class="continued">.job("Unchained Reaction")</li>
+			<li class="continued">.build();</li>
+		</ol>
+		<p>would result in the <code>List&lt;String&gt; jobs</code> field to have 2 strings in it. To get this behavior, the field/parameter needs to be annotated with <code>@Singular</code>. The feature has <a href="#singular">its own documentation</a>.
 		</p><p>
 			Now that the "method" mode is clear, putting a <code>@Builder</code> annotation on a constructor functions similarly; effectively, constructors are just static methods that have a special syntax to invoke them: Their 'return type' is the class they construct, and their type parameters are the same as the type parameters of the class itself.
 		</p><p>

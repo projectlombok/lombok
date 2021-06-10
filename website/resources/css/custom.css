@@ -268,6 +268,10 @@ ol.snippet.cmd li:before {
 	content: ">\A0\A0";
 }
 
+ol.snippet li.continued {
+	padding-left: 2em;
+}
+
 .fork-me {
 	position: fixed;
 	width: 150px;
