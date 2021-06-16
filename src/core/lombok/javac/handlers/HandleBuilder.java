@@ -489,7 +489,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		{
 			MemberExistsResult methodExists = methodExists(job.buildMethodName, job.builderType, -1);
-			if (methodExists == MemberExistsResult.EXISTS_BY_LOMBOK) methodExists = methodExists(job.buildMethodName, job.builderType, 0);
+			if (methodExists == MemberExistsResult.EXISTS_BY_LOMBOK) {
+				if (!buildMethodThrownExceptions.isEmpty()) {
+					addThrowsTypes(job.builderType, job.buildMethodName, buildMethodThrownExceptions, 0);
+				}
+				methodExists = methodExists(job.buildMethodName, job.builderType, 0);
+			}
 			if (methodExists == MemberExistsResult.NOT_EXISTS) {
 				JCMethodDecl md = generateBuildMethod(job, nameOfBuilderMethod, buildMethodReturnType, buildMethodThrownExceptions, addCleaning);
 				if (md != null) {

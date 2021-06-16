@@ -1288,7 +1288,43 @@ public class JavacHandlerUtil {
 		}
 		ClassSymbolMembersField.enter(cs, methodSymbol);
 	}
-	
+
+	/**
+	 * Adds the given types to the throws declaration of the named method. Does not skip duplicates.
+	 */
+	public static void addThrowsTypes(JavacNode typeNode, String methodName, List<JCExpression> throwTypes, int params) {
+		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
+			for (JCTree def : ((JCClassDecl) typeNode.get()).defs) {
+				if (def instanceof JCMethodDecl) {
+					JCMethodDecl md = (JCMethodDecl) def;
+					String name = md.name.toString();
+					boolean matches = name.equals(methodName);
+					if (matches) {
+						if (params > -1) {
+							List<JCVariableDecl> ps = md.params;
+							int minArgs = 0;
+							int maxArgs = 0;
+							if (ps != null && ps.length() > 0) {
+								minArgs = ps.length();
+								if ((ps.last().mods.flags & Flags.VARARGS) != 0) {
+									maxArgs = Integer.MAX_VALUE;
+									minArgs--;
+								} else {
+									maxArgs = minArgs;
+								}
+							}
+
+							if (params < minArgs || params > maxArgs) continue;
+						}
+
+						md.thrown = md.thrown.appendList(throwTypes);
+					}
+				}
+			}
+		}
+
+	}
+
 	/**
 	 * Adds an inner type (class, interface, enum) to the given type. Cannot inject top-level types.
 	 * 
