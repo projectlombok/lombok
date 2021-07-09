@@ -1324,13 +1324,16 @@ public class PrettyPrinter extends JCTree.Visitor {
 	@Override public void visitCase(JCCase tree) {
 		// Starting with JDK12, switches allow multiple expressions per case, and can take the form of an expression (preview feature).
 		
-		List<JCExpression> pats = readObject(tree, "pats", null); // JDK 12+
+		List<JCTree> pats = readObject(tree, "labels", null); // JDK 17+
 		if (pats == null) {
-			JCExpression pat = readObject(tree, "pat", null); // JDK -11
-			pats = pat == null ? List.<JCExpression>nil() : List.of(pat);
+			pats = readObject(tree, "pats", null); // JDK 12-17
+		}
+		if (pats == null) {
+			JCTree pat = readObject(tree, "pat", null); // JDK -11
+			pats = pat == null ? List.<JCTree>nil() : List.of(pat);
 		}
 		
-		if (pats.isEmpty()) {
+		if (pats.isEmpty() || pats.get(0).getClass().getName().endsWith("$JCDefaultCaseLabel")) {
 			aPrint("default");
 		} else {
 			aPrint("case ");
