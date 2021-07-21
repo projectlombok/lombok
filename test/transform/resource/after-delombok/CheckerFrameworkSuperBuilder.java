@@ -34,7 +34,7 @@ class CheckerFrameworkSuperBuilder {
 			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B x(CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") ParentBuilder<C, B> this, final int x) {
+			public B x(final int x) {
 				this.x$value = x;
 				x$set = true;
 				return self();
@@ -44,7 +44,7 @@ class CheckerFrameworkSuperBuilder {
 			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B y(CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") ParentBuilder<C, B> this, final int y) {
+			public B y(final int y) {
 				this.y = y;
 				return self();
 			}
@@ -53,7 +53,7 @@ class CheckerFrameworkSuperBuilder {
 			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B z(CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") ParentBuilder<C, B> this, final int z) {
+			public B z(final int z) {
 				this.z = z;
 				return self();
 			}
@@ -161,7 +161,7 @@ class CheckerFrameworkSuperBuilder {
 			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B a(CheckerFrameworkSuperBuilder.ZChild.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("a") ZChildBuilder<C, B> this, final int a) {
+			public B a(final int a) {
 				this.a$value = a;
 				a$set = true;
 				return self();
@@ -171,7 +171,7 @@ class CheckerFrameworkSuperBuilder {
 			 */
 			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B b(CheckerFrameworkSuperBuilder.ZChild.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("b") ZChildBuilder<C, B> this, final int b) {
+			public B b(final int b) {
 				this.b = b;
 				return self();
 			}

@@ -16,7 +16,7 @@ class CheckerFrameworkSuperBuilder {
       /**
        * @return {@code this}.
        */
-      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B x(CheckerFrameworkSuperBuilder.Parent. @org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") ParentBuilder<C, B> this, final int x) {
+      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B x(final int x) {
         this.x$value = x;
         x$set = true;
         return self();
@@ -24,14 +24,14 @@ class CheckerFrameworkSuperBuilder {
       /**
        * @return {@code this}.
        */
-      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B y(CheckerFrameworkSuperBuilder.Parent. @org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") ParentBuilder<C, B> this, final int y) {
+      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B y(final int y) {
         this.y = y;
         return self();
       }
       /**
        * @return {@code this}.
        */
-      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B z(CheckerFrameworkSuperBuilder.Parent. @org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") ParentBuilder<C, B> this, final int z) {
+      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B z(final int z) {
         this.z = z;
         return self();
       }
@@ -116,7 +116,7 @@ class CheckerFrameworkSuperBuilder {
       /**
        * @return {@code this}.
        */
-      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B a(CheckerFrameworkSuperBuilder.ZChild. @org.checkerframework.checker.calledmethods.qual.NotCalledMethods("a") ZChildBuilder<C, B> this, final int a) {
+      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B a(final int a) {
         this.a$value = a;
         a$set = true;
         return self();
@@ -124,7 +124,7 @@ class CheckerFrameworkSuperBuilder {
       /**
        * @return {@code this}.
        */
-      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B b(CheckerFrameworkSuperBuilder.ZChild. @org.checkerframework.checker.calledmethods.qual.NotCalledMethods("b") ZChildBuilder<C, B> this, final int b) {
+      public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") B b(final int b) {
         this.b = b;
         return self();
       }

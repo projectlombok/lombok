@@ -36,7 +36,7 @@ class CheckerFrameworkBuilder {
 		 */
 		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder this, final int x) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(final int x) {
 			this.x$value = x;
 			x$set = true;
 			return this;
@@ -46,7 +46,7 @@ class CheckerFrameworkBuilder {
 		 */
 		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder this, final int y) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(final int y) {
 			this.y = y;
 			return this;
 		}
@@ -55,7 +55,7 @@ class CheckerFrameworkBuilder {
 		 */
 		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(CheckerFrameworkBuilder.@org.checkerframework.checker.calledmethods.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder this, final int z) {
+		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(final int z) {
 			this.z = z;
 			return this;
 		}
