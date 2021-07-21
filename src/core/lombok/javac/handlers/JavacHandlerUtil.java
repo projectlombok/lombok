@@ -1407,6 +1407,14 @@ public class JavacHandlerUtil {
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
+	static JCExpression addCheckerFrameworkReturnsReceiver(JCExpression returnType, JavacTreeMaker maker, JavacNode typeNode, CheckerFrameworkVersion cfv) {
+		if (cfv.generateReturnsReceiver()) {
+			JCAnnotation rrAnnotation = maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil());
+			returnType = maker.AnnotatedType(List.of(rrAnnotation), returnType);
+		}
+		return returnType;
+	}
+	
 	private static List<JCTree> addAllButOne(List<JCTree> defs, int idx) {
 		ListBuffer<JCTree> out = new ListBuffer<JCTree>();
 		int i = 0;

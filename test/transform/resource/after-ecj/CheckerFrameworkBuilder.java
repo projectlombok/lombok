@@ -14,7 +14,7 @@ import lombok.Singular;
     /**
      * @return {@code this}.
      */
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(final int x) {
+    public @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder x(final int x) {
       this.x$value = x;
       x$set = true;
       return this;
@@ -22,24 +22,24 @@ import lombok.Singular;
     /**
      * @return {@code this}.
      */
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(final int y) {
+    public @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder y(final int y) {
       this.y = y;
       return this;
     }
     /**
      * @return {@code this}.
      */
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(final int z) {
+    public @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder z(final int z) {
       this.z = z;
       return this;
     }
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder name(final String name) {
+    public @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder name(final String name) {
       if ((this.names == null))
           this.names = new java.util.ArrayList<String>();
       this.names.add(name);
       return this;
     }
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder names(final java.util.Collection<? extends String> names) {
+    public @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder names(final java.util.Collection<? extends String> names) {
       if ((names == null))
           {
             throw new java.lang.NullPointerException("names cannot be null");
@@ -49,7 +49,7 @@ import lombok.Singular;
       this.names.addAll(names);
       return this;
     }
-    public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder clearNames() {
+    public @java.lang.SuppressWarnings("all") CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder clearNames() {
       if ((this.names != null))
           this.names.clear();
       return this;

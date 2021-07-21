@@ -129,13 +129,14 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		md.selector = HandlerUtil.buildAccessorName(builderType, "clear", new String(data.getPluralName())).toCharArray();
 		md.statements = returnStatement != null ? new Statement[] {a, returnStatement} : new Statement[] {a};
 		md.returnType = returnType;
-		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		addCheckerFrameworkReturnsReceiver(md.returnType, data.getSource(), cfv);
+		md.annotations = generateSelfReturnAnnotations(deprecate, data.getSource());
 		
 		data.setGeneratedByRecursive(md);
 		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
 		injectMethod(builderType, md);
 	}
-	
+
 	void generateSingularMethod(CheckerFrameworkVersion cfv, boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, AccessLevel access) {
 		LombokImmutableList<String> suffixes = getArgumentSuffixes();
 		char[][] names = new char[suffixes.size()][];
@@ -173,9 +174,10 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 			md.arguments[i].annotations = typeUseAnns;
 		}
 		md.returnType = returnType;
+		addCheckerFrameworkReturnsReceiver(md.returnType, data.getSource(), cfv);
 		char[] prefixedSingularName = data.getSetterPrefix().length == 0 ? data.getSingularName() : HandlerUtil.buildAccessorName(builderType, new String(data.getSetterPrefix()), new String(data.getSingularName())).toCharArray();
 		md.selector = fluent ? prefixedSingularName : HandlerUtil.buildAccessorName(builderType, "add", new String(data.getSingularName())).toCharArray();
-		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
 		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToBuilderSingularSetterAnnotations(data.getAnnotation().up()));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 
@@ -213,9 +215,10 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
+		addCheckerFrameworkReturnsReceiver(md.returnType, data.getSource(), cfv);
 		char[] prefixedSelector = data.getSetterPrefix().length == 0 ? data.getPluralName() : HandlerUtil.buildAccessorName(builderType, new String(data.getSetterPrefix()), new String(data.getPluralName())).toCharArray();
 		md.selector = fluent ? prefixedSelector : HandlerUtil.buildAccessorName(builderType, "addAll", new String(data.getPluralName())).toCharArray();
-		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
 		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up()));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 

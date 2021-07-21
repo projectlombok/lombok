@@ -51,6 +51,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
+import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
@@ -838,16 +839,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.modifiers = ClassFileConstants.AccAbstract | ClassFileConstants.AccProtected | ExtraCompilerModifiers.AccSemicolonBody;
 		Annotation overrideAnn = override ? makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, job.parentType.get()) : null;
-		Annotation rrAnn = job.checkerFramework.generateReturnsReceiver() ? generateNamedAnnotation(job.parentType.get(), CheckerFrameworkVersion.NAME__RETURNS_RECEIVER): null;
 		Annotation sefAnn = job.checkerFramework.generatePure() ? generateNamedAnnotation(job.parentType.get(), CheckerFrameworkVersion.NAME__PURE): null;
-		if (overrideAnn != null && rrAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn, sefAnn};
-		else if (overrideAnn != null && rrAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn};
-		else if (overrideAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};
+		if (overrideAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};
 		else if (overrideAnn != null) out.annotations = new Annotation[] {overrideAnn};
-		else if (rrAnn != null && sefAnn != null) out.annotations = new Annotation[] {rrAnn, sefAnn};
-		else if (rrAnn != null) out.annotations = new Annotation[] {rrAnn};
 		else if (sefAnn != null) out.annotations = new Annotation[] {sefAnn};
 		out.returnType = new SingleTypeReference(builderGenericName.toCharArray(), 0);
+		addCheckerFrameworkReturnsReceiver(out.returnType, job.parentType.get(), job.checkerFramework);
 		return out;
 	}
 	
@@ -857,13 +854,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.modifiers = ClassFileConstants.AccProtected;
 		Annotation overrideAnn = makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, job.builderType.get());
-		Annotation rrAnn = job.checkerFramework.generateReturnsReceiver() ? generateNamedAnnotation(job.builderType.get(), CheckerFrameworkVersion.NAME__RETURNS_RECEIVER) : null;
 		Annotation sefAnn = job.checkerFramework.generatePure() ? generateNamedAnnotation(job.builderType.get(), CheckerFrameworkVersion.NAME__PURE) : null;
-		if (rrAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn, sefAnn};
-		else if (rrAnn != null) out.annotations = new Annotation[] {overrideAnn, rrAnn};
-		else if (sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};
+		if (sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};
 		else out.annotations = new Annotation[] {overrideAnn};
 		out.returnType = namePlusTypeParamsToTypeReference(job.builderType, job.typeParams, job.getPos());
+		addCheckerFrameworkReturnsReceiver(out.returnType, job.parentType.get(), job.checkerFramework);
 		out.statements = new Statement[] {new ReturnStatement(new ThisReference(0, 0), 0, 0)};
 		return out;
 	}
@@ -1013,10 +1008,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 		
 		List<Annotation> methodAnnsList = Arrays.asList(EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode));
-		if (job.checkerFramework.generateReturnsReceiver()) {
-			methodAnnsList = new ArrayList<Annotation>(methodAnnsList);
-			methodAnnsList.add(generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER));
-		}
+		addCheckerFrameworkReturnsReceiver(returnType, job.source, job.checkerFramework);
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, paramName, nameOfSetFlag, returnType, returnStatement, ClassFileConstants.AccPublic,
 			job.sourceNode, methodAnnsList, annosOnParam != null ? Arrays.asList(copyAnnotations(job.source, annosOnParam)) : Collections.<Annotation>emptyList());
 		injectMethod(job.builderType, setter);

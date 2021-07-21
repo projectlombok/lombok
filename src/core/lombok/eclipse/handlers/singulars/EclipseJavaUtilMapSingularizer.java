@@ -189,7 +189,8 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		Statement clearStatement = new IfStatement(new EqualExpression(thisDotField, new NullLiteral(0, 0), OperatorIds.NOT_EQUAL), clearMsgs, 0, 0);
 		md.statements = returnStatement != null ? new Statement[] {clearStatement, returnStatement} : new Statement[] {clearStatement};
 		md.returnType = returnType;
-		md.annotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		addCheckerFrameworkReturnsReceiver(md.returnType, data.getSource(), cfv);
+		md.annotations = generateSelfReturnAnnotations(deprecate, data.getSource());
 		
 		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
 		data.setGeneratedByRecursive(md);
@@ -246,13 +247,14 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		valueParam.annotations = typeUseAnnsValue;
 		md.arguments = new Argument[] {keyParam, valueParam};
 		md.returnType = returnType;
+		addCheckerFrameworkReturnsReceiver(md.returnType, data.getSource(), cfv);
 		
 		String name = new String(data.getSingularName());
 		String setterPrefix = data.getSetterPrefix().length > 0 ? new String(data.getSetterPrefix()) : fluent ? "" : "put";
 		String setterName = HandlerUtil.buildAccessorName(builderType, setterPrefix, name);
 		
 		md.selector = setterName.toCharArray();
-		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
 		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToBuilderSingularSetterAnnotations(data.getAnnotation().up()));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 		
@@ -322,13 +324,14 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
+		addCheckerFrameworkReturnsReceiver(md.returnType, data.getSource(), cfv);
 		
 		String name = new String(data.getPluralName());
 		String setterPrefix = data.getSetterPrefix().length > 0 ? new String(data.getSetterPrefix()) : fluent ? "" : "put";
 		String setterName = HandlerUtil.buildAccessorName(builderType, setterPrefix, name);
 		
 		md.selector = setterName.toCharArray();
-		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
+		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
 		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up()));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 		

@@ -56,11 +56,11 @@ public final class CheckerFrameworkVersion implements ConfigurationValueType {
 	}
 	
 	public boolean generateReturnsReceiver() {
-		return version > 3999;
+		return version >= 3100;
 	}
 	
 	public boolean generateCalledMethods() {
-		return version > 3999;
+		return version >= 3100;
 	}
 	
 	public static CheckerFrameworkVersion valueOf(String versionString) {
