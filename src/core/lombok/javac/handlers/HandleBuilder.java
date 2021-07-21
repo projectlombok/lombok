@@ -922,15 +922,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(bfd.originalFieldNode);
-		JCMethodDecl newMethod = null;
-		if (job.checkerFramework.generateCalledMethods() && maker.hasMethodDefWithRecvParam()) {
-			JCAnnotation ncAnno = maker.Annotation(genTypeRef(job.sourceNode, CheckerFrameworkVersion.NAME__NOT_CALLED), List.<JCExpression>of(maker.Literal(setterName.toString())));
-			JCClassDecl builderTypeNode = (JCClassDecl) job.builderType.get();
-			JCExpression selfType = namePlusTypeParamsToTypeReference(maker, job.builderType, builderTypeNode.typarams, List.<JCAnnotation>of(ncAnno));
-			JCVariableDecl recv = maker.VarDef(maker.Modifiers(Flags.PARAMETER, List.<JCAnnotation>nil()), job.builderType.toName("this"), selfType, null);
-			newMethod = HandleSetter.createSetterWithRecv(toJavacModifier(job.accessInners), deprecate, fieldNode, maker, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, job.sourceNode, methodAnns, bfd.annotations, recv);
-		}
-		if (newMethod == null) newMethod = HandleSetter.createSetter(toJavacModifier(job.accessInners), deprecate, fieldNode, maker, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, job.sourceNode, methodAnns, bfd.annotations);
+		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(job.accessInners), deprecate, fieldNode, maker, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, job.sourceNode, methodAnns, bfd.annotations);
 		recursiveSetGeneratedBy(newMethod, job.sourceNode);
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
 			copyJavadocFromParam(bfd.originalFieldNode.up(), newMethod, bfd.name.toString());

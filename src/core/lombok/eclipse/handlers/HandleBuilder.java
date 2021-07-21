@@ -767,18 +767,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return decl;
 	}
 	
-	static Receiver generateNotCalledReceiver(BuilderJob job, String setterName) {
-		char[][] nameNotCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__NOT_CALLED);
-		SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameNotCalled, poss(job.source, nameNotCalled.length)), job.source.sourceStart);
-		ann.memberValue = new StringLiteral(setterName.toCharArray(), 0, 0, 0);
-		
-		TypeReference typeReference = job.createBuilderTypeReference();
-		int trLen = typeReference.getTypeName().length;
-		typeReference.annotations = new Annotation[trLen][];
-		typeReference.annotations[trLen - 1] = new Annotation[] {ann};
-		return new Receiver(new char[] { 't', 'h', 'i', 's' }, 0, typeReference, null, 0);
-	}
-	
 	static Receiver generateBuildReceiver(BuilderJob job) {
 		if (!job.checkerFramework.generateCalledMethods()) return null;
 		
@@ -1050,7 +1038,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		ASTNode source = job.sourceNode.get();
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, toEclipseModifier(job.accessInners),
 			job.sourceNode, methodAnnsList, bfd.annotations != null ? Arrays.asList(copyAnnotations(source, bfd.annotations)) : Collections.<Annotation>emptyList());
-		if (job.checkerFramework.generateCalledMethods()) setter.receiver = generateNotCalledReceiver(job, setterName);
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
 			copyJavadocFromParam(bfd.originalFieldNode.up(), setter, td, bfd.name.toString());
 		} else {

@@ -961,15 +961,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
-		JCMethodDecl newMethod = null;
-		if (job.checkerFramework.generateCalledMethods() && maker.hasMethodDefWithRecvParam()) {
-			JCAnnotation ncAnno = maker.Annotation(genTypeRef(job.sourceNode, CheckerFrameworkVersion.NAME__NOT_CALLED), List.<JCExpression>of(maker.Literal(setterName.toString())));
-			JCClassDecl builderTypeNode = (JCClassDecl) job.builderType.get();
-			JCExpression selfType = namePlusTypeParamsToTypeReference(maker, job.builderType, builderTypeNode.typarams, List.<JCAnnotation>of(ncAnno));
-			JCVariableDecl recv = maker.VarDef(maker.Modifiers(0L, List.<JCAnnotation>nil()), job.toName("this"), selfType, null);
-			newMethod = HandleSetter.createSetterWithRecv(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, job.sourceNode, methodAnns, annosOnParam, recv);
-		}
-		if (newMethod == null) newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, job.sourceNode, methodAnns, annosOnParam);
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, job.sourceNode, methodAnns, annosOnParam);
 		if (job.checkerFramework.generateReturnsReceiver()) {
 			List<JCAnnotation> annotations = newMethod.mods.annotations;
 			if (annotations == null) annotations = List.nil();
