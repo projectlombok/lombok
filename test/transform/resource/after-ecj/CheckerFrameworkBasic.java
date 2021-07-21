@@ -24,7 +24,7 @@ import lombok.With;
   /**
    * @return {@code this}.
    */
-  public @org.checkerframework.common.returnsreceiver.qual.This @java.lang.SuppressWarnings("all") CheckerFrameworkBasic setZ(final int z) {
+  public @java.lang.SuppressWarnings("all") @org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBasic setZ(final int z) {
     this.z = z;
     return this;
   }

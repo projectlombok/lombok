@@ -786,15 +786,14 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JavacTreeMaker maker = job.getTreeMaker();
 		List<JCAnnotation> annotations = List.nil();
 		JCAnnotation overrideAnnotation = override ? maker.Annotation(genJavaLangTypeRef(job.builderType, "Override"), List.<JCExpression>nil()) : null;
-		JCAnnotation rrAnnotation = job.checkerFramework.generateReturnsReceiver() ? maker.Annotation(genTypeRef(job.builderType, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil()) : null;
 		JCAnnotation sefAnnotation = job.checkerFramework.generatePure() ? maker.Annotation(genTypeRef(job.builderType, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()) : null;
 		if (sefAnnotation != null) annotations = annotations.prepend(sefAnnotation);
-		if (rrAnnotation != null) annotations = annotations.prepend(rrAnnotation);
 		if (overrideAnnotation != null) annotations = annotations.prepend(overrideAnnotation);
 		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED | Flags.ABSTRACT, annotations);
 		Name name = job.toName(SELF_METHOD);
 		JCExpression returnType = maker.Ident(job.toName(builderGenericName));
-		
+		returnType = addCheckerFrameworkReturnsReceiver(returnType, maker, job.builderType, job.checkerFramework);
+
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 	}
 	
@@ -802,17 +801,16 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JavacTreeMaker maker = job.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(job.builderType, "Override"), List.<JCExpression>nil());
-		JCAnnotation rrAnnotation = job.checkerFramework.generateReturnsReceiver() ? maker.Annotation(genTypeRef(job.builderType, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil()) : null;
 		JCAnnotation sefAnnotation = job.checkerFramework.generatePure() ? maker.Annotation(genTypeRef(job.builderType, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()) : null;
 		List<JCAnnotation> annsOnMethod = List.nil();
 		if (sefAnnotation != null) annsOnMethod = annsOnMethod.prepend(sefAnnotation);
-		if (rrAnnotation != null) annsOnMethod = annsOnMethod.prepend(rrAnnotation);
 		annsOnMethod = annsOnMethod.prepend(overrideAnnotation);
 		
 		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED, annsOnMethod);
 		Name name = job.toName(SELF_METHOD);
 		
 		JCExpression returnType = namePlusTypeParamsToTypeReference(maker, job.builderType.up(), job.getBuilderClassName(), false, job.typeParams);
+		returnType = addCheckerFrameworkReturnsReceiver(returnType, maker, job.builderType, job.checkerFramework);
 		JCStatement statement = maker.Return(maker.Ident(job.toName("this")));
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
 		
@@ -961,15 +959,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		returnType = addCheckerFrameworkReturnsReceiver(returnType, maker, job.builderType, job.checkerFramework);
+
 		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, job.sourceNode, methodAnns, annosOnParam);
-		if (job.checkerFramework.generateReturnsReceiver()) {
-			List<JCAnnotation> annotations = newMethod.mods.annotations;
-			if (annotations == null) annotations = List.nil();
-			JCAnnotation anno = maker.Annotation(genTypeRef(job.builderType, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER), List.<JCExpression>nil());
-			recursiveSetGeneratedBy(anno, job.sourceNode);
-			newMethod.mods.annotations = annotations.prepend(anno);
-		}
-		
 		injectMethod(job.builderType, newMethod);
 	}
 	

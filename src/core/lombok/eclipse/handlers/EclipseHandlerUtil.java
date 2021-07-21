@@ -2096,6 +2096,15 @@ public class EclipseHandlerUtil {
 		return newAnnotationArray;
 	}
 	
+	public static void addCheckerFrameworkReturnsReceiver(TypeReference returnType, ASTNode source, CheckerFrameworkVersion cfv) {
+		if (cfv.generateReturnsReceiver()) {
+			Annotation rrAnn = generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER);
+			int levels = returnType.getAnnotatableLevels();
+			returnType.annotations = new Annotation[levels][];
+			returnType.annotations[levels-1] = new Annotation[] {rrAnn};
+		}
+	}
+	
 	private static boolean arrayHasOnlyElementsOfType(Object[] array, Class<?> clazz) {
 		for (Object element : array) {
 			if (!clazz.isInstance(element))

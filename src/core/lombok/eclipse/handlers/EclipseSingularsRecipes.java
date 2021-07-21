@@ -300,13 +300,10 @@ public class EclipseSingularsRecipes {
 		
 		// -- Utility methods --
 		
-		protected Annotation[] generateSelfReturnAnnotations(boolean deprecate, CheckerFrameworkVersion cfv, ASTNode source) {
+		protected Annotation[] generateSelfReturnAnnotations(boolean deprecate, ASTNode source) {
 			Annotation deprecated = deprecate ? generateDeprecatedAnnotation(source) : null;
-			Annotation returnsReceiver = cfv.generateReturnsReceiver() ? generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__RETURNS_RECEIVER) : null;
-			if (deprecated == null && returnsReceiver == null) return null;
-			if (deprecated == null) return new Annotation[] {returnsReceiver};
-			if (returnsReceiver == null) return new Annotation[] {deprecated};
-			return new Annotation[] {deprecated, returnsReceiver};
+			if (deprecated == null) return null;
+			return new Annotation[] {deprecated};
 		}
 		
 		/**

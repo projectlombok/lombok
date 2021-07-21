@@ -1,4 +1,3 @@
-// skip-idempotent
 import java.util.List;
 class CheckerFrameworkBuilder {
 	int x;
@@ -34,9 +33,8 @@ class CheckerFrameworkBuilder {
 		/**
 		 * @return {@code this}.
 		 */
-		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(final int x) {
+		public CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder x(final int x) {
 			this.x$value = x;
 			x$set = true;
 			return this;
@@ -44,31 +42,27 @@ class CheckerFrameworkBuilder {
 		/**
 		 * @return {@code this}.
 		 */
-		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(final int y) {
+		public CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder y(final int y) {
 			this.y = y;
 			return this;
 		}
 		/**
 		 * @return {@code this}.
 		 */
-		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(final int z) {
+		public CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder z(final int z) {
 			this.z = z;
 			return this;
 		}
-		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder name(final String name) {
+		public CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder name(final String name) {
 			if (this.names == null) this.names = new java.util.ArrayList<String>();
 			this.names.add(name);
 			return this;
 		}
-		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder names(final java.util.Collection<? extends String> names) {
+		public CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder names(final java.util.Collection<? extends String> names) {
 			if (names == null) {
 				throw new java.lang.NullPointerException("names cannot be null");
 			}
@@ -76,9 +70,8 @@ class CheckerFrameworkBuilder {
 			this.names.addAll(names);
 			return this;
 		}
-		@org.checkerframework.common.returnsreceiver.qual.This
 		@java.lang.SuppressWarnings("all")
-		public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder clearNames() {
+		public CheckerFrameworkBuilder.@org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBuilderBuilder clearNames() {
 			if (this.names != null) this.names.clear();
 			return this;
 		}

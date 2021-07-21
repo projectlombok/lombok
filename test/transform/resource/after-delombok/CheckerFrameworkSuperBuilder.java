@@ -1,3 +1,4 @@
+// skip-idempotent
 //version 8:
 import java.util.List;
 class CheckerFrameworkSuperBuilder {
@@ -22,19 +23,17 @@ class CheckerFrameworkSuperBuilder {
 			private int z;
 			@java.lang.SuppressWarnings("all")
 			private java.util.ArrayList<String> names;
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@org.checkerframework.dataflow.qual.Pure
 			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
+			protected abstract @org.checkerframework.common.returnsreceiver.qual.This B self();
 			@org.checkerframework.dataflow.qual.SideEffectFree
 			@java.lang.SuppressWarnings("all")
 			public abstract C build(CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) ParentBuilder<C, B> this);
 			/**
 			 * @return {@code this}.
 			 */
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B x(final int x) {
+			public @org.checkerframework.common.returnsreceiver.qual.This B x(final int x) {
 				this.x$value = x;
 				x$set = true;
 				return self();
@@ -42,31 +41,27 @@ class CheckerFrameworkSuperBuilder {
 			/**
 			 * @return {@code this}.
 			 */
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B y(final int y) {
+			public @org.checkerframework.common.returnsreceiver.qual.This B y(final int y) {
 				this.y = y;
 				return self();
 			}
 			/**
 			 * @return {@code this}.
 			 */
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B z(final int z) {
+			public @org.checkerframework.common.returnsreceiver.qual.This B z(final int z) {
 				this.z = z;
 				return self();
 			}
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B name(final String name) {
+			public @org.checkerframework.common.returnsreceiver.qual.This B name(final String name) {
 				if (this.names == null) this.names = new java.util.ArrayList<String>();
 				this.names.add(name);
 				return self();
 			}
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B names(final java.util.Collection<? extends String> names) {
+			public @org.checkerframework.common.returnsreceiver.qual.This B names(final java.util.Collection<? extends String> names) {
 				if (names == null) {
 					throw new java.lang.NullPointerException("names cannot be null");
 				}
@@ -74,9 +69,8 @@ class CheckerFrameworkSuperBuilder {
 				this.names.addAll(names);
 				return self();
 			}
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B clearNames() {
+			public @org.checkerframework.common.returnsreceiver.qual.This B clearNames() {
 				if (this.names != null) this.names.clear();
 				return self();
 			}
@@ -93,10 +87,9 @@ class CheckerFrameworkSuperBuilder {
 			private ParentBuilderImpl() {
 			}
 			@java.lang.Override
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@org.checkerframework.dataflow.qual.Pure
 			@java.lang.SuppressWarnings("all")
-			protected CheckerFrameworkSuperBuilder.Parent.ParentBuilderImpl self() {
+			protected CheckerFrameworkSuperBuilder.Parent.@org.checkerframework.common.returnsreceiver.qual.This ParentBuilderImpl self() {
 				return this;
 			}
 			@org.checkerframework.dataflow.qual.SideEffectFree
@@ -148,10 +141,9 @@ class CheckerFrameworkSuperBuilder {
 			@java.lang.SuppressWarnings("all")
 			private int b;
 			@java.lang.Override
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@org.checkerframework.dataflow.qual.Pure
 			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
+			protected abstract @org.checkerframework.common.returnsreceiver.qual.This B self();
 			@org.checkerframework.dataflow.qual.SideEffectFree
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
@@ -159,9 +151,8 @@ class CheckerFrameworkSuperBuilder {
 			/**
 			 * @return {@code this}.
 			 */
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B a(final int a) {
+			public @org.checkerframework.common.returnsreceiver.qual.This B a(final int a) {
 				this.a$value = a;
 				a$set = true;
 				return self();
@@ -169,9 +160,8 @@ class CheckerFrameworkSuperBuilder {
 			/**
 			 * @return {@code this}.
 			 */
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@java.lang.SuppressWarnings("all")
-			public B b(final int b) {
+			public @org.checkerframework.common.returnsreceiver.qual.This B b(final int b) {
 				this.b = b;
 				return self();
 			}
@@ -188,10 +178,9 @@ class CheckerFrameworkSuperBuilder {
 			private ZChildBuilderImpl() {
 			}
 			@java.lang.Override
-			@org.checkerframework.common.returnsreceiver.qual.This
 			@org.checkerframework.dataflow.qual.Pure
 			@java.lang.SuppressWarnings("all")
-			protected CheckerFrameworkSuperBuilder.ZChild.ZChildBuilderImpl self() {
+			protected CheckerFrameworkSuperBuilder.ZChild.@org.checkerframework.common.returnsreceiver.qual.This ZChildBuilderImpl self() {
 				return this;
 			}
 			@org.checkerframework.dataflow.qual.SideEffectFree
