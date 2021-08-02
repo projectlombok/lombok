@@ -312,6 +312,7 @@ public class HandlerUtil {
 			"org.springframework.lang.Nullable",
 			"org.netbeans.api.annotations.common.NonNull",
 			"org.netbeans.api.annotations.common.NullAllowed",
+			"com.fasterxml.jackson.annotation.JsonProperty"
 		}));
 		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JacksonInject",
