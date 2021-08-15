@@ -419,6 +419,7 @@ final class PatchFixesHider {
 			
 			String className = visitor.getClass().getName();
 			if (!(className.startsWith("org.eclipse.jdt.internal.corext.fix") || className.startsWith("org.eclipse.jdt.internal.ui.fix"))) return false;
+			if (className.equals("org.eclipse.jdt.internal.corext.fix.VariableDeclarationFixCore$WrittenNamesFinder")) return false;
 			
 			boolean result = false;
 			try {
