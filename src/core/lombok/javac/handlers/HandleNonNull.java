@@ -99,7 +99,6 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 			return recursiveSetGeneratedBy(constr, source);
 		} else {
 			existingCtr.mods = mods;
-			existingCtr.params = params.toList();
 			existingCtr.body = body;
 			existingCtr = recursiveSetGeneratedBy(existingCtr, source);
 			addSuppressWarningsAll(existingCtr.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(existingCtr)), typeNode.getContext());
