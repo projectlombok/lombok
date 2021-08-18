@@ -51,7 +51,7 @@ public class TestSourceFiles extends DirectoryRunner.TestParams {
 	
 	@Override
 	public File getMessagesDirectory() {
-		return null;
+		return new File("test/pretty/resource/messages");
 	}
 	
 	@Override
