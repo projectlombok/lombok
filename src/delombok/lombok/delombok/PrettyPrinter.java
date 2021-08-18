@@ -1333,7 +1333,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 			pats = pat == null ? List.<JCTree>nil() : List.of(pat);
 		}
 		
-		if (pats.isEmpty() || pats.get(0).getClass().getName().endsWith("$JCDefaultCaseLabel")) {
+		if (pats.isEmpty() || pats.size() == 1 && pats.head.getClass().getName().endsWith("$JCDefaultCaseLabel")) {
 			aPrint("default");
 		} else {
 			aPrint("case ");
@@ -1422,6 +1422,22 @@ public class PrettyPrinter extends JCTree.Visitor {
 		print((JCExpression) readObject(var, "vartype", null));
 		print(" ");
 		print((Name) readObject(var, "name", null));
+	}
+	
+	void printDefaultCase(JCTree tree) {
+		print("default");
+	}
+	
+	void printGuardPattern(JCTree tree) {
+		print((JCTree) readObject(tree, "patt", null));
+		print(" && ");
+		print((JCExpression) readObject(tree, "expr", null));
+	}
+	
+	void printParenthesizedPattern(JCTree tree) {
+		print("(");
+		print((JCTree) readObject(tree, "pattern", null));
+		print(")");
 	}
 	
 	@Override public void visitTry(JCTry tree) {
@@ -1642,6 +1658,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printYieldExpression(tree);
 		} else if (className.endsWith("$JCBindingPattern")) { // Introduced as preview in JDK14
 			printBindingPattern(tree);
+		} else if (className.endsWith("$JCDefaultCaseLabel")) { // Introduced in JDK17
+			printDefaultCase(tree);
+		} else if (className.endsWith("$JCGuardPattern")) { // Introduced in JDK17
+			printGuardPattern(tree);
+		} else if (className.endsWith("$JCParenthesizedPattern")) { // Introduced in JDK17
+			printParenthesizedPattern(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
