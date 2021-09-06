@@ -2800,10 +2800,21 @@ public class EclipseHandlerUtil {
 	public static String getDocComment(EclipseNode eclipseNode) {
 		if (eclipseNode.getAst().getSource() == null) return null;
 		
+		int start = -1;
+		int end = -1;
+		
 		final ASTNode node = eclipseNode.get();
 		if (node instanceof FieldDeclaration) {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration) node;
-			char[] rawContent = CharOperation.subarray(eclipseNode.getAst().getSource(), fieldDeclaration.declarationSourceStart, fieldDeclaration.declarationSourceEnd);
+			start = fieldDeclaration.declarationSourceStart;
+			end = fieldDeclaration.declarationSourceEnd;
+		} else if (node instanceof AbstractMethodDeclaration) {
+			AbstractMethodDeclaration abstractMethodDeclaration = (AbstractMethodDeclaration) node;
+			start = abstractMethodDeclaration.declarationSourceStart;
+			end = abstractMethodDeclaration.declarationSourceEnd;
+		}
+		if (start != -1 && end != -1) {
+			char[] rawContent = CharOperation.subarray(eclipseNode.getAst().getSource(), start, end);
 			String rawContentString = new String(rawContent);
 			int startIndex = rawContentString.indexOf("/**");
 			int endIndex = rawContentString.indexOf("*/");

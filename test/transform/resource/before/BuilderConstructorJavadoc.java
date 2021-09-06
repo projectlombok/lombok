@@ -10,9 +10,10 @@ class BuilderConstructorJavadoc<T> {
 	 *        {@code @code} or <code>tags</code>
 	 * @param predef don't copy this one
 	 * @param predefWithJavadoc don't copy this one
+	 * @param last also copy last param
 	 */
 	@lombok.Builder
-	BuilderConstructorJavadoc(int basic, int multiline, int predef, int predefWithJavadoc) {
+	BuilderConstructorJavadoc(int basic, int multiline, int predef, int predefWithJavadoc, int last) {
 		
 	}
 	

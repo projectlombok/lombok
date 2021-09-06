@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021 The Project Lombok Authors.
+ * Copyright (C) 2013-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1053,7 +1053,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, toEclipseModifier(job.accessInners),
 			job.sourceNode, methodAnnsList, bfd.annotations != null ? Arrays.asList(copyAnnotations(source, bfd.annotations)) : Collections.<Annotation>emptyList());
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
-			copyJavadocFromParam(bfd.originalFieldNode.up(), setter, td, bfd.name.toString());
+			copyJavadocFromParam(bfd.originalFieldNode.up(), setter, td, new String(bfd.name));
 		} else {
 			copyJavadoc(bfd.originalFieldNode, setter, td, CopyJavadoc.SETTER, true);
 		}
