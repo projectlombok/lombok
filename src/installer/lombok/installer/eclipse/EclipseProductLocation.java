@@ -347,8 +347,10 @@ public final class EclipseProductLocation extends IdeLocation {
 				pathPrefix = pathToLombokJarPrefix;
 			}
 			
+			// NB: You may be tempted to escape this, but don't; there is no possibility to escape this, but
+			// eclipse/java reads the string following the colon in 'raw' fashion. Spaces, colons - all works fine.
 			newContents.append(String.format(
-					"-javaagent:%s", escapePath(pathPrefix + "lombok.jar"))).append(OS_NEWLINE);
+				"-javaagent:%s", pathPrefix + "lombok.jar")).append(OS_NEWLINE);
 			
 			FileOutputStream fos = new FileOutputStream(eclipseIniPath);
 			try {
