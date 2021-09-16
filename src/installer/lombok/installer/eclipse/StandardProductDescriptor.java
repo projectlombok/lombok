@@ -35,6 +35,7 @@ import lombok.installer.OsUtils;
 public class StandardProductDescriptor implements EclipseProductDescriptor {
 	
 	private static final String USER_HOME = System.getProperty("user.home", ".");
+	private static final String[] BASE_WINDOWS_ROOTS = {"\\", "\\Program Files", "\\Program Files (x86)", "\\ProgramData\\Chocolatey\\lib"};
 	private static final String[] WINDOWS_ROOTS = windowsRoots();
 	private static final String[] MAC_ROOTS = {"/Applications", USER_HOME};
 	private static final String[] UNIX_ROOTS = {USER_HOME};
@@ -157,7 +158,6 @@ public class StandardProductDescriptor implements EclipseProductDescriptor {
 		return base + pathSeparator + alternative.replaceAll("[\\/]", "\\" + pathSeparator);
 	}
 	
-	private static final String[] BASE_WINDOWS_ROOTS = {"\\", "\\Program Files", "\\Program Files (x86)", "\\ProgramData\\Chocolatey\\lib"};
 	private static String[] windowsRoots() {
 		String localAppData = windowsLocalAppData();
 		String[] out = new String[BASE_WINDOWS_ROOTS.length + (localAppData == null ? 1 : 2)];
