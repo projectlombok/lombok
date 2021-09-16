@@ -1,0 +1,1 @@
+OPTIONAL 9 as of release 17, all floating-point expressions are evaluated strictly and 'strictfp' is not required
