@@ -44,7 +44,6 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -252,10 +251,10 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	}
 	
 	public static String getTypeName(JavacNode typeNode) {
-		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
+		String typeName = typeNode.getName();
 		JavacNode upType = typeNode.up();
-		while (upType.getKind() == Kind.TYPE) {
-			typeName = ((JCClassDecl) upType.get()).name.toString() + "." + typeName;
+		while (upType.getKind() == Kind.TYPE && !upType.getName().isEmpty()) {
+			typeName = upType.getName() + "." + typeName;
 			upType = upType.up();
 		}
 		return typeName;

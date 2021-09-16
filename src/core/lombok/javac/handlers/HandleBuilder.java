@@ -234,6 +234,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		ArrayList<JavacNode> nonFinalNonDefaultedFields = null;
 		
+		if (!isStaticAllowed(upToTypeNode(parent))) {
+			annotationNode.addError("@Builder is not supported on non-static nested classes.");
+			return;
+		}
+		
 		if (parent.get() instanceof JCClassDecl) {
 			if (!isClass(parent) && !isRecord(parent)) {
 				annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
