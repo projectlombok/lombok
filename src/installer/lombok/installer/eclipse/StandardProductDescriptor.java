@@ -157,10 +157,14 @@ public class StandardProductDescriptor implements EclipseProductDescriptor {
 		return base + pathSeparator + alternative.replaceAll("[\\/]", "\\" + pathSeparator);
 	}
 	
+	private static final String[] BASE_WINDOWS_ROOTS = {"\\", "\\Program Files", "\\Program Files (x86)", "\\ProgramData\\Chocolatey\\lib"};
 	private static String[] windowsRoots() {
 		String localAppData = windowsLocalAppData();
-		if (localAppData == null) return new String[] {"\\", "\\Program Files", "\\Program Files (x86)", USER_HOME};
-		return new String[] {"\\", "\\Program Files", "\\Program Files (x86)", USER_HOME, localAppData};
+		String[] out = new String[BASE_WINDOWS_ROOTS.length + (localAppData == null ? 1 : 2)];
+		System.arraycopy(BASE_WINDOWS_ROOTS, 0, out, 0, BASE_WINDOWS_ROOTS.length);
+		out[BASE_WINDOWS_ROOTS.length] = USER_HOME;
+		if (localAppData != null) out[BASE_WINDOWS_ROOTS.length + 1] = localAppData;
+		return out;
 	}
 	
 	private static String windowsLocalAppData() {
