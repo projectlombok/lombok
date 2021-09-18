@@ -323,6 +323,7 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.annotation.JsonSetter",
 			"com.fasterxml.jackson.annotation.JsonSubTypes",
 			"com.fasterxml.jackson.annotation.JsonTypeInfo",
+			"com.fasterxml.jackson.annotation.JsonUnwrapped",
 			"com.fasterxml.jackson.annotation.JsonView",
 			"com.fasterxml.jackson.databind.annotation.JsonDeserialize",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper",
