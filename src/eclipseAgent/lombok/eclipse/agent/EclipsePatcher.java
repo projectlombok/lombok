@@ -892,6 +892,14 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.requestExtra(StackRequest.PARAM1)
 				.build());
 		
+		/* This is a copy for the language server implementation that also supports markdown */
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.ls.core.internal.javadoc.JavadocContentAccess2", "getHTMLContent", "java.lang.String", "org.eclipse.jdt.core.IJavaElement", "boolean"))
+				.methodToWrap(new Hook("org.eclipse.jdt.ls.core.internal.javadoc.JavadocContentAccess2", "getHTMLContentFromSource", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "getHTMLContentFromSource", "java.lang.String", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
+				.requestExtra(StackRequest.PARAM1)
+				.build());
+		
 		/* This is an older version that uses IMember instead of IJavaElement */
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContent", "java.lang.String", "org.eclipse.jdt.core.IMember", "boolean"))
