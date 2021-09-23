@@ -87,7 +87,6 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchHideGeneratedNodes(sm);
 		patchPostCompileHookEclipse(sm);
 		patchFixSourceTypeConverter(sm);
-		patchDisableLombokForCodeCleanup(sm);
 		patchListRewriteHandleGeneratedMethods(sm);
 		patchSyntaxAndOccurrencesHighlighting(sm);
 		patchSortMembersOperation(sm);
@@ -206,14 +205,6 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.build());
 	}
 	
-	private static void patchDisableLombokForCodeCleanup(ScriptManager sm) {
-		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
-			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTNode", "accept", "void", "org.eclipse.jdt.core.dom.ASTVisitor"))
-			.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isRefactoringVisitorAndGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.core.dom.ASTVisitor"))
-			.request(StackRequest.THIS, StackRequest.PARAM1)
-			.build());
-	}
-	
 	private static void patchListRewriteHandleGeneratedMethods(ScriptManager sm) {
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer$ListRewriter", "rewriteList"))
@@ -307,6 +298,12 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedSimpleNames", "org.eclipse.jdt.core.dom.SimpleName[]",
 						"org.eclipse.jdt.core.dom.SimpleName[]"))
 				.request(StackRequest.RETURN_VALUE).build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
+			.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTNode", "accept", "void", "org.eclipse.jdt.core.dom.ASTVisitor"))
+			.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isBlockedVisitorAndGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.core.dom.ASTVisitor"))
+			.request(StackRequest.THIS, StackRequest.PARAM1)
+			.build());
 		
 		patchRefactorScripts(sm);
 		patchFormatters(sm);
