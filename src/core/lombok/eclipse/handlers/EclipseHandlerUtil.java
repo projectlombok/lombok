@@ -2052,11 +2052,7 @@ public class EclipseHandlerUtil {
 		}
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-		long[] poss = new long[annotationTypeFqn.length];
-		Arrays.fill(poss, p);
-		QualifiedTypeReference qualifiedType = new QualifiedTypeReference(annotationTypeFqn, poss);
-		setGeneratedBy(qualifiedType, source);
+		TypeReference qualifiedType = generateQualifiedTypeRef(source, annotationTypeFqn);
 		Annotation ann;
 		if (args != null && args.length == 1 && args[0] instanceof Expression) {
 			SingleMemberAnnotation sma = new SingleMemberAnnotation(qualifiedType, pS);
