@@ -1,3 +1,4 @@
+// version :9
 // issue 2420: to trigger the problem 2 var/val, at least one normal variable and a anonymous self reference is required
 import java.util.Map;
 import java.util.HashMap;
