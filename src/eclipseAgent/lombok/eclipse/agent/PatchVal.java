@@ -59,8 +59,8 @@ import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 import java.lang.reflect.Field;
 
 import static lombok.Lombok.sneakyThrow;
-import static lombok.eclipse.Eclipse.poss;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.makeType;
+import static lombok.eclipse.Eclipse.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import static org.eclipse.jdt.core.compiler.CategorizedProblem.CAT_TYPE;
 
 public class PatchVal {
@@ -204,8 +204,6 @@ public class PatchVal {
 		boolean var = isVar(local, scope);
 		if (!(val || var)) return false;
 		
-		if (hasNativeVarSupport(scope)) return false;
-		
 		if (val) {
 			StackTraceElement[] st = new Throwable().getStackTrace();
 			for (int i = 0; i < st.length - 2 && i < 10; i++) {
@@ -238,6 +236,13 @@ public class PatchVal {
 		}
 		
 		TypeReference replacement = null;
+		
+		// Java 10+: Lombok uses the native 'var' support and transforms 'val' to 'final var'.
+		if (hasNativeVarSupport(scope) && val) {
+			replacement = new SingleTypeReference("var".toCharArray(), pos(local.type));
+			local.initialization = init;
+			init = null;
+		}
 		
 		if (init != null) {
 			if (init.getClass().getName().equals("org.eclipse.jdt.internal.compiler.ast.LambdaExpression")) {

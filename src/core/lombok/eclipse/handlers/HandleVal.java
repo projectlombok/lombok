@@ -22,14 +22,13 @@
 package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.typeMatches;
 
 import lombok.ConfigurationKeys;
 import lombok.val;
 import lombok.var;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.DeferUntilPostDiet;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
@@ -41,13 +40,10 @@ import org.eclipse.jdt.internal.compiler.ast.ForStatement;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
-import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 
 /*
- * Java 1-9: This class just handles 3 basic error cases. The real meat of eclipse 'val' support is in {@code PatchVal} and {@code PatchValEclipse}.
- * Java 10+: Lombok uses the native 'var' support and transforms 'val' to 'final var'.
+ * This class just handles 3 basic error cases. The real meat of eclipse 'val' support is in {@code PatchVal} and {@code PatchValEclipse}
  */
 @Provides(EclipseASTVisitor.class)
 @DeferUntilPostDiet
@@ -99,17 +95,6 @@ public class HandleVal extends EclipseASTAdapter {
 		
 		if(isVar && local.initialization instanceof NullLiteral) {
 			localNode.addError("variable initializer is 'null'");
-			return;
-		}
-		
-		// For Java >= 10 we use native support
-		if (localNode.getSourceVersion() >= 10) {
-			if (isVal) {
-				TypeReference originalType = local.type;
-				local.type = new SingleTypeReference("var".toCharArray(), Eclipse.pos(local.type));
-				local.modifiers |= ClassFileConstants.AccFinal;
-				local.annotations = addAnnotation(local.type, local.annotations, originalType.getTypeName());
-			}
 			return;
 		}
 	}
