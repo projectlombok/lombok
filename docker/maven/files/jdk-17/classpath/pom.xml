@@ -7,7 +7,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>16</java.version>
+        <java.version>17</java.version>
     </properties>
 
     <build>
@@ -15,12 +15,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <showDeprecation>true</showDeprecation>
-                    <showWarnings>true</showWarnings> 
+                    <showWarnings>true</showWarnings>
                     <fork>true</fork>
                     <compilerargs>
                         <arg>-Werror</arg>
@@ -35,6 +35,13 @@
                         <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
                         <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
                     </compilerargs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.20</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
@@ -46,7 +53,13 @@
             <artifactId>lombok</artifactId>
             <version>1.2.3</version>
             <scope>system</scope>
-            <systemPath>/workspace/classpath/lombok.jar</systemPath>
+            <systemPath>/workspace/modules/lombok.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.2</version>
         </dependency>
     </dependencies>
 
