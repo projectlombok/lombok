@@ -5,6 +5,9 @@ Lombok Changelog
 * PLATFORM: JDK17 support added. [Issue #2898](https://github.com/projectlombok/lombok/issues/2898).
 * FEATURE: Added the `@StandardException` feature. [Pull Request #2702](https://github.com/projectlombok/lombok/pull/2702).
 * IMPROBABLE BREAKING CHANGE: If the underlying compiler and `--release` / `--source` option is 10 or higher, lombok's `val` is now replaced by `final var`. That means compound declarations such as `val x = 10, y = 12;` now fail (lombok's old `val` implementation supported it, javac's `var` does not), but IDE support in particular is more reliable. We decided it was worth the tradeoff.
+* BUGFIX: Syntax highlighting in VSCode now works reliably when using lombok. [Issue #2950](https://github.com/projectlombok/lombok/issues/2950).
+* BUGFIX: Eclipse's _organize imports_ feature would sometimes remove your `lombok.val` import. [Issue #2972](https://github.com/projectlombok/lombok/issues/2972).
+
 
 ### v1.18.20 (April 2nd, 2021)
 * PLATFORM: JDK16 support added. [Issue #2681](https://github.com/projectlombok/lombok/issues/2681).
