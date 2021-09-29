@@ -95,6 +95,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.CaptureBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
@@ -337,6 +338,8 @@ public class EclipseHandlerUtil {
 		public static final Class<?> INTERSECTION_BINDING1, INTERSECTION_BINDING2;
 		public static final Field INTERSECTION_BINDING_TYPES1, INTERSECTION_BINDING_TYPES2;
 		public static final Field TYPE_DECLARATION_RECORD_COMPONENTS;
+		public static final Class<?> COMPILATION_UNIT;
+		public static final Method COMPILATION_UNIT_ORIGINAL_FROM_CLONE;
 		static {
 			STRING_LITERAL__LINE_NUMBER = getField(StringLiteral.class, "lineNumber");
 			ANNOTATION__MEMBER_VALUE_PAIR_NAME = getField(Annotation.class, "memberValuePairName");
@@ -346,6 +349,8 @@ public class EclipseHandlerUtil {
 			INTERSECTION_BINDING_TYPES1 = INTERSECTION_BINDING1 == null ? null : getField(INTERSECTION_BINDING1, "intersectingTypes");
 			INTERSECTION_BINDING_TYPES2 = INTERSECTION_BINDING2 == null ? null : getField(INTERSECTION_BINDING2, "intersectingTypes");
 			TYPE_DECLARATION_RECORD_COMPONENTS = getField(TypeDeclaration.class, "recordComponents");
+			COMPILATION_UNIT = getClass("org.eclipse.jdt.internal.core.CompilationUnit");
+			COMPILATION_UNIT_ORIGINAL_FROM_CLONE = COMPILATION_UNIT == null ? null : Permit.permissiveGetMethod(COMPILATION_UNIT, "originalFromClone");
 		}
 		
 		public static int reflectInt(Field f, Object o) {
@@ -2731,7 +2736,14 @@ public class EclipseHandlerUtil {
 	public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
 		if (doc == null) return;
 		
-		Map<String, String> docs = EcjAugments.CompilationUnit_javadoc.setIfAbsent(cud.compilationResult.compilationUnit, new HashMap<String, String>());
+		ICompilationUnit compilationUnit = cud.compilationResult.compilationUnit;
+		if (compilationUnit.getClass().equals(COMPILATION_UNIT)) {
+			try {
+				compilationUnit = (ICompilationUnit) Permit.invoke(COMPILATION_UNIT_ORIGINAL_FROM_CLONE, compilationUnit);
+			} catch (Throwable t) { }
+		}
+		
+		Map<String, String> docs = EcjAugments.CompilationUnit_javadoc.setIfAbsent(compilationUnit, new HashMap<String, String>());
 		if (node instanceof AbstractMethodDeclaration) {
 			AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) node;
 			String signature = getSignature(type, methodDeclaration);
