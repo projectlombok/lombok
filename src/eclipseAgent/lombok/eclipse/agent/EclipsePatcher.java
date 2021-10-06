@@ -199,6 +199,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.search.OccurrencesFinder", "addUsage"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.search.OccurrencesFinder", "addWrite"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.javaeditor.SemanticHighlightingReconciler$PositionCollector", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
+				.target(new MethodTarget("org.eclipse.jdt.internal.ui.javaeditor.SemanticHighlightingReconciler$PositionCollector", "visitLiteral", "boolean", "org.eclipse.jdt.core.dom.Expression"))
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
 				.valueMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "returnFalse", "boolean", "java.lang.Object"))
 				.request(StackRequest.PARAM1)
