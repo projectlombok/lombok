@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.24 "Edgy Guinea Pig"
+* No new changes since the release of v1.18.22.
+
 ### v1.18.22 (October 6th, 2021)
 * PLATFORM: JDK17 support added. [Issue #2898](https://github.com/projectlombok/lombok/issues/2898).
 * FEATURE: Added the `@StandardException` feature. [Pull Request #2702](https://github.com/projectlombok/lombok/pull/2702).
