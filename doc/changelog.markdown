@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.21 "Edgy Guinea Pig"
+### v1.18.22 (October 6th, 2021)
 * PLATFORM: JDK17 support added. [Issue #2898](https://github.com/projectlombok/lombok/issues/2898).
 * FEATURE: Added the `@StandardException` feature. [Pull Request #2702](https://github.com/projectlombok/lombok/pull/2702).
 * IMPROBABLE BREAKING CHANGE: If the underlying compiler and `--release` / `--source` option is 10 or higher, lombok's `val` is now replaced by `final var`. That means compound declarations such as `val x = 10, y = 12;` now fail (lombok's old `val` implementation supported it, javac's `var` does not), but IDE support in particular is more reliable. We decided it was worth the tradeoff.
