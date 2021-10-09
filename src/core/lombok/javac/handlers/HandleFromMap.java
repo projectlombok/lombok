@@ -139,7 +139,7 @@ public class HandleFromMap extends JavacAnnotationHandler<FromMap> {
                 List.of(getValueTypeCast)
         );
 
-        JCExpression existKey = maker.Unary(CTC_NOT,
+        JCExpression existKey = 
                 maker.Apply(
                         List.of(chainDots(typeNode, "java","lang","String")),
                         maker.Select(
@@ -147,8 +147,7 @@ public class HandleFromMap extends JavacAnnotationHandler<FromMap> {
                                 typeNode.toName("containsKey")
                         ),
                         List.of((JCExpression)maker.Literal(fieldName))
-                )
-        );
+                );
 
         statements.append(maker.If(
                 existKey,
