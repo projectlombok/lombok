@@ -585,11 +585,13 @@ public class HandlerUtil {
 		if (Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.GETTER_CONSEQUENT_BOOLEAN))) isBoolean = false;
 		boolean explicitPrefix = accessors != null && accessors.isExplicit("prefix");
 		boolean explicitFluent = accessors != null && accessors.isExplicit("fluent");
+		boolean explicitJavaBeansSpecCapitalization = accessors != null && accessors.isExplicit("javaBeansSpecCapitalization");
 		
-		Accessors ac = (explicitPrefix || explicitFluent) ? accessors.getInstance() : null;
+		Accessors ac = (explicitPrefix || explicitFluent || explicitJavaBeansSpecCapitalization) ? accessors.getInstance() : null;
 		
 		List<String> prefix = explicitPrefix ? Arrays.asList(ac.prefix()) : ast.readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
 		boolean fluent = explicitFluent ? ac.fluent() : Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT));
+		boolean javaBeansSpecCapitalization = explicitJavaBeansSpecCapitalization ? ac.javaBeansSpecCapitalization() : Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION));
 		
 		fieldName = removePrefix(fieldName, prefix);
 		if (fieldName == null) return null;
@@ -602,7 +604,7 @@ public class HandlerUtil {
 			return booleanPrefix + fName.substring(2);
 		}
 		
-		return buildAccessorName(isBoolean ? booleanPrefix : normalPrefix, fName);
+		return buildAccessorName(isBoolean ? booleanPrefix : normalPrefix, fName, javaBeansSpecCapitalization);
 	}
 	
 	/**
@@ -675,12 +677,14 @@ public class HandlerUtil {
 		
 		boolean explicitPrefix = accessors != null && accessors.isExplicit("prefix");
 		boolean explicitFluent = accessors != null && accessors.isExplicit("fluent");
+		boolean explicitJavaBeansSpecCapitalization = accessors != null && accessors.isExplicit("javaBeansSpecCapitalization");
 		
-		Accessors ac = (explicitPrefix || explicitFluent) ? accessors.getInstance() : null;
+		Accessors ac = (explicitPrefix || explicitFluent || explicitJavaBeansSpecCapitalization) ? accessors.getInstance() : null;
 		
 		List<String> prefix = explicitPrefix ? Arrays.asList(ac.prefix()) : ast.readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
 		boolean fluent = explicitFluent ? ac.fluent() : Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT));
-		
+		boolean javaBeansSpecCapitalization = explicitJavaBeansSpecCapitalization ? ac.javaBeansSpecCapitalization() : Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION));
+
 		fieldName = removePrefix(fieldName, prefix);
 		if (fieldName == null) return Collections.emptyList();
 		
@@ -691,8 +695,8 @@ public class HandlerUtil {
 			if (adhereToFluent && fluent) {
 				names.add(baseName);
 			} else {
-				names.add(buildAccessorName(normalPrefix, baseName));
-				if (!normalPrefix.equals(booleanPrefix)) names.add(buildAccessorName(booleanPrefix, baseName));
+				names.add(buildAccessorName(normalPrefix, baseName, javaBeansSpecCapitalization));
+				if (!normalPrefix.equals(booleanPrefix)) names.add(buildAccessorName(booleanPrefix, baseName, javaBeansSpecCapitalization));
 			}
 		}
 		
@@ -723,17 +727,34 @@ public class HandlerUtil {
 	 * @return prefix + smartly title-cased suffix. For example, {@code setRunning}.
 	 */
 	public static String buildAccessorName(String prefix, String suffix) {
+		return buildAccessorName(prefix, suffix, false);
+	}
+	
+	/**
+	 * @param prefix Something like {@code get} or {@code set} or {@code is}.
+	 * @param suffix Something like {@code running}.
+	 * @param shouldFollowJavaBeansSpecCapitalization {@code boolean} that indicates whether the capitalization rules should follow JavaBeanSpec
+	 * @return if shouldFollowJavaBeansSpecCapitalization is {@code true} and name start with only single lowercase letter, returns simple suffix+prefix. For example, {@code setaFieldName}
+	 * otherwise, returns prefix + smartly title-cased suffix. For example, {@code setRunning}.
+	 */
+	private static String buildAccessorName(String prefix, String suffix, boolean shouldFollowJavaBeansSpecCapitalization) {
 		if (suffix.length() == 0) return prefix;
 		if (prefix.length() == 0) return suffix;
 		
 		char first = suffix.charAt(0);
-		if (Character.isLowerCase(first)) {
-			boolean useUpperCase = suffix.length() > 2 &&
-				(Character.isTitleCase(suffix.charAt(1)) || Character.isUpperCase(suffix.charAt(1)));
-			suffix = String.format("%s%s",
-					useUpperCase ? Character.toUpperCase(first) : Character.toTitleCase(first),
-					suffix.subSequence(1, suffix.length()));
+		if (!Character.isLowerCase(first)) {
+			return String.format("%s%s", prefix, suffix);
 		}
+		
+		boolean useUpperCase = suffix.length() > 2 &&
+			(Character.isTitleCase(suffix.charAt(1)) || Character.isUpperCase(suffix.charAt(1)));
+		if (shouldFollowJavaBeansSpecCapitalization && useUpperCase) {
+			return String.format("%s%s", prefix, suffix);
+		}
+		
+		suffix = String.format("%s%s",
+				useUpperCase ? Character.toUpperCase(first) : Character.toTitleCase(first),
+				suffix.subSequence(1, suffix.length()));
 		return String.format("%s%s", prefix, suffix);
 	}
 	

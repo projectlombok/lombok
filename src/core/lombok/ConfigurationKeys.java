@@ -558,6 +558,14 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<Boolean> ACCESSORS_FLUENT = new ConfigurationKey<Boolean>("lombok.accessors.fluent", "Generate getters and setters using only the field name (no get/set prefix) (default: false).") {};
 	
+	/**
+	 * lombok configuration: {@code lombok.accessors.javaBeansSpecCapitalization} = {@code true} | {@code false}.
+	 * 
+	 * For any class without an {@code @Accessors} that explicitly defines the {@code javaBeansSpecCapitalization} option, this value is used (default = false).
+	 */
+	public static final ConfigurationKey<Boolean> ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION = new ConfigurationKey<Boolean>("lombok.accessors.javaBeansSpecCapitalization", "Generating accessors name according to the JavaBeans Spec (default: false).") {};
+	
+	
 	// ----- ExtensionMethod -----
 	
 	/**
