@@ -55,15 +55,6 @@ public @interface Accessors {
 	boolean chain() default false;
 	
 	/**
-	 * If true, accessors names will be capitalized according to JavaBeans capitalization rules.
-	 * If {@code true}, an accessor for a field that starts with a single lowercase letter followed by a capital letter,
-	 * wont capitalize the first letter (named {@code getaFieldName()}, not for example {@code getAFieldName}).
-	 * <strong>default: false</strong>
-	 * @return
-	 */
-	boolean javaBeansSpecCapitalization() default false;
-	
-	/**
 	 * If present, only fields with any of the stated prefixes are given the getter/setter treatment.
 	 * Note that a prefix only counts if the next character is NOT a lowercase character or the last
 	 * letter of the prefix is not a letter (for instance an underscore). If multiple fields

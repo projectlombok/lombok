@@ -177,7 +177,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		thisDotField2.receiver = new ThisReference(0, 0);
 		FieldReference thisDotField3 = new FieldReference(valueFieldName, 0L);
 		thisDotField3.receiver = new ThisReference(0, 0);
-		md.selector = HandlerUtil.buildAccessorName("clear", new String(data.getPluralName())).toCharArray();
+		md.selector = HandlerUtil.buildAccessorName(builderType, "clear", new String(data.getPluralName())).toCharArray();
 		MessageSend clearMsg1 = new MessageSend();
 		clearMsg1.receiver = thisDotField2;
 		clearMsg1.selector = "clear".toCharArray();
@@ -249,7 +249,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		
 		String name = new String(data.getSingularName());
 		String setterPrefix = data.getSetterPrefix().length > 0 ? new String(data.getSetterPrefix()) : fluent ? "" : "put";
-		String setterName = HandlerUtil.buildAccessorName(setterPrefix, name);
+		String setterName = HandlerUtil.buildAccessorName(builderType, setterPrefix, name);
 		
 		md.selector = setterName.toCharArray();
 		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());
@@ -325,7 +325,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		
 		String name = new String(data.getPluralName());
 		String setterPrefix = data.getSetterPrefix().length > 0 ? new String(data.getSetterPrefix()) : fluent ? "" : "put";
-		String setterName = HandlerUtil.buildAccessorName(setterPrefix, name);
+		String setterName = HandlerUtil.buildAccessorName(builderType, setterPrefix, name);
 		
 		md.selector = setterName.toCharArray();
 		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, cfv, data.getSource());

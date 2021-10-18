@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@ package lombok;
 import java.util.List;
 
 import lombok.core.configuration.CallSuperType;
+import lombok.core.configuration.CapitalizationStrategy;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
@@ -559,11 +560,12 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<Boolean> ACCESSORS_FLUENT = new ConfigurationKey<Boolean>("lombok.accessors.fluent", "Generate getters and setters using only the field name (no get/set prefix) (default: false).") {};
 	
 	/**
-	 * lombok configuration: {@code lombok.accessors.javaBeansSpecCapitalization} = {@code true} | {@code false}.
+	 * lombok configuration: {@code lombok.accessors.capitalization} = {@code basic} | {@code beanspec}.
 	 * 
-	 * For any class without an {@code @Accessors} that explicitly defines the {@code javaBeansSpecCapitalization} option, this value is used (default = false).
+	 * Which capitalization rule is used to turn field names into getter/setter/with names and vice versa for field names that start with 1 lowercase letter, then 1 uppercase letter.
+	 * basic = {@code uShape} becomes {@code getUShape}, beanspec = {@code uShape} becomes {@code getuShape} (default = basic).
 	 */
-	public static final ConfigurationKey<Boolean> ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION = new ConfigurationKey<Boolean>("lombok.accessors.javaBeansSpecCapitalization", "Generating accessors name according to the JavaBeans Spec (default: false).") {};
+	public static final ConfigurationKey<CapitalizationStrategy> ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION = new ConfigurationKey<CapitalizationStrategy>("lombok.accessors.capitalization", "Which capitalization strategy to use when converting field names to accessor names and vice versa (default: basic).") {};
 	
 	
 	// ----- ExtensionMethod -----

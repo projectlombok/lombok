@@ -636,7 +636,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		for (BuilderFieldData bfd : job.builderFields) {
 			String setterPrefix = !prefix.isEmpty() ? prefix : job.oldFluent ? "" : "set";
 			String prefixedSetterName = bfd.name.toString();
-			if (!setterPrefix.isEmpty()) prefixedSetterName = HandlerUtil.buildAccessorName(setterPrefix, prefixedSetterName);
+			if (!setterPrefix.isEmpty()) prefixedSetterName = HandlerUtil.buildAccessorName(job.sourceNode, setterPrefix, prefixedSetterName);
 			
 			Name setterName = job.toName(prefixedSetterName);
 			JCExpression[] tgt = new JCExpression[bfd.singularData == null ? 1 : 2];
@@ -901,7 +901,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	private void makePrefixedSetterMethodForBuilder(BuilderJob job, BuilderFieldData bfd, boolean deprecate, String prefix) {
 		JavacNode fieldNode = bfd.createdFields.get(0);
 		String setterPrefix = !prefix.isEmpty() ? prefix : job.oldFluent ? "" : "set";
-		String setterName = HandlerUtil.buildAccessorName(setterPrefix, bfd.name.toString());
+		String setterName = HandlerUtil.buildAccessorName(job.sourceNode, setterPrefix, bfd.name.toString());
 		Name setterName_ = job.builderType.toName(setterName);
 		
 		for (JavacNode child : job.builderType.down()) {

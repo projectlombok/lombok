@@ -1,11 +1,5 @@
-class GetterWithoutJavaBeansSpecCapitalization {
-	@lombok.Getter int a;
-	@lombok.Getter int aField;
-}
-
-@lombok.experimental.Accessors(javaBeansSpecCapitalization=true)
+//CONF: lombok.accessors.capitalization = beanspec
 class GetterWithJavaBeansSpecCapitalization {
 	@lombok.Getter int a;
 	@lombok.Getter int aField;
 }
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -430,10 +430,26 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		}
 	}
 	
+	/**
+	 * @return The {@code lombok.config} configuration value for the provided {@code key}, or {@code null} if that key is not in the config / there is no config.
+	 */
 	public final <T> T readConfiguration(ConfigurationKey<T> key) {
 		long start = configTracker == null ? 0L : configTracker.start();
 		try {
 			return LombokConfiguration.read(key, this);
+		} finally {
+			if (configTracker != null) configTracker.end(start);
+		}
+	}
+	
+	/**
+	 * @return The {@code lombok.config} configuration value for the provided {@code key}, or {@code defaultValue} if that key is not in the config / there is no config.
+	 */
+	public final <T> T readConfigurationOr(ConfigurationKey<T> key, T defaultValue) {
+		long start = configTracker == null ? 0L : configTracker.start();
+		try {
+			T value = LombokConfiguration.read(key, this);
+			return value != null ? value : defaultValue;
 		} finally {
 			if (configTracker != null) configTracker.end(start);
 		}

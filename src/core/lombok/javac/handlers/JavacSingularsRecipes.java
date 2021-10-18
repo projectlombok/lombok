@@ -300,7 +300,7 @@ public class JavacSingularsRecipes {
 			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 			statements.append(clearStatement);
 			
-			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+			Name methodName = builderType.toName(HandlerUtil.buildAccessorName(source, "clear", data.getPluralName().toString()));
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil(), List.<JCAnnotation>nil(), access, null);
 		}
 		
@@ -312,7 +312,7 @@ public class JavacSingularsRecipes {
 			Name name = data.getSingularName();
 			String setterPrefix = data.getSetterPrefix();
 			if (setterPrefix.isEmpty() && !fluent) setterPrefix = getAddMethodName();
-			if (!setterPrefix.isEmpty()) name = builderType.toName(HandlerUtil.buildAccessorName(setterPrefix, name.toString()));
+			if (!setterPrefix.isEmpty()) name = builderType.toName(HandlerUtil.buildAccessorName(source, setterPrefix, name.toString()));
 			
 			statements.prepend(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToBuilderSingularSetterAnnotations(data.annotation.up()));
@@ -344,7 +344,7 @@ public class JavacSingularsRecipes {
 			Name name = data.getPluralName();
 			String setterPrefix = data.getSetterPrefix();
 			if (setterPrefix.isEmpty() && !fluent) setterPrefix = getAddMethodName() + "All";
-			if (!setterPrefix.isEmpty()) name = builderType.toName(HandlerUtil.buildAccessorName(setterPrefix, name.toString()));
+			if (!setterPrefix.isEmpty()) name = builderType.toName(HandlerUtil.buildAccessorName(source, setterPrefix, name.toString()));
 			JCExpression paramType = getPluralMethodParamType(builderType);
 			paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
