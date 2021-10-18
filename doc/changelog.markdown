@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.24 "Edgy Guinea Pig"
-* No new changes since the release of v1.18.22.
+* FEATURE: Turning a field named `uShape` into a getter is tricky: `getUShape` or `getuShape`? The community is split on which style to use. Lombok does `getUShape`, but if you prefer the `getuShape` style, add to `lombok.config`: `lombok.accessors.capitalization = beanspec`. [Issue #2693](https://github.com/projectlombok/lombok/issues/2693) [Pull Request #2996](https://github.com/projectlombok/lombok/pull/2996). Thanks __@YonathanSherwin__!
 
 ### v1.18.22 (October 6th, 2021)
 * PLATFORM: JDK17 support added. [Issue #2898](https://github.com/projectlombok/lombok/issues/2898).

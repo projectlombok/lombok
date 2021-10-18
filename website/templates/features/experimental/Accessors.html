@@ -4,9 +4,11 @@
 	<@f.history>
 		<p>
 			<code>@Accessors</code> was introduced as experimental feature in lombok v0.11.0.
+		</p><p>
+			The <em>lombok.config</em> option <code>lombok.accessors.capitalization</code> = [<code>basic</code> | <code>beanspec</code>] was added in lombok v1.18.24.
 		</p>
 	</@f.history>
-
+	
 	<@f.experimental>
 		<ul>
 			<li>
@@ -17,7 +19,6 @@
 		</ul>
 		Current status: <em>neutral</em> - Some changes are expected. These changes are intended to be backwards compatible, but should start in an experimental feature:
 		<ul>
-			<li>Open feature request: naming behaviour for properties that start with a lowercase letter followed by an uppercase letter. Half of specs, tools and lombok users prefer that a field named <code>uLimit</code> into <code>getULimit</code> (including lombok) and the other half turn prefer <code>getuLimit</code>. <code>@Accessors</code> may be involved in any update that addresses this <a href="https://github.com/projectlombok/lombok/issues/2693">request</a>.</li>
 			<li>Open feature request: More control over naming accessors; for example to address creatively named boolean properties: Turn <code>boolean wasRunning</code> into <code>boolean wasRunning()</code> instead of <code>boolean isWasRunning()</code>, as well as more expansive prefix support. <code>@Accessors</code> will be involved if this feature <a href="https://github.com/projectlombok/lombok/issues/2464">request</a> is addressed.</li>
 			<li><code>@Accessors</code> currently does not 'cascade' from field <code>@Accessors</code> annotation to the class-level <code>@Accessors</code> annotation, but it does 'cascade' to <code>lombok.config</code>. Changing this is not difficult but backwards incompatible. It's not likely to break much existing code, but this needs to be decided on before the feature can move out of <em>experimental</em> status.</li>
 		</ul>
@@ -44,7 +45,7 @@
 				</li>
 			</ul>
 		<p><p>
-			The <code>@Accessors</code> annotation is legal on types and fields; the annotation that applies is the one on the field if present, otherwise the one on the class. When a <code>@Accessors</code> annotation on a field is present, any <code>@Accessors</code> annotation also present on the class the field is in, is entirely ignored, <em>even for properties not configured on the field <code>@Accessors</code></em>. This in contrast to any <code>lombok.config</code> configuration keys which serve as fall-back default if any explicit <code>@Accessors</code> annotation doesn't specify.
+			The <code>@Accessors</code> annotation is legal on types and fields; the annotation that applies is the one on the field if present, otherwise the one on the class. When an <code>@Accessors</code> annotation on a field is present, any <code>@Accessors</code> annotation also present on the class the field is in, is entirely ignored, <em>even for properties not configured on the field <code>@Accessors</code></em>. This in contrast to any <code>lombok.config</code> configuration keys which serve as fall-back default if any explicit <code>@Accessors</code> annotation doesn't specify.
 		</p>
 	</@f.overview>
 
@@ -63,6 +64,11 @@
 			<code>lombok.accessors.prefix</code> += <em>a field prefix</em> (default: empty list)
 		</dt><dd>
 			This is a list property; entries can be added with the <code>+=</code> operator. Inherited prefixes from parent config files can be removed with the <code>-=</code> operator. Any class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>prefix</code> parameter, will act as if <code>@Accessors(prefix = {<em>prefixes listed in configuration</em>})</code> is present.
+		</dd><dt>
+			<code>lombok.accessors.capitalization</code> = [<code>basic</code> | <code>beanspec</code>] (default: basic)
+		</dt><dd>
+			Controls how tricky cases like <code>uShaped</code> (one lowercase letter followed by an upper/titlecase letter) are capitalized. <code>basic</code> capitalizes that to <code>getUShaped</code>, and <code>beanspec</code> capitalizes that to <code>getuShaped</code> instead.<br />
+			Both strategies are commonly used in the java ecosystem, though <code>beanspec</code> is more common.
 		</dd><dt>
 			<code>lombok.accessors.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
