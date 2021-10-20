@@ -182,6 +182,7 @@ public class HandlerUtil {
 			"org.eclipse.lsp4j.jsonrpc.validation.NonNull",
 			"org.jetbrains.annotations.NotNull",
 			"org.jetbrains.annotations.Nullable",
+			"org.jetbrains.annotations.UnknownNullability",
 			"org.jmlspecs.annotation.NonNull",
 			"org.jmlspecs.annotation.Nullable",
 			"org.jspecify.nullness.Nullable",
