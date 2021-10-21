@@ -4,9 +4,9 @@ public class ValErrors {
     super();
   }
   public void unresolvableExpression() {
-    val c = d;
+    final @val java.lang.Object c = d;
   }
   public void arrayInitializer() {
-    val e = {"foo", "bar"};
+    final @val java.lang.Object e = {"foo", "bar"};
   }
 }
