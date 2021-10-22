@@ -1,4 +1,4 @@
-@lombok.With class WithOnJavaBeansSpecCapitalization {
+@lombok.With class WithWithJavaBeansSpecCapitalization {
   int aField;
   WithWithJavaBeansSpecCapitalization(int aField) {
     super();
