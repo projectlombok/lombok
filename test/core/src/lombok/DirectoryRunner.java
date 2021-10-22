@@ -55,7 +55,8 @@ public class DirectoryRunner extends Runner {
 		},
 		ECJ {
 			@Override public int getVersion() {
-				return Eclipse.getEcjCompilerVersion();
+				String javaVersionString = System.getProperty("compiler.compliance.level");
+				return javaVersionString != null ? Integer.parseInt(javaVersionString) : Eclipse.getEcjCompilerVersion();
 			}
 		};
 		
