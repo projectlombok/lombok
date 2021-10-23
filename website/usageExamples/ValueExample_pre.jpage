@@ -1,12 +1,12 @@
 import lombok.AccessLevel;
 import lombok.experimental.NonFinal;
 import lombok.experimental.Value;
-import lombok.experimental.Wither;
+import lombok.experimental.With;
 import lombok.ToString;
 
 @Value public class ValueExample {
 	String name;
-	@Wither(AccessLevel.PACKAGE) @NonFinal int age;
+	@With(AccessLevel.PACKAGE) @NonFinal int age;
 	double score;
 	protected String[] tags;
 	
