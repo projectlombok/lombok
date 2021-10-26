@@ -359,7 +359,8 @@ public class PatchVal {
 			newAnn = new Annotation[1];
 		}
 		
-		newAnn[newAnn.length - 1] = new org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation(originalRef, originalRef.sourceStart);
+		TypeReference qualifiedTypeRef = generateQualifiedTypeRef(originalRef, originalRef.getTypeName());
+		newAnn[newAnn.length - 1] = new org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation(qualifiedTypeRef, qualifiedTypeRef.sourceStart);
 		
 		return newAnn;
 	}
