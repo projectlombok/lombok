@@ -215,13 +215,16 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 	
 	@Override public boolean isStatic() {
 		if (node instanceof TypeDeclaration) {
+			TypeDeclaration t = (TypeDeclaration) node;
+			int f = t.modifiers;
+			if (((ClassFileConstants.AccInterface | ClassFileConstants.AccEnum) & f) != 0) return true;
+			
 			EclipseNode directUp = directUp();
 			if (directUp == null || directUp.getKind() == Kind.COMPILATION_UNIT) return true;
 			if (!(directUp.get() instanceof TypeDeclaration)) return false;
 			TypeDeclaration p = (TypeDeclaration) directUp.get();
-			int f = p.modifiers;
-			if ((ClassFileConstants.AccInterface & f) != 0) return true;
-			if ((ClassFileConstants.AccEnum & f) != 0) return true;
+			f = p.modifiers;
+			if (((ClassFileConstants.AccInterface | ClassFileConstants.AccEnum) & f) != 0) return true;
 		}
 		
 		if (node instanceof FieldDeclaration) {

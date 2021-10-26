@@ -40,7 +40,6 @@ import lombok.javac.Javac;
 public class DirectoryRunner extends Runner {
 	/** Add 1 or more file names to reduce the testset to just the named file(s). No files = test it all. */
 	private static final List<String> DEBUG_FOCUS_ON_FILE = Arrays.asList(
-		"BuilderNestedInEnum.java"
 		);
 	
 	public enum Compiler {
