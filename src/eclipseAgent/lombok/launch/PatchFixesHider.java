@@ -39,8 +39,8 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -56,7 +56,6 @@ import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
-import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 import org.eclipse.jdt.internal.corext.refactoring.structure.MemberVisibilityAdjustor.IncomingMemberVisibilityAdjustment;
 
 import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
@@ -540,35 +539,52 @@ final class PatchFixesHider {
 			}
 		}
 		
-		public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
-			MethodDeclaration methodDeclarationNode = ASTNodeSearchUtil.getMethodDeclarationNode(sourceMethod, cuUnit);
-			if (isGenerated(methodDeclarationNode)) {
-				IType declaringType = sourceMethod.getDeclaringType();
-				Stack<IType> typeStack = new Stack<IType>();
-				while (declaringType != null) {
-					typeStack.push(declaringType);
-					declaringType = declaringType.getDeclaringType();
-				}
-				
-				IType rootType = typeStack.pop();
-				org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = findTypeDeclaration(rootType, cuUnit.types());
-				while (!typeStack.isEmpty() && typeDeclaration != null) {
-					typeDeclaration = findTypeDeclaration(typeStack.pop(), typeDeclaration.bodyDeclarations());
-				}
-				
-				if (typeStack.isEmpty() && typeDeclaration != null) {
-					String methodName = sourceMethod.getElementName();
-					for (Object declaration : typeDeclaration.bodyDeclarations()) {
-						if (declaration instanceof org.eclipse.jdt.core.dom.MethodDeclaration) {
-							org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration = (org.eclipse.jdt.core.dom.MethodDeclaration) declaration;
-							if (methodDeclaration.getName().toString().equals(methodName)) {
-								return methodDeclaration;
+		public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.dom.MethodDeclaration original, org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
+			if (!isGenerated(original)) return original;
+			
+			IType declaringType = sourceMethod.getDeclaringType();
+			Stack<IType> typeStack = new Stack<IType>();
+			while (declaringType != null) {
+				typeStack.push(declaringType);
+				declaringType = declaringType.getDeclaringType();
+			}
+			
+			IType rootType = typeStack.pop();
+			org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = findTypeDeclaration(rootType, cuUnit.types());
+			while (!typeStack.isEmpty() && typeDeclaration != null) {
+				typeDeclaration = findTypeDeclaration(typeStack.pop(), typeDeclaration.bodyDeclarations());
+			}
+			
+			String targetMethodName = sourceMethod.getElementName();
+			List<String> targetMethodParameterTypes = new ArrayList<String>();
+			for (String parameterType : sourceMethod.getParameterTypes()) {
+				targetMethodParameterTypes.add(org.eclipse.jdt.core.Signature.toString(parameterType));
+			}
+			
+			if (typeStack.isEmpty() && typeDeclaration != null) {
+				for (Object declaration : typeDeclaration.bodyDeclarations()) {
+					if (declaration instanceof org.eclipse.jdt.core.dom.MethodDeclaration) {
+						org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration = (org.eclipse.jdt.core.dom.MethodDeclaration) declaration;
+						
+						if (!methodDeclaration.getName().toString().equals(targetMethodName)) continue;
+						if (methodDeclaration.parameters().size() != targetMethodParameterTypes.size()) continue;
+						if (!isGenerated(methodDeclaration)) continue;
+						
+						boolean parameterTypesEquals = true;
+						for (int i = 0; i < methodDeclaration.parameters().size(); i++) {
+							SingleVariableDeclaration variableDeclaration = (SingleVariableDeclaration) methodDeclaration.parameters().get(i);
+							if (!variableDeclaration.getType().toString().equals(targetMethodParameterTypes.get(i))) {
+								parameterTypesEquals = false;
+								break;
 							}
+						}
+						if (parameterTypesEquals) {
+							return methodDeclaration;
 						}
 					}
 				}
 			}
-			return methodDeclarationNode;
+			return original;
 		}
 		
 		// part of getRealMethodDeclarationNode
