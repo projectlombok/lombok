@@ -289,6 +289,10 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		@Override public char[][] getPackageName() {
 			return null;
 		}
+
+		@Override public boolean ignoreOptionalProblems() {
+			return false;
+		}
 	}
 	
 	private static final class TestCompilationUnitEclipse extends org.eclipse.jdt.internal.core.CompilationUnit {
@@ -324,7 +328,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			return null;
 		}
 		
-		@Override public char[] getModuleName() {
+		public char[] getModuleName() {
 			return null;
 		}
 	}

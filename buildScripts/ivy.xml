@@ -43,7 +43,7 @@
 		<dependency org="org.apache.ant" name="ant-junit" rev="1.10.5" conf="build->default" />
 		
 		<!-- test deps -->
-		<dependency org="junit" name="junit" rev="4.8.2" conf="test->default; sources" />
+		<dependency org="junit" name="junit" rev="4.13.2" conf="test->default; sources" />
 		<dependency org="log4j" name="log4j" rev="1.2.17" conf="test->default; sources" />
 		<dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.17.1" conf="test->default; sources" />
 		<dependency org="commons-logging" name="commons-logging" rev="1.2" conf="test->default; sources" />

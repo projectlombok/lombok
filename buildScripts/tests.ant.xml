@@ -55,6 +55,24 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		</ivy:compile>
 	</target>
 	
+	<target name="test.eclipse.compile" depends="deps.eclipse.oxygen, compile" description="compiles the eclipse tests" unless="skip.tests">
+		<mkdir dir="build/tests" />
+		<path id="cp.eclipse">
+			<fileset dir="testenv/eclipse-oxygen/plugins">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+		<ivy:compile destdir="build/tests" source="1.8" target="1.8" ecj="true" nowarn="true">
+			<bootclasspath path="${jdk8-rt.loc}" />
+			<classpath refid="cp.eclipse" />
+			<classpath refid="cp.test" />
+			<classpath refid="cp.javac8" />
+			<classpath refid="packing.basedirs.path" />
+			<classpath path="build/tests" />
+			<src path="test/eclipse/src" />
+		</ivy:compile>
+	</target>
+	
 	<target name="test.ecj11.call" depends="deps, dist" description="Runs a few ecj-specific tests" unless="skip.tests">
 		<java jar="lib/ecj11/org.eclipse.jdt-ecj.jar" fork="true" failonerror="true">
 			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
@@ -224,6 +242,38 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	<target name="test.ecj16" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
 		<fetchdep.ecj version="16" />
 		<test.ecj-X version="16" />
+	</target>
+	
+	<macrodef name="test.eclipse-X-full">
+		<attribute name="version" />
+		<sequential>
+			<path id="cp.eclipse-@{version}">
+				<fileset dir="testenv/eclipse-@{version}/plugins">
+					<include name="*.jar" />
+				</fileset>
+			</path>
+			<echo>Running EclipseTests on eclipse-@{version} on JVM${ant.java.version}</echo>
+			<junit haltonfailure="yes" fork="true" forkmode="once">
+				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+				<jvmarg value="-javaagent:dist/lombok.jar" />
+				<jvmarg value="-Dlombok.testenv=testenv/eclipse-@{version}" />
+				<classpath refid="cp.eclipse-@{version}" />
+				<classpath location="build/ant" />
+				<classpath refid="cp.test" />
+				<classpath refid="cp.eclipse-@{version}" />
+				<classpath refid="packing.basedirs.path" />
+				<classpath location="build/tests" />
+				<test name="lombok.eclipse.EclipseTests" />
+			</junit>
+		</sequential>
+	</macrodef>
+
+	<target name="test.eclipse-oxygen-full" depends="test.formatter.compile, test.eclipse.compile, deps.eclipse.oxygen" description="runs the full eclipse tests on your default VM, testing the oxygen release of eclipse">
+		<test.eclipse-X-full version="oxygen" />
+	</target>
+	
+	<target name="test.eclipse-2022-03-full" depends="test.formatter.compile, test.eclipse.compile, deps.eclipse.2022-03" description="runs the full eclipse tests on your default VM, testing the 2022-03 release of eclipse">
+		<test.eclipse-X-full version="2022-03" />
 	</target>
 	
 	<target name="test" depends="test.javacCurrent, test.eclipse-202006" description="runs the tests against the default JVM, javac, and eclipse" />
