@@ -392,6 +392,7 @@ public class Javac {
 	public static void storeEnd(JCTree tree, int pos, JCCompilationUnit top) {
 		try {
 			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
+			if (endPositions == null) return;
 			storeEnd.invoke(endPositions, tree, pos);
 		} catch (IllegalAccessException e) {
 			throw sneakyThrow(e);
