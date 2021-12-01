@@ -208,8 +208,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				bfd.nameOfDefaultProvider = parent.toName(DEFAULT_PREFIX + bfd.name);
 				bfd.nameOfSetFlag = parent.toName(bfd.name + SET_PREFIX);
 				bfd.builderFieldName = parent.toName(bfd.name + VALUE_PREFIX);
-				JCMethodDecl md = HandleBuilder.generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, td.typarams);
-				recursiveSetGeneratedBy(md, annotationNode);
+				JCMethodDecl md = HandleBuilder.generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, td.typarams, job);
 				if (md != null) injectMethod(parent, md);
 			}
 			addObtainVia(bfd, fieldNode);
