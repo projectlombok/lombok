@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.JavaIdentifiers;
 import lombok.core.LombokNode;
 import lombok.core.configuration.AllowHelper;
+import lombok.core.configuration.CapitalizationStrategy;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
 import lombok.experimental.Accessors;
@@ -431,6 +432,7 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.annotation.JsonSetter",
 			"com.fasterxml.jackson.annotation.JsonSubTypes",
 			"com.fasterxml.jackson.annotation.JsonTypeInfo",
+			"com.fasterxml.jackson.annotation.JsonUnwrapped",
 			"com.fasterxml.jackson.annotation.JsonView",
 			"com.fasterxml.jackson.databind.annotation.JsonDeserialize",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper",
@@ -692,11 +694,13 @@ public class HandlerUtil {
 		if (Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.GETTER_CONSEQUENT_BOOLEAN))) isBoolean = false;
 		boolean explicitPrefix = accessors != null && accessors.isExplicit("prefix");
 		boolean explicitFluent = accessors != null && accessors.isExplicit("fluent");
+		boolean explicitJavaBeansSpecCapitalization = accessors != null && accessors.isExplicit("javaBeansSpecCapitalization");
 		
-		Accessors ac = (explicitPrefix || explicitFluent) ? accessors.getInstance() : null;
+		Accessors ac = (explicitPrefix || explicitFluent || explicitJavaBeansSpecCapitalization) ? accessors.getInstance() : null;
 		
 		List<String> prefix = explicitPrefix ? Arrays.asList(ac.prefix()) : ast.readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
 		boolean fluent = explicitFluent ? ac.fluent() : Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT));
+		CapitalizationStrategy capitalizationStrategy = ast.readConfigurationOr(ConfigurationKeys.ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION, CapitalizationStrategy.defaultValue());
 		
 		fieldName = removePrefix(fieldName, prefix);
 		if (fieldName == null) return null;
@@ -709,7 +713,7 @@ public class HandlerUtil {
 			return booleanPrefix + fName.substring(2);
 		}
 		
-		return buildAccessorName(isBoolean ? booleanPrefix : normalPrefix, fName);
+		return buildAccessorName(isBoolean ? booleanPrefix : normalPrefix, fName, capitalizationStrategy);
 	}
 	
 	/**
@@ -787,6 +791,7 @@ public class HandlerUtil {
 		
 		List<String> prefix = explicitPrefix ? Arrays.asList(ac.prefix()) : ast.readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
 		boolean fluent = explicitFluent ? ac.fluent() : Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT));
+		CapitalizationStrategy capitalizationStrategy = ast.readConfigurationOr(ConfigurationKeys.ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION, CapitalizationStrategy.defaultValue());
 		
 		fieldName = removePrefix(fieldName, prefix);
 		if (fieldName == null) return Collections.emptyList();
@@ -798,8 +803,8 @@ public class HandlerUtil {
 			if (adhereToFluent && fluent) {
 				names.add(baseName);
 			} else {
-				names.add(buildAccessorName(normalPrefix, baseName));
-				if (!normalPrefix.equals(booleanPrefix)) names.add(buildAccessorName(booleanPrefix, baseName));
+				names.add(buildAccessorName(normalPrefix, baseName, capitalizationStrategy));
+				if (!normalPrefix.equals(booleanPrefix)) names.add(buildAccessorName(booleanPrefix, baseName, capitalizationStrategy));
 			}
 		}
 		
@@ -825,23 +830,36 @@ public class HandlerUtil {
 	}
 	
 	/**
+	 * @param node Any node (used to fetch config of capitalization strategy).
 	 * @param prefix Something like {@code get} or {@code set} or {@code is}.
 	 * @param suffix Something like {@code running}.
 	 * @return prefix + smartly title-cased suffix. For example, {@code setRunning}.
 	 */
-	public static String buildAccessorName(String prefix, String suffix) {
+	public static String buildAccessorName(AST<?, ?, ?> ast, String prefix, String suffix) {
+		CapitalizationStrategy capitalizationStrategy = ast.readConfigurationOr(ConfigurationKeys.ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION, CapitalizationStrategy.defaultValue());
+		return buildAccessorName(prefix, suffix, capitalizationStrategy);
+	}
+	
+	/**
+	 * @param node Any node (used to fetch config of capitalization strategy).
+	 * @param prefix Something like {@code get} or {@code set} or {@code is}.
+	 * @param suffix Something like {@code running}.
+	 * @return prefix + smartly title-cased suffix. For example, {@code setRunning}.
+	 */
+	public static String buildAccessorName(LombokNode<?, ?, ?> node, String prefix, String suffix) {
+		CapitalizationStrategy capitalizationStrategy = node.getAst().readConfigurationOr(ConfigurationKeys.ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION, CapitalizationStrategy.defaultValue());
+		return buildAccessorName(prefix, suffix, capitalizationStrategy);
+	}
+	
+	/**
+	 * @param prefix Something like {@code get} or {@code set} or {@code is}.
+	 * @param suffix Something like {@code running}.
+	 * @param capitalizationStrategy Which strategy to use to capitalize the name part.
+	 */
+	private static String buildAccessorName(String prefix, String suffix, CapitalizationStrategy capitalizationStrategy) {
 		if (suffix.length() == 0) return prefix;
 		if (prefix.length() == 0) return suffix;
-		
-		char first = suffix.charAt(0);
-		if (Character.isLowerCase(first)) {
-			boolean useUpperCase = suffix.length() > 2 &&
-				(Character.isTitleCase(suffix.charAt(1)) || Character.isUpperCase(suffix.charAt(1)));
-			suffix = String.format("%s%s",
-					useUpperCase ? Character.toUpperCase(first) : Character.toTitleCase(first),
-					suffix.subSequence(1, suffix.length()));
-		}
-		return String.format("%s%s", prefix, suffix);
+		return prefix + capitalizationStrategy.capitalize(suffix);
 	}
 	
 	public static String camelCaseToConstant(String fieldName) {

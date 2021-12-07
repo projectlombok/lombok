@@ -1,0 +1,22 @@
+# How to debug lombok running in eclipse
+
+## Overview
+
+Lombok's build scripting can generate a target for you, that lets you run the same eclipse installation inside eclipse, in debug mode. Now you can add breakpoints.
+
+As lombok is an agent, lombok __must__ load from a jar file.
+Nevertheless, lombok can be hot-code-replaced in the debugger.
+This works via the loader: The lombok agent has its own classloading architecture, and this architecture is capable of loading lombok's class files from a location of your choosing. Choose the /bin dir from your eclipse project which will help with debugging; eclipse will then be able to apply HCR to the eclipse-running-in-eclipse. Unless there are issues with the loader architecture itself, of course.
+
+The end goal is that you can make some changes to the lombok sources in your eclipse, then click the 'debug' button, and a new 'test eclipse' starts up using lombok as you wrote it just now. You can now make changes to lombok sources in the original eclipse, hit 'save', and these changes now get automatically applied to the 'test eclipse', as long as you aren't making any changes to signatures (add or remove methods/fields/types, or change return types, param types, etc).
+
+If you have the sources to eclipse itself, you can open them, set breakpoints, and step through, though be aware that lombok's agent injection system does cause some issues here; we move methods into different classes and eclipse's debugger naturally doesn't understand this, so you can't breakpoint lombok's own patch methods, and stepping through them 'works' but looks bizarre in the debugger as the debugger now thinks your source file clearly cannot possibly match the class file currently running. Just keep going ('step out'), eclipse will figure it out again once you're back in un-instrumented eclipse code.
+
+
+TODO:
+
+Describe in detail:
+
+* Which ant tasks to run to create the targets
+* How to modify this target, if needed, to point at your bin dir
+

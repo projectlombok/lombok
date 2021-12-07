@@ -1,2 +1,4 @@
-6 d cannot be resolved to a variable
-10 'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })
+7 d cannot be resolved to a variable
+7 d cannot be resolved or is not a field
+11 'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })
+11 Type mismatch: cannot convert from String[] to Object

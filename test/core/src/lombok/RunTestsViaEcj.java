@@ -64,9 +64,22 @@ import org.osgi.framework.BundleContext;
 public class RunTestsViaEcj extends AbstractRunTests {
 	protected CompilerOptions ecjCompilerOptions() {
 		CompilerOptions options = new CompilerOptions();
-		options.complianceLevel = Eclipse.getLatestEcjCompilerVersionConstant();
-		options.sourceLevel = Eclipse.getLatestEcjCompilerVersionConstant();
-		options.targetJDK = Eclipse.getLatestEcjCompilerVersionConstant();
+		Map<String, String> warnings = new HashMap<String, String>();
+		
+		String javaVersionString = System.getProperty("compiler.compliance.level");
+		long ecjCompilerVersionConstant = Eclipse.getLatestEcjCompilerVersionConstant();
+		long ecjCompilerVersion = Eclipse.getEcjCompilerVersion();
+		if (javaVersionString != null) {
+			long javaVersion = Long.parseLong(javaVersionString);
+			ecjCompilerVersionConstant = (javaVersion + 44) << 16;
+			ecjCompilerVersion = javaVersion;
+		} else {
+			// Preview features are only allowed if the maximum compiler version is equal to the source version
+			warnings.put("org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures", "enabled");
+		}
+		options.complianceLevel = ecjCompilerVersionConstant;
+		options.sourceLevel = ecjCompilerVersionConstant;
+		options.targetJDK = ecjCompilerVersionConstant;
 		options.docCommentSupport = false;
 		options.parseLiteralExpressionsAsConstants = true;
 		options.inlineJsrBytecode = true;
@@ -78,17 +91,14 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		options.reportUnusedParameterWhenOverridingConcrete = false;
 		options.reportDeadCodeInTrivialIfStatement = false;
 		options.generateClassFiles = false;
-		Map<String, String> warnings = new HashMap<String, String>();
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLocal, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportIndirectStaticAccess, "warning");
 		warnings.put(CompilerOptions.OPTION_ReportNonStaticAccessToStatic, "warning");
-		warnings.put("org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures", "enabled");
 		warnings.put("org.eclipse.jdt.core.compiler.problem.reportPreviewFeatures", "ignore");
-		int ecjVersion = Eclipse.getEcjCompilerVersion();
-		warnings.put(CompilerOptions.OPTION_Source, (ecjVersion < 9 ? "1." : "") + ecjVersion);
+		warnings.put(CompilerOptions.OPTION_Source, (ecjCompilerVersion < 9 ? "1." : "") + ecjCompilerVersion);
 		options.set(warnings);
 		return options;
 	}
@@ -96,7 +106,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	protected IErrorHandlingPolicy ecjErrorHandlingPolicy() {
 		return new IErrorHandlingPolicy() {
 			public boolean stopOnFirstError() {
-				return true;
+				return false;
 			}
 			
 			public boolean proceedOnErrors() {

@@ -23,6 +23,7 @@ package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.typeMatches;
+
 import lombok.ConfigurationKeys;
 import lombok.val;
 import lombok.var;
@@ -42,7 +43,7 @@ import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
 /*
- * This class just handles 3 basic error cases. The real meat of eclipse 'val' support is in {@code PatchVal} and {@code PatchValEclipse}.
+ * This class just handles 3 basic error cases. The real meat of eclipse 'val' support is in {@code PatchVal} and {@code PatchValEclipse}
  */
 @Provides(EclipseASTVisitor.class)
 @DeferUntilPostDiet

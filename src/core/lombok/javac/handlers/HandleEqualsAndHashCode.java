@@ -385,7 +385,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		boolean staticContext = (((JCClassDecl) type.get()).getModifiers().flags & Flags.STATIC) != 0;
 		JavacNode tNode = type.up();
 		
-		while (tNode != null && tNode.getKind() == Kind.TYPE) {
+		while (tNode != null && tNode.getKind() == Kind.TYPE && !tNode.getName().isEmpty()) {
 			list.add(tNode.getName());
 			if (addWildcards) genericsCount.add(staticContext ? 0 : ((JCClassDecl) tNode.get()).typarams.size());
 			if (!staticContext) staticContext = (((JCClassDecl) tNode.get()).getModifiers().flags & Flags.STATIC) != 0;

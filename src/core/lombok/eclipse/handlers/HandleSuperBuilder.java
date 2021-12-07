@@ -184,6 +184,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			annotationNode.addError("@SuperBuilder is only supported on classes.");
 			return;
 		}
+		if (!isStaticAllowed(parent)) {
+			annotationNode.addError("@SuperBuilder is not supported on non-static nested classes.");
+			return;
+		}
 		
 		job.parentType = parent;
 		TypeDeclaration td = (TypeDeclaration) parent.get();
@@ -794,7 +798,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	}
 	
 	private MessageSend createSetterCallWithInstanceValue(BuilderFieldData bfd, EclipseNode type, ASTNode source, String setterPrefix) {
-		char[] setterName = HandlerUtil.buildAccessorName(setterPrefix, String.valueOf(bfd.name)).toCharArray();
+		char[] setterName = HandlerUtil.buildAccessorName(type, setterPrefix, String.valueOf(bfd.name)).toCharArray();
 		MessageSend ms = new MessageSend();
 		Expression[] tgt = new Expression[bfd.singularData == null ? 1 : 2];
 		
@@ -1000,7 +1004,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (existing == null) existing = EMPTY_METHODS;
 		int len = existing.length;
 		
-		String setterName = HandlerUtil.buildAccessorName(setterPrefix, new String(paramName));
+		String setterName = HandlerUtil.buildAccessorName(job.sourceNode, setterPrefix, new String(paramName));
 		
 		for (int i = 0; i < len; i++) {
 			if (!(existing[i] instanceof MethodDeclaration)) continue;

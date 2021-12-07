@@ -161,6 +161,7 @@ public class LombokTestSource {
 	private static final Pattern UNCHANGED_PATTERN = Pattern.compile("^\\s*unchanged\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern SKIP_COMPARE_CONTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?compare[- ]?contents?\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern SKIP_IDEMPOTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?idempotent\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern ISSUE_REF_PATTERN = Pattern.compile("^\\s*issue #?\\d+(:?\\s+.*)?$", Pattern.CASE_INSENSITIVE);
 	
 	private LombokTestSource(File file, String content, List<CompilerMessageMatcher> messages, List<String> directives) {
 		this.file = file;
@@ -198,6 +199,9 @@ public class LombokTestSource {
 			
 			if (SKIP_IDEMPOTENT_PATTERN.matcher(directive).matches()) {
 				skipIdempotent = true;
+				continue;
+			}
+			if (ISSUE_REF_PATTERN.matcher(directive).matches()) {
 				continue;
 			}
 			

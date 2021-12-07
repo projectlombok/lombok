@@ -35,13 +35,11 @@ import org.eclipse.jdt.internal.compiler.ast.FunctionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.impl.Constant;
 import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
@@ -59,8 +57,8 @@ import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 import java.lang.reflect.Field;
 
 import static lombok.Lombok.sneakyThrow;
-import static lombok.eclipse.Eclipse.poss;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.makeType;
+import static lombok.eclipse.Eclipse.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import static org.eclipse.jdt.core.compiler.CategorizedProblem.CAT_TYPE;
 
 public class PatchVal {
@@ -237,13 +235,19 @@ public class PatchVal {
 		
 		TypeReference replacement = null;
 		
+		// Java 10+: Lombok uses the native 'var' support and transforms 'val' to 'final var'.
+		if (hasNativeVarSupport(scope) && val) {
+			replacement = new SingleTypeReference("var".toCharArray(), pos(local.type));
+			local.initialization = init;
+			init = null;
+		}
+		
 		if (init != null) {
 			if (init.getClass().getName().equals("org.eclipse.jdt.internal.compiler.ast.LambdaExpression")) {
 				return false;
 			}
 			
 			TypeBinding resolved = null;
-			Constant oldConstant = init.constant;
 			try {
 				resolved = decomponent ? getForEachComponentType(init, scope) : resolveForExpression(init, scope);
 			} catch (NullPointerException e) {
@@ -253,16 +257,52 @@ public class PatchVal {
 				// just go with 'Object' and let the IDE print the appropriate errors.
 				resolved = null;
 			}
+			
+			if (resolved == null) {
+				if (init instanceof ConditionalExpression) {
+					ConditionalExpression cexp = (ConditionalExpression) init;
+					Expression ifTrue = cexp.valueIfTrue;
+					Expression ifFalse = cexp.valueIfFalse;
+					TypeBinding ifTrueResolvedType = ifTrue.resolvedType;
+					CompilationResult compilationResult = scope.referenceCompilationUnit().compilationResult;
+					CategorizedProblem[] problems = compilationResult.problems;
+					CategorizedProblem lastProblem = problems[compilationResult.problemCount - 1];
+					if (ifTrueResolvedType != null && ifFalse.resolvedType == null && lastProblem.getCategoryID() == CAT_TYPE) {
+						int problemCount = compilationResult.problemCount;
+						for (int i = 0; i < problemCount; ++i) {
+							if (problems[i] == lastProblem) {
+								problems[i] = null;
+								if (i + 1 < problemCount) {
+									System.arraycopy(problems, i + 1, problems, i, problemCount - i + 1);
+								}
+								break;
+							}
+						}
+						compilationResult.removeProblem(lastProblem);
+						if (!compilationResult.hasErrors()) {
+							clearIgnoreFurtherInvestigationField(scope.referenceContext());
+							setValue(getField(CompilationResult.class, "hasMandatoryErrors"), compilationResult, false);
+						}
+						
+						if (ifFalse instanceof FunctionalExpression) {
+							FunctionalExpression functionalExpression = (FunctionalExpression) ifFalse;
+							functionalExpression.setExpectedType(ifTrueResolvedType);
+						}
+						if (ifFalse.resolvedType == null) {
+							resolveForExpression(ifFalse, scope);
+						}
+						
+						resolved = ifTrueResolvedType;
+					}
+				}
+			}
+			
 			if (resolved != null) {
 				try {
 					replacement = makeType(resolved, local.type, false);
 					if (!decomponent) init.resolvedType = replacement.resolveType(scope);
 				} catch (Exception e) {
 					// Some type thing failed.
-				}
-			} else {
-				if (init instanceof MessageSend && ((MessageSend) init).actualReceiverType == null) {
-					init.constant = oldConstant;
 				}
 			}
 		}
@@ -281,12 +321,22 @@ public class PatchVal {
 		return is(local.type, scope, "lombok.val");
 	}
 	
+	private static boolean hasNativeVarSupport(Scope scope) {
+		long sl = scope.problemReporter().options.sourceLevel >> 16;
+		long cl = scope.problemReporter().options.complianceLevel >> 16;
+		if (sl == 0) sl = cl;
+		if (cl == 0) cl = sl;
+		return Math.min((int)(sl - 44), (int)(cl - 44)) >= 10;
+	}
+	
 	public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
 		if (forEach.elementVariable == null) return false;
 		
 		boolean val = isVal(forEach.elementVariable, scope);
 		boolean var = isVar(forEach.elementVariable, scope);
 		if (!(val || var)) return false;
+		
+		if (hasNativeVarSupport(scope)) return false;
 		
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
 		if (component == null) return false;
@@ -353,43 +403,7 @@ public class PatchVal {
 			// Known cause of issues; for example: val e = mth("X"), where mth takes 2 arguments.
 			return null;
 		} catch (AbortCompilation e) {
-			if (collection instanceof ConditionalExpression) {
-				ConditionalExpression cexp = (ConditionalExpression) collection;
-				Expression ifTrue = cexp.valueIfTrue;
-				Expression ifFalse = cexp.valueIfFalse;
-				TypeBinding ifTrueResolvedType = ifTrue.resolvedType;
-				CategorizedProblem problem = e.problem;
-				if (ifTrueResolvedType != null && ifFalse.resolvedType == null && problem.getCategoryID() == CAT_TYPE) {
-					CompilationResult compilationResult = e.compilationResult;
-					CategorizedProblem[] problems = compilationResult.problems;
-					int problemCount = compilationResult.problemCount;
-					for (int i = 0; i < problemCount; ++i) {
-						if (problems[i] == problem) {
-							problems[i] = null;
-							if (i + 1 < problemCount) {
-								System.arraycopy(problems, i + 1, problems, i, problemCount - i + 1);
-							}
-							break;
-						}
-					}
-					compilationResult.removeProblem(problem);
-					if (!compilationResult.hasErrors()) {
-						clearIgnoreFurtherInvestigationField(scope.referenceContext());
-						setValue(getField(CompilationResult.class, "hasMandatoryErrors"), compilationResult, false);
-					}
-					
-					if (ifFalse instanceof FunctionalExpression) {
-						FunctionalExpression functionalExpression = (FunctionalExpression) ifFalse;
-						functionalExpression.setExpectedType(ifTrueResolvedType);
-					}
-					if (ifFalse.resolvedType == null) {
-						ifFalse.resolve(scope);
-					}
-					
-					return ifTrueResolvedType;
-				}
-			}
-			throw e;
+			return null;
 		}
 	}
 	

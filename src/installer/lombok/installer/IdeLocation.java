@@ -64,16 +64,4 @@ public abstract class IdeLocation {
 			return x == null ? p.getPath() : x;
 		}
 	}
-	
-	private static final String LEGAL_PATH_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_/";
-	private static final String LEGAL_PATH_CHARS_WINDOWS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,/;'[]{}!@#$^&()-_+= :\\";
-	public static String escapePath(String path) {
-		StringBuilder out = new StringBuilder();
-		String legalChars = OsUtils.getOS() == OsUtils.OS.UNIX ? LEGAL_PATH_CHARS : LEGAL_PATH_CHARS_WINDOWS; 
-		for (char c : path.toCharArray()) {
-			if (legalChars.indexOf(c) == -1) out.append('\\');
-			out.append(c);
-		}
-		return out.toString();
-	}
 }

@@ -228,7 +228,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			int underscoreIdx = nm.indexOf('_');
 			if (underscoreIdx > -1) return Integer.parseInt(nm.substring(underscoreIdx + 1));
 			// assume java9+
-			return Integer.parseInt(nm);
+			return Integer.parseInt(nm.substring(3));
 		} catch (Exception ignore) {}
 		return 6;
 	}

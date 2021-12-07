@@ -163,6 +163,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			annotationNode.addError("@SuperBuilder is only supported on classes.");
 			return;
 		}
+		if (!isStaticAllowed(parent)) {
+			annotationNode.addError("@SuperBuilder is not supported on non-static nested classes.");
+			return;
+		}
 		
 		job.parentType = parent;
 		JCClassDecl td = (JCClassDecl) parent.get();
@@ -773,7 +777,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			arg = maker.Conditional(eqNull, emptyCollection, tgt[1]);
 		}
 		
-		String setterName = HandlerUtil.buildAccessorName(setterPrefix, bfd.name.toString());
+		String setterName = HandlerUtil.buildAccessorName(job.sourceNode, setterPrefix, bfd.name.toString());
 		JCMethodInvocation apply = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(job.toName(BUILDER_VARIABLE_NAME)), job.toName(setterName)), List.of(arg));
 		JCExpressionStatement exec = maker.Exec(apply);
 		return exec;
@@ -945,7 +949,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	}
 	
 	private void generateSimpleSetterMethodForBuilder(SuperBuilderJob job, boolean deprecate, JavacNode fieldNode, Name paramName, Name nameOfSetFlag, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode, String setterPrefix) {
-		String setterName = HandlerUtil.buildAccessorName(setterPrefix, paramName.toString());
+		String setterName = HandlerUtil.buildAccessorName(job.sourceNode, setterPrefix, paramName.toString());
 		Name setterName_ = job.builderType.toName(setterName);
 		
 		for (JavacNode child : job.builderType.down()) {

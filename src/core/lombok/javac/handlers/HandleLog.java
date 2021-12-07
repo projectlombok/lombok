@@ -80,6 +80,11 @@ public class HandleLog {
 				return;
 			}
 			
+			if (useStatic && !isStaticAllowed(typeNode)) {
+				annotationNode.addError(framework.getAnnotationAsString() + " is not supported on non-static nested classes.");
+				return;
+			}
+			
 			Object valueGuess = annotation.getValueGuess("topic");
 			JCExpression loggerTopic = (JCExpression) annotation.getActualExpression("topic");
 			

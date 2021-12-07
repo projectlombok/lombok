@@ -60,14 +60,12 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 	private static final IdentifierName FIELDS = IdentifierName.valueOf("Fields");
 
 	public void generateFieldNameConstantsForType(EclipseNode typeNode, EclipseNode errorNode, AccessLevel level, boolean asEnum, IdentifierName innerTypeName, boolean onlyExplicit, boolean uppercase) {
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		boolean notAClass = (modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
-		
-		if (typeDecl == null || notAClass) {
-			errorNode.addError("@FieldNameConstants is only supported on a class or an enum.");
+		if (!isClassEnumOrRecord(typeNode)) {
+			errorNode.addError("@FieldNameConstants is only supported on a class, an enum or a record.");
+			return;
+		}
+		if (!isStaticAllowed(typeNode)) {
+			errorNode.addError("@FieldNameConstants is not supported on non-static nested classes.");
 			return;
 		}
 		

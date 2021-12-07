@@ -38,6 +38,11 @@
 		</dt><dd>
 			If set to <code>true</code>, getters generated for <code>boolean</code> fields will use the <code>get</code> prefix instead of the default<code>is</code> prefix, and any generated code that calls getters, such as <code>@ToString</code>, will also use <code>get</code> instead of <code>is</code>
 		</dd><dt>
+			<code>lombok.accessors.capitalization</code> = [<code>basic</code> | <code>beanspec</code>] (default: basic)
+		</dt><dd>
+			Controls how tricky cases like <code>uShaped</code> (one lowercase letter followed by an upper/titlecase letter) are capitalized. <code>basic</code> capitalizes that to <code>getUShaped</code>, and <code>beanspec</code> capitalizes that to <code>getuShaped</code> instead.<br />
+			Both strategies are commonly used in the java ecosystem, though <code>beanspec</code> is more common.
+		</dd><dt>
 			<code>lombok.setter.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@Setter</code> as a warning or error if configured.

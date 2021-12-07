@@ -1,4 +1,4 @@
-// version 9: the 'this' param option exists in java8, but is bugged, in that annotations are not allowed on them, even without a @Target. The only purpose of the this param is annotations, so, boy, isn't that a punch in the face?
+// version 8:
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,19 +22,19 @@ class ThisParameter {
 		// no content
 	}
 	
-	@Target(ElementType.PARAMETER)
+	@Target(ElementType.TYPE_USE)
 	@Retention(RetentionPolicy.SOURCE)
 	@interface SourceTagged {
 		String value();
 	}
 	
-	@Target(ElementType.PARAMETER)
+	@Target(ElementType.TYPE_USE)
 	@Retention(RetentionPolicy.CLASS)
 	@interface ClassTagged {
 		String value();
 	}
 	
-	@Target(ElementType.PARAMETER)
+	@Target(ElementType.TYPE_USE)
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface RuntimeTagged {
 		String value();

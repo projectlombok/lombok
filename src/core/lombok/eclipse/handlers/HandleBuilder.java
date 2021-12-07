@@ -293,6 +293,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		List<EclipseNode> nonFinalNonDefaultedFields = null;
 		
+		if (!isStaticAllowed(upToTypeNode(parent))) {
+			annotationNode.addError("@Builder is not supported on non-static nested classes.");
+			return;
+		}
+		
 		if (parent.get() instanceof TypeDeclaration) {
 			if (!isClass(parent) && !isRecord(parent)) {
 				annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
@@ -660,7 +665,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		for (BuilderFieldData bfd : job.builderFields) {
 			String setterName = new String(bfd.name);
 			String setterPrefix = !prefix.isEmpty() ? prefix : job.oldFluent ? "" : "set";
-			if (!setterPrefix.isEmpty()) setterName = HandlerUtil.buildAccessorName(setterPrefix, setterName);
+			if (!setterPrefix.isEmpty()) setterName = HandlerUtil.buildAccessorName(job.sourceNode, setterPrefix, setterName);
 			
 			MessageSend ms = new MessageSend();
 			Expression[] tgt = new Expression[bfd.singularData == null ? 1 : 2];
@@ -1028,9 +1033,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String setterPrefix = prefix.isEmpty() ? "set" : prefix;
 		String setterName;
 		if (job.oldFluent) {
-			setterName = prefix.isEmpty() ? new String(bfd.name) : HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));
+			setterName = prefix.isEmpty() ? new String(bfd.name) : HandlerUtil.buildAccessorName(job.sourceNode, setterPrefix, new String(bfd.name));
 		} else {
-			setterName = HandlerUtil.buildAccessorName(setterPrefix, new String(bfd.name));
+			setterName = HandlerUtil.buildAccessorName(job.sourceNode, setterPrefix, new String(bfd.name));
 		}
 		
 		for (int i = 0; i < len; i++) {

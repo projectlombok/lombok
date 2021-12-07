@@ -607,7 +607,19 @@ public class JavacTreeMaker {
 	
 	public JCCase Case(JCExpression pat, List<JCStatement> stats) {
 		if (tryResolve(Case11)) return invoke(Case11, pat, stats);
-		return invoke(Case12.Case12, Case12.CASE_KIND_STATEMENT, pat == null ? com.sun.tools.javac.util.List.nil() : com.sun.tools.javac.util.List.of(pat), stats, null);
+		List<JCTree> labels;
+		if (pat == null) {
+			labels = tryResolve(DefaultCaseLabel) ? List.of(DefaultCaseLabel()) : List.<JCTree>nil();
+		} else {
+			labels = List.<JCTree>of(pat);
+		}
+		return invoke(Case12.Case12, Case12.CASE_KIND_STATEMENT, labels, stats, null);
+	}
+	
+	//javac versions: 17
+	private static final MethodId<JCTree> DefaultCaseLabel = MethodId("DefaultCaseLabel", JCTree.class);
+	public JCTree DefaultCaseLabel() {
+		return invoke(DefaultCaseLabel);
 	}
 	
 	//javac versions: 6-8

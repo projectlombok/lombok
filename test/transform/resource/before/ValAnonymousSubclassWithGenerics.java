@@ -1,3 +1,4 @@
+// version :9
 // issue 205: val inside anonymous inner classes is a bit tricky in javac, this test ensures we don't break it.
 import java.util.*;
 import lombok.val;

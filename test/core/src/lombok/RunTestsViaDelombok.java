@@ -42,7 +42,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 
 import com.sun.source.util.TreePath;
@@ -211,8 +210,8 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 				}
 				
 				@Override public void visitVarDef(JCVariableDecl tree) {
-					// Skip non-field variables
-					if (!(parent instanceof JCClassDecl)) return;
+					// Skip local variables
+					if (!(parent instanceof JCClassDecl || parent instanceof JCMethodDecl)) return;
 					
 					validateSymbol(tree, tree.sym);
 					super.visitVarDef(tree);
@@ -222,8 +221,8 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 					if (sym == null) {
 						fail("Missing symbol for " + tree);
 					}
-					// Skip top level classes
-					if (sym.owner.getKind() == ElementKind.PACKAGE) return;
+					// Only classes have enclosed elements, skip everything else
+					if (!sym.owner.getKind().isClass()) return;
 					
 					if (!sym.owner.getEnclosedElements().contains(sym)) {
 						fail(tree + " not added to parent");

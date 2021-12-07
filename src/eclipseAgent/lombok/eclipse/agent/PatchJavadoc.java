@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Project Lombok Authors.
+ * Copyright (C) 2020-2021 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,8 +103,9 @@ public class PatchJavadoc {
 	private static class Reflection {
 		private static final Method javadoc2HTML;
 		private static final Method oldJavadoc2HTML;
+		private static final Method lsJavadoc2HTML;
 		static {
-			Method a = null, b = null;
+			Method a = null, b = null, c = null;
 			
 			try {
 				a = Permit.getMethod(JavadocContentAccess2.class, "javadoc2HTML", IMember.class, IJavaElement.class, String.class);
@@ -112,15 +113,26 @@ public class PatchJavadoc {
 			try {
 				b = Permit.getMethod(JavadocContentAccess2.class, "javadoc2HTML", IMember.class, String.class);
 			} catch (Throwable t) {}
+			try {
+				c = Permit.getMethod(Class.forName("org.eclipse.jdt.ls.core.internal.javadoc.JavadocContentAccess2"), "javadoc2HTML", IMember.class, IJavaElement.class, String.class);
+			} catch (Throwable t) {}
 			
 			javadoc2HTML = a;
 			oldJavadoc2HTML = b;
+			lsJavadoc2HTML = c;
 		}
 		
 		private static String javadoc2HTML(IMember member, IJavaElement element, String rawJavadoc) {
 			if (javadoc2HTML != null) {
 				try {
 					return (String) javadoc2HTML.invoke(null, member, element, rawJavadoc);
+				} catch (Throwable t) {
+					return null;
+				}
+			}
+			if (lsJavadoc2HTML != null) {
+				try {
+					return (String) lsJavadoc2HTML.invoke(null, member, element, rawJavadoc);
 				} catch (Throwable t) {
 					return null;
 				}

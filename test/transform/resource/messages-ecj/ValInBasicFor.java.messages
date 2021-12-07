@@ -1,2 +1,4 @@
-7 'val' is not allowed in old-style for loops
-7 Type mismatch: cannot convert from int to val
+8 'val' is not allowed in old-style for loops
+8 Type mismatch: cannot convert from int to val
+8 Type mismatch: cannot convert from String to val
+8 Type mismatch: cannot convert from double to val

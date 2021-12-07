@@ -16,17 +16,17 @@ class ThisParameter {
 	void runtimeTagged(@RuntimeTagged("runtime") ThisParameter this) {
 		// no content
 	}
-	@Target(ElementType.PARAMETER)
+	@Target(ElementType.TYPE_USE)
 	@Retention(RetentionPolicy.SOURCE)
 	@interface SourceTagged {
 		String value();
 	}
-	@Target(ElementType.PARAMETER)
+	@Target(ElementType.TYPE_USE)
 	@Retention(RetentionPolicy.CLASS)
 	@interface ClassTagged {
 		String value();
 	}
-	@Target(ElementType.PARAMETER)
+	@Target(ElementType.TYPE_USE)
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface RuntimeTagged {
 		String value();

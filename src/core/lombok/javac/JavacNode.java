@@ -286,13 +286,15 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	
 	@Override public boolean isStatic() {
 		if (node instanceof JCClassDecl) {
+			JCClassDecl t = (JCClassDecl) node;
+			long f = t.mods.flags;
+			if (((Flags.INTERFACE | Flags.ENUM) & f) != 0) return true;
 			JavacNode directUp = directUp();
 			if (directUp == null || directUp.getKind() == Kind.COMPILATION_UNIT) return true;
 			if (!(directUp.get() instanceof JCClassDecl)) return false;
 			JCClassDecl p = (JCClassDecl) directUp.get();
-			long f = p.mods.flags;
-			if ((Flags.INTERFACE & f) != 0) return true;
-			if ((Flags.ENUM & f) != 0) return true;
+			f = p.mods.flags;
+			if (((Flags.INTERFACE | Flags.ENUM) & f) != 0) return true;
 		}
 		
 		if (node instanceof JCVariableDecl) {

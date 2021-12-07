@@ -545,6 +545,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(tree.implementing, ", ");
 		}
 		
+		List<JCExpression> permitting = readObject(tree, "permitting", List.<JCExpression>nil());
+		if (permitting.nonEmpty()) {
+			print(" permits ");
+			print(permitting, ", ");
+		}
+		
 		println(" {");
 		indent++;
 		printClassMembers(tree.defs, isEnum, isInterface);
@@ -1016,6 +1022,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 		if ((v & TRANSIENT) != 0) print("transient ");
 		if ((v & NATIVE) != 0) print("native ");
 		if ((v & ABSTRACT) != 0) print("abstract ");
+		if ((v & SEALED) != 0) print("sealed ");
+		if ((v & NON_SEALED) != 0) print("non-sealed ");
 		if ((v & STRICTFP) != 0) print("strictfp ");
 		if ((v & DEFAULT) != 0 && (v & INTERFACE) == 0) print("default ");
 	}
@@ -1324,13 +1332,16 @@ public class PrettyPrinter extends JCTree.Visitor {
 	@Override public void visitCase(JCCase tree) {
 		// Starting with JDK12, switches allow multiple expressions per case, and can take the form of an expression (preview feature).
 		
-		List<JCExpression> pats = readObject(tree, "pats", null); // JDK 12+
+		List<JCTree> pats = readObject(tree, "labels", null); // JDK 17+
 		if (pats == null) {
-			JCExpression pat = readObject(tree, "pat", null); // JDK -11
-			pats = pat == null ? List.<JCExpression>nil() : List.of(pat);
+			pats = readObject(tree, "pats", null); // JDK 12-17
+		}
+		if (pats == null) {
+			JCTree pat = readObject(tree, "pat", null); // JDK -11
+			pats = pat == null ? List.<JCTree>nil() : List.of(pat);
 		}
 		
-		if (pats.isEmpty()) {
+		if (pats.isEmpty() || pats.size() == 1 && pats.head.getClass().getName().endsWith("$JCDefaultCaseLabel")) {
 			aPrint("default");
 		} else {
 			aPrint("case ");
@@ -1419,6 +1430,22 @@ public class PrettyPrinter extends JCTree.Visitor {
 		print((JCExpression) readObject(var, "vartype", null));
 		print(" ");
 		print((Name) readObject(var, "name", null));
+	}
+	
+	void printDefaultCase(JCTree tree) {
+		print("default");
+	}
+	
+	void printGuardPattern(JCTree tree) {
+		print((JCTree) readObject(tree, "patt", null));
+		print(" && ");
+		print((JCExpression) readObject(tree, "expr", null));
+	}
+	
+	void printParenthesizedPattern(JCTree tree) {
+		print("(");
+		print((JCTree) readObject(tree, "pattern", null));
+		print(")");
 	}
 	
 	@Override public void visitTry(JCTry tree) {
@@ -1639,6 +1666,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printYieldExpression(tree);
 		} else if (className.endsWith("$JCBindingPattern")) { // Introduced as preview in JDK14
 			printBindingPattern(tree);
+		} else if (className.endsWith("$JCDefaultCaseLabel")) { // Introduced in JDK17
+			printDefaultCase(tree);
+		} else if (className.endsWith("$JCGuardPattern")) { // Introduced in JDK17
+			printGuardPattern(tree);
+		} else if (className.endsWith("$JCParenthesizedPattern")) { // Introduced in JDK17
+			printParenthesizedPattern(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}

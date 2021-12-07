@@ -57,6 +57,7 @@ import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
 import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
+import org.eclipse.jdt.internal.corext.refactoring.structure.MemberVisibilityAdjustor.IncomingMemberVisibilityAdjustment;
 
 import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
 
@@ -413,23 +414,25 @@ final class PatchFixesHider {
 			}
 			return result;
 		}
-		
-		public static boolean isRefactoringVisitorAndGenerated(org.eclipse.jdt.core.dom.ASTNode node, org.eclipse.jdt.core.dom.ASTVisitor visitor) {
-			if (visitor == null) return false;
-			
-			String className = visitor.getClass().getName();
-			if (!(className.startsWith("org.eclipse.jdt.internal.corext.fix") || className.startsWith("org.eclipse.jdt.internal.ui.fix"))) return false;
-			
+
+		public static boolean isGenerated(org.eclipse.jdt.core.IMember member) {
 			boolean result = false;
 			try {
-				result = ((Boolean)node.getClass().getField("$isGenerated").get(node)).booleanValue();
-				if (!result && node.getParent() != null && node.getParent() instanceof org.eclipse.jdt.core.dom.QualifiedName) {
-					result = isGenerated(node.getParent());
-				}
-			} catch (Exception e) {
+				result = member.getNameRange().getLength() <= 0 || member.getNameRange().equals(member.getSourceRange());
+			} catch (JavaModelException e) {
 				// better to assume it isn't generated
 			}
 			return result;
+		}
+		
+		public static boolean isBlockedVisitorAndGenerated(org.eclipse.jdt.core.dom.ASTNode node, org.eclipse.jdt.core.dom.ASTVisitor visitor) {
+			if (visitor == null) return false;
+			
+			String className = visitor.getClass().getName();
+			if (!(className.startsWith("org.eclipse.jdt.internal.corext.fix") || className.startsWith("org.eclipse.jdt.internal.ui.fix") || className.startsWith("org.eclipse.jdt.ls.core.internal.semantictokens.SemanticTokensVisitor"))) return false;
+			if (className.equals("org.eclipse.jdt.internal.corext.fix.VariableDeclarationFixCore$WrittenNamesFinder")) return false;
+			
+			return isGenerated(node);
 		}
 		
 		public static boolean isListRewriteOnGeneratedNode(org.eclipse.jdt.core.dom.rewrite.ListRewrite rewrite) {
@@ -473,8 +476,10 @@ final class PatchFixesHider {
 			StringBuilder signature = new StringBuilder();
 			addAnnotations(annotations, signature);
 			
-			if ((Boolean)processor.getClass().getDeclaredField("fPublic").get(processor)) signature.append("public ");
-			if ((Boolean)processor.getClass().getDeclaredField("fAbstract").get(processor)) signature.append("abstract ");
+			try {
+				if ((Boolean)processor.getClass().getDeclaredField("fPublic").get(processor)) signature.append("public ");
+				if ((Boolean)processor.getClass().getDeclaredField("fAbstract").get(processor)) signature.append("abstract ");
+			} catch (Throwable t) { }
 			
 			signature
 				.append(declaration.getReturnType2().toString())
@@ -520,7 +525,7 @@ final class PatchFixesHider {
 					for (Object value : normalAnn.values()) values.add(value.toString());
 				}
 				
-				signature.append("@").append(annotation.resolveTypeBinding().getQualifiedName());
+				signature.append("@").append(annotation.getTypeName().getFullyQualifiedName());
 				if (!values.isEmpty()) {
 					signature.append("(");
 					boolean first = true;
@@ -696,7 +701,7 @@ final class PatchFixesHider {
 		public static IMethod[] removeGeneratedMethods(IMethod[] methods) throws Exception {
 			List<IMethod> result = new ArrayList<IMethod>();
 			for (IMethod m : methods) {
-				if (m.getNameRange().getLength() > 0 && !m.getNameRange().equals(m.getSourceRange())) result.add(m);
+				if (!isGenerated(m)) result.add(m);
 			}
 			return result.size() == methods.length ? methods : result.toArray(new IMethod[0]);
 		}
@@ -798,6 +803,22 @@ final class PatchFixesHider {
 			}
 			
 			return replace;
+		}
+		
+		public static String getRealNodeSource(String original, org.eclipse.jdt.internal.compiler.ast.ASTNode node) {
+			if (!isGenerated(node)) return original;
+			
+			return node.toString();
+		}
+		
+		public static java.lang.String getRealNodeSource(java.lang.String original, org.eclipse.jdt.core.dom.ASTNode node) throws Exception {
+			if (!isGenerated(node)) return original;
+			
+			return node.toString();
+		}
+		
+		public static boolean skipRewriteVisibility(IncomingMemberVisibilityAdjustment adjustment) {
+			return isGenerated(adjustment.getMember());
 		}
 	}
 }
