@@ -45,7 +45,7 @@
 		<!-- test deps -->
 		<dependency org="junit" name="junit" rev="4.8.2" conf="test->default; sources" />
 		<dependency org="log4j" name="log4j" rev="1.2.17" conf="test->default; sources" />
-		<dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.11.1" conf="test->default; sources" />
+		<dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.15.0" conf="test->default; sources" />
 		<dependency org="commons-logging" name="commons-logging" rev="1.2" conf="test->default; sources" />
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.8.0-beta2" conf="test->default; sources" />
 		<dependency org="org.slf4j" name="slf4j-ext" rev="1.8.0-beta2" conf="test->default; sources" />
