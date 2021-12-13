@@ -70,7 +70,7 @@ public class TestConfiguration {
 		
 		checkContent(directory, out, "out");
 		checkContent(directory, err, "err");
-		assertEquals(0, result);
+		assertEquals(2, result);
 	}
 
 	private void checkContent(File dir, String actual, String type) throws Exception {

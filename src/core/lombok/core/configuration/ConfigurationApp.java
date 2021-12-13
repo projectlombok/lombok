@@ -232,6 +232,7 @@ public class ConfigurationApp extends LombokApp {
 		if (!problems.isEmpty()) {
 			err.printf("Problems in the configuration files:%n");
 			for (String problem : problems) err.printf("- %s%n", problem);
+			return 2;
 		}
 		
 		return 0;
