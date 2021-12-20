@@ -27,7 +27,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 	<target name="eclipse" depends="create.spiProcessor, eclipse.projectfiles, eclipse.testtarget.default" description="Downloads dependencies, create eclipse project files, as well as debug/run test targets. Open this directory as project in eclipse (via import... existing projects)" />
 	
 	<target name="eclipse.projectfiles" depends="deps">
-		<ivy:eclipsegen source="1.6" srcout="bin/main">
+		<ivy:eclipsegen source="1.8" srcout="bin/main">
 			<srcdir dir="src/spiProcessor" />
 			<srcdir dir="src/core" />
 			<srcdir dir="src/core8" />
