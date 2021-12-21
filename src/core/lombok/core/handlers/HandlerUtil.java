@@ -794,7 +794,7 @@ public class HandlerUtil {
 	
 	public static String stripLinesWithTagFromJavadoc(String javadoc, JavadocTag tag) {
 		if (javadoc == null || javadoc.isEmpty()) return javadoc;
-		return tag.pattern.matcher(javadoc).replaceAll("");
+		return tag.pattern.matcher(javadoc).replaceAll("").trim();
 	}
 	
 	public static String stripSectionsFromJavadoc(String javadoc) {

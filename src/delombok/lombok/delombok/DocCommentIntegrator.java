@@ -78,7 +78,7 @@ public class DocCommentIntegrator {
 	@SuppressWarnings("unchecked") private boolean attach(JCCompilationUnit top, final JCTree node, CommentInfo cmt) {
 		String docCommentContent = cmt.content;
 		if (docCommentContent.startsWith("/**")) docCommentContent = docCommentContent.substring(3);
-		if (docCommentContent.endsWith("*/")) docCommentContent = docCommentContent.substring(0, docCommentContent.length() -2);
+		if (docCommentContent.endsWith("*/")) docCommentContent = docCommentContent.substring(0, docCommentContent.length() - 2);
 		docCommentContent = CONTENT_STRIPPER.matcher(docCommentContent).replaceAll("$1");
 		docCommentContent = docCommentContent.trim();
 		
