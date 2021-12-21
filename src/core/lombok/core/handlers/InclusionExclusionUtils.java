@@ -113,10 +113,14 @@ public class InclusionExclusionUtils {
 	}
 	
 	private static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N, I extends Annotation> List<Included<L, I>> handleIncludeExcludeMarking(Class<I> inclType, String replaceName, Class<? extends Annotation> exclType, LombokNode<A, L, N> typeNode, AnnotationValues<?> annotation, LombokNode<A, L, N> annotationNode, boolean includeTransient) {
+		boolean onlyExplicitlyIncluded = annotation != null ? annotation.getAsBoolean("onlyExplicitlyIncluded") : false;
+		return handleIncludeExcludeMarking(inclType, onlyExplicitlyIncluded, replaceName, exclType, typeNode, annotation, annotationNode, includeTransient);
+	}
+	
+	private static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N, I extends Annotation> List<Included<L, I>> handleIncludeExcludeMarking(Class<I> inclType, boolean onlyExplicitlyIncluded, String replaceName, Class<? extends Annotation> exclType, LombokNode<A, L, N> typeNode, AnnotationValues<?> annotation, LombokNode<A, L, N> annotationNode, boolean includeTransient) {
 		List<String> oldExcludes = (annotation != null && annotation.isExplicit("exclude")) ? annotation.getAsStringList("exclude") : null;
 		List<String> oldIncludes = (annotation != null && annotation.isExplicit("of")) ? annotation.getAsStringList("of") : null;
 		
-		boolean onlyExplicitlyIncluded = annotation != null ? annotation.getAsBoolean("onlyExplicitlyIncluded") : false;
 		boolean memberAnnotationMode = onlyExplicitlyIncluded;
 		List<Included<L, I>> members = new ArrayList<Included<L, I>>();
 		List<String> namesToAutoExclude = new ArrayList<String>();
@@ -203,14 +207,14 @@ public class InclusionExclusionUtils {
 		return members;
 	}
 	
-	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> List<Included<L, ToString.Include>> handleToStringMarking(LombokNode<A, L, N> typeNode, AnnotationValues<ToString> annotation, LombokNode<A, L, N> annotationNode) {
-		List<Included<L, ToString.Include>> members = handleIncludeExcludeMarking(ToString.Include.class, "name", ToString.Exclude.class, typeNode, annotation, annotationNode, true);
+	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> List<Included<L, ToString.Include>> handleToStringMarking(LombokNode<A, L, N> typeNode, boolean onlyExplicitlyIncluded, AnnotationValues<ToString> annotation, LombokNode<A, L, N> annotationNode) {
+		List<Included<L, ToString.Include>> members = handleIncludeExcludeMarking(ToString.Include.class, onlyExplicitlyIncluded, "name", ToString.Exclude.class, typeNode, annotation, annotationNode, true);
 		
 		Collections.sort(members, new Comparator<Included<L, ToString.Include>>() {
 			@Override public int compare(Included<L, ToString.Include> a, Included<L, ToString.Include> b) {
 				int ra = a.getInc() == null ? 0 : a.getInc().rank();
 				int rb = b.getInc() == null ? 0 : b.getInc().rank();
-
+				
 				return compareRankOrPosition(ra, rb, a.getNode(), b.getNode());
 			}
 		});
@@ -219,28 +223,28 @@ public class InclusionExclusionUtils {
 	
 	public static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> List<Included<L, EqualsAndHashCode.Include>> handleEqualsAndHashCodeMarking(LombokNode<A, L, N> typeNode, AnnotationValues<EqualsAndHashCode> annotation, LombokNode<A, L, N> annotationNode) {
 		List<Included<L, EqualsAndHashCode.Include>> members = handleIncludeExcludeMarking(EqualsAndHashCode.Include.class, "replaces", EqualsAndHashCode.Exclude.class, typeNode, annotation, annotationNode, false);
-
+		
 		Collections.sort(members, new Comparator<Included<L, EqualsAndHashCode.Include>>() {
 			@Override public int compare(Included<L, EqualsAndHashCode.Include> a, Included<L, EqualsAndHashCode.Include> b) {
 				int ra = a.hasExplicitRank() ? a.getInc().rank() : HandlerUtil.defaultEqualsAndHashcodeIncludeRank(a.node.fieldOrMethodBaseType());
 				int rb = b.hasExplicitRank() ? b.getInc().rank() : HandlerUtil.defaultEqualsAndHashcodeIncludeRank(b.node.fieldOrMethodBaseType());
-
+				
 				return compareRankOrPosition(ra, rb, a.getNode(), b.getNode());
 			}
 		});
 		return members;
 	}
-
+	
 	private static <A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> int compareRankOrPosition(int ra, int rb, LombokNode<A, L, N> nodeA, LombokNode<A, L, N> nodeB) {
 		if (ra < rb) return +1;
 		if (ra > rb) return -1;
-
+		
 		int pa = nodeA.getStartPos();
 		int pb = nodeB.getStartPos();
-
+		
 		if (pa < pb) return -1;
 		if (pa > pb) return +1;
-
+		
 		return 0;
 	}
 }

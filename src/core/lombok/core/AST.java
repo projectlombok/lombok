@@ -454,4 +454,9 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			if (configTracker != null) configTracker.end(start);
 		}
 	}
+	
+	public boolean getBooleanAnnotationValue(AnnotationValues<?> annotation, String annoMethod, ConfigurationKey<Boolean> confKey) {
+		Boolean conf = readConfiguration(confKey);
+		return annotation.isExplicit(annoMethod) || conf == null ? annotation.getAsBoolean(annoMethod) : conf;
+	}
 }

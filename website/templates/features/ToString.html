@@ -33,6 +33,11 @@
 		</dt><dd>
 			If set to <code>call</code>, lombok will generate calls to the superclass implementation of <code>toString</code> if your class extends something. If set to <code>skip</code> no such call is generated. If set to <code>warn</code> no such call is generated either, but lombok does generate a warning to tell you about it.
 		</dd><dt>
+			<code>lombok.toString.onlyExplicitlyIncluded</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			If set to <code>false</code> (default), all fields (unless <code>static</code>, name starts with a dollar, or otherwise excluded for obvious reasons) serve as the default set of things to include in the toString, modifiable by using the <code>@ToString.Exclude</code> and <code>@ToString.Include</code> options.
+			If set to <code>true</code>, nothing is included unless explicitly marked with <code>@ToString.Include</code>.
+		</dd><dt>
 			<code>lombok.toString.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@ToString</code> as a warning or error if configured.
