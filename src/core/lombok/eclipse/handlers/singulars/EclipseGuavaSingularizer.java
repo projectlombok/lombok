@@ -93,7 +93,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 	}
 	
 	@Override protected char[][] getEmptyMakerReceiver(String targetFqn) {
-		return CGCC;
+		return makeGuavaTypeName(GuavaTypeMap.getGuavaTypeName(targetFqn), false);
 	}
 	
 	@Override public List<EclipseNode> generateFields(SingularData data, EclipseNode builderType) {
