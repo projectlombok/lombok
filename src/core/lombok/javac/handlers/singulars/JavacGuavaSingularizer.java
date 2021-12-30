@@ -52,7 +52,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 	
 	@Override protected String getEmptyMaker(String target) {
-		return target + ".of";
+		return "com.google.common.collect." + GuavaTypeMap.getGuavaTypeName(target) + ".of";
 	}
 	
 	protected String getBuilderMethodName(SingularData data) {
