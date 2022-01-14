@@ -165,7 +165,7 @@ public class AnnotationValues<A extends Annotation> {
 		AnnotationValue v = values.get(methodName);
 		
 		if (v == null) {
-			String[] s = getDefaultIf(methodName, String[].class, new String[0]);
+			String[] s = getDefaultIf(methodName, new String[0]);
 			return Collections.unmodifiableList(Arrays.asList(s));
 		}
 		
@@ -175,7 +175,7 @@ public class AnnotationValues<A extends Annotation> {
 			Object result = guess == null ? null : guessToType(guess, String.class, v, idx);
 			if (result == null) {
 				if (v.valueGuesses.size() == 1) {
-					String[] s = getDefaultIf(methodName, String[].class, new String[0]);
+					String[] s = getDefaultIf(methodName, new String[0]);
 					return Collections.unmodifiableList(Arrays.asList(s));
 				} 
 				throw new AnnotationValueDecodeFail(v, 
@@ -190,28 +190,29 @@ public class AnnotationValues<A extends Annotation> {
 	public String getAsString(String methodName) {
 		AnnotationValue v = values.get(methodName);
 		if (v == null || v.valueGuesses.size() != 1) {
-			return getDefaultIf(methodName, String.class, "");
+			return getDefaultIf(methodName, "");
 		}
 		
 		Object guess = guessToType(v.valueGuesses.get(0), String.class, v, 0);
 		if (guess instanceof String) return (String) guess;
-		return getDefaultIf(methodName, String.class, "");
+		return getDefaultIf(methodName, "");
 	}
 	
 	public boolean getAsBoolean(String methodName) {
 		AnnotationValue v = values.get(methodName);
 		if (v == null || v.valueGuesses.size() != 1) {
-			return getDefaultIf(methodName, boolean.class, false);
+			return getDefaultIf(methodName, false);
 		}
 		
 		Object guess = guessToType(v.valueGuesses.get(0), boolean.class, v, 0);
 		if (guess instanceof Boolean) return ((Boolean) guess).booleanValue();
-		return getDefaultIf(methodName, boolean.class, false);
+		return getDefaultIf(methodName, false);
 	}
 	
-	public <T> T getDefaultIf(String methodName, Class<T> type, T defaultValue) {
+	@SuppressWarnings("unchecked")
+	public <T> T getDefaultIf(String methodName, T defaultValue) {
 		try {
-			return type.cast(Permit.getMethod(type, methodName).getDefaultValue());
+			return (T) Permit.getMethod(type, methodName).getDefaultValue();
 		} catch (Exception e) {
 			return defaultValue;
 		}

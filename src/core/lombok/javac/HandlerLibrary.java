@@ -104,13 +104,13 @@ public class HandlerLibrary {
 			this.handler = handler;
 			this.annotationClass = annotationClass;
 			HandlerPriority hp = handler.getClass().getAnnotation(HandlerPriority.class);
-			this.priority = hp == null ? 0L : (((long)hp.value()) << 32) + hp.subValue();
+			this.priority = hp == null ? 0L : (((long) hp.value()) << 32) + hp.subValue();
 			this.resolutionResetNeeded = handler.getClass().isAnnotationPresent(ResolutionResetNeeded.class);
 			this.evenIfAlreadyHandled = handler.getClass().isAnnotationPresent(AlreadyHandledAnnotations.class);
 		}
 		
 		public void handle(final JavacNode node) {
-			handler.handle(JavacHandlerUtil.createAnnotation(annotationClass, node), (JCAnnotation)node.get(), node);
+			handler.handle(JavacHandlerUtil.createAnnotation(annotationClass, node), (JCAnnotation) node.get(), node);
 		}
 		
 		public long getPriority() {

@@ -203,7 +203,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			
 			if (!prefix.isEmpty()) {
 				StringLiteral px = new StringLiteral(prefix.toCharArray(), pS, pE, 0);
-				setGeneratedBy(px, source);				
+				setGeneratedBy(px, source);
 				current = new BinaryExpression(current, px, PLUS);
 				current.sourceStart = pS; current.sourceEnd = pE;
 				setGeneratedBy(current, source);
