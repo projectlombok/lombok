@@ -239,11 +239,6 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	
 	private FileSystem createFileSystem(File file, int minVersion) {
 		List<String> classpath = new ArrayList<String>();
-		for (Iterator<String> i = classpath.iterator(); i.hasNext();) {
-			if (FileSystem.getClasspath(i.next(), "UTF-8", null) == null) {
-				i.remove();
-			}
-		}
 		if (new File("bin/main").exists()) classpath.add("bin/main");
 		classpath.add("dist/lombok.jar");
 		classpath.add("build/teststubs");
@@ -254,6 +249,11 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			if (fn.length() < 4) continue;
 			if (!fn.substring(fn.length() - 4).toLowerCase().equals(".jar")) continue;
 			classpath.add("lib/test/" + fn);
+		}
+		for (Iterator<String> i = classpath.iterator(); i.hasNext();) {
+			if (FileSystem.getClasspath(i.next(), "UTF-8", null) == null) {
+				i.remove();
+			}
 		}
 		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
 	}
