@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.24 "Edgy Guinea Pig"
+### v1.18.23 "Edgy Guinea Pig"
 
 * FEATURE: `@ToString` has an annotation parameter called `onlyExplicitlyIncluded`. There's now a config key `lombok.toString.onlyExplicitlyIncluded` to set this property as well. [Issue #2849](https://github.com/projectlombok/lombok/pull/2849).
 * FEATURE: Turning a field named `uShape` into a getter is tricky: `getUShape` or `getuShape`? The community is split on which style to use. Lombok does `getUShape`, but if you prefer the `getuShape` style, add to `lombok.config`: `lombok.accessors.capitalization = beanspec`. [Issue #2693](https://github.com/projectlombok/lombok/issues/2693) [Pull Request #2996](https://github.com/projectlombok/lombok/pull/2996). Thanks __@YonathanSherwin__!
