@@ -6,7 +6,7 @@ public class NonNullExample extends Something {
 	public NonNullExample(@NonNull Person person) {
 		super("Hello");
 		if (person == null) {
-			throw new NullPointerException("person is marked @NonNull but is null");
+			throw new NullPointerException("person is marked non-null but is null");
 		}
 		this.name = person.getName();
 	}
