@@ -39,7 +39,7 @@ import java.util.zip.ZipInputStream;
 public abstract class ConfigurationFile {
 	private static final Pattern VARIABLE = Pattern.compile("\\<(.+?)\\>");
 	private static final String LOMBOK_CONFIG_FILENAME = "lombok.config";
-	private static final Map<String, String> ENV = new HashMap<String, String>(System.getenv());;
+	private static final Map<String, String> ENV = new HashMap<String, String>(System.getenv());
 	
 	private static final ThreadLocal<byte[]> buffers = new ThreadLocal<byte[]>() {
 		protected byte[] initialValue() {
@@ -178,7 +178,7 @@ public abstract class ConfigurationFile {
 		}
 		
 		private static String replaceEnvironmentVariables(String fileName) {
-			int start = 0;;
+			int start = 0;
 			StringBuffer result = new StringBuffer();
 			if (fileName.startsWith("~")) {
 				start = 1;
