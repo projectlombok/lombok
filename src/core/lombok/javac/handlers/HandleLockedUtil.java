@@ -33,7 +33,7 @@ import lombok.javac.JavacTreeMaker;
 import java.lang.annotation.Annotation;
 
 import static com.sun.tools.javac.tree.JCTree.*;
-import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
+import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 /**
@@ -82,7 +82,7 @@ public final class HandleLockedUtil {
 	 */
 	public static <T extends Annotation> void handle(String annotationValue, JCTree.JCAnnotation ast, JavacNode annotationNode,
 			Class<T> annotationClass, String annotationName, String[] lockClass, String lockableMethodName) {
-		handleFlagUsage(annotationNode, ConfigurationKeys.LOCKED_FLAG_USAGE, annotationName);
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.LOCKED_FLAG_USAGE, annotationName);
 
 		if (inNetbeansEditor(annotationNode)) return;
 		deleteAnnotationIfNeccessary(annotationNode, annotationClass);
@@ -105,11 +105,11 @@ public final class HandleLockedUtil {
 			return;
 		}
 
-		boolean[] isStatic = new boolean[]{(method.mods.flags & Flags.STATIC) != 0};
+		boolean isStatic = (method.mods.flags & Flags.STATIC) != 0;
 		String lockName = annotationValue;
 
 		if (lockName.length() == 0) {
-			lockName = isStatic[0] ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+			lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		}
 
 		JavacTreeMaker maker = methodNode.getTreeMaker().at(ast.pos);
@@ -126,11 +126,11 @@ public final class HandleLockedUtil {
 						exists = getGeneratedBy(varDeclDef) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 						boolean st = ((varDeclDef.mods.flags) & Flags.STATIC) != 0;
 
-						if (isStatic[0] != st && exists == MemberExistsResult.EXISTS_BY_LOMBOK) {
+						if (isStatic != st && exists == MemberExistsResult.EXISTS_BY_LOMBOK) {
 							annotationNode.addError("The generated field " + lockName + " does not match the static status of this method");
 							return;
 						}
-						isStatic[0] = st;
+						isStatic = st;
 
 						if (exists == MemberExistsResult.EXISTS_BY_LOMBOK && !lockType.toString().equals(varDeclDef.vartype.toString())) {
 							annotationNode.addError("Expected field " + lockName + " to be of type " + lockType + " but got type " +
@@ -145,7 +145,7 @@ public final class HandleLockedUtil {
 		if (exists == MemberExistsResult.NOT_EXISTS) {
 			JCNewClass lockInstance = maker.NewClass(null, NIL_EXPRESSION, lockType, NIL_EXPRESSION, null);
 			JCVariableDecl newLockField = recursiveSetGeneratedBy(maker.VarDef(
-				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic[0] ? Flags.STATIC : 0)),
+				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 				methodNode.toName(lockName), lockType, lockInstance
 			), annotationNode);
 
@@ -155,7 +155,7 @@ public final class HandleLockedUtil {
 		if (method.body == null || typeNode == null) return;
 
 		JCExpression lockNode;
-		if (isStatic[0]) {
+		if (isStatic) {
 			lockNode = namePlusTypeParamsToTypeReference(maker, typeNode, methodNode.toName(lockName), false, List.<JCTypeParameter>nil());
 		} else {
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
