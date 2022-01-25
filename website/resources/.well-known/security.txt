@@ -1,5 +1,5 @@
 Contact: https://tidelift.com/security
-Contact: mailto:info@projectlombok.org
+Contact: mailto:security@projectlombok.org
 Preferred-Languages: en
 Canonical: https://projectlombok.org/.well-known/security.txt
 Policy: https://tidelift.com/security
