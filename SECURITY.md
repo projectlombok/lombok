@@ -6,7 +6,7 @@ Lombok only runs during compilation and is not required on your servers or in yo
 
 To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security?utm_source=lombok&utm_medium=referral&utm_campaign=github).
 
-Alternatively, you can send us an email privately via `info@projectlombok.org`.
+Alternatively, you can send us an email privately via `security@projectlombok.org`.
 
 ## Disclosure Policy
 
