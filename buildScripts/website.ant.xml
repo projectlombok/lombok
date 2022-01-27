@@ -73,12 +73,6 @@ such as applying the templates to produce the website, converting the changelog 
 	
 	<target name="-website.clientdeps">
 		<mkdir dir="build/website/js" />
-		<get src="https://code.jquery.com/jquery-3.3.1.min.js" dest="build/website/js/jquery.min.js" usetimestamp="true" />
-		<fail message="jQuery checksum failed">
-			<condition><not>
-				<checksum file="build/website/js/jquery.min.js" algorithm="SHA-384" property="b6c405aa91117aeed92e1055d9566502eef370e57ead76d8945d9ca81f2dc48ffc6996a38e9e01a9df95e83e4882f293" verifyproperty="jquery.ok" />
-			</not></condition>
-		</fail>
 		
 		<get src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js" dest="build/website/js/modernizr.min.js" usetimestamp="true" />
 		<fail message="modernizr checksum failed">
