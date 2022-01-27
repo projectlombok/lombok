@@ -1,9 +1,9 @@
 RewriteEngine On
 
-RewriteRule ^$ /main.html [L,END]
+RewriteRule ^$ /index.html [L,END]
 RewriteRule ^(index|home)(\.html)?$ / [NC,R=301]
 
-RewriteRule ^setup/overview$ /setup/main.html [L,END]
+RewriteRule ^setup/overview$ /setup/index.html [L,END]
 RewriteRule ^setup/overview(\.html)?/?$ /setup/overview [NC,R=301]
 RewriteRule ^setup/main(\.html)?/?$ /setup/overview [NC,R=301]
 RewriteRule ^setup/index(\.html)?/?$ /setup/overview [NC,R=301]

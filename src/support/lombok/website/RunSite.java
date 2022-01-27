@@ -29,9 +29,9 @@ public class RunSite {
 	
 	private void go(boolean open) throws Exception {
 		port(DEFAULT_PORT);
-		get("/", serve("main.html"));
-		get("/setup/overview", serve("setup/main.html"));
-		get("/setup", serve("setup/main.html"));
+		get("/", serve("index.html"));
+		get("/setup/overview", serve("setup/index.html"));
+		get("/setup", serve("setup/index.html"));
 		get("/features", serve("features/index.html"));
 		get("/features/all", serve("features/index.html"));
 		get("/features/experimental/all", serve("features/experimental/index.html"));
