@@ -34,7 +34,10 @@
 	padding: 6px 12px 6px 28px;
 }
 
-.tidelift-link:hover, .tidelift-link-inline:hover {
+.tidelift-link:focus,
+.tidelift-link-inline:focus,
+.tidelift-link:hover,
+.tidelift-link-inline:hover {
 	color: white;
 }
 
@@ -492,4 +495,11 @@ body {
 .navbar-default .navbar-nav>li>a.dropdown-toggle:focus {
 	outline: 1px auto Highlight;
 	outline: 1px auto -webkit-focus-ring-color;
+}
+
+.bs-callout.bs-callout-danger h2 {
+	margin-top: 0;
+	margin-bottom: 5px;
+	text-align: start;
+	font-size: 17px;
 }

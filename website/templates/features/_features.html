@@ -14,14 +14,14 @@
 
 <#macro overview>
 	<div class="row">
-		<@main.h3 title="Overview" />
+		<@main.h2 title="Overview" />
 		<#nested>
 	</div>
 </#macro>
 
 <#macro experimental>
 	<div class="row">
-		<@main.h3 title="Experimental" />
+		<@main.h2 title="Experimental" />
 
 		Experimental because:
 		<#nested>
@@ -31,13 +31,13 @@
 <#macro snippets name>
 	<div class="row container-fluid">
 		<div class="snippet-col first-snippet">
-			<@main.h3 title="With Lombok" />
+			<@main.h2 title="With Lombok" />
 
 			<div class="snippet">${usages.pre(name)?no_esc}</div>
 		</div>
 		<div class="sep"></div>
 		<div class="snippet-col second-snippet">
-			<@main.h3 title="Vanilla Java" />
+			<@main.h2 title="Vanilla Java" />
 
 			<div class="snippet">${usages.post(name)?no_esc}</div>
 		</div>
@@ -46,7 +46,7 @@
 
 <#macro confKeys>
 	<div class="row">
-		<@main.h3 title="Supported configuration keys:" />
+		<@main.h2 title="Supported configuration keys:" />
 		<dl>
 			<#nested>
 		</dl>
@@ -55,7 +55,7 @@
 
 <#macro smallPrint>
 	<div class="row">
-		<@main.h3 title="Small print" />
+		<@main.h2 title="Small print" />
 
 		<div class="smallprint">
 			<#nested>
@@ -71,7 +71,7 @@
 				<div class="header-group">
 					<@main.h1 title="${title}" />
 
-					<@main.h3 title="${logline?no_esc}" />
+					<@main.h2 title="${logline?no_esc}" />
 				</div>
 			</div>
 			<#nested>
