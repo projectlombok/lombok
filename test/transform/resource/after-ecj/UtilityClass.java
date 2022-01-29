@@ -5,11 +5,19 @@ final @lombok.experimental.UtilityClass class UtilityClass {
       super();
     }
   }
+  protected static class InnerStaticClass {
+    private String innerInnerMember;
+    protected InnerStaticClass() {
+      super();
+    }
+  }
   private static long someField = System.currentTimeMillis();
   <clinit>() {
   }
   static void someMethod() {
     System.out.println();
+    new InnerClass();
+    new InnerStaticClass();
   }
   private @java.lang.SuppressWarnings("all") UtilityClass() {
     super();

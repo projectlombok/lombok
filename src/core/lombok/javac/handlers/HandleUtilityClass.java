@@ -25,6 +25,9 @@ import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -124,6 +127,10 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 			} else if (element.getKind() == Kind.TYPE) {
 				JCClassDecl innerClassDecl = (JCClassDecl) element.get();
 				innerClassDecl.mods.flags |= Flags.STATIC;
+				ClassSymbol innerClassSymbol = innerClassDecl.sym;
+				if (innerClassSymbol != null && innerClassSymbol.type instanceof ClassType) {
+					((ClassType) innerClassSymbol.type).setEnclosingType(Type.noType);
+				}
 			}
 		}
 		
