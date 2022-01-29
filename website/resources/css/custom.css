@@ -478,3 +478,18 @@ img {
 h3.listHeader {
 	text-align: left;
 }
+
+/* A11y */
+body {
+	color: #555555;
+}
+.navbar-default .navbar-brand {
+	color: #555555;
+}
+.navbar-default .navbar-nav>li>a {
+	color: #555555;
+}
+.navbar-default .navbar-nav>li>a.dropdown-toggle:focus {
+	outline: 1px auto Highlight;
+	outline: 1px auto -webkit-focus-ring-color;
+}
