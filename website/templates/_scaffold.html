@@ -74,7 +74,7 @@ ga('send', 'pageview');
 		<div class="navbar navbar-default navbar-fixed-top">
 			<div class="container">
 				<div class="navbar-header">
-					<a href="/" class="navbar-brand">Project Lombok</a>
+					<a href="/" class="navbar-brand" role="button">Project Lombok</a>
 					<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main" aria-label="Open Menu">
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
@@ -84,14 +84,14 @@ ga('send', 'pageview');
 				<div class="navbar-collapse collapse" id="navbar-main">
 					<ul class="nav navbar-nav">
 						<li class="dropdown">
-							<a class="dropdown-toggle pointer" data-toggle="dropdown" href="#">Features<span class="caret"></span></a>
+							<a class="dropdown-toggle pointer" data-toggle="dropdown" href="#" role="button">Features<span class="caret"></span></a>
 							<ul class="dropdown-menu" aria-labelledby="themes">
 								<li><a href="/features/all">Stable</a></li>
 								<li><a href="/features/experimental/all">Experimental</a></li>
 							</ul>
 						</li>
 						<li class="dropdown">
-							<a class="dropdown-toggle pointer" data-toggle="dropdown" href="#">Community<span class="caret"></span></a>
+							<a class="dropdown-toggle pointer" data-toggle="dropdown" href="#" role="button">Community<span class="caret"></span></a>
 							<ul class="dropdown-menu" aria-labelledby="themes">
 								<li><a href="https://groups.google.com/group/project-lombok">Discuss / Help</a></li>
 								<li><a href="https://github.com/projectlombok/lombok/issues">Issues</a></li>
@@ -100,24 +100,24 @@ ga('send', 'pageview');
 							</ul>
 						</li>
 						<li>
-							<a href="/order-license-info">
+							<a href="/order-license-info" role="button">
 								<span>Order / Donate</span>
 							</a>
 						</li>
 						<li class="dropdown">
-							<a href="/setup/overview" class="smallOnly"><span>How to use</span></a>
-							<a class="dropdown-toggle pointer wideOnly" data-toggle="dropdown" href="#">Install<span class="caret"></span></a>
+							<a href="/setup/overview" class="smallOnly" role="button"><span>How to use</span></a>
+							<a class="dropdown-toggle pointer wideOnly" data-toggle="dropdown" href="#" role="button">Install<span class="caret"></span></a>
 							<ul class="dropdown-menu" aria-labelledby="themes">
 								<#list setupTargets as cat, tgtList>
 									<li class="header">${cat}</li>
 									<#list tgtList as name, url>
-										<li class="target"><a href="/setup/${url}">${name}</a></li>
+										<li class="target"><a href="/setup/${url}" role="button">${name}</a></li>
 									</#list>
 									<#sep><li class="divider"></li></#sep>
 								</#list>
 							</ul>
 						</li>
-						<li><a href="/download">Download</a></li>
+						<li><a href="/download" role="button">Download</a></li>
 					</ul>
 				</div>
 			</div>
