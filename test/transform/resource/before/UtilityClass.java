@@ -4,9 +4,15 @@ class UtilityClass {
 	
 	void someMethod() {
 		System.out.println();
+		new InnerClass();
+		new InnerStaticClass();
 	}
 	
 	protected class InnerClass {
+		private String innerInnerMember;
+	}
+	
+	protected static class InnerStaticClass {
 		private String innerInnerMember;
 	}
 }

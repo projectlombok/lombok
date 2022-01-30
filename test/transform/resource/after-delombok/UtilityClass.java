@@ -2,8 +2,13 @@ final class UtilityClass {
 	private static long someField = System.currentTimeMillis();
 	static void someMethod() {
 		System.out.println();
+		new InnerClass();
+		new InnerStaticClass();
 	}
 	protected static class InnerClass {
+		private String innerInnerMember;
+	}
+	protected static class InnerStaticClass {
 		private String innerInnerMember;
 	}
 	@java.lang.SuppressWarnings("all")
