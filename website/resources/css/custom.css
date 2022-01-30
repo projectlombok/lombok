@@ -500,3 +500,7 @@ body {
 	text-align: start;
 	font-size: 17px;
 }
+
+a:not([role=button]):focus {
+	outline-offset: 2px;
+}
