@@ -50,12 +50,9 @@
 }
 
 #clickForVideo {
-	padding: 20px 30px;
-	background-color: #DDD;
 	cursor: pointer;
 	margin-left: auto;
 	margin-right: auto;
-	margin-bottom: 40px;
 }
 
 pre {

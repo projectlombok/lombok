@@ -1,14 +1,6 @@
 "use strict";
 
 (function($) {
-	function clickToTap() {
-		if (matchMedia && matchMedia('(hover: none)').matches) $(".clickToTap").each(function() {
-			var x = $(this);
-			if (x.text() === "Click") x.text("Tap");
-			else x.text("tap");
-		});
-	}
-	
 	function clickForVideo() {
 		var cfv = $("#clickForVideo");
 		var f = function() {
@@ -41,7 +33,13 @@
 		video.currentTime = (((h * 60) + m) * 60) + s;
 	}
 
-	$(clickToTap);
+	function aButtonsRespondToSpacebar() {
+		$('a[role="button"]').keyup(function(e) {
+			if (e.which == 32) e.target.click();
+		});
+	}
+
 	$(clickForVideo);
 	$(seekVideo);
+	$(aButtonsRespondToSpacebar);
 })($);
