@@ -1,5 +1,4 @@
 import java.util.Arrays;
-import lombok.Builder;
 
 public class SuperBuilderWithDefaultsAndTargetTyping {
 
