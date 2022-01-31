@@ -177,7 +177,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 		for (JavacNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
 			JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
-			JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, true);
+			JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, false);
 			boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
 			BuilderFieldData bfd = new BuilderFieldData();
 			bfd.rawName = fd.name;
@@ -190,11 +190,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			
 			if (bfd.singularData != null && isDefault != null) {
 				isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
+				findAnnotation(Builder.Default.class, fieldNode, true);
 				isDefault = null;
 			}
 			
 			if (fd.init == null && isDefault != null) {
 				isDefault.addWarning("@Builder.Default requires an initializing expression (' = something;').");
+				findAnnotation(Builder.Default.class, fieldNode, true);
 				isDefault = null;
 			}
 			

@@ -40,5 +40,6 @@ import lombok.spi.Provides;
 public class HandleBuilderDefaultRemove extends JavacAnnotationHandler<Builder.Default> {
 	@Override public void handle(AnnotationValues<Default> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, Builder.Default.class);
+		deleteImportFromCompilationUnit(annotationNode, Builder.class.getName());
 	}
 }
