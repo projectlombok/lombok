@@ -10,14 +10,12 @@
 	<@f.experimental>
 		<ul>
 			<li>
-				New feature; unsure if this busts enough boilerplate.
-			</li><li>
 				Would be nice if you could stick this on the package-info.java package to set the default for all classes in that package.
 			</li><li>
-				Part of the work on @Value, which is experimental.
+				[UPDATE 2022-02-04] Currently simply having a <code>lombok.config</code> entry of <code>lombok.fieldDefaults.defaultPrivate = true</code> (or, analogously, <code>defaultFinal</code>) is enough to modify <em>every</em> source file that is affected by that configuration, even if said source file has absolutely no trace whatsoever of lombok anything inside it. We're not quite sure if this is a good idea. Our current point of view is that this is too much magic, and there is an alternative plan: meta-annotations. Until at least the meta-annotations idea has been explored and discarded, this feature will not be leaving <em>experimental</em> in its current state. Most likely, if it ever does, the <code>lombok.FieldDefaults</code> annotation will be <em>required</em>, though, you may set it via the to be built meta-annotation.
 			</li>
 		</ul>
-		Current status: <em>positive</em> - Currently we feel this feature may move out of experimental status with no or minor changes soon.
+		Current status: <em>neutral</em> - Currently we feel this feature may not move out of experimental status without changes.
 	</@f.experimental>
 
 	<@f.overview>

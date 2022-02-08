@@ -48,6 +48,8 @@
 			There is a very slight functional difference: Normally, invoking <code>new SomeException(message, null)</code> will initialize
 			the cause to be <em>no cause</em>, and this cannot be later changed by invoking <code>initCause</code>. However, lombok's
 			standard exceptions <strong>do</strong> let you overwrite an explicit no-cause with <code>initCause</code> later.
+		</p><p>
+			A second slight functional difference: Normally, invoking <code>new SomeException(cause)</code>, if implemented as <code>super(cause);</code>, will set the message to be equal to the message of the cause. However, lombok does not do this - it leaves the exception as having no message at all. We think inheriting the message is fundamentally wrong - messages are not guaranteed to be sensible in the absence of the context of the exception-type. The cause ought to be listed anywhere where it is relevant; if you are using messages as direct user feedback (which is rare, in the java community), <code>@StandardException</code> can't really help you anyway; the infrastructure of e.g. <code>getLocalizedMessage()</code> is too complicated.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>
