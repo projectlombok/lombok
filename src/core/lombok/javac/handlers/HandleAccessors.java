@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2021 The Project Lombok Authors.
+ * Copyright (C) 2012-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,5 +44,6 @@ public class HandleAccessors extends JavacAnnotationHandler<Accessors> {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.ACCESSORS_FLAG_USAGE, "@Accessors");
 		
 		deleteAnnotationIfNeccessary(annotationNode, Accessors.class);
+		if (annotation.isMarking()) annotationNode.addWarning("Accessors on its own does nothing. Set at least one parameter");
 	}
 }

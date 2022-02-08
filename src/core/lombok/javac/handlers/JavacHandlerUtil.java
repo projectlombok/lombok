@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -573,6 +573,14 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Translates the given field into all possible getter names.
+	 * Convenient wrapper around {@link HandlerUtil#toAllGetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllGetterNames(JavacNode field, AnnotationValues<Accessors> accessors) {
+		return HandlerUtil.toAllGetterNames(field.getAst(), accessors, field.getName(), isBoolean(field));
+	}
+	
+	/**
 	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
 	 * 
 	 * Convenient wrapper around {@link HandlerUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
@@ -582,11 +590,28 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
+	 * 
+	 * Convenient wrapper around {@link HandlerUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toGetterName(JavacNode field, AnnotationValues<Accessors> accessors) {
+		return HandlerUtil.toGetterName(field.getAst(), accessors, field.getName(), isBoolean(field));
+	}
+	
+	/**
 	 * Translates the given field into all possible setter names.
 	 * Convenient wrapper around {@link HandlerUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllSetterNames(JavacNode field) {
 		return HandlerUtil.toAllSetterNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
+	}
+	
+	/**
+	 * Translates the given field into all possible setter names.
+	 * Convenient wrapper around {@link HandlerUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllSetterNames(JavacNode field, AnnotationValues<Accessors> accessors) {
+		return HandlerUtil.toAllSetterNames(field.getAst(), accessors, field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -599,6 +624,15 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
+	 * 
+	 * Convenient wrapper around {@link HandlerUtil#toSetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toSetterName(JavacNode field, AnnotationValues<Accessors> accessors) {
+		return HandlerUtil.toSetterName(field.getAst(), accessors, field.getName(), isBoolean(field));
+	}
+	
+	/**
 	 * Translates the given field into all possible with names.
 	 * Convenient wrapper around {@link HandlerUtil#toAllWithNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
@@ -607,11 +641,27 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Translates the given field into all possible with names.
+	 * Convenient wrapper around {@link HandlerUtil#toAllWithNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllWithNames(JavacNode field, AnnotationValues<Accessors> accessors) {
+		return HandlerUtil.toAllWithNames(field.getAst(), accessors, field.getName(), isBoolean(field));
+	}
+	
+	/**
 	 * Translates the given field into all possible withBy names.
 	 * Convenient wrapper around {@link HandlerUtil#toAllWithByNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllWithByNames(JavacNode field) {
 		return HandlerUtil.toAllWithByNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
+	}
+	
+	/**
+	 * Translates the given field into all possible withBy names.
+	 * Convenient wrapper around {@link HandlerUtil#toAllWithByNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllWithByNames(JavacNode field, AnnotationValues<Accessors> accessors) {
+		return HandlerUtil.toAllWithByNames(field.getAst(), accessors, field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -624,6 +674,15 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * @return the likely with name for the stated field. (e.g. private boolean foo; to withFoo).
+	 * 
+	 * Convenient wrapper around {@link HandlerUtil#toWithName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toWithName(JavacNode field, AnnotationValues<Accessors> accessors) {
+		return HandlerUtil.toWithName(field.getAst(), accessors, field.getName(), isBoolean(field));
+	}
+	
+	/**
 	 * @return the likely withBy name for the stated field. (e.g. private boolean foo; to withFooBy).
 	 * 
 	 * Convenient wrapper around {@link HandlerUtil#toWithByName(lombok.core.AnnotationValues, CharSequence, boolean)}.
@@ -633,15 +692,31 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * @return the likely withBy name for the stated field. (e.g. private boolean foo; to withFooBy).
+	 * 
+	 * Convenient wrapper around {@link HandlerUtil#toWithByName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toWithByName(JavacNode field, AnnotationValues<Accessors> accessors) {
+		return HandlerUtil.toWithByName(field.getAst(), accessors, field.getName(), isBoolean(field));
+	}
+	
+	/**
 	 * When generating a setter, the setter either returns void (beanspec) or Self (fluent).
 	 * This method scans for the {@code Accessors} annotation to figure that out.
 	 */
-	public static boolean shouldReturnThis(JavacNode field) {
+	public static boolean shouldReturnThis(JavacNode field, AnnotationValues<Accessors> accessors) {
 		if ((((JCVariableDecl) field.get()).mods.flags & Flags.STATIC) != 0) return false;
 		
-		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
-		
 		return HandlerUtil.shouldReturnThis0(accessors, field.getAst());
+	}
+	
+	/**
+	 * When generating a setter/getter/wither, should it be made final?
+	 */
+	public static boolean shouldMakeFinal(JavacNode field, AnnotationValues<Accessors> accessors) {
+		if ((((JCVariableDecl) field.get()).mods.flags & Flags.STATIC) != 0) return false;
+		
+		return HandlerUtil.shouldMakeFinal0(accessors, field.getAst());
 	}
 	
 	public static JCExpression cloneSelfType(JavacNode childOfType) {
@@ -696,9 +771,12 @@ public class JavacHandlerUtil {
 	}
 	
 	public static AnnotationValues<Accessors> getAccessorsForField(JavacNode field) {
+		AnnotationValues<Accessors> values = null;
+		
 		for (JavacNode node : field.down()) {
 			if (annotationTypeMatches(Accessors.class, node)) {
-				return createAnnotation(Accessors.class, node);
+				values = createAnnotation(Accessors.class, node);
+				break;
 			}
 		}
 		
@@ -706,13 +784,15 @@ public class JavacHandlerUtil {
 		while (current != null) {
 			for (JavacNode node : current.down()) {
 				if (annotationTypeMatches(Accessors.class, node)) {
-					return createAnnotation(Accessors.class, node);
+					AnnotationValues<Accessors> onType = createAnnotation(Accessors.class, node);
+					values = values == null ? onType : values.integrate(onType);
+					break;
 				}
 			}
 			current = current.up();
 		}
 		
-		return AnnotationValues.of(Accessors.class, field);
+		return values == null ? AnnotationValues.of(Accessors.class, field) : values;
 	}
 	
 	/**
@@ -2185,7 +2265,7 @@ public class JavacHandlerUtil {
 					Javac.setDocComment(cu, n, javadoc);
 				}
 			});
-			return shouldReturnThis(node) ? addReturnsThisIfNeeded(out) : out;
+			return shouldReturnThis(node, JavacHandlerUtil.getAccessorsForField(node)) ? addReturnsThisIfNeeded(out) : out;
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -549,5 +549,26 @@ public class AnnotationValues<A extends Annotation> {
 		if (result.length() > 0) result.append('.');
 		result.append(typeName);
 		return result.toString();
+	}
+	
+	/**
+	 * Creates an amalgamation where any values in this AnnotationValues that aren't explicit are 'enriched' by explicitly set stuff from {@code defaults}.
+	 * Note that this code may modify self and then returns self, or it returns defaults - do not rely on immutability nor on getting self.
+	 */
+	public AnnotationValues<A> integrate(AnnotationValues<A> defaults) {
+		if (values.isEmpty()) return defaults;
+		for (Map.Entry<String, AnnotationValue> entry : defaults.values.entrySet()) {
+			if (!entry.getValue().isExplicit) continue;
+			AnnotationValue existingValue = values.get(entry.getKey());
+			if (existingValue != null && existingValue.isExplicit) continue;
+			values.put(entry.getKey(), entry.getValue());
+		}
+		return this;
+	}
+	
+	/** Returns {@code true} if the annotation has zero parameters. */
+	public boolean isMarking() {
+		for (AnnotationValue v : values.values()) if (v.isExplicit) return false;
+		return true;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 The Project Lombok Authors.
+ * Copyright (C) 2012-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A container for settings for the generation of getters and setters.
+ * A container for settings for the generation of getters, setters and "with"-ers.
  * <p>
  * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Accessors">the project lombok features page for &#64;Accessors</a>.
  * <p>
- * Using this annotation does nothing by itself; an annotation that makes lombok generate getters and setters,
+ * Using this annotation does nothing by itself; an annotation that makes lombok generate getters, setters, or "with"-ers
  * such as {@link lombok.Setter} or {@link lombok.Data} is also required.
  */
 @Target({ElementType.TYPE, ElementType.FIELD})
@@ -39,7 +39,8 @@ import java.lang.annotation.Target;
 public @interface Accessors {
 	/**
 	 * If true, accessors will be named after the field and not include a {@code get} or {@code set}
-	 * prefix. If true and {@code chain} is omitted, {@code chain} defaults to {@code true}.
+	 * prefix. If true and {@code chain} is omitted, {@code chain} defaults to {@code true}.<br>
+	 * NB: This setting has no effect on {@code @With}; they always get a "with" prefix.<br>
 	 * <strong>default: false</strong>
 	 * 
 	 * @return Whether or not to make fluent methods (named {@code fieldName()}, not for example {@code setFieldName}).
@@ -53,6 +54,14 @@ public @interface Accessors {
 	 * @return Whether or not setters should return themselves (chaining) or {@code void} (no chaining).
 	 */
 	boolean chain() default false;
+	
+	/**
+	 * If true, generated accessors will be marked  {@code final}.
+	 * <strong>default: false</strong>
+	 * 
+	 * @return Whether or not accessors should be marked {@code final}.
+	 */
+	boolean makeFinal() default false;
 	
 	/**
 	 * If present, only fields with any of the stated prefixes are given the getter/setter treatment.

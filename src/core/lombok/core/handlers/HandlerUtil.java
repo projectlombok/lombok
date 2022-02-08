@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021 The Project Lombok Authors.
+ * Copyright (C) 2013-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -553,6 +553,14 @@ public class HandlerUtil {
 		}
 		
 		return chain || fluent;
+	}
+	
+	public static boolean shouldMakeFinal0(AnnotationValues<Accessors> accessors, AST<?, ?, ?> ast) {
+		boolean isExplicit = accessors.isExplicit("makeFinal");
+		if (isExplicit) return accessors.getAsBoolean("makeFinal");
+		Boolean config = ast.readConfiguration(ConfigurationKeys.ACCESSORS_MAKE_FINAL);
+		if (config != null) return config.booleanValue();
+		return false;
 	}
 	
 	@SuppressWarnings({"all", "unchecked", "deprecation"})

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
+import lombok.experimental.Accessors;
 import lombok.experimental.Delegate;
 import lombok.Getter;
 import lombok.core.AST.Kind;
@@ -169,7 +170,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			return;
 		}
 		
-		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
+		JCVariableDecl fieldDecl = (JCVariableDecl) fieldNode.get();
 		
 		if (lazy) {
 			if ((fieldDecl.mods.flags & Flags.PRIVATE) == 0 || (fieldDecl.mods.flags & Flags.FINAL) == 0) {
@@ -186,14 +187,15 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			}
 		}
 		
-		String methodName = toGetterName(fieldNode);
+		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
+		String methodName = toGetterName(fieldNode, accessors);
 		
 		if (methodName == null) {
 			source.addWarning("Not generating getter for this field: It does not fit your @Accessors prefix list.");
 			return;
 		}
 		
-		for (String altName : toAllGetterNames(fieldNode)) {
+		for (String altName : toAllGetterNames(fieldNode, accessors)) {
 			switch (methodExists(altName, fieldNode, false, 0)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -221,8 +223,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		// Remember the type; lazy will change it
 		JCExpression methodType = cloneType(treeMaker, copyType(treeMaker, fieldNode), source);
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		// Generate the methodName; lazy will change the field type
-		Name methodName = field.toName(toGetterName(field));
+		Name methodName = field.toName(toGetterName(field, accessors));
+		boolean makeFinal = shouldMakeFinal(field, accessors);
 		
 		List<JCStatement> statements;
 		JCTree toClearOfMarkers = null;
@@ -260,6 +264,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		
+		if (makeFinal) access |= Flags.FINAL;
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 		
@@ -270,7 +275,6 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			}
 		}
 		decl.mods.annotations = decl.mods.annotations.appendList(delegates);
-		
 		if (addSuppressWarningsUnchecked) {
 			ListBuffer<JCExpression> suppressions = new ListBuffer<JCExpression>();
 			if (!Boolean.FALSE.equals(field.getAst().readConfiguration(ConfigurationKeys.ADD_SUPPRESSWARNINGS_ANNOTATIONS))) {

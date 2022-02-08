@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.experimental.Accessors;
 import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -150,8 +151,9 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = isBoolean(fieldType);
-		String setterName = toSetterName(fieldNode, isBoolean);
-		boolean shouldReturnThis = shouldReturnThis(fieldNode);
+		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
+		String setterName = toSetterName(fieldNode, isBoolean, accessors);
+		boolean shouldReturnThis = shouldReturnThis(fieldNode, accessors);
 		
 		if (setterName == null) {
 			fieldNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
@@ -160,7 +162,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		for (String altName : toAllSetterNames(fieldNode, isBoolean)) {
+		for (String altName : toAllSetterNames(fieldNode, isBoolean, accessors)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -206,6 +208,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
+		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
+		if (shouldMakeFinal(fieldNode, accessors)) modifier |= ClassFileConstants.AccFinal;
 		method.modifiers = modifier;
 		if (returnType != null) {
 			method.returnType = returnType;

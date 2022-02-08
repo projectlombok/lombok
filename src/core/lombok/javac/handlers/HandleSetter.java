@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.Setter;
 import lombok.core.AST.Kind;
+import lombok.experimental.Accessors;
 import lombok.core.AnnotationValues;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -146,8 +147,9 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			return;
 		}
 		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(fieldNode);
 		JCVariableDecl fieldDecl = (JCVariableDecl) fieldNode.get();
-		String methodName = toSetterName(fieldNode);
+		String methodName = toSetterName(fieldNode, accessors);
 		
 		if (methodName == null) {
 			fieldNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
@@ -159,7 +161,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			return;
 		}
 		
-		for (String altName : toAllSetterNames(fieldNode)) {
+		for (String altName : toAllSetterNames(fieldNode, accessors)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -184,9 +186,11 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	}
 	
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
-		String setterName = toSetterName(field);
-		boolean returnThis = shouldReturnThis(field);
-		return createSetter(access, false, field, treeMaker, setterName, null, null, returnThis, source, onMethod, onParam);
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		String setterName = toSetterName(field, accessors);
+		boolean returnThis = shouldReturnThis(field, accessors);
+		JCMethodDecl setter = createSetter(access, false, field, treeMaker, setterName, null, null, returnThis, source, onMethod, onParam);
+		return setter;
 	}
 	
 	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
@@ -198,8 +202,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
 		}
 		
-		JCMethodDecl d = createSetter(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam);
-		return d;
+		return createSetter(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam);
 	}
 	
 	public static JCMethodDecl createSetterWithRecv(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, JCVariableDecl recv) {
@@ -270,6 +273,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}
 		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		if (shouldMakeFinal(field, accessors)) access |= Flags.FINAL;
 		JCMethodDecl methodDef;
 		if (recv != null && treeMaker.hasMethodDefWithRecvParam()) {
 			methodDef = treeMaker.MethodDefWithRecvParam(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,

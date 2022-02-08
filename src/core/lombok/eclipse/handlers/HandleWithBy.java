@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 The Project Lombok Authors.
+ * Copyright (C) 2020-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,7 @@ import lombok.core.handlers.HandlerUtil.FieldAccess;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.experimental.Accessors;
 import lombok.experimental.WithBy;
 import lombok.spi.Provides;
 
@@ -169,7 +170,8 @@ public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = isBoolean(fieldType);
-		String withName = toWithByName(fieldNode, isBoolean);
+		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
+		String withName = toWithByName(fieldNode, isBoolean, accessors);
 		
 		if (withName == null) {
 			fieldNode.addWarning("Not generating a withXBy method for this field: It does not fit your @Accessors prefix list.");
@@ -191,7 +193,7 @@ public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
 			return;
 		}
 		
-		for (String altName : toAllWithByNames(fieldNode, isBoolean)) {
+		for (String altName : toAllWithByNames(fieldNode, isBoolean, accessors)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -242,7 +244,9 @@ public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
-		if (makeAbstract) modifier = modifier | ClassFileConstants.AccAbstract | ExtraCompilerModifiers.AccSemicolonBody;
+		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
+		if (makeAbstract) modifier |= ClassFileConstants.AccAbstract | ExtraCompilerModifiers.AccSemicolonBody;
+		if (shouldMakeFinal(fieldNode, accessors)) modifier |= ClassFileConstants.AccFinal;
 		method.modifiers = modifier;
 		method.returnType = cloneSelfType(fieldNode, source);
 		if (method.returnType == null) return null;

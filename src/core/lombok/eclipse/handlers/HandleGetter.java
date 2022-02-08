@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
+import lombok.experimental.Accessors;
 import lombok.experimental.Delegate;
 import lombok.spi.Provides;
 import lombok.Getter;
@@ -190,7 +191,8 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = isBoolean(fieldType);
-		String getterName = toGetterName(fieldNode, isBoolean);
+		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
+		String getterName = toGetterName(fieldNode, isBoolean, accessors);
 		
 		if (getterName == null) {
 			errorNode.addWarning("Not generating getter for this field: It does not fit your @Accessors prefix list.");
@@ -199,7 +201,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		for (String altName : toAllGetterNames(fieldNode, isBoolean)) {
+		for (String altName : toAllGetterNames(fieldNode, isBoolean, accessors)) {
 			switch (methodExists(altName, fieldNode, false, 0)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -247,7 +249,9 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			statements = createSimpleGetterBody(source, fieldNode);
 		}
 		
+		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
+		if (shouldMakeFinal(fieldNode, accessors)) modifier |= ClassFileConstants.AccFinal;
 		method.modifiers = modifier;
 		method.returnType = returnType;
 		method.annotations = null;

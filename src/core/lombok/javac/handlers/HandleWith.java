@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2021 The Project Lombok Authors.
+ * Copyright (C) 2012-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ import lombok.With;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.experimental.Accessors;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -158,8 +159,9 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 			return;
 		}
 		
+		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
 		JCVariableDecl fieldDecl = (JCVariableDecl) fieldNode.get();
-		String methodName = toWithName(fieldNode);
+		String methodName = toWithName(fieldNode, accessors);
 		
 		if (methodName == null) {
 			fieldNode.addWarning("Not generating a withX method for this field: It does not fit your @Accessors prefix list.");
@@ -187,7 +189,7 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 			return;
 		}
 		
-		for (String altName : toAllWithNames(fieldNode)) {
+		for (String altName : toAllWithNames(fieldNode, accessors)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -282,7 +284,10 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 		
 		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		
-		if (makeAbstract) access = access | Flags.ABSTRACT;
+		if (makeAbstract) access |= Flags.ABSTRACT;
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		boolean makeFinal = shouldMakeFinal(field, accessors);
+		if (makeFinal) access |= Flags.FINAL;
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 		copyJavadoc(field, decl, CopyJavadoc.WITH);

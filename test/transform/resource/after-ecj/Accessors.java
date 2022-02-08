@@ -16,7 +16,7 @@ class AccessorsFluent {
 }
 @lombok.experimental.Accessors(fluent = true) @lombok.Getter class AccessorsFluentOnClass {
   private @lombok.Setter String fieldName = "";
-  private @lombok.experimental.Accessors String otherFieldWithOverride = "";
+  private @lombok.experimental.Accessors(fluent = false) String otherFieldWithOverride = "";
   AccessorsFluentOnClass() {
     super();
   }

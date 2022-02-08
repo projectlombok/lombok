@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021 The Project Lombok Authors.
+ * Copyright (C) 2013-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -550,7 +550,7 @@ public class ConfigurationKeys {
 	 * 
 	 * For any class without an {@code @Accessors} that explicitly defines the {@code prefix} option, this list of prefixes is used.
 	 */
-	public static final ConfigurationKey<List<String>> ACCESSORS_PREFIX = new ConfigurationKey<List<String>>("lombok.accessors.prefix", "Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.") {};
+	public static final ConfigurationKey<List<String>> ACCESSORS_PREFIX = new ConfigurationKey<List<String>>("lombok.accessors.prefix", "Strip this field prefix, like 'f' or 'm_', from the names of generated getters, setters, and with-ers.") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.accessors.chain} = {@code true} | {@code false}.
@@ -565,6 +565,13 @@ public class ConfigurationKeys {
 	 * For any class without an {@code @Accessors} that explicitly defines the {@code fluent} option, this value is used (default = false).
 	 */
 	public static final ConfigurationKey<Boolean> ACCESSORS_FLUENT = new ConfigurationKey<Boolean>("lombok.accessors.fluent", "Generate getters and setters using only the field name (no get/set prefix) (default: false).") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.accessors.makeFinal} = {@code true} | {@code false}.
+	 * 
+	 * Unless an explicit {@code @Accessors} that explicitly defines the {@code makeFinal} option, this value is used (default = false).
+	 */
+	public static final ConfigurationKey<Boolean> ACCESSORS_MAKE_FINAL = new ConfigurationKey<Boolean>("lombok.accessors.makeFinal", "Generate getters, setters and with-ers with the 'final' modifier (default: false).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.accessors.capitalization} = {@code basic} | {@code beanspec}.

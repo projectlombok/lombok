@@ -6,7 +6,13 @@
 			<code>@Accessors</code> was introduced as experimental feature in lombok v0.11.0.
 		</p><p>
 			The <em>lombok.config</em> option <code>lombok.accessors.capitalization</code> = [<code>basic</code> | <code>beanspec</code>] was added in lombok v1.18.24.
-		</p>
+		</p><p>
+			FUNCTIONAL CHANGE: <code>@Accessors</code> now 'cascades'; any options not set on a field-level <code>@Accessors</code> annotation will get inherited from an
+			<code>@Accessors</code> annotation on the class (and any options not set on those, from the enclosing class). Finally, anything set in <code>lombok.config</code>
+			will be used as default. (lombok v1.18.24)
+		</p><p>
+			NEW FEATURE: <code>@Accessors(makeFinal = true)</code> will create <code>final</code> getters, setters, and with-ers. There's also
+			<code>lombok.config</code> key <code>lombok.accessors.makeFinal</code> for the same effect. (lombok v1.18.24)
 	</@f.history>
 	
 	<@f.experimental>
@@ -14,7 +20,7 @@
 			<li>
 				We may want to roll these features into a more complete property support concept.
 			</li><li>
-				New feature – community feedback requested.
+				The <code>makeFinal</code> feature is recently released; awaiting community feedback.
 			</li>
 		</ul>
 		Current status: <em>neutral</em> - Some changes are expected. These changes are intended to be backwards compatible, but should start in an experimental feature:
@@ -26,13 +32,13 @@
 
 	<@f.overview>
 		<p>
-			The <code>@Accessors</code> annotation is used to configure how lombok generates and looks for getters and setters.
+			The <code>@Accessors</code> annotation is used to configure how lombok generates and looks for getters, setters, and with-ers.
 		</p><p>
 			By default, lombok follows the <em>bean specification</em> for getters and setters: The getter for a field named <code>pepper</code> is <code>getPepper</code> for example. However, some might like to break with the <em>bean specification</em> in order to end up with nicer looking APIs. <code>@Accessors</code> lets you do this.
 		</p><p>
 			Some programmers like to use a prefix for their fields, i.e. they write <code>fPepper</code> instead of <code>pepper</code>. We <em>strongly</em> discourage doing this, as you can't unit test the validity of your prefixes, and refactor scripts may turn fields into local variables or method names. Furthermore, your tools (such as your editor) can take care of rendering the identifier in a certain way if you want this information to be instantly visible. Nevertheless, you can list the prefixes that your project uses via <code>@Accessors</code> as well.
 		</p><p>
-			<code>@Accessors</code> therefore has 3 options:
+			<code>@Accessors</code> has 4 options:
 			<ul>
 				<li>
 					<code>fluent</code> – A boolean. If <em>true</em>, the getter for <code>pepper</code> is just <code>pepper()</code>, and the setter is <code>pepper(T newValue)</code>. Furthermore, unless specified, <code>chain</code> defaults to <em>true</em>. <br />
@@ -41,11 +47,15 @@
 					<code>chain</code> – A boolean. If <em>true</em>, generated setters return <code>this</code> instead of <code>void</code>.<br />
 					Default: <em>false</em>, unless <code>fluent=true</code>, then Default: <em>true</em>.
 				</li><li>
+					<code>makeFinal</code> – A boolean. If <em>true</em>, generated getters, setters, and with-ers are marked as <code>final</code>.<br />
+					Default: <em>false</em>.
+				</li><li>
 					<code>prefix</code> – A list of strings. If present, fields must be prefixed with any of these prefixes. Each field name is compared to each prefix in the list in turn, and if a match is found, the prefix is stripped out to create the base name for the field. It is legal to include an empty string in the list, which will always match. For characters which are letters, the character following the prefix must not be a lowercase letter, i.e. <code>pepper</code> is not a match even to prefix <code>p</code>, but <code>pEpper</code> would be (and would mean the base name of this field is <code>epper</code>).
 				</li>
 			</ul>
 		<p><p>
-			The <code>@Accessors</code> annotation is legal on types and fields; the annotation that applies is the one on the field if present, otherwise the one on the class. When an <code>@Accessors</code> annotation on a field is present, any <code>@Accessors</code> annotation also present on the class the field is in, is entirely ignored, <em>even for properties not configured on the field <code>@Accessors</code></em>. This in contrast to any <code>lombok.config</code> configuration keys which serve as fall-back default if any explicit <code>@Accessors</code> annotation doesn't specify.
+			The <code>@Accessors</code> annotation is legal on types and fields; getters/setters/with-ers will look at the annotation on the field first, on the type the field is in second (and you have types in types,
+			each outer type is also checked), and finally for any properties not explicitly set, the appropriate <code>lombok.config</code> setting is used.
 		</p>
 	</@f.overview>
 
@@ -55,11 +65,15 @@
 		<dt>
 			<code>lombok.accessors.chain</code> = [<code>true</code> | <code>false</code>] (default: false)
 		</dt><dd>
-			If set to <code>true</code>, any class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>chain</code> parameter, will act as if <code>@Accessors(chain = true)</code> is present.
+			If set to <code>true</code>, any field/class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>chain</code> parameter, will act as if <code>@Accessors(chain = true)</code> is present.
 		</dd><dt>
 			<code>lombok.accessors.fluent</code> = [<code>true</code> | <code>false</code>] (default: false)
 		</dt><dd>
-			If set to <code>true</code>, any class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>fluent</code> parameter, will act as if <code>@Accessors(fluent = true)</code> is present.
+			If set to <code>true</code>, any field/class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>fluent</code> parameter, will act as if <code>@Accessors(fluent = true)</code> is present.
+		</dd><dt>
+			<code>lombok.accessors.makeFinal</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			If set to <code>true</code>, any field/class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>makeFinal</code> parameter, will act as if <code>@Accessors(makeFinal = true)</code> is present.
 		</dd><dt>
 			<code>lombok.accessors.prefix</code> += <em>a field prefix</em> (default: empty list)
 		</dt><dd>

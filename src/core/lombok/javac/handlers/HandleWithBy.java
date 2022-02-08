@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 The Project Lombok Authors.
+ * Copyright (C) 2020-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.LombokImmutableList;
 import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.experimental.Accessors;
 import lombok.experimental.WithBy;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -158,8 +159,9 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 			return;
 		}
 		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(fieldNode);
 		JCVariableDecl fieldDecl = (JCVariableDecl) fieldNode.get();
-		String methodName = toWithByName(fieldNode);
+		String methodName = toWithByName(fieldNode, accessors);
 		
 		if (methodName == null) {
 			fieldNode.addWarning("Not generating a withXBy method for this field: It does not fit your @Accessors prefix list.");
@@ -181,7 +183,7 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 			return;
 		}
 		
-		for (String altName : toAllWithByNames(fieldNode)) {
+		for (String altName : toAllWithByNames(fieldNode, accessors)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -326,6 +328,9 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		
 		if (makeAbstract) access = access | Flags.ABSTRACT;
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		boolean makeFinal = shouldMakeFinal(field, accessors);
+		if (makeFinal) access |= Flags.FINAL;
 		createRelevantNonNullAnnotation(source, param);
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
