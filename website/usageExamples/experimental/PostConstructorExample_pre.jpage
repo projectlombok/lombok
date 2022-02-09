@@ -1,11 +1,8 @@
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.PostConstructor;
 
-@AllArgsConstructor
 @RequiredArgsConstructor
 class PostConstructorExample {
-	private String name;
 	private final Integer start;
 	private final Integer end;
 	

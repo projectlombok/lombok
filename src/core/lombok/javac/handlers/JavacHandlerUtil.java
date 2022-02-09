@@ -532,7 +532,7 @@ public class JavacHandlerUtil {
 		
 		parentNode.getAst().setChanged();
 		for (String annotationType : annotationTypes) {
-			deleteImportFromCompilationUnit(annotation, annotationType);
+			deleteImportFromCompilationUnit(annotation, annotationType.replace("$", "."));
 		}
 	}
 	
@@ -902,20 +902,27 @@ public class JavacHandlerUtil {
 	}
 	
 	public static boolean isConstructorCall(final JCStatement statement) {
-		if (!(statement instanceof JCExpressionStatement)) return false;
+		String name = findMethodInvocationName(statement);
+		return "this".equals(name) || "super".equals(name);
+	}
+	
+	public static boolean isThisCall(final JCStatement statement) {
+		String name = findMethodInvocationName(statement);
+		return "this".equals(name);
+	}
+	
+	private static String findMethodInvocationName(final JCStatement statement) {
+		if (!(statement instanceof JCExpressionStatement)) return null;
 		JCExpression expr = ((JCExpressionStatement) statement).expr;
-		if (!(expr instanceof JCMethodInvocation)) return false;
+		if (!(expr instanceof JCMethodInvocation)) return null;
 		JCExpression invocation = ((JCMethodInvocation) expr).meth;
-		String name;
+		String name = null;
 		if (invocation instanceof JCFieldAccess) {
 			name = ((JCFieldAccess) invocation).name.toString();
 		} else if (invocation instanceof JCIdent) {
 			name = ((JCIdent) invocation).name.toString();
-		} else {
-			name = "";
 		}
-		
-		return "super".equals(name) || "this".equals(name);
+		return name;
 	}
 	
 	/**

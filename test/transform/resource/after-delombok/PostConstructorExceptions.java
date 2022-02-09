@@ -1,7 +1,9 @@
 class PostConstructorExceptions {
 	private String a;
 
-	PostConstructorExceptions() {
+	PostConstructorExceptions() throws IllegalArgumentException, InterruptedException, java.lang.IllegalArgumentException, IllegalArgumentException {
+		post();
+		post2();
 	}
 
 	private void post() throws IllegalArgumentException {

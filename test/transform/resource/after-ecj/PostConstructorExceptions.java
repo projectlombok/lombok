@@ -2,8 +2,10 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.PostConstructor;
 @AllArgsConstructor class PostConstructorExceptions {
   private String a;
-  PostConstructorExceptions() {
+  @PostConstructor.InvokePostConstructors PostConstructorExceptions() throws IllegalArgumentException, InterruptedException, java.lang.IllegalArgumentException, IllegalArgumentException {
     super();
+    post();
+    post2();
   }
   private @PostConstructor void post() throws IllegalArgumentException {
   }

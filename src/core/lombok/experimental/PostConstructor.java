@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Project Lombok Authors.
+ * Copyright (C) 2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,36 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Put on any method to make lombok add a call to the annotated method in all constructors.
+ * <p>
+ * Every explicit constructor requires either a {@code this(...)} statement,
+ * {@link InvokePostConstructors @InvokePostConstructors} or {@link SkipPostConstructors @SkipPostConstructors}.
+ * <p>
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/PostConstructor">the project lombok features page for &#64;PostConstructor</a>.
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface PostConstructor {
+	/**
+	 * If present lombok modifies this constructor to call all methods annotated with
+	 * {@link PostConstructor @PostConstructor}.
+	 * <p>
+	 * If this constructor contains a {@code return} statement lombok wraps all statements with a {@code try {...} catch
+	 * {...} finally {...}} block otherwise the calls are appended at the end
+	 */
+	@Target({ElementType.CONSTRUCTOR})
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface InvokePostConstructors {
+		
+	}
 	
+	/**
+	 * If present lombok will not modify this constructor and will not call methods annotated with
+	 * {@link PostConstructor @PostConstructor}.
+	 */
+	@Target({ElementType.CONSTRUCTOR})
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface SkipPostConstructors {
+		
+	}
 }

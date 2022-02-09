@@ -6,8 +6,8 @@ class PostConstructorExceptions {
 	
 	private String a;
 	
+	@PostConstructor.InvokePostConstructors
 	PostConstructorExceptions() {
-		
 	}
 	
 	@PostConstructor
