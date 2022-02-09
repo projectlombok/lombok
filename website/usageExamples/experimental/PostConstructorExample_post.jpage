@@ -1,16 +1,16 @@
-class PostGeneratedConstructorExample {
+class PostConstructorExample {
 	private String name;
 	private final Integer start;
 	private final Integer end;
 
-	public PostGeneratedConstructorTest(final String name, final Integer start, final Integer end) {
+	public PostConstructorTest(final String name, final Integer start, final Integer end) {
 		this.name = name;
 		this.start = start;
 		this.end = end;
 		validate();
 	}
 
-	public PostGeneratedConstructorTest(final Integer start, final Integer end) {
+	public PostConstructorTest(final Integer start, final Integer end) {
 		this.start = start;
 		this.end = end;
 		validate();

@@ -37,7 +37,6 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.mangosdk.spi.ProviderFor;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
@@ -46,38 +45,39 @@ import lombok.core.HandlerPriority;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.experimental.PostGeneratedConstructor;
+import lombok.experimental.PostConstructor;
+import lombok.spi.Provides;
 
 /**
- * Handles the {@code lombok.experimental.PostGeneratedConstructor} annotation for eclipse.
+ * Handles the {@code lombok.experimental.PostConstructor} annotation for eclipse.
  */
-@ProviderFor(EclipseAnnotationHandler.class)
 @DeferUntilPostDiet
+@Provides
 @HandlerPriority(value = 1024)
-public class HandlePostGeneratedConstructor extends EclipseAnnotationHandler<PostGeneratedConstructor> {
+public class HandlePostConstructor extends EclipseAnnotationHandler<PostConstructor> {
 	
-	@Override public void handle(AnnotationValues<PostGeneratedConstructor> annotation, Annotation source, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, ConfigurationKeys.POST_GENERATED_CONSTRUCTOR_FLAG_USAGE, "@PostGeneratedConstructor");
+	@Override public void handle(AnnotationValues<PostConstructor> annotation, Annotation source, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.POST_CONSTRUCTOR_FLAG_USAGE, "@PostConstructor");
 		
 		EclipseNode methodNode = annotationNode.up();
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration)) {
-			annotationNode.addError("@PostGeneratedConstructor is legal only on methods.");
+			annotationNode.addError("@PostConstructor is legal only on methods.");
 			return;
 		}
 		
 		MethodDeclaration method = (MethodDeclaration) methodNode.get();
 		if (method.isAbstract()) {
-			annotationNode.addError("@PostGeneratedConstructor is legal only on concrete methods.");
+			annotationNode.addError("@PostConstructor is legal only on concrete methods.");
 			return;
 		}
 		
 		if (method.isStatic()) {
-			annotationNode.addError("@PostGeneratedConstructor is legal only on instance methods.");
+			annotationNode.addError("@PostConstructor is legal only on instance methods.");
 			return;
 		}
 		
 		if (method.arguments != null) {
-			annotationNode.addError("@PostGeneratedConstructor is legal only on methods without parameters.");
+			annotationNode.addError("@PostConstructor is legal only on methods without parameters.");
 			return;
 		}
 		

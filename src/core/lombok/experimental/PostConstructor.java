@@ -30,6 +30,6 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
-public @interface PostGeneratedConstructor {
+public @interface PostConstructor {
 	
 }

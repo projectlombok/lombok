@@ -1,21 +1,21 @@
 import lombok.AllArgsConstructor;
-import lombok.experimental.PostGeneratedConstructor;
+import lombok.experimental.PostConstructor;
 
 @AllArgsConstructor
-class PostGeneratedConstructorExceptions {
+class PostConstructorExceptions {
 	
 	private String a;
 	
-	PostGeneratedConstructorExceptions() {
+	PostConstructorExceptions() {
 		
 	}
 	
-	@PostGeneratedConstructor
+	@PostConstructor
 	private void post() throws IllegalArgumentException {
 
 	}
 	
-	@lombok.experimental.PostGeneratedConstructor
+	@lombok.experimental.PostConstructor
 	private void post2() throws InterruptedException, java.lang.IllegalArgumentException, IllegalArgumentException {
 		
 	}

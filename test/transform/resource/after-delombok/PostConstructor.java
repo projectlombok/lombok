@@ -1,4 +1,4 @@
-class PostGeneratedConstructorTest {
+class PostConstructorTest {
 	private String name;
 	private final Integer start;
 	private final Integer end;
@@ -10,14 +10,14 @@ class PostGeneratedConstructorTest {
 	}
 
 	@java.lang.SuppressWarnings("all")
-	public PostGeneratedConstructorTest(final Integer start, final Integer end) {
+	public PostConstructorTest(final Integer start, final Integer end) {
 		this.start = start;
 		this.end = end;
 		validate();
 	}
 
 	@java.lang.SuppressWarnings("all")
-	public PostGeneratedConstructorTest(final String name, final Integer start, final Integer end) {
+	public PostConstructorTest(final String name, final Integer start, final Integer end) {
 		this.name = name;
 		this.start = start;
 		this.end = end;

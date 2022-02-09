@@ -21,10 +21,8 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-
-import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
@@ -33,7 +31,6 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 
@@ -41,51 +38,50 @@ import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.experimental.PostGeneratedConstructor;
+import lombok.experimental.PostConstructor;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.spi.Provides;
 
 /**
- * Handles the {@code lombok.experimental.PostGeneratedConstructor} annotation for javac.
+ * Handles the {@code lombok.experimental.PostConstructor} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@Provides
 @HandlerPriority(value = 1024)
-public class HandlePostGeneratedConstructor extends JavacAnnotationHandler<PostGeneratedConstructor> {
+public class HandlePostConstructor extends JavacAnnotationHandler<PostConstructor> {
 	
-	@Override public void handle(AnnotationValues<PostGeneratedConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleFlagUsage(annotationNode, ConfigurationKeys.POST_GENERATED_CONSTRUCTOR_FLAG_USAGE, "@PostGeneratedConstructor");
+	@Override public void handle(AnnotationValues<PostConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.POST_CONSTRUCTOR_FLAG_USAGE, "@PostConstructor");
 		
 		if (inNetbeansEditor(annotationNode)) return;
 		
-		deleteAnnotationIfNeccessary(annotationNode, PostGeneratedConstructor.class);
+		deleteAnnotationIfNeccessary(annotationNode, PostConstructor.class);
 		JavacNode methodNode = annotationNode.up();
 		
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof JCMethodDecl)) {
-			annotationNode.addError("@PostGeneratedConstructor is legal only on methods.");
+			annotationNode.addError("@PostConstructor is legal only on methods.");
 			return;
 		}
 		
 		JCMethodDecl method = (JCMethodDecl)methodNode.get();
 		
 		if ((method.mods.flags & Flags.ABSTRACT) != 0) {
-			annotationNode.addError("@PostGeneratedConstructor is legal only on concrete methods.");
+			annotationNode.addError("@PostConstructor is legal only on concrete methods.");
 			return;
 		}
 		
 		if ((method.mods.flags & Flags.STATIC) != 0) {
-			annotationNode.addError("@PostGeneratedConstructor is legal only on instance methods.");
+			annotationNode.addError("@PostConstructor is legal only on instance methods.");
 			return;
 		}
 		
 		if (method.params.nonEmpty()) {
-			annotationNode.addError("@PostGeneratedConstructor is legal only on methods without parameters.");
+			annotationNode.addError("@PostConstructor is legal only on methods without parameters.");
 			return;
 		}
 		
 		JavacTreeMaker maker = methodNode.getTreeMaker();
-		Context context = methodNode.getContext();
-		
 		JavacNode typeNode = upToTypeNode(annotationNode);
 		
 		List<JCMethodDecl> generatedConstructors = findGeneratedConstructors(typeNode);
@@ -96,7 +92,7 @@ public class HandlePostGeneratedConstructor extends JavacAnnotationHandler<PostG
 		
 		for (JCMethodDecl constructor : generatedConstructors) {
 			JCStatement statement = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(method.name), List.<JCExpression>nil()));
-			recursiveSetGeneratedBy(statement, ast, context);
+			recursiveSetGeneratedBy(statement, annotationNode);
 			
 			constructor.body.stats = appendToList(constructor.body.stats, statement);
 			constructor.thrown = appendToList(constructor.thrown, method.thrown);

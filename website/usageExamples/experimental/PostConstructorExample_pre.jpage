@@ -1,15 +1,15 @@
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.PostGeneratedConstructor;
+import lombok.experimental.PostConstructor;
 
 @AllArgsConstructor
 @RequiredArgsConstructor
-class PostGeneratedConstructorExample {
+class PostConstructorExample {
 	private String name;
 	private final Integer start;
 	private final Integer end;
 	
-	@PostGeneratedConstructor
+	@PostConstructor
 	private void validate() {
 		if (start == null || end == null || end < start) {
 			throw new IllegalArgumentException();

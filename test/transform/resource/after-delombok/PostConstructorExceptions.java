@@ -1,7 +1,7 @@
-class PostGeneratedConstructorExceptions {
+class PostConstructorExceptions {
 	private String a;
 
-	PostGeneratedConstructorExceptions() {
+	PostConstructorExceptions() {
 	}
 
 	private void post() throws IllegalArgumentException {
@@ -11,7 +11,7 @@ class PostGeneratedConstructorExceptions {
 	}
 
 	@java.lang.SuppressWarnings("all")
-	public PostGeneratedConstructorExceptions(final String a) throws IllegalArgumentException, InterruptedException, java.lang.IllegalArgumentException, IllegalArgumentException {
+	public PostConstructorExceptions(final String a) throws IllegalArgumentException, InterruptedException, java.lang.IllegalArgumentException, IllegalArgumentException {
 		this.a = a;
 		post();
 		post2();

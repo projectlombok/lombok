@@ -1,4 +1,4 @@
-abstract class PostGeneratedConstructorInvalid {
+abstract class PostConstructorInvalid {
 	private void noConstructor() {
 	}
 	

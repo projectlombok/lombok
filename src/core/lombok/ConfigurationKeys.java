@@ -692,14 +692,14 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> JACKSONIZED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.jacksonized.flagUsage", "Emit a warning or error if @Jacksonized is used.") {};
 	
-	// ----- PostGeneratedConstructor -----
+	// ----- PostConstructor -----
 	
 	/**
-	 * lombok configuration: {@code lombok.postGeneratedConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * lombok configuration: {@code lombok.postConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
-	 * If set, <em>any</em> usage of {@code @PostGeneratedConstructor} results in a warning / error.
+	 * If set, <em>any</em> usage of {@code @PostConstructor} results in a warning / error.
 	 */
-	public static final ConfigurationKey<FlagUsageType> POST_GENERATED_CONSTRUCTOR_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.postGeneratedConstructor.flagUsage", "Emit a warning or error if @PostGeneratedConstructor is used.") {};
+	public static final ConfigurationKey<FlagUsageType> POST_CONSTRUCTOR_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.postConstructor.flagUsage", "Emit a warning or error if @PostConstructor is used.") {};
 	
 	// ----- Configuration System -----
 	
