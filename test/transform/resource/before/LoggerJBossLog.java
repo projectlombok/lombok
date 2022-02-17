@@ -15,6 +15,18 @@ class LoggerJBossLogOuter {
 	}
 }
 
+@JBossLog
+enum LoggerJBossLogWithEnum {
+	CONSTANT;
+}
+
+class LoggerJBossLogWithInnerEnum {
+	@JBossLog
+	enum Inner {
+		CONSTANT;
+	}
+}
+
 @JBossLog(topic="DifferentLogger")
 class LoggerJBossLogWithDifferentLoggerName {
 }
