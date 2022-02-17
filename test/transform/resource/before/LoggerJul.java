@@ -16,3 +16,15 @@ class LoggerJulWithDifferentName {
 class LoggerJulWithStaticField {
 	static final String TOPIC = "StaticField";
 }
+
+@Log
+enum LoggerJulWithEnum {
+	CONSTANT;
+}
+
+class LoggerJulWithInnerEnum {
+	@Log
+	enum Inner {
+		CONSTANT;
+	}
+}
