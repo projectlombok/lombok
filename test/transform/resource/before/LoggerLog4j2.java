@@ -17,3 +17,15 @@ class LoggerLog4j2WithDifferentName {
 class LoggerLog4j2WithStaticField {
 	static final String TOPIC = "StaticField";
 }
+
+@Log4j2
+enum LoggerLog4j2WithEnum {
+	CONSTANT;
+}
+
+class LoggerLog4j2WithInnerEnum {
+	@Log4j2
+	enum Inner {
+		CONSTANT;
+	}
+}
