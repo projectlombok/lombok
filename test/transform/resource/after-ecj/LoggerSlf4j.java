@@ -15,6 +15,29 @@ import lombok.extern.slf4j.Slf4j;
     super();
   }
 }
+@Slf4j enum LoggerSlf4jWithEnum {
+  CONSTANT(),
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithEnum.class);
+  <clinit>() {
+  }
+  LoggerSlf4jWithEnum() {
+    super();
+  }
+}
+class LoggerSlf4jWithInnerEnum {
+  @Slf4j enum Inner {
+    CONSTANT(),
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
+    <clinit>() {
+    }
+    Inner() {
+      super();
+    }
+  }
+  LoggerSlf4jWithInnerEnum() {
+    super();
+  }
+}
 class LoggerSlf4jOuter {
   static @lombok.extern.slf4j.Slf4j class Inner {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
