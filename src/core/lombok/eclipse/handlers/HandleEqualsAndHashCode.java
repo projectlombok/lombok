@@ -44,6 +44,7 @@ import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -606,19 +607,20 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
-		Annotation[] onParamType = null;
+		List<NullAnnotationLibrary> applied = new ArrayList<NullAnnotationLibrary>();
 		
+		Annotation[] onParamNullable = null;
 		String nearest = scanForNearestAnnotation(type, "javax.annotation.ParametersAreNullableByDefault", "javax.annotation.ParametersAreNonnullByDefault");
 		if ("javax.annotation.ParametersAreNonnullByDefault".equals(nearest)) {
-			onParamType = new Annotation[1];
-			onParamType[0] = new MarkerAnnotation(generateQualifiedTypeRef(source, JAVAX_ANNOTATION_NULLABLE), 0);
+			onParamNullable = new Annotation[] { new MarkerAnnotation(generateQualifiedTypeRef(source, JAVAX_ANNOTATION_NULLABLE), 0) };
+			applied.add(NullAnnotationLibrary.JAVAX);
 		}
 		
+		Annotation[] onParamTypeNullable = null;
 		nearest = scanForNearestAnnotation(type, "org.eclipse.jdt.annotation.NonNullByDefault");
 		if (nearest != null) {
-			Annotation a = new MarkerAnnotation(generateQualifiedTypeRef(source, ORG_ECLIPSE_JDT_ANNOTATION_NULLABLE), 0);
-			if (onParamType != null) onParamType = new Annotation[] {onParamType[0], a};
-			else onParamType = new Annotation[] {a};
+			onParamTypeNullable = new Annotation[] { new MarkerAnnotation(generateQualifiedTypeRef(source, ORG_ECLIPSE_JDT_ANNOTATION_NULLABLE), 0) };
+			applied.add(NullAnnotationLibrary.ECLIPSE);
 		}
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
@@ -640,12 +642,13 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		QualifiedTypeReference objectRef = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { p, p, p });
-		if (onParamType != null) objectRef.annotations = new Annotation[][] {null, null, onParamType};
+		if (onParamTypeNullable != null) objectRef.annotations = new Annotation[][] {null, null, onParamTypeNullable};
 		setGeneratedBy(objectRef, source);
 		method.arguments = new Argument[] {new Argument(new char[] { 'o' }, 0, objectRef, Modifier.FINAL)};
 		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;
-		if (!onParam.isEmpty()) method.arguments[0].annotations = onParam.toArray(new Annotation[0]);
-		EclipseHandlerUtil.createRelevantNullableAnnotation(type, method.arguments[0]);
+		if (!onParam.isEmpty() || onParamNullable != null)
+			method.arguments[0].annotations = copyAnnotations(source, onParam.toArray(new Annotation[0]), onParamNullable);
+		EclipseHandlerUtil.createRelevantNullableAnnotation(type, method.arguments[0], applied);
 		setGeneratedBy(method.arguments[0], source);
 		
 		List<Statement> statements = new ArrayList<Statement>();

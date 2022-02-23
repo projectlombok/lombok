@@ -2608,6 +2608,13 @@ public class EclipseHandlerUtil {
 		applyAnnotationToVarDecl(typeNode, arg, lib.getNullableAnnotation(), lib.isTypeUse());
 	}
 	
+	public static void createRelevantNullableAnnotation(EclipseNode typeNode, Argument arg, List<NullAnnotationLibrary> applied) {
+		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
+		if (lib == null || applied.contains(lib)) return;
+		
+		applyAnnotationToVarDecl(typeNode, arg, lib.getNullableAnnotation(), lib.isTypeUse());
+	}
+	
 	public static void createRelevantNonNullAnnotation(EclipseNode typeNode, Argument arg) {
 		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
 		if (lib == null) return;
