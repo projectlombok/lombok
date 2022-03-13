@@ -332,10 +332,16 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	
 	private static void patchHideGeneratedNodes(ScriptManager sm) {
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
-				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode"))
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode", "org.eclipse.jdt.core.dom.SimpleName[]", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.core.dom.SimpleName"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByBinding"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedSimpleNames", "org.eclipse.jdt.core.dom.SimpleName[]",
 						"org.eclipse.jdt.core.dom.SimpleName[]"))
+				.request(StackRequest.RETURN_VALUE).build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode", "org.eclipse.jdt.core.dom.Name[]", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.core.dom.Name"))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGeneratedNames", "org.eclipse.jdt.core.dom.Name[]",
+						"org.eclipse.jdt.core.dom.Name[]"))
 				.request(StackRequest.RETURN_VALUE).build());
 		
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()

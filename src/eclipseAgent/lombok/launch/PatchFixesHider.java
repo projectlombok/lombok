@@ -39,6 +39,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
@@ -778,6 +779,22 @@ final class PatchFixesHider {
 				if (in[i] == null || !((Boolean)f.get(in[i])).booleanValue()) newSimpleNames[count++] = in[i];
 			}
 			return newSimpleNames;
+		}
+		
+		public static Name[] removeGeneratedNames(Name[] in) throws Exception {
+			Field f = Name.class.getField("$isGenerated");
+			
+			int count = 0;
+			for (int i = 0; i < in.length; i++) {
+				if (in[i] == null || !((Boolean)f.get(in[i])).booleanValue()) count++;
+			}
+			if (count == in.length) return in;
+			Name[] newNames = new Name[count];
+			count = 0;
+			for (int i = 0; i < in.length; i++) {
+				if (in[i] == null || !((Boolean)f.get(in[i])).booleanValue()) newNames[count++] = in[i];
+			}
+			return newNames;
 		}
 		
 		public static Annotation[] convertAnnotations(Annotation[] out, IAnnotatable annotatable) {
