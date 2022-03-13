@@ -35,6 +35,7 @@ import lombok.ConfigurationKeys;
 import lombok.Setter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
@@ -256,6 +257,10 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		}
 		method.statements = statements.toArray(new Statement[0]);
 		param.annotations = copyAnnotations(source, copyableAnnotations, onParam.toArray(new Annotation[0]));
+		if (param.annotations != null) {
+			param.bits |= Eclipse.HasTypeAnnotations;
+			method.bits |= Eclipse.HasTypeAnnotations;
+		}
 		
 		if (returnType != null && returnStatement != null) createRelevantNonNullAnnotation(sourceNode, method);
 		

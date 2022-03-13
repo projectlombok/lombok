@@ -41,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.core.AST.Kind;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.AnnotationValues;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
@@ -414,6 +415,10 @@ public class HandleConstructor {
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
 			parameter.annotations = copyAnnotations(source, copyableAnnotations);
+			if (parameter.annotations != null) {
+				parameter.bits |= Eclipse.HasTypeAnnotations;
+				constructor.bits |= Eclipse.HasTypeAnnotations;
+			}
 			params.add(parameter);
 		}
 		
@@ -555,6 +560,10 @@ public class HandleConstructor {
 			
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
 			parameter.annotations = copyAnnotations(source, findCopyableAnnotations(fieldNode));
+			if (parameter.annotations != null) {
+				parameter.bits |= Eclipse.HasTypeAnnotations;
+				constructor.bits |= Eclipse.HasTypeAnnotations;
+			}
 			params.add(parameter);
 		}
 		

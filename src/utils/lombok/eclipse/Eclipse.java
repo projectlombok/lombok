@@ -66,6 +66,7 @@ public class Eclipse {
 	public static final int AccRecord = ASTNode.Bit25; // ECM.AccRecord
 	public static final int IsCanonicalConstructor = ASTNode.Bit10; // ASTNode.IsCanonicalConstructor
 	public static final int IsImplicit = ASTNode.Bit11; // ASTNode.IsImplicit
+	public static final int HasTypeAnnotations = ASTNode.Bit21; // ASTNode.HasTypeAnnotations
 	
 	private static final Pattern SPLIT_AT_DOT = Pattern.compile("\\.");
 	
