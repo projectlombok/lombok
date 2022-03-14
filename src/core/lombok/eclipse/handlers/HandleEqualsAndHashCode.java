@@ -642,13 +642,17 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		QualifiedTypeReference objectRef = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { p, p, p });
-		if (onParamTypeNullable != null) objectRef.annotations = new Annotation[][] {null, null, onParamTypeNullable};
+		if (onParamTypeNullable != null) {
+			objectRef.annotations = new Annotation[][] {null, null, onParamTypeNullable};
+			objectRef.bits |= Eclipse.HasTypeAnnotations;
+			method.bits |= Eclipse.HasTypeAnnotations;
+		}
 		setGeneratedBy(objectRef, source);
 		method.arguments = new Argument[] {new Argument(new char[] { 'o' }, 0, objectRef, Modifier.FINAL)};
 		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;
 		if (!onParam.isEmpty() || onParamNullable != null)
 			method.arguments[0].annotations = copyAnnotations(source, onParam.toArray(new Annotation[0]), onParamNullable);
-		EclipseHandlerUtil.createRelevantNullableAnnotation(type, method.arguments[0], applied);
+		EclipseHandlerUtil.createRelevantNullableAnnotation(type, method.arguments[0], method, applied);
 		setGeneratedBy(method.arguments[0], source);
 		
 		List<Statement> statements = new ArrayList<Statement>();
@@ -898,7 +902,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		method.arguments = new Argument[] {new Argument(otherName, 0, objectRef, Modifier.FINAL)};
 		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;
 		if (!onParam.isEmpty()) method.arguments[0].annotations = onParam.toArray(new Annotation[0]);
-		EclipseHandlerUtil.createRelevantNullableAnnotation(type, method.arguments[0]);
+		EclipseHandlerUtil.createRelevantNullableAnnotation(type, method.arguments[0], method);
 		setGeneratedBy(method.arguments[0], source);
 		
 		SingleNameReference otherRef = new SingleNameReference(otherName, p);

@@ -373,7 +373,7 @@ public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
 			method.statements = statements.toArray(new Statement[0]);
 		}
 		
-		createRelevantNonNullAnnotation(sourceNode, param);
+		createRelevantNonNullAnnotation(sourceNode, param, method);
 		createRelevantNonNullAnnotation(fieldNode, method);
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
