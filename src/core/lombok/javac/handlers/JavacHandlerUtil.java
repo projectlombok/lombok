@@ -2096,15 +2096,7 @@ public class JavacHandlerUtil {
 	 * Returns {@code true} if the provided node supports static methods and types (top level or static class)
 	 */
 	public static boolean isStaticAllowed(JavacNode typeNode) {
-		boolean staticAllowed = true;
-		
-		while (typeNode.getKind() != Kind.COMPILATION_UNIT) {
-			if (!staticAllowed) return false;
-			
-			staticAllowed = typeNode.isStatic();
-			typeNode = typeNode.up();
-		}
-		return true;
+		return typeNode.isStatic() || typeNode.up() == null || typeNode.up().getKind() == Kind.COMPILATION_UNIT || isRecord(typeNode);
 	}
 	
 	public static JavacNode upToTypeNode(JavacNode node) {
