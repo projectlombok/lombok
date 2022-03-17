@@ -12,6 +12,18 @@ class LoggerJBossLogOuter {
 		private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(Inner.class);
 	}
 }
+enum LoggerJBossLogWithEnum {
+	CONSTANT;
+	@java.lang.SuppressWarnings("all")
+	private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithEnum.class);
+}
+class LoggerJBossLogWithInnerEnum {
+	enum Inner {
+		CONSTANT;
+		@java.lang.SuppressWarnings("all")
+		private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(Inner.class);
+	}
+}
 
 class LoggerJBossLogWithDifferentLoggerName {
 	@java.lang.SuppressWarnings("all")

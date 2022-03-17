@@ -28,3 +28,26 @@ class LoggerFloggerOuter {
     super();
   }
 }
+@Flogger enum LoggerFloggerWithEnum {
+  CONSTANT(),
+  private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+  <clinit>() {
+  }
+  LoggerFloggerWithEnum() {
+    super();
+  }
+}
+class LoggerFloggerWithInnerEnum {
+  @Flogger enum Inner {
+    CONSTANT(),
+    private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+    <clinit>() {
+    }
+    Inner() {
+      super();
+    }
+  }
+  LoggerFloggerWithInnerEnum() {
+    super();
+  }
+}

@@ -80,7 +80,7 @@ public class HandleLog {
 				return;
 			}
 			
-			if (useStatic && !isStaticAllowed(typeNode)) {
+			if (!typeNode.isEnumType() && useStatic && !isStaticAllowed(typeNode)) {
 				annotationNode.addError(framework.getAnnotationAsString() + " is not supported on non-static nested classes.");
 				return;
 			}

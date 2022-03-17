@@ -15,3 +15,16 @@ class LoggerLog4jWithStaticField {
 	private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LoggerLog4jWithStaticField.TOPIC);
 	static final String TOPIC = "StaticField";
 }
+enum LoggerLog4jWithEnum {
+	CONSTANT;
+	@java.lang.SuppressWarnings("all")
+	private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LoggerLog4jWithEnum.class);
+}
+class LoggerLog4jWithInnerEnum {
+
+	enum Inner {
+		CONSTANT;
+		@java.lang.SuppressWarnings("all")
+		private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Inner.class);
+	}
+}

@@ -14,3 +14,15 @@ class LoggerFloggerOuter {
 		
 	}
 }
+
+@Flogger
+enum LoggerFloggerWithEnum {
+	CONSTANT;
+}
+
+class LoggerFloggerWithInnerEnum {
+	@Flogger
+	enum Inner {
+		CONSTANT;
+	}
+}

@@ -6,6 +6,18 @@ class LoggerSlf4jWithImport {
 	@java.lang.SuppressWarnings("all")
 	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithImport.class);
 }
+enum LoggerSlf4jWithEnum {
+	CONSTANT;
+	@java.lang.SuppressWarnings("all")
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithEnum.class);
+}
+class LoggerSlf4jWithInnerEnum {
+	enum Inner {
+		CONSTANT;
+		@java.lang.SuppressWarnings("all")
+		private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
+	}
+}
 class LoggerSlf4jOuter {
 	static class Inner {
 		@java.lang.SuppressWarnings("all")

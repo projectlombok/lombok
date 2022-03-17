@@ -32,3 +32,26 @@ import lombok.extern.log4j.Log4j;
     super();
   }
 }
+@Log4j enum LoggerLog4jWithEnum {
+  CONSTANT(),
+  private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LoggerLog4jWithEnum.class);
+  <clinit>() {
+  }
+  LoggerLog4jWithEnum() {
+    super();
+  }
+}
+class LoggerLog4jWithInnerEnum {
+  @Log4j enum Inner {
+    CONSTANT(),
+    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Inner.class);
+    <clinit>() {
+    }
+    Inner() {
+      super();
+    }
+  }
+  LoggerLog4jWithInnerEnum() {
+    super();
+  }
+}
