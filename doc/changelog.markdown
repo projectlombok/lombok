@@ -3,11 +3,18 @@ Lombok Changelog
 
 ### v1.18.23 "Edgy Guinea Pig"
 
+* PLATFORM: JDK18 support added. [Issue #3129](https://github.com/projectlombok/lombok/issues/3129).
 * FEATURE: `@ToString` has an annotation parameter called `onlyExplicitlyIncluded`. There's now a config key `lombok.toString.onlyExplicitlyIncluded` to set this property as well. [Issue #2849](https://github.com/projectlombok/lombok/pull/2849).
 * FEATURE: Turning a field named `uShape` into a getter is tricky: `getUShape` or `getuShape`? The community is split on which style to use. Lombok does `getUShape`, but if you prefer the `getuShape` style, add to `lombok.config`: `lombok.accessors.capitalization = beanspec`. [Issue #2693](https://github.com/projectlombok/lombok/issues/2693) [Pull Request #2996](https://github.com/projectlombok/lombok/pull/2996). Thanks __@YonathanSherwin__!
-* FEATURE: You can now use `@Accessors(makeFinal = true)` to make `final` getters, setters, and with-ers. [Issue #1456](https://github.com/projectlombok/lombok/issues/1456)
-* BUGFIX: Various save actions and refactor scripts in eclipse work better. [Issue #2995](https://github.com/projectlombok/lombok/issues/2995) [Issue #1309](https://github.com/projectlombok/lombok/issues/1309) [Issue #2985](https://github.com/projectlombok/lombok/issues/2985) [Issue #2509](https://github.com/projectlombok/lombok/issues/2509)
-* BUGFIX: Eclipse projects using the jasperreports-plugin will now compile [Issue #1036](https://github.com/projectlombok/lombok/issues/1036)
+* FEATURE: You can now use `@Accessors(makeFinal = true)` to make `final` getters, setters, and with-ers. [Issue #1456](https://github.com/projectlombok/lombok/issues/1456).
+* BUGFIX: Various save actions and refactor scripts in eclipse work better. [Issue #2995](https://github.com/projectlombok/lombok/issues/2995) [Issue #1309](https://github.com/projectlombok/lombok/issues/1309) [Issue #2985](https://github.com/projectlombok/lombok/issues/2985) [Issue #2509](https://github.com/projectlombok/lombok/issues/2509).
+* BUGFIX: Eclipse projects using the jasperreports-plugin will now compile. [Issue #1036](https://github.com/projectlombok/lombok/issues/1036).
+* BUGFIX: inner classes in `@UtilityClass` classes were broken in JDK9+. [Issue #3097](https://github.com/projectlombok/lombok/issues/3097).
+* BUGFIX: Delomboking code with `@Builder.Default` in it would generate different code vs lombok itself. [Issue #3053](https://github.com/projectlombok/lombok/issues/3053).
+* BUGFIX: Combining `@NonNullByDefault` and `lombok.addNullAnnotations` would generate two `@Nullable` annotations and thus generate a compiler error. [Issue #3120](https://github.com/projectlombok/lombok/issues/3120). Thanks __@JohnPaulTaylorII__!
+* BUGFIX: Null analysis in eclipse was broken for incremental builds. [Issue #3133](https://github.com/projectlombok/lombok/issues/3133).
+* BUGFIX `VerifyError` would show up in the latest eclipse release when using various refactor scripts. [Issue #3134](https://github.com/projectlombok/lombok/issues/3134).
+* BUGFIX: The various `@Log` annotations can now be placed on inner enums and records. [Issue #2990](https://github.com/projectlombok/lombok/issues/2990).
 * SECURITY: A widely reported security issue with log4j2 ([CVE-2021-44228](https://www.randori.com/blog/cve-2021-44228/)) has absolutely no effect on either lombok itself nor does usage of lombok on its own, or even the usage of lombok's `@Log4j2`, cause any issues whatsoever: You have to ship your own log4j2 dependency in your app - update that to 2.17 or otherwise mitigate this issue (see the CVE page). To avoid unneccessary warnings from dependency checkers, our dep on log4j2, which is used solely for testing, isn't shipped by us, and cannot be exploited in any way, has been updated to 2.17.1. [Issue #3063](https://github.com/projectlombok/lombok/issues/3063)
 * IMPROBABLE BREAKING CHANGE: Lombok now understands a few more annotations that imply "this field should not ever contain a null reference". Lombok will thus copy some of these new annotations e.g. to generated getters and the like.  [Pull Request #2904](https://github.com/projectlombok/lombok/pull/2904)
 
