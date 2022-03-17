@@ -207,7 +207,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs());
 		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
 		
-		nullBehaviorize(builderType, data, statements, param);
+		nullBehaviorize(builderType, data, statements, param, md);
 		
 		if (returnStatement != null) statements.add(returnStatement);
 		

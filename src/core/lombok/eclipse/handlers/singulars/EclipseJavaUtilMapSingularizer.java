@@ -316,7 +316,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs());
 		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
 		
-		nullBehaviorize(builderType, data, statements, param);
+		nullBehaviorize(builderType, data, statements, param, md);
 		
 		if (returnStatement != null) statements.add(returnStatement);
 		

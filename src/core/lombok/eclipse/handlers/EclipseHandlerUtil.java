@@ -2601,25 +2601,25 @@ public class EclipseHandlerUtil {
 		applyAnnotationToMethodDecl(typeNode, mth, lib.getNonNullAnnotation(), lib.isTypeUse());
 	}
 	
-	public static void createRelevantNullableAnnotation(EclipseNode typeNode, Argument arg) {
+	public static void createRelevantNullableAnnotation(EclipseNode typeNode, Argument arg, MethodDeclaration mth) {
 		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
 		if (lib == null) return;
 		
-		applyAnnotationToVarDecl(typeNode, arg, lib.getNullableAnnotation(), lib.isTypeUse());
+		applyAnnotationToVarDecl(typeNode, arg, mth, lib.getNullableAnnotation(), lib.isTypeUse());
 	}
 	
-	public static void createRelevantNullableAnnotation(EclipseNode typeNode, Argument arg, List<NullAnnotationLibrary> applied) {
+	public static void createRelevantNullableAnnotation(EclipseNode typeNode, Argument arg, MethodDeclaration mth, List<NullAnnotationLibrary> applied) {
 		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
 		if (lib == null || applied.contains(lib)) return;
 		
-		applyAnnotationToVarDecl(typeNode, arg, lib.getNullableAnnotation(), lib.isTypeUse());
+		applyAnnotationToVarDecl(typeNode, arg, mth, lib.getNullableAnnotation(), lib.isTypeUse());
 	}
 	
-	public static void createRelevantNonNullAnnotation(EclipseNode typeNode, Argument arg) {
+	public static void createRelevantNonNullAnnotation(EclipseNode typeNode, Argument arg, MethodDeclaration mth) {
 		NullAnnotationLibrary lib = typeNode.getAst().readConfiguration(ConfigurationKeys.ADD_NULL_ANNOTATIONS);
 		if (lib == null) return;
 		
-		applyAnnotationToVarDecl(typeNode, arg, lib.getNonNullAnnotation(), lib.isTypeUse());
+		applyAnnotationToVarDecl(typeNode, arg, mth, lib.getNonNullAnnotation(), lib.isTypeUse());
 	}
 	
 	private static void applyAnnotationToMethodDecl(EclipseNode typeNode, MethodDeclaration mth, String annType, boolean typeUse) {
@@ -2653,9 +2653,10 @@ public class EclipseHandlerUtil {
 			}
 			a[0] = ann;
 			mth.returnType.annotations[len - 1] = a;
+			mth.bits |= Eclipse.HasTypeAnnotations;
 		}
 	}
-	private static void applyAnnotationToVarDecl(EclipseNode typeNode, Argument arg, String annType, boolean typeUse) {
+	private static void applyAnnotationToVarDecl(EclipseNode typeNode, Argument arg, MethodDeclaration mth, String annType, boolean typeUse) {
 		if (annType == null) return;
 		
 		int partCount = 1;
@@ -2686,6 +2687,9 @@ public class EclipseHandlerUtil {
 			}
 			a[0] = ann;
 			arg.type.annotations[len - 1] = a;
+			arg.type.bits |= Eclipse.HasTypeAnnotations;
+			arg.bits |= Eclipse.HasTypeAnnotations;
+			mth.bits |= Eclipse.HasTypeAnnotations;
 		}
 	}
 	
