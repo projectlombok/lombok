@@ -3,7 +3,7 @@
 <@f.scaffold title="@ToString" logline="No need to start a debugger to see your fields: Just let lombok generate a <code>toString</code> for you!">
 	<@f.overview>
 		<p>
-			Any class definition may be annotated with <code>@ToString</code> to let lombok generate an implementation of the <code>toString()</code> method. By default, it'll print your class name, along with each field, in order, separated by commas.
+			Annotating a class with <code>@ToString</code> will cause lombok to generate an implementation of the <code>toString()</code> method. You use configuration options to specify whether field names should be included but otherwise the format is fixed: the class name followed by parentheses containing fields separated by commas, e.g. <code>MyClass(foo=123, bar=234)</code>.
 		</p><p>
 			By setting the <code>includeFieldNames</code> parameter to <em>true</em> you can add some clarity (but also quite some length) to the output of the <code>toString()</code> method.
 		</p><p>
