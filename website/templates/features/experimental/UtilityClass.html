@@ -11,9 +11,11 @@
 		<ul>
 			<li>
 				Some debate as to whether its common enough to count as boilerplate.
+			</li><li>
+				Due to limitations in javac, currently non-star static imports <em>cannot</em> be used to import stuff from <code>@UtilityClass</code>es; don't static import, or use star imports.
 			</li>
 		</ul>
-		Current status: <em>positive</em> - Currently we feel this feature may move out of experimental status with no or minor changes soon.
+		Current status: <em>negative</em> - Currently we feel this feature cannot move out of experimental status due to fundamental issues with non-star static imports.
 	</@f.experimental>
 
 	<@f.overview>
