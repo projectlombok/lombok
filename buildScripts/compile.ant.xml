@@ -74,7 +74,21 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		</jar>
 	</target>
 	
-	<target name="compile" depends="version, deps, -setup.build, create.spiProcessor" description="Compiles the code">
+	<target name="create.agentBootstrap" depends="-setup.build" description="Compiles the Maven ECJ bootstrap agent">
+		<ivy:compile destdir="build/agentBootstrap" source="1.6" target="1.6" ecj="true">
+			<bootclasspath path="${jdk6-rt.loc}" />
+			<src path="src/eclipseAgent" />
+			<include name="lombok/launch/AgentBootstrap.java" />
+		</ivy:compile>
+		<jar destfile="build/lombok-main/lombok/eclipse/agent/lombok-bootstrap.jar" basedir="build/agentBootstrap" includes="lombok/launch/AgentBootstrap*.class">
+			<manifest>
+				<attribute name="Premain-Class" value="lombok.launch.AgentBootstrap" />
+				<attribute name="Can-Redefine-Classes" value="true" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="compile" depends="version, deps, -setup.build, create.spiProcessor, create.agentBootstrap" description="Compiles the code">
 		<!--
 			1. Compile stubs.
 			2. Compile transplants.
@@ -169,6 +183,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 			<src path="src/eclipseAgent" />
 			<src path="src/delombok" />
 			<exclude name="**/*Transplants.java" />
+			<exclude name="**/AgentBootstrap.java" />
 			<classpath refid="cp.build" />
 			<classpath refid="cp.eclipse-oxygen" />
 			<classpath refid="cp.javac6" />
