@@ -1,32 +1,81 @@
 <#import "_setup.html" as s>
 
-<@s.scaffold title="ecj">
+<@s.scaffold title="ECJ">
 	<@s.introduction>
 		<p>
-			ecj (the eclipse standalone compiler) is compatible with lombok. Use the following command line to enable lombok with ecj:
+			ECJ (the Eclipse standalone compiler) is compatible with Lombok. Use the following command line to enable Lombok with ECJ:
 			<pre>java <strong>-javaagent:lombok.jar=ECJ</strong> -jar ecj.jar -cp lombok.jar -source 1.8 <em class="note">(rest of arguments)</em></pre>
 		</p><p>
-			You may have to add the following VM argument, if you're using an older version of lombok or java:
+			You may have to add the following VM argument, if you're using an older version of Lombok or Java:
 			<pre><strong>-Xbootclasspath/p:lombok.jar</strong></pre>
 		</p><p>
-			If you're using a tool based on ecj, adding these VM arguments and adding lombok.jar to the classpath should work.
+			If you're using a tool based on ECJ, adding these VM arguments and adding <code>lombok.jar</code> to the classpath should work.
 		</p>
 	</@s.introduction>
 
 	<@s.section title="Maven">
 		<p>
-			It is possible to <a href="/setup/ecj-in-maven-pom-example.xml">configure</a> <code>maven-compiler-plugin</code> with <code>maven-dependency-plugin</code> and <code>plexus-compiler-eclipse</code>.
+			Lombok comes with a tiny bootstrap agent that can be included in your project to allow ECJ to easily work with Maven.
+			To create this agent, run:
+			<pre>java -jar lombok.jar createMavenECJBootstrap -o <em class="note">/path/to/project/root</em></pre>
 		</p><p>
-			Before the <code>compile</code> phase, you will have to set your <code>MAVEN_OPTS</code> environment variable to include the <code>javaagent</code> argument. In the example below, <code>target</code> is your <code>${r"${project.build.directory}"}</code>.
+			The -o path should be the location of your <code>pom.xml</code>.
 		</p><p>
-			Use the following commands in sequence to enable lombok with ecj in your Maven build:
-<pre>
-# Make sure you've updated your pom as per <a href="/setup/ecj-in-maven-pom-example.xml">this example</a>.
-mvn clean <strong>dependency:copy@get-lombok</strong>
-set MAVEN_OPTS=<strong>-javaagent:target/lombok.jar=ECJ</strong> <em class="note">(or your OS's equivalent)</em>
-mvn install
-set MAVEN_OPTS= <em class="note">(or your OS's equivalent)</em>
+			This will create two files, <code>.mvn/jvm.config</code> and <code>.mvn/lombok-bootstrap.jar</code>. Maven will use these files
+			to activate the standard Lombok Java agent at the right time. These can be committed in source control for a portable build.
+		</p><p>
+			You must also update your <code>pom.xml</code> to add Lombok as a dependency to the <code>maven-compiler-plugin</code>. A minimal example follows:<pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+  &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+  &lt;artifactId&gt;eclipse-compiler-test&lt;/artifactId&gt;
+  &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+
+  &lt;properties&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;lombok.version&gt;${version}&lt;/lombok.version&gt;
+  &lt;/properties&gt;
+
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+      &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+      &lt;version&gt;&#36;{lombok.version}&lt;/version&gt;
+      &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+
+  &lt;build&gt;
+    &lt;pluginManagement&gt;
+      &lt;plugins&gt;
+        &lt;plugin&gt;
+          &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+          &lt;version&gt;3.10.1&lt;/version&gt;
+          &lt;configuration&gt;
+            &lt;compilerId&gt;eclipse&lt;/compilerId&gt;
+          &lt;/configuration&gt;
+          &lt;dependencies&gt;
+            &lt;dependency&gt;
+              &lt;groupId&gt;org.codehaus.plexus&lt;/groupId&gt;
+              &lt;artifactId&gt;plexus-compiler-eclipse&lt;/artifactId&gt;
+              &lt;version&gt;2.11.1&lt;/version&gt;
+            &lt;/dependency&gt;
+            &lt;dependency&gt;
+              &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+              &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+              &lt;version&gt;&#36;{lombok.version}&lt;/version&gt;
+            &lt;/dependency&gt;
+          &lt;/dependencies&gt;
+        &lt;/plugin&gt;
+      &lt;/plugins&gt;
+    &lt;/pluginManagement&gt;
+  &lt;/build&gt;
+&lt;/project&gt;
 </pre>
-		</p>
+</p>
 	</@s.section>
 </@s.scaffold>
