@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2021 The Project Lombok Authors.
+ * Copyright (C) 2012-2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,7 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
@@ -298,7 +299,7 @@ public class PatchExtensionMethod {
 				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
 				for (Expression argument : arguments) {
 					TypeBinding argumentType = argument.resolvedType;
-					if (argumentType == null && Reflection.isFunctionalExpression(argument)) {
+					if (argumentType == null && requiresPolyBinding(argument)) {
 						argumentType = Reflection.getPolyTypeBinding(argument);
 					}
 					if (argumentType == null) {
@@ -338,8 +339,8 @@ public class PatchExtensionMethod {
 						} else {
 							param = parameters[i];
 						}
-						// Resolve types for lambdas
-						if (Reflection.isFunctionalExpression(arg)) {
+						// Resolve types for polys
+						if (requiresPolyBinding(arg)) {
 							arg.setExpectedType(param);
 							arg.resolveType(scope);
 						}
@@ -377,6 +378,10 @@ public class PatchExtensionMethod {
 		MessageSend_postponedErrors.clear(methodCall);
 		return resolvedType;
 	}
+
+	private static boolean requiresPolyBinding(Expression argument) {
+		return Reflection.isFunctionalExpression(argument) || argument instanceof ConditionalExpression && Reflection.isPolyExpression(argument);
+	}
 	
 	private static NameReference createNameRef(TypeBinding typeBinding, ASTNode source) {
 		long p = ((long) source.sourceStart << 32) | source.sourceEnd;
@@ -407,6 +412,7 @@ public class PatchExtensionMethod {
 		public static final Field argumentTypes = Permit.permissiveGetField(MessageSend.class, "argumentTypes");
 		public static final Field argumentsHaveErrors = Permit.permissiveGetField(MessageSend.class, "argumentsHaveErrors");
 		public static final Field inferenceContexts = Permit.permissiveGetField(MessageSend.class, "inferenceContexts");
+		private static final Method isPolyExpression = Permit.permissiveGetMethod(Expression.class, "isPolyExpression");
 		private static final Class<?> functionalExpression;
 		private static final Constructor<?> polyTypeBindingConstructor;
 		
@@ -430,6 +436,16 @@ public class PatchExtensionMethod {
 		public static boolean isFunctionalExpression(Expression expression) {
 			if (functionalExpression == null) return false;
 			return functionalExpression.isInstance(expression);
+		}
+		
+		public static boolean isPolyExpression(Expression expression) {
+			if (isPolyExpression == null) return false;
+			try {
+				return (Boolean) isPolyExpression.invoke(expression);
+			} catch (Exception e) {
+				// Ignore
+			}
+			return false;
 		}
 		
 		public static TypeBinding getPolyTypeBinding(Expression expression) {

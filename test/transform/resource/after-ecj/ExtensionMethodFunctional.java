@@ -36,6 +36,7 @@ import lombok.experimental.ExtensionMethod;
     test = ExtensionMethodFunctional.Extensions.map(test, (<no type> s) -> ExtensionMethodFunctional.Extensions.reverse(s));
     ExtensionMethodFunctional.Extensions.consume(test, (<no type> s) -> System.out.println(("1: " + s)), (<no type> s) -> System.out.println(("2: " + s)));
     ExtensionMethodFunctional.Extensions.consume(test, System.out::println, System.out::println);
+    ExtensionMethodFunctional.Extensions.consume(test, ((test.length() > 0) ? System.out::println : null));
     ExtensionMethodFunctional.Extensions.toList1(Stream.of("a", "b", "c").map(String::toUpperCase));
     List<Integer> i2 = ExtensionMethodFunctional.Extensions.toList2(Stream.of("a", "b", "c").map(String::toUpperCase));
   }
