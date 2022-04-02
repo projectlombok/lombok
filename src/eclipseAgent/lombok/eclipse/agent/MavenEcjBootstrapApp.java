@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2022 The Project Lombok Authors.
+ * Copyright (C) 2022 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.List;
 
 import com.zwitserloot.cmdreader.CmdReader;
@@ -45,18 +44,14 @@ public class MavenEcjBootstrapApp extends LombokApp {
 	
 	@Override public String getAppDescription() {
 		return "Creates .mvn/jvm.config and .mvn/lombok-bootstrap.jar for\n" +
-				"use with the ECJ compiler.";
-	}
-	
-	@Override public List<String> getAppAliases() {
-		return Arrays.asList("ecj");
+			"use with the ECJ compiler.";
 	}
 	
 	private static class CmdArgs {
 		@Shorthand("w")
 		@Description("Overwrite existing files. Defaults to false.")
 		boolean overwrite = false;
-
+		
 		@Shorthand("o")
 		@Description("The root of a Maven project. Defaults to the current working directory.")
 		String output;
@@ -103,7 +98,7 @@ public class MavenEcjBootstrapApp extends LombokApp {
 			err = e;
 		}
 		if (result != 0) {
-			System.err.println("Could not create "+mvn.getPath());
+			System.err.println("Could not create " + mvn.getPath());
 			if (err != null) err.printStackTrace(System.err);
 		}
 		return result;
@@ -136,15 +131,21 @@ public class MavenEcjBootstrapApp extends LombokApp {
 			return 1;
 		}
 		try {
-			InputStream input = this.getClass().getResourceAsStream("/lombok/eclipse/agent/lombok-bootstrap.jar");
+			InputStream input = MavenEcjBootstrapApp.class.getResourceAsStream("/lombok/launch/mavenEcjBootstrapAgent.jar");
 			FileOutputStream output = new FileOutputStream(jar);
-			byte[] buffer = new byte[4096];
-			int length;
-			while ((length = input.read(buffer)) > 0) output.write(buffer, 0, length);
-			output.flush();
-			output.close();
-			System.out.println("Successfully created: " + canonical(jar));
-			return 0;
+			try {
+				byte[] buffer = new byte[4096];
+				int length;
+				while ((length = input.read(buffer)) > 0) output.write(buffer, 0, length);
+				output.flush();
+				output.close();
+				System.out.println("Successfully created: " + canonical(jar));
+				return 0;
+			} finally {
+				try {
+					output.close();
+				} catch (Exception ignore) {}
+			}
 		} catch (Exception e) {
 			System.err.println("Could not create: " + canonical(jar));
 			e.printStackTrace(System.err);

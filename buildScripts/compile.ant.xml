@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2020-2021 The Project Lombok Authors.
+ Copyright (C) 2020-2022 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -74,13 +74,13 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		</jar>
 	</target>
 	
-	<target name="create.agentBootstrap" depends="-setup.build" description="Compiles the Maven ECJ bootstrap agent">
-		<ivy:compile destdir="build/agentBootstrap" source="1.6" target="1.6" ecj="true">
+	<target name="create.mavenEcjBootstrapAgent" depends="-setup.build" description="Compiles the Maven ECJ bootstrap agent">
+		<ivy:compile destdir="build/mavenEcjBootstrapAgent" source="1.6" target="1.6" ecj="true">
 			<bootclasspath path="${jdk6-rt.loc}" />
-			<src path="src/eclipseAgent" />
-			<include name="lombok/launch/AgentBootstrap.java" />
+			<src path="src/mavenEcjBootstrapAgent" />
 		</ivy:compile>
-		<jar destfile="build/lombok-main/lombok/eclipse/agent/lombok-bootstrap.jar" basedir="build/agentBootstrap" includes="lombok/launch/AgentBootstrap*.class">
+		<mkdir dir="build/lombok-main/lombok/launch" />
+		<jar destfile="build/lombok-main/lombok/launch/mavenEcjBootstrapAgent.jar" basedir="build/mavenEcjBootstrapAgent">
 			<manifest>
 				<attribute name="Premain-Class" value="lombok.launch.AgentBootstrap" />
 				<attribute name="Can-Redefine-Classes" value="true" />
@@ -183,7 +183,6 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 			<src path="src/eclipseAgent" />
 			<src path="src/delombok" />
 			<exclude name="**/*Transplants.java" />
-			<exclude name="**/AgentBootstrap.java" />
 			<classpath refid="cp.build" />
 			<classpath refid="cp.eclipse-oxygen" />
 			<classpath refid="cp.javac6" />

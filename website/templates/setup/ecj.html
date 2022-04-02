@@ -12,14 +12,14 @@
 			If you're using a tool based on ECJ, adding these VM arguments and adding <code>lombok.jar</code> to the classpath should work.
 		</p>
 	</@s.introduction>
-
+	
 	<@s.section title="Maven">
 		<p>
 			Lombok comes with a tiny bootstrap agent that can be included in your project to allow ECJ to easily work with Maven.
 			To create this agent, run:
 			<pre>java -jar lombok.jar createMavenECJBootstrap -o <em class="note">/path/to/project/root</em></pre>
 		</p><p>
-			The -o path should be the location of your <code>pom.xml</code>.
+			The -o path should contain your <code>pom.xml</code>.
 		</p><p>
 			This will create two files, <code>.mvn/jvm.config</code> and <code>.mvn/lombok-bootstrap.jar</code>. Maven will use these files
 			to activate the standard Lombok Java agent at the right time. These can be committed in source control for a portable build.
