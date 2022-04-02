@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.23 "Edgy Guinea Pig"
 
 * PLATFORM: JDK18 support added. [Issue #3129](https://github.com/projectlombok/lombok/issues/3129).
+* PLATFORM: Using ecj and maven? There's now a [command line option to integrate lombok into your build chain](https://projectlombok.org/setup/ecj). [Issue #3143](https://github.com/projectlombok/lombok/issues/3143).
 * FEATURE: `@ToString` has an annotation parameter called `onlyExplicitlyIncluded`. There's now a config key `lombok.toString.onlyExplicitlyIncluded` to set this property as well. [Issue #2849](https://github.com/projectlombok/lombok/pull/2849).
 * FEATURE: Turning a field named `uShape` into a getter is tricky: `getUShape` or `getuShape`? The community is split on which style to use. Lombok does `getUShape`, but if you prefer the `getuShape` style, add to `lombok.config`: `lombok.accessors.capitalization = beanspec`. [Issue #2693](https://github.com/projectlombok/lombok/issues/2693) [Pull Request #2996](https://github.com/projectlombok/lombok/pull/2996). Thanks __@YonathanSherwin__!
 * FEATURE: You can now use `@Accessors(makeFinal = true)` to make `final` getters, setters, and with-ers. [Issue #1456](https://github.com/projectlombok/lombok/issues/1456).
