@@ -88,7 +88,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		</jar>
 	</target>
 	
-	<target name="compile" depends="version, deps, -setup.build, create.spiProcessor, create.agentBootstrap" description="Compiles the code">
+	<target name="compile" depends="version, deps, -setup.build, create.spiProcessor, create.mavenEcjBootstrapAgent" description="Compiles the code">
 		<!--
 			1. Compile stubs.
 			2. Compile transplants.
