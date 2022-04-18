@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.23 "Edgy Guinea Pig"
+### v1.18.24 (April 18th, 2022)
 
 * PLATFORM: JDK18 support added. [Issue #3129](https://github.com/projectlombok/lombok/issues/3129).
 * PLATFORM: Using ecj and maven? There's now a [command line option to integrate lombok into your build chain](https://projectlombok.org/setup/ecj). [Issue #3143](https://github.com/projectlombok/lombok/issues/3143).
