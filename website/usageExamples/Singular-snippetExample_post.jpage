@@ -45,6 +45,11 @@ public class SingularExample<T extends Number> {
 			return this;
 		}
 		
+		public SingularExampleBuilder<T> clearOccupations() {
+			if (this.occupations != null) this.occupations.clear();
+			return this;
+		}
+		
 		public SingularExampleBuilder<T> axis(String axis) {
 			if (this.axes == null) {
 				this.axes = com.google.common.collect.ImmutableList.builder();
@@ -60,6 +65,11 @@ public class SingularExample<T extends Number> {
 			}
 			
 			this.axes.addAll(axes);
+			return this;
+		}
+		
+		public SingularExampleBuilder<T> clearAxes() {
+			if (this.axes != null) this.axes.clear();
 			return this;
 		}
 		
@@ -87,6 +97,14 @@ public class SingularExample<T extends Number> {
 			return this;
 		}
 		
+		public SingularExampleBuilder<T> clearElves() {
+			if (this.elves$key != null) {
+				this.elves$key.clear();
+				this.elves$value.clear();
+			}
+			return this;
+		}
+		
 		public SingularExampleBuilder<T> minutia(java.lang.Object minutia) {
 			if (this.minutiae == null) {
 				this.minutiae = new java.util.ArrayList<java.lang.Object>();
@@ -102,6 +120,11 @@ public class SingularExample<T extends Number> {
 			}
 			
 			this.minutiae.addAll(minutiae);
+			return this;
+		}
+		
+		public SingularExampleBuilder<T> clearMinutiae() {
+			if (this.minutiae != null) this.minutiae.clear();
 			return this;
 		}
 		
