@@ -272,7 +272,7 @@ such as applying the templates to produce the website, converting the changelog 
 			knownHosts="ssh.knownHosts" />
 	</target>
 	
-	<target name="release.publish" depends="maven, -release.publish.site, website.publish, eclipsep2.publish, maven.publish" />
+	<target name="release.publish" depends="maven, -release.publish.site, website.publish, eclipsep2.publish, maven.publish" description="Deploys a new official lombok release everywhere: maven, website, p2 site" />
 	
 	<target name="edge.pack" depends="compile.support, version, dist, maven.edge">
 		<delete file="build/website/download-edge.html" />
