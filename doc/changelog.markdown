@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.25 "Edgy Guinea Pig"
+* No new changes since the release of v1.18.24
+
 ### v1.18.24 (April 18th, 2022)
 
 * PLATFORM: JDK18 support added. [Issue #3129](https://github.com/projectlombok/lombok/issues/3129).
