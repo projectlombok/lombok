@@ -82,7 +82,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 		<mkdir dir="build/lombok-main/lombok/launch" />
 		<jar destfile="build/lombok-main/lombok/launch/mavenEcjBootstrapAgent.jar" basedir="build/mavenEcjBootstrapAgent">
 			<manifest>
-				<attribute name="Premain-Class" value="lombok.launch.AgentBootstrap" />
+				<attribute name="Premain-Class" value="lombok.launch.MavenEcjBootstrapAgent" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 			</manifest>
 		</jar>
