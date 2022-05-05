@@ -81,6 +81,13 @@ public class HandlerUtil {
 	
 	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
 	static {
+		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
+		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
+		// after all, you should be able to model invalid rows, or invalid forms.
+		
+		// In addition, the intent for these annotations is that they can be used 'in public' - it's not for internal-only usage annotations.
+		
+		// Presence of these annotations mean that lombok will generate null checks in any created setters and constructors.
 		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"android.annotation.NonNull",
 			"android.support.annotation.NonNull",
@@ -88,11 +95,9 @@ public class HandlerUtil {
 			"androidx.annotation.NonNull",
 			"androidx.annotation.RecentlyNonNull",
 			"com.android.annotations.NonNull",
-			"com.google.firebase.database.annotations.NotNull",
-			"com.google.firebase.internal.NonNull",
-			"com.mongodb.lang.NonNull",
+			"com.google.firebase.database.annotations.NotNull", // Even though it's in a database package, it does mean semantically: "Check if never null at the language level", and not 'db column cannot be null'.
+			"com.mongodb.lang.NonNull", // Even though mongo is a DB engine, this semantically refers to language, not DB table designs (mongo is a document DB engine, so this isn't surprising perhaps).
 			"com.sun.istack.NotNull",
-			"com.sun.istack.internal.NotNull",
 			"com.unboundid.util.NotNull",
 			"edu.umd.cs.findbugs.annotations.NonNull",
 			"io.micrometer.core.lang.NonNull",
@@ -102,14 +107,11 @@ public class HandlerUtil {
 			// "javax.validation.constraints.NotNull", // The field might contain a null value until it is persisted.
 			"libcore.util.NonNull",
 			"lombok.NonNull",
-			"org.antlr.v4.runtime.misc.NotNull",
 			"org.checkerframework.checker.nullness.qual.NonNull",
 			"org.checkerframework.checker.nullness.compatqual.NonNullDecl",
 			"org.checkerframework.checker.nullness.compatqual.NonNullType",
 			"org.codehaus.commons.nullanalysis.NotNull",
 			"org.eclipse.jdt.annotation.NonNull",
-			"org.eclipse.jgit.annotations.NonNull",
-			"org.eclipse.lsp4j.jsonrpc.validation.NonNull",
 			"org.jetbrains.annotations.NotNull",
 			"org.jmlspecs.annotation.NonNull",
 			"org.netbeans.api.annotations.common.NonNull",
