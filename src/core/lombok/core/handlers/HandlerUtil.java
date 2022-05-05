@@ -118,6 +118,15 @@ public class HandlerUtil {
 			"org.springframework.lang.NonNull",
 			"reactor.util.annotation.NonNull",
 		}));
+		
+		// This is a list of annotations that lombok will automatically 'copy' - be it to the method (when generating a getter for a field annotated with one of these), or to a parameter (generating a setter, with-er, or builder 'setter').
+		// You can't disable this behaviour, so the list should only contain annotations where 'copy it!' is the desired behaviour in at least 95%, preferably 98%, of all non-buggy usages.
+		// As a general rule, lombok takes on maintenance of adding all nullity-related annotations here, _if_ they fit the definition of language-level nullity as per {@see #NONNULL_ANNOTATIONS}. As a consequence, everything from the NONNULL list should probably
+		// also be in this list, and any nullity-related annotation in this list implies the non-null variant should be in the NONNULL_ANNOTATIONS list, unless there is no such annotation.
+		
+		// NB: Intent is that we get rid of a lot of this list and instead move to a system whereby lombok users explicitly opt in to the desired behaviour per 'library' (e.g per "Jackson annotations", "Checker framework annotations", etc.
+		// - the problem is, how do we know that the owners of a certain annotation intend for it to be copied in this fashion? What to do if a bug report is filed that we should not always copy it? Hence, care should be taken when editing this list.
+		// When in doubt, leave it out - this list can be added to dynamically by {See lombok.ConfigurationKeys#COPYABLE_ANNOTATIONS}.
 		BASE_COPYABLE_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"android.annotation.NonNull",
 			"android.annotation.Nullable",
@@ -131,19 +140,13 @@ public class HandlerUtil {
 			"androidx.annotation.RecentlyNullable",
 			"com.android.annotations.NonNull",
 			"com.android.annotations.Nullable",
-			"com.beust.jcommander.internal.Nullable",
-			"com.google.api.server.spi.config.Nullable",
+			// "com.google.api.server.spi.config.Nullable", - let's think about this one a litte, as it is targeted solely at parameters, so you can't even put it on fields. If we choose to support it, we should REMOVE it from the field, then - that's not something we currently support.
 			"com.google.firebase.database.annotations.NotNull",
 			"com.google.firebase.database.annotations.Nullable",
-			"com.google.firebase.internal.NonNull",
-			"com.google.firebase.internal.Nullable",
-			"com.google.gerrit.common.Nullable",
 			"com.mongodb.lang.NonNull",
 			"com.mongodb.lang.Nullable",
 			"com.sun.istack.NotNull",
 			"com.sun.istack.Nullable",
-			"com.sun.istack.internal.NotNull",
-			"com.sun.istack.internal.Nullable",
 			"com.unboundid.util.NotNull",
 			"com.unboundid.util.Nullable",
 			"edu.umd.cs.findbugs.annotations.CheckForNull",
@@ -161,15 +164,10 @@ public class HandlerUtil {
 			"javax.annotation.Nonnull",
 			"javax.annotation.Nonnull",
 			"javax.annotation.Nullable",
-			"javax.validation.constraints.NotNull",
-			"junitparams.converters.Nullable",
+//			"javax.validation.constraints.NotNull", // - this should definitely not be included; validation is not about language-level nullity, therefore should not be in this core list.
 			"libcore.util.NonNull",
 			"libcore.util.Nullable",
 			"lombok.NonNull",
-			"org.antlr.v4.runtime.misc.NotNull",
-			"org.apache.avro.reflect.Nullable",
-			"org.apache.cxf.jaxrs.ext.Nullable",
-			"org.apache.shindig.common.Nullable",
 			"org.checkerframework.checker.nullness.compatqual.NonNullDecl",
 			"org.checkerframework.checker.nullness.compatqual.NonNullType",
 			"org.checkerframework.checker.nullness.compatqual.NullableDecl",
@@ -180,9 +178,6 @@ public class HandlerUtil {
 			"org.codehaus.commons.nullanalysis.Nullable",
 			"org.eclipse.jdt.annotation.NonNull",
 			"org.eclipse.jdt.annotation.Nullable",
-			"org.eclipse.jgit.annotations.NonNull",
-			"org.eclipse.jgit.annotations.Nullable",
-			"org.eclipse.lsp4j.jsonrpc.validation.NonNull",
 			"org.jetbrains.annotations.NotNull",
 			"org.jetbrains.annotations.Nullable",
 			"org.jetbrains.annotations.UnknownNullability",
@@ -196,7 +191,9 @@ public class HandlerUtil {
 			"org.netbeans.api.annotations.common.NullUnknown",
 			"org.springframework.lang.NonNull",
 			"org.springframework.lang.Nullable",
-
+			"reactor.util.annotation.NonNull",
+			"reactor.util.annotation.Nullable",
+			
 			// Checker Framework annotations.
 			// To update Checker Framework annotations, run:
 			// grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' $CHECKERFRAMEWORK/checker/src/main/java $CHECKERFRAMEWORK/checker-qual/src/main/java $CHECKERFRAMEWORK/checker-util/src/main/java $CHECKERFRAMEWORK/framework/src/main/java | grep '\.java$' | sed 's/.*\/java\//\t\t\t"/' | sed 's/\.java$/",/' | sed 's/\//./g' | sort
