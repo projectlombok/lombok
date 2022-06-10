@@ -895,6 +895,7 @@ public class HandlerUtil {
 	
 	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER|WITH(?:ER)?)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 	private static final Pattern LINE_BREAK_FINDER = Pattern.compile("(\\r?\\n)?");
+	private static final Pattern MAIN_SENTENCE_FINDER = Pattern.compile("\r?\n\\s*?[\r\n]|<p>|^\\s*@");
 	
 	public enum JavadocTag {
 		PARAM("@param(?:eter)?"),
@@ -905,6 +906,18 @@ public class HandlerUtil {
 		JavadocTag(String regexpFragment) {
 			pattern = Pattern.compile("\\s?^[ \\t]*\\**[ \\t]*" + regexpFragment + "(\\S|\\s)*?(?=(\\s^\\s*\\**\\s*@|\\Z))", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		}
+		
+		public boolean isPartOf(String javadoc) {
+			return pattern.matcher(javadoc).find();
+		}
+	}
+	
+	public static String getMainSentenceOfJavaDoc(String javadoc) {
+		if (javadoc == null || javadoc.isEmpty()) return javadoc;
+		
+		String trimmedJavadoc = javadoc.trim();
+		Matcher matcher = MAIN_SENTENCE_FINDER.matcher(trimmedJavadoc);
+		return matcher.find() ? trimmedJavadoc.substring(0, matcher.start()).trim() : trimmedJavadoc;
 	}
 	
 	public static String stripLinesWithTagFromJavadoc(String javadoc, JavadocTag tag) {
