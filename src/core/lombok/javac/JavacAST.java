@@ -512,6 +512,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			// We could try to set the stack trace of the new exception to the same one as the old exception, but this costs memory,
 			// and we're already in an extremely fragile situation in regards to remaining heap space, so let's not do that.
 			throw newError;
+		} catch (StackOverflowError soe) {
+			StackOverflowError newError = new StackOverflowError(getFileName() + ": " + statement.toString());
+			newError.setStackTrace(soe.getStackTrace());
+			throw newError;
 		}
 	}
 	
