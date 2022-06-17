@@ -1063,6 +1063,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	private void addFirstToken(java.util.Set<String> usedNames, JCTree type) {
 		if (type == null) 
 			return;
+		if (type instanceof JCTypeApply) {
+			type = ((JCTypeApply)type).clazz;
+		}
 		while (type instanceof JCFieldAccess && ((JCFieldAccess)type).selected != null) {
 			// Add the first token, because only that can collide.
 			type = ((JCFieldAccess)type).selected;

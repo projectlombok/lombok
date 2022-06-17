@@ -125,13 +125,17 @@ public class SuperBuilderNameClashes {
 		}
 	}
 	interface B2 {
+		interface B4<X> {
+		}
 	}
-	public static class ExtendsClauseCollision extends B implements B2 {
+	interface B3<Y> {
+	}
+	public static class ExtendsClauseCollision extends B implements B2.B4<Object>, B3<Object> {
 		@java.lang.SuppressWarnings("all")
-		public static abstract class ExtendsClauseCollisionBuilder<C extends SuperBuilderNameClashes.ExtendsClauseCollision, B3 extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<C, B3>> extends B.BBuilder<C, B3> {
+		public static abstract class ExtendsClauseCollisionBuilder<C extends SuperBuilderNameClashes.ExtendsClauseCollision, B4 extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<C, B4>> extends B.BBuilder<C, B4> {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected abstract B3 self();
+			protected abstract B4 self();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();

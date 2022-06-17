@@ -102,13 +102,17 @@ public class SuperBuilderNameClashes {
     }
   }
   interface B2 {
+    interface B4<X> {
+    }
   }
-  public static @lombok.experimental.SuperBuilder class ExtendsClauseCollision extends B implements B2 {
-    public static abstract @java.lang.SuppressWarnings("all") class ExtendsClauseCollisionBuilder<C extends SuperBuilderNameClashes.ExtendsClauseCollision, B3 extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<C, B3>> extends B.BBuilder<C, B3> {
+  interface B3<Y> {
+  }
+  public static @lombok.experimental.SuperBuilder class ExtendsClauseCollision extends B implements B2.B4<Object>, B3<Object> {
+    public static abstract @java.lang.SuppressWarnings("all") class ExtendsClauseCollisionBuilder<C extends SuperBuilderNameClashes.ExtendsClauseCollision, B4 extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<C, B4>> extends B.BBuilder<C, B4> {
       public ExtendsClauseCollisionBuilder() {
         super();
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B3 self();
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B4 self();
       public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder(super=" + super.toString()) + ")");
