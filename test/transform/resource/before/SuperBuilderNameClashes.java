@@ -14,4 +14,11 @@ public class SuperBuilderNameClashes {
 	public static class C {
 		C2 c2;
 	}
+	
+	interface B2 {
+	}
+	
+	@lombok.experimental.SuperBuilder
+	public static class ExtendsClauseCollision extends B implements B2 {
+	}
 }

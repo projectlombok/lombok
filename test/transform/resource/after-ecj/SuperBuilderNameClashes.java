@@ -101,6 +101,37 @@ public class SuperBuilderNameClashes {
       return new SuperBuilderNameClashes.C.CBuilderImpl();
     }
   }
+  interface B2 {
+  }
+  public static @lombok.experimental.SuperBuilder class ExtendsClauseCollision extends B implements B2 {
+    public static abstract @java.lang.SuppressWarnings("all") class ExtendsClauseCollisionBuilder<C extends SuperBuilderNameClashes.ExtendsClauseCollision, B3 extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<C, B3>> extends B.BBuilder<C, B3> {
+      public ExtendsClauseCollisionBuilder() {
+        super();
+      }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B3 self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
+      public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+        return (("SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder(super=" + super.toString()) + ")");
+      }
+    }
+    private static final @java.lang.SuppressWarnings("all") class ExtendsClauseCollisionBuilderImpl extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<SuperBuilderNameClashes.ExtendsClauseCollision, SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilderImpl> {
+      private ExtendsClauseCollisionBuilderImpl() {
+        super();
+      }
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilderImpl self() {
+        return this;
+      }
+      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderNameClashes.ExtendsClauseCollision build() {
+        return new SuperBuilderNameClashes.ExtendsClauseCollision(this);
+      }
+    }
+    protected @java.lang.SuppressWarnings("all") ExtendsClauseCollision(final SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<?, ?> b) {
+      super(b);
+    }
+    public static @java.lang.SuppressWarnings("all") SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<?, ?> builder() {
+      return new SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilderImpl();
+    }
+  }
   public SuperBuilderNameClashes() {
     super();
   }

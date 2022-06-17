@@ -124,4 +124,46 @@ public class SuperBuilderNameClashes {
 			return new SuperBuilderNameClashes.C.CBuilderImpl();
 		}
 	}
+	interface B2 {
+	}
+	public static class ExtendsClauseCollision extends B implements B2 {
+		@java.lang.SuppressWarnings("all")
+		public static abstract class ExtendsClauseCollisionBuilder<C extends SuperBuilderNameClashes.ExtendsClauseCollision, B3 extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<C, B3>> extends B.BBuilder<C, B3> {
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B3 self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public java.lang.String toString() {
+				return "SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder(super=" + super.toString() + ")";
+			}
+		}
+		@java.lang.SuppressWarnings("all")
+		private static final class ExtendsClauseCollisionBuilderImpl extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<SuperBuilderNameClashes.ExtendsClauseCollision, SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilderImpl> {
+			@java.lang.SuppressWarnings("all")
+			private ExtendsClauseCollisionBuilderImpl() {
+			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilderImpl self() {
+				return this;
+			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public SuperBuilderNameClashes.ExtendsClauseCollision build() {
+				return new SuperBuilderNameClashes.ExtendsClauseCollision(this);
+			}
+		}
+		@java.lang.SuppressWarnings("all")
+		protected ExtendsClauseCollision(final SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<?, ?> b) {
+			super(b);
+		}
+		@java.lang.SuppressWarnings("all")
+		public static SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<?, ?> builder() {
+			return new SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilderImpl();
+		}
+	}
 }
