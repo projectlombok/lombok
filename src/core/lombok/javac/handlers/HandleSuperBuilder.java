@@ -336,6 +336,11 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			injectMethod(job.builderType, sfvm);
 		}
 		
+		// Create the setter methods in the abstract builder.
+		for (BuilderFieldData bfd : job.builderFields) {
+			generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
+		}
+		
 		// Generate abstract self() and build() methods in the abstract builder.
 		JCMethodDecl asm = generateAbstractSelfMethod(job, superclassBuilderClass != null, builderGenericName);
 		recursiveSetGeneratedBy(asm, annotationNode);
@@ -343,11 +348,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCMethodDecl abm = generateAbstractBuildMethod(job, superclassBuilderClass != null, classGenericName);
 		recursiveSetGeneratedBy(abm, annotationNode);
 		injectMethod(job.builderType, abm);
-		
-		// Create the setter methods in the abstract builder.
-		for (BuilderFieldData bfd : job.builderFields) {
-			generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
-		}
 		
 		// Create the toString() method for the abstract builder.
 		java.util.List<Included<JavacNode, ToString.Include>> fieldNodes = new ArrayList<Included<JavacNode, ToString.Include>>();
