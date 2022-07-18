@@ -9,10 +9,6 @@ public class SuperBuilderWithGenerics {
 			private A field1;
 			@java.lang.SuppressWarnings("all")
 			private java.util.ArrayList<String> items;
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -41,6 +37,10 @@ public class SuperBuilderWithGenerics {
 				if (this.items != null) this.items.clear();
 				return self();
 			}
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
@@ -90,12 +90,6 @@ public class SuperBuilderWithGenerics {
 		public static abstract class ChildBuilder<A, C extends SuperBuilderWithGenerics.Child<A>, B extends SuperBuilderWithGenerics.Child.ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
 			@java.lang.SuppressWarnings("all")
 			private double field3;
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -104,6 +98,12 @@ public class SuperBuilderWithGenerics {
 				this.field3 = field3;
 				return self();
 			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

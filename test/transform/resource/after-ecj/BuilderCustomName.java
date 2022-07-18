@@ -5,8 +5,6 @@ import java.util.List;
     public SimpleTestBuilder() {
       super();
     }
-    protected abstract @java.lang.SuppressWarnings("all") B self();
-    public abstract @java.lang.SuppressWarnings("all") C build();
     /**
      * @return {@code this}.
      */
@@ -14,6 +12,8 @@ import java.util.List;
       this.field = field;
       return self();
     }
+    protected abstract @java.lang.SuppressWarnings("all") B self();
+    public abstract @java.lang.SuppressWarnings("all") C build();
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("BuilderCustomName.SimpleTestBuilder(field=" + this.field) + ")");
     }

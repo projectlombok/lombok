@@ -81,10 +81,6 @@ public class SuperBuilderNameClashes {
 		public static abstract class CBuilder<C3 extends SuperBuilderNameClashes.C, B extends SuperBuilderNameClashes.C.CBuilder<C3, B>> {
 			@java.lang.SuppressWarnings("all")
 			private C2 c2;
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.SuppressWarnings("all")
-			public abstract C3 build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -93,6 +89,10 @@ public class SuperBuilderNameClashes {
 				this.c2 = c2;
 				return self();
 			}
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.SuppressWarnings("all")
+			public abstract C3 build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

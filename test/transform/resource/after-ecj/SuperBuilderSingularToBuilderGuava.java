@@ -20,8 +20,6 @@ public class SuperBuilderSingularToBuilderGuava {
         b.passes(((instance.passes == null) ? com.google.common.collect.ImmutableSortedSet.<String>of() : instance.passes));
         b.users(((instance.users == null) ? com.google.common.collect.ImmutableTable.<Number, Number, String>of() : instance.users));
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.SuppressWarnings("all") B card(final T card) {
         if ((this.cards == null))
             this.cards = com.google.common.collect.ImmutableList.builder();
@@ -122,6 +120,8 @@ public class SuperBuilderSingularToBuilderGuava {
         this.users = null;
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((((((((("SuperBuilderSingularToBuilderGuava.Parent.ParentBuilder(cards=" + this.cards) + ", frogs=") + this.frogs) + ", rawSet=") + this.rawSet) + ", passes=") + this.passes) + ", users=") + this.users) + ")");
       }
@@ -176,8 +176,6 @@ public class SuperBuilderSingularToBuilderGuava {
       private static @java.lang.SuppressWarnings("all") <T>void $fillValuesFromInstanceIntoBuilder(final SuperBuilderSingularToBuilderGuava.Child<T> instance, final SuperBuilderSingularToBuilderGuava.Child.ChildBuilder<T, ?, ?> b) {
         b.field3(instance.field3);
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -185,6 +183,8 @@ public class SuperBuilderSingularToBuilderGuava {
         this.field3 = field3;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderSingularToBuilderGuava.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }

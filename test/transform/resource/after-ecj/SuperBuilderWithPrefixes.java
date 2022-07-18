@@ -6,8 +6,6 @@
     public SuperBuilderWithPrefixesBuilder() {
       super();
     }
-    protected abstract @java.lang.SuppressWarnings("all") B self();
-    public abstract @java.lang.SuppressWarnings("all") C build();
     /**
      * @return {@code this}.
      */
@@ -43,6 +41,8 @@
           this.items.clear();
       return self();
     }
+    protected abstract @java.lang.SuppressWarnings("all") B self();
+    public abstract @java.lang.SuppressWarnings("all") C build();
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((("SuperBuilderWithPrefixes.SuperBuilderWithPrefixesBuilder(field=" + this.field) + ", otherField=") + this.otherField) + ", items=") + this.items) + ")");
     }

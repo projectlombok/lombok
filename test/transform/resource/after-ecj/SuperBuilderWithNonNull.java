@@ -7,8 +7,6 @@ public class SuperBuilderWithNonNull {
       public ParentBuilder() {
         super();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -21,6 +19,8 @@ public class SuperBuilderWithNonNull {
         nonNullParentField$set = true;
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("SuperBuilderWithNonNull.Parent.ParentBuilder(nonNullParentField$value=" + this.nonNullParentField$value) + ")");
       }
@@ -61,8 +61,6 @@ public class SuperBuilderWithNonNull {
       public ChildBuilder() {
         super();
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -74,6 +72,8 @@ public class SuperBuilderWithNonNull {
         this.nonNullChildField = nonNullChildField;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderWithNonNull.Child.ChildBuilder(super=" + super.toString()) + ", nonNullChildField=") + this.nonNullChildField) + ")");
       }

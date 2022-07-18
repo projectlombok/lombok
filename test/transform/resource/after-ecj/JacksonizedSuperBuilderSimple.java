@@ -5,8 +5,6 @@ public class JacksonizedSuperBuilderSimple {
       public ParentBuilder() {
         super();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -14,6 +12,8 @@ public class JacksonizedSuperBuilderSimple {
         this.field1 = field1;
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("JacksonizedSuperBuilderSimple.Parent.ParentBuilder(field1=" + this.field1) + ")");
       }

@@ -18,12 +18,6 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
 			@java.lang.SuppressWarnings("all")
 			private String foo$value;
 
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
-
 			/**
 			 * @return {@code this}.
 			 */
@@ -33,6 +27,12 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
 				foo$set = true;
 				return self();
 			}
+
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
@@ -90,14 +90,6 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
 			@java.lang.SuppressWarnings("all")
 			private String foo$value;
 
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
-
 			/**
 			 * @return {@code this}.
 			 */
@@ -107,6 +99,14 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
 				foo$set = true;
 				return self();
 			}
+
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")

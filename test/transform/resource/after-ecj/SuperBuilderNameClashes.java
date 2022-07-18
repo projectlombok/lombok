@@ -68,8 +68,6 @@ public class SuperBuilderNameClashes {
       public CBuilder() {
         super();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C3 build();
       /**
        * @return {@code this}.
        */
@@ -77,6 +75,8 @@ public class SuperBuilderNameClashes {
         this.c2 = c2;
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C3 build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("SuperBuilderNameClashes.C.CBuilder(c2=" + this.c2) + ")");
       }

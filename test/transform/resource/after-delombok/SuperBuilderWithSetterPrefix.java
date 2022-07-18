@@ -37,10 +37,6 @@ public class SuperBuilderWithSetterPrefix {
 				b.withObtainViaStaticMethod(SuperBuilderWithSetterPrefix.Parent.staticMethod(instance));
 				b.withItems(instance.items == null ? java.util.Collections.<String>emptyList() : instance.items);
 			}
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -93,6 +89,10 @@ public class SuperBuilderWithSetterPrefix {
 				if (this.items != null) this.items.clear();
 				return self();
 			}
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
@@ -160,12 +160,6 @@ public class SuperBuilderWithSetterPrefix {
 			private static void $fillValuesFromInstanceIntoBuilder(final SuperBuilderWithSetterPrefix.Child instance, final SuperBuilderWithSetterPrefix.Child.ChildBuilder<?, ?> b) {
 				b.setField3(instance.field3);
 			}
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -174,6 +168,12 @@ public class SuperBuilderWithSetterPrefix {
 				this.field3 = field3;
 				return self();
 			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

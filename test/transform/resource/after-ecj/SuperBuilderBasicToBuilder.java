@@ -21,8 +21,6 @@ public class SuperBuilderBasicToBuilder {
         b.obtainViaStaticMethod(SuperBuilderBasicToBuilder.Parent.staticMethod(instance));
         b.items(((instance.items == null) ? java.util.Collections.<String>emptyList() : instance.items));
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -72,6 +70,8 @@ public class SuperBuilderBasicToBuilder {
             this.items.clear();
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((((((((("SuperBuilderBasicToBuilder.Parent.ParentBuilder(field1=" + this.field1) + ", obtainViaField=") + this.obtainViaField) + ", obtainViaMethod=") + this.obtainViaMethod) + ", obtainViaStaticMethod=") + this.obtainViaStaticMethod) + ", items=") + this.items) + ")");
       }
@@ -138,8 +138,6 @@ public class SuperBuilderBasicToBuilder {
       private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final SuperBuilderBasicToBuilder.Child instance, final SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> b) {
         b.field3(instance.field3);
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -147,6 +145,8 @@ public class SuperBuilderBasicToBuilder {
         this.field3 = field3;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderBasicToBuilder.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }

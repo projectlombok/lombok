@@ -6,10 +6,6 @@ public class JacksonizedSuperBuilderWithJsonDeserialize {
 	public static abstract class JacksonizedSuperBuilderWithJsonDeserializeBuilder<C extends JacksonizedSuperBuilderWithJsonDeserialize, B extends JacksonizedSuperBuilderWithJsonDeserialize.JacksonizedSuperBuilderWithJsonDeserializeBuilder<C, B>> {
 		@java.lang.SuppressWarnings("all")
 		private int field1;
-		@java.lang.SuppressWarnings("all")
-		protected abstract B self();
-		@java.lang.SuppressWarnings("all")
-		public abstract C build();
 		/**
 		 * @return {@code this}.
 		 */
@@ -18,6 +14,10 @@ public class JacksonizedSuperBuilderWithJsonDeserialize {
 			this.field1 = field1;
 			return self();
 		}
+		@java.lang.SuppressWarnings("all")
+		protected abstract B self();
+		@java.lang.SuppressWarnings("all")
+		public abstract C build();
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {

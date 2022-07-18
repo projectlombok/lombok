@@ -5,10 +5,6 @@ public class SuperBuilderAbstract {
 		public static abstract class ParentBuilder<C extends SuperBuilderAbstract.Parent, B extends SuperBuilderAbstract.Parent.ParentBuilder<C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private int parentField;
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -17,6 +13,10 @@ public class SuperBuilderAbstract {
 				this.parentField = parentField;
 				return self();
 			}
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
@@ -54,12 +54,6 @@ public class SuperBuilderAbstract {
 		public static abstract class ChildBuilder<C extends SuperBuilderAbstract.Child, B extends SuperBuilderAbstract.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private double childField;
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -68,6 +62,12 @@ public class SuperBuilderAbstract {
 				this.childField = childField;
 				return self();
 			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
@@ -86,12 +86,6 @@ public class SuperBuilderAbstract {
 		public static abstract class GrandChildBuilder<C extends SuperBuilderAbstract.GrandChild, B extends SuperBuilderAbstract.GrandChild.GrandChildBuilder<C, B>> extends Child.ChildBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
 			private String grandChildField;
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -100,6 +94,12 @@ public class SuperBuilderAbstract {
 				this.grandChildField = grandChildField;
 				return self();
 			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

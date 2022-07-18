@@ -10,8 +10,6 @@ import lombok.Builder;
     public ConstructorsWithSuperBuilderDefaultsBuilder() {
       super();
     }
-    protected abstract @java.lang.SuppressWarnings("all") B self();
-    public abstract @java.lang.SuppressWarnings("all") C build();
     /**
      * @return {@code this}.
      */
@@ -27,6 +25,8 @@ import lombok.Builder;
       this.y = y;
       return self();
     }
+    protected abstract @java.lang.SuppressWarnings("all") B self();
+    public abstract @java.lang.SuppressWarnings("all") C build();
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((("ConstructorsWithSuperBuilderDefaults.ConstructorsWithSuperBuilderDefaultsBuilder(x$value=" + this.x$value) + ", y=") + this.y) + ")");
     }

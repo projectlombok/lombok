@@ -6,8 +6,6 @@ class SuperBuilderInitializer {
       public OneBuilder() {
         super();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -15,6 +13,8 @@ class SuperBuilderInitializer {
         this.world = world;
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("SuperBuilderInitializer.One.OneBuilder(world=" + this.world) + ")");
       }
