@@ -1452,6 +1452,15 @@ public class PrettyPrinter extends JCTree.Visitor {
 		print((JCTree) readObject(tree, "expr", null));
 	}
 	
+	void printPatternCaseLabel(JCTree tree) {
+		print((JCTree) readObject(tree, "pat", null));
+		JCTree guard = readObject(tree, "guard", null);
+		if (guard != null) {
+			print(" when ");
+			print(guard);
+		}
+	}
+	
 	@Override public void visitTry(JCTry tree) {
 		aPrint("try ");
 		List<?> resources = readObject(tree, "resources", List.nil());
@@ -1678,6 +1687,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printParenthesizedPattern(tree);
 		} else if (className.endsWith("$JCConstantCaseLabel")) { // Introduced in JDK19
 			printConstantCaseLabel(tree);
+		} else if (className.endsWith("$JCPatternCaseLabel")) { // Introduced in JDK19
+			printPatternCaseLabel(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
