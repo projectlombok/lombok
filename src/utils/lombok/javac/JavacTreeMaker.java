@@ -610,6 +610,8 @@ public class JavacTreeMaker {
 		List<JCTree> labels;
 		if (pat == null) {
 			labels = tryResolve(DefaultCaseLabel) ? List.of(DefaultCaseLabel()) : List.<JCTree>nil();
+		} else if (tryResolve(ConstantCaseLabel)) {
+			labels = List.<JCTree>of(ConstantCaseLabel(pat));
 		} else {
 			labels = List.<JCTree>of(pat);
 		}
@@ -620,6 +622,12 @@ public class JavacTreeMaker {
 	private static final MethodId<JCTree> DefaultCaseLabel = MethodId("DefaultCaseLabel", JCTree.class);
 	public JCTree DefaultCaseLabel() {
 		return invoke(DefaultCaseLabel);
+	}
+	
+	//javac versions: 19
+	private static final MethodId<JCTree> ConstantCaseLabel = MethodId("ConstantCaseLabel", JCTree.class, JCExpression.class);
+	public JCTree ConstantCaseLabel(JCExpression expr) {
+		return invoke(ConstantCaseLabel, expr);
 	}
 	
 	//javac versions: 6-8
