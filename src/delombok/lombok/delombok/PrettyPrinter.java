@@ -1461,6 +1461,18 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 	}
 	
+	void printRecordPattern(JCTree tree) {
+		print((JCTree) readObject(tree, "deconstructor", null));
+		print("(");
+		print(readObject(tree, "nested", List.<JCTree>nil()), ", ");
+		print(")");
+		JCVariableDecl var = readObject(tree, "var", null);
+		if (var != null) {
+			print(" ");
+			print(var.name);
+		}
+	}
+	
 	@Override public void visitTry(JCTry tree) {
 		aPrint("try ");
 		List<?> resources = readObject(tree, "resources", List.nil());
@@ -1689,6 +1701,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printConstantCaseLabel(tree);
 		} else if (className.endsWith("$JCPatternCaseLabel")) { // Introduced in JDK19
 			printPatternCaseLabel(tree);
+		} else if (className.endsWith("$JCRecordPattern")) { // Introduced in JDK19
+			printRecordPattern(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
