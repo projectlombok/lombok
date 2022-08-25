@@ -69,7 +69,7 @@ public @interface SuperBuilder {
 	 * For example, a method normally generated as {@code someField(String someField)} would instead be
 	 * generated as {@code withSomeField(String someField)} if using {@code @SuperBuilder(setterPrefix = "with")}.
 	 *
-	 * Note that using "with" to prefix builder setter methods is strongly discouraged as as "with" normally
+	 * Note that using "with" to prefix builder setter methods is strongly discouraged as "with" normally
 	 * suggests immutable data structures, and builders by definition are mutable objects.
 	 * 
 	 * For {@code @Singular} fields, the generated methods are called {@code withName}, {@code withNames}, and {@code clearNames}, instead of

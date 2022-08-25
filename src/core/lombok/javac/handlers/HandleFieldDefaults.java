@@ -140,7 +140,7 @@ public class HandleFieldDefaults extends JavacASTAdapter {
 		boolean defaultToFinal = makeFinalIsExplicit ? false : Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.FIELD_DEFAULTS_FINAL_EVERYWHERE));
 		
 		if (!defaultToPrivate && !defaultToFinal && fieldDefaults == null) return;
-		// Do not apply field defaults to records if set using the the config system
+		// Do not apply field defaults to records if set using the config system
 		if (fieldDefaults == null && !isClassOrEnum(typeNode)) return;
 		AccessLevel fdAccessLevel = (fieldDefaults != null && levelIsExplicit) ? fd.level() : defaultToPrivate ? AccessLevel.PRIVATE : null;
 		boolean fdToFinal = (fieldDefaults != null && makeFinalIsExplicit) ? fd.makeFinal() : defaultToFinal;

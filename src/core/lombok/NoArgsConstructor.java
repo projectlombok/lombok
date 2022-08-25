@@ -75,7 +75,7 @@ public @interface NoArgsConstructor {
 	 * If {@code true}, initializes all final fields to 0 / null / false.
 	 * Otherwise, a compile time error occurs.
 	 * 
-	 * @return Return {@code} true to force generation of a no-args constructor, picking defaults if necessary to assign required fields.
+	 * @return {@code} true to force generation of a no-args constructor, picking defaults if necessary to assign required fields.
 	 */
 	boolean force() default false;
 	

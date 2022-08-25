@@ -49,7 +49,7 @@ import lombok.experimental.SuperBuilder;
  * <li>Insert {@code @JsonPOJOBuilder(withPrefix="")} on the generated builder
  * class to override Jackson's default prefix "with". If you configured a
  * different prefix in lombok using {@code setterPrefix}, this value is used. If
- * you changed the name of the {@code build()} method using using
+ * you changed the name of the {@code build()} method using
  * {@code buildMethodName}, this is also made known to Jackson.</li>
  * <li>For {@code @SuperBuilder}, make the builder implementation class
  * package-private.</li>
