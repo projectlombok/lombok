@@ -73,10 +73,10 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		
 		deleteAnnotationIfNeccessary(annotationNode, ExtensionMethod.class);
 		JavacNode typeNode = annotationNode.up();
-		boolean isClassOrEnum = isClassOrEnum(typeNode);
+		boolean isClassOrEnumOrInterface = isClassOrEnumOrInterface(typeNode);
 		
-		if (!isClassOrEnum) {
-			annotationNode.addError("@ExtensionMethod can only be used on a class or an enum");
+		if (!isClassOrEnumOrInterface) {
+			annotationNode.addError("@ExtensionMethod can only be used on a class or an enum or an interface");
 			return;
 		}
 		
