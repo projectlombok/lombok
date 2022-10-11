@@ -87,7 +87,7 @@ Lombok Changelog
 
 ### v1.18.10 (September 10th, 2019)
 * PROMOTION: `@Wither` has been promoted to the main package, renamed to `@With`. Otherwise, no changes have been made to the annotation. The old experimental annotation will remain for a few versions as a deprecated annotation. If you had `lombok.config` configuration for this annotation, the configuration keys for this feature have been renamed.
-* FEATURE: You can now configure a custom logger framework using the new `@CustomLog` annotation in combination with the `lombok.log.custom.declaration` configuration key. See the [log documentation](https://projectlombok.org/features/Log) for more information. [Pullrequest #2086](https://github.com/projectlombok/lombok/pull/2086) with thanks to Adam Juraszek.
+* FEATURE: You can now configure a custom logger framework using the new `@CustomLog` annotation in combination with the `lombok.log.custom.declaration` configuration key. See the [log documentation](https://projectlombok.org/features/log) for more information. [Pullrequest #2086](https://github.com/projectlombok/lombok/pull/2086) with thanks to Adam Juraszek.
 * ENHANCEMENT: Thanks to Mark Haynes, the `staticConstructor` will now also be generated if a (private) constructor already exists. [Issue #2100](https://github.com/projectlombok/lombok/issues/2100)
 * ENHANCEMENT: `val` is now capable of decoding the type of convoluted expressions (particularly if the right hand side involves lambdas and conditional (ternary) expressions). [Pull Request #2109](https://github.com/projectlombok/lombok/pull/2109) with thanks to Alexander Bulgakov.
 * ENHANCEMENT: You can now configure the generated builder class name via the config system, using key `lombok.builder.className`. See the [Builder documentation](https://projectlombok.org/features/Builder) and [SuperBuilder documentation](https://projectlombok.org/features/experimental/SuperBuilder)
@@ -434,7 +434,7 @@ any type in the form of static methods that take as first parameter an object of
 ### v0.10.0 "Burning Emu" (August 19th, 2011)
 * FEATURE: New annotation: @Delegate. This annotation lets lombok generate delegation methods for a given field. [More&hellip;](https://projectlombok.org/features/Delegate.html)
 * FEATURE: Added support for 'val'. Val is an immutable variable that infers its type from the right hand side of the initializing expression. [More&hellip;](https://projectlombok.org/features/val.html)
-* FEATURE: Added support for several logging frameworks via the `@Log`, `@Slf4j`, etc. annotation. [More&hellip;](https://projectlombok.org/features/Log.html)
+* FEATURE: Added support for several logging frameworks via the `@Log`, `@Slf4j`, etc. annotation. [More&hellip;](https://projectlombok.org/features/log)
 * FEATURE: Lombok now supports post-compile transformers. [Issue #217](https://github.com/projectlombok/lombok/issues/217)
 * FEATURE: Using `@SneakyThrows` no longer requires a runtime dependency on lombok.jar. In fact, any call to `Lombok.sneakyThrows(ex)` is optimized at the bytecode level and no longer requires you to actually have lombok.jar or lombok-runtime.jar on the classpath.
 * FEATURE: @*X*ArgsConstructor, @Getter, and @ToString can now be used on enum declarations. Previously, behaviour of these annotations on enums was undefined.
