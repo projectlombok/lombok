@@ -244,8 +244,15 @@ public class JavacResolution {
 	}
 	
 	private void attrib(JCTree tree, Env<AttrContext> env) {
-		if (env.enclClass.type == null) try {
-			env.enclClass.type = Type.noType;
+		try {
+			if (env.enclClass.type == null) {
+				if (env.enclClass.sym != null) {
+					env.enclClass.type = env.enclClass.sym.type;
+				}
+			}
+			if (env.enclClass.type == null) {
+				env.enclClass.type = Type.noType;
+			}
 		} catch (Throwable ignore) {
 			// This addresses issue #1553 which involves JDK9; if it doesn't exist, we probably don't need to set it.
 		}
