@@ -140,7 +140,7 @@ public class HandlerUtil {
 			"androidx.annotation.RecentlyNullable",
 			"com.android.annotations.NonNull",
 			"com.android.annotations.Nullable",
-			// "com.google.api.server.spi.config.Nullable", - let's think about this one a litte, as it is targeted solely at parameters, so you can't even put it on fields. If we choose to support it, we should REMOVE it from the field, then - that's not something we currently support.
+			// "com.google.api.server.spi.config.Nullable", - let's think about this one a little, as it is targeted solely at parameters, so you can't even put it on fields. If we choose to support it, we should REMOVE it from the field, then - that's not something we currently support.
 			"com.google.firebase.database.annotations.NotNull",
 			"com.google.firebase.database.annotations.Nullable",
 			"com.mongodb.lang.NonNull",
@@ -197,7 +197,7 @@ public class HandlerUtil {
 			// Checker Framework annotations.
 			// To update Checker Framework annotations, run:
 			// grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' $CHECKERFRAMEWORK/checker/src/main/java $CHECKERFRAMEWORK/checker-qual/src/main/java $CHECKERFRAMEWORK/checker-util/src/main/java $CHECKERFRAMEWORK/framework/src/main/java | grep '\.java$' | sed 's/.*\/java\//\t\t\t"/' | sed 's/\.java$/",/' | sed 's/\//./g' | sort
-			// Only add new annotations, do not remove annotations that have been removed from the lastest version of the Checker Framework.
+			// Only add new annotations, do not remove annotations that have been removed from the latest version of the Checker Framework.
 			"org.checkerframework.checker.builder.qual.CalledMethods",
 			"org.checkerframework.checker.builder.qual.NotCalledMethods",
 			"org.checkerframework.checker.calledmethods.qual.CalledMethods",
