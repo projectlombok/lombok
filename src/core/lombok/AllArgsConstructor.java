@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * Generates an all-args constructor.
  * An all-args constructor requires one argument for every field in the class.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Constructor">the project lombok features page for &#64;Constructor</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/constructor">the project lombok features page for &#64;Constructor</a>.
  * <p>
  * Even though it is not listed, this annotation also has the {@code onConstructor} parameter. See the full documentation for more details.
  * 
