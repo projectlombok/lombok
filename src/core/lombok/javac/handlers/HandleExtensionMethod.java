@@ -117,7 +117,8 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		if (tsym != null) for (Symbol member : tsym.getEnclosedElements()) {
 			if (member.getKind() != ElementKind.METHOD) continue;
 			MethodSymbol method = (MethodSymbol) member;
-			if ((method.flags() & (STATIC | PUBLIC)) == 0) continue;
+			if ((method.flags() & STATIC) == 0) continue;
+			if ((method.flags() & PUBLIC) == 0) continue;
 			if (method.params().isEmpty()) continue;
 			extensionMethods.add(method);
 		}
