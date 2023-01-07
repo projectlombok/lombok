@@ -36,6 +36,7 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.ArrayAllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -918,7 +919,20 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 		out.returnType = copyType(fd.type, source);
-		out.statements = new Statement[] {new ReturnStatement(fd.initialization, pS, pE)};
+		
+		// Convert short array initializers from `{1,2}` to `new int[]{1,2}`
+		Expression initialization;
+		if (fd.initialization instanceof ArrayInitializer) {
+			ArrayAllocationExpression arrayAllocationExpression = new ArrayAllocationExpression();
+			arrayAllocationExpression.initializer = (ArrayInitializer) fd.initialization;
+			arrayAllocationExpression.type = generateQualifiedTypeRef(fd, fd.type.getTypeName());
+			arrayAllocationExpression.dimensions = new Expression[fd.type.dimensions()];
+			initialization = arrayAllocationExpression;
+		} else {
+			initialization = fd.initialization;
+		}
+		
+		out.statements = new Statement[] {new ReturnStatement(initialization, pS, pE)};
 		fd.initialization = null;
 		
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) fieldNode.up().get()).scope);

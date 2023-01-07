@@ -45,6 +45,7 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
@@ -817,6 +818,14 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
 		int modifiers = Flags.PRIVATE | Flags.STATIC;
 		JCMethodDecl defaultProvider = maker.MethodDef(maker.Modifiers(modifiers), methodName, cloneType(maker, field.vartype, fieldNode), copyTypeParams(fieldNode, params), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		// ... then we convert short array initializers from `{1,2}` to `new int[]{1,2}` ...
+		if (init instanceof JCNewArray && field.vartype instanceof JCArrayTypeTree) {
+			JCNewArray arrayInitializer = (JCNewArray) init;
+			JCArrayTypeTree fieldType = (JCArrayTypeTree) field.vartype;
+			if (arrayInitializer.elemtype == null) {
+				arrayInitializer.elemtype = cloneType(maker, fieldType.elemtype, fieldNode);
+			}
+		}
 		// ... then we set positions for everything else ...
 		recursiveSetGeneratedBy(defaultProvider, job.sourceNode);
 		// ... and finally add back the original expression
