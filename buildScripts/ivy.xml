@@ -31,6 +31,7 @@
 		<conf name="ecj16" />
 		<conf name="ecj19" />
 		
+		<conf name="eclipse-202212" />
 		<conf name="eclipse-oxygen" />
 		<conf name="eclipse-202006" />
 		
@@ -87,6 +88,18 @@
 		<dependency org="org.eclipse.jdt.core.compiler" name="ecj" rev="4.4.2" conf="ecj8->master" />
 		
 		<!-- eclipses -->
+		
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.26.100" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.32.0" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.27.100" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.common" rev="3.17.0" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.registry" rev="3.11.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.app" rev="1.6.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.resources" rev="3.18.100" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.contenttype" rev="3.8.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.13.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.18.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.12.300" conf="eclipse-202212->default" transitive="false" />
 		
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.13.0" conf="eclipse-oxygen->default" transitive="false" />
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.13.102" conf="eclipse-oxygen->default" transitive="false" />
