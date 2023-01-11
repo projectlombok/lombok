@@ -157,7 +157,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			<condition property="compiler.compliance.level" value="-Dcompiler.compliance.level=@{compiler.compliance.level}" else="-Dnot=set">
 				<not><equals arg1="@{compiler.compliance.level}" arg2="latest" /></not>
 			</condition>
-			<echo>Running TestEclipse on eclipse-@{version} on JVM${ant.java.version} using. Compiler compliance level: @{compiler.compliance.level}</echo>
+			<echo>Running TestEclipse on eclipse-@{version} on JVM${ant.java.version}. Compiler compliance level: @{compiler.compliance.level}</echo>
 			<junit haltonfailure="yes" fork="true" forkmode="once">
 				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
 				<jvmarg value="-Xbootclasspath/a:${jdk8-rt.loc}" />
@@ -175,6 +175,11 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 			</junit>
 		</sequential>
 	</macrodef>
+	
+	<target name="test.eclipse-202212" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the 2022-12 release of eclipse">
+		<fetchdep.eclipse version="202212" />
+		<test.eclipse-X version="202212" />
+	</target>
 	
 	<target name="test.eclipse-oxygen" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the oxygen release of eclipse">
 		<test.eclipse-X version="oxygen" />
@@ -231,6 +236,6 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.ecj-X version="19" />
 	</target>
 	
-	<target name="test" depends="test.javacCurrent, test.eclipse-202006" description="runs the tests against the default JVM, javac, and eclipse" />
-	<target name="test.broad" depends="test.javac8, test.javac17, test.javac19, test.eclipse-oxygen, test.eclipse-202006, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
+	<target name="test" depends="test.javacCurrent, test.eclipse-202212" description="runs the tests against the default JVM, javac, and eclipse" />
+	<target name="test.broad" depends="test.javac8, test.javac17, test.javac19, test.eclipse-oxygen, test.eclipse-202212, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
 </project>

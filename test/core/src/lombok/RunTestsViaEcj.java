@@ -308,6 +308,14 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			mainTypeName = CharOperation.subarray(fileNameCharArray, start, end);
 		}
 		
+		@Override public int hashCode() {
+			return System.identityHashCode(this);
+		}
+		
+		@Override public boolean equals(Object obj) {
+			return this == obj;
+		}
+		
 		@Override public char[] getContents() {
 			return source;
 		}
