@@ -1,5 +1,5 @@
-// version 17:18
-public class Switch17 {
+// version 19:
+public class Switch19 {
 	String switchPatternMatching(Object o) {
 		return switch (o) {
 			case Integer i	-> String.format("int %d", i);
@@ -18,8 +18,9 @@ public class Switch17 {
 
 	String switchGuardPattern(Object o) {
 		return switch (o) {
-			case String s && s.length() > 1	-> s;
-			default							-> o.toString();
+			case String s when s.length() > 1	-> s;
+			case String s 						-> s;
+			default								-> o.toString();
 		};
 	}
 
