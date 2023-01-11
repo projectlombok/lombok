@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -852,6 +853,30 @@ final class PatchFixesHider {
 		
 		public static boolean skipRewriteVisibility(IncomingMemberVisibilityAdjustment adjustment) {
 			return isGenerated(adjustment.getMember());
+		}
+	}
+	
+	public static class Tests {
+		public static Object getBundle(Object original, Class<?> c) {
+			if (original != null) {
+				return original;
+			}
+			
+			CodeSource codeSource = c.getProtectionDomain().getCodeSource();
+			if (codeSource == null) {
+				return null;
+			}
+			
+			String jar = codeSource.getLocation().getFile();
+			String bundleName = jar.substring(jar.lastIndexOf("/") + 1, jar.indexOf("_"));
+			
+			org.osgi.framework.Bundle[] bundles = org.eclipse.core.runtime.adaptor.EclipseStarter.getSystemBundleContext().getBundles();
+			for (org.osgi.framework.Bundle bundle : bundles) {
+				if (bundleName.equals(bundle.getSymbolicName())) {
+					return bundle;
+				}
+			}
+			return null;
 		}
 	}
 }

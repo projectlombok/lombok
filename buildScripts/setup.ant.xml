@@ -34,8 +34,10 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	
 	<property name="jdk6-rt.loc" location="lib/openjdk6_rt.jar" />
 	<property name="jdk8-rt.loc" location="lib/openjdk8_rt.jar" />
+	<property name="rtstubs18.loc" location="lib/rtstubs18.jar" />
 	<available file="${jdk6-rt.loc}" property="jdk6-rt.available" />
 	<available file="${jdk8-rt.loc}" property="jdk8-rt.available" />
+	<available file="${rtstubs18.loc}" property="rtstubs18.available" />
 	<property name="ssh.configuration.file" location="ssh.configuration" />
 	
 	<target name="-setup.ssh.ask">
@@ -167,12 +169,26 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk8.jar" dest="${jdk8-rt.loc}" verbose="true" usetimestamp="true" />
 	</target>
 	
+	<target name="deps.rtstubs18" unless="rtstubs18.available">
+		<echo>To test in eclipse, we need a java runtime, which will now be downloaded...</echo>
+		<mkdir dir="lib" />
+		<get src="https://github.com/eclipse-jdt/eclipse.jdt.ui/raw/master/org.eclipse.jdt.ui.tests/testresources/rtstubs18.jar" dest="${rtstubs18.loc}" verbose="true" usetimestamp="true" />
+	</target>
+	
 	<target name="deps.jdk-runtime" depends="deps.jdk6-runtime, deps.jdk8-runtime" />
 	
 	<target name="deps.custom" depends="ivy.config" description="Download the dependencies that comprise a configuration (from ivy.xml)">
 		<fail unless="deps.conf">Supply ant with -Ddeps.conf=confname to pick the configuration you want to fetch</fail>
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="${deps.conf}" />
 		<ivy:retrieve symlink="true" />
+	</target>
+	
+	<target name="deps.eclipse.oxygen" depends="deps.rtstubs18, compile.support">
+		<fetchdep.eclipse.osgi name="oxygen" version="4.7/R-4.7-201706120950" />
+	</target>
+	
+	<target name="deps.eclipse.2022-03" depends="deps.rtstubs18, compile.support">
+		<fetchdep.eclipse.osgi name="2022-03" version="4.23/R-4.23-202203080310" />
 	</target>
 	
 	<macrodef name="fetchdep.ecj">
@@ -192,6 +208,132 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 			<ivy:retrieve symlink="true" />
 			<ivy:cachepath pathid="cp.eclipse-@{version}" conf="eclipse-@{version}" />
 			<property name="cp.eclipse-@{version}" refid="cp.eclipse-@{version}" />
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="fetchdep.eclipse.osgi">
+		<attribute name="target" default="testenv" />
+		<attribute name="name" />
+		<attribute name="version" />
+		<sequential>
+			<java classname="lombok.eclipse.dependencies.DownloadEclipseDependencies" failonerror="true">
+				<classpath>
+					<path refid="cp.buildtools" />
+					<pathelement location="build/support" />
+				</classpath>
+				<arg value="@{target}" />
+				<arg value="eclipse-@{name}" />
+				<arg value="https://download.eclipse.org/eclipse/updates/@{version}/plugins/" />
+				<arg value="com.ibm.icu" />
+				<arg value="com.sun.jna" />
+				<arg value="com.sun.jna.platform" />
+				<arg value="javax.inject" />
+				<arg value="javax.annotation" />
+				<arg value="org.apache.batik.constants" />
+				<arg value="org.apache.batik.css" />
+				<arg value="org.apache.batik.i18n" />
+				<arg value="org.apache.batik.util" />
+				<arg value="org.apache.commons.io" />
+				<arg value="org.apache.commons.logging" />
+				<arg value="org.apache.commons.jxpath" />
+				<arg value="org.apache.felix.scr" />
+				<arg value="org.apache.xmlgraphics" />
+				<arg value="org.bouncycastle.bcpg" />
+				<arg value="org.bouncycastle.bcprov" />
+				<arg value="org.eclipse.compare" />
+				<arg value="org.eclipse.compare.core" />
+				<arg value="org.eclipse.core.commands" />
+				<arg value="org.eclipse.core.contenttype" />
+				<arg value="org.eclipse.core.databinding" />
+				<arg value="org.eclipse.core.databinding.observable" />
+				<arg value="org.eclipse.core.databinding.property" />
+				<arg value="org.eclipse.core.expressions" />
+				<arg value="org.eclipse.core.filebuffers" />
+				<arg value="org.eclipse.core.filesystem" />
+				<arg value="org.eclipse.core.jobs" />
+				<arg value="org.eclipse.core.resources" />
+				<arg value="org.eclipse.core.runtime" />
+				<arg value="org.eclipse.core.variables" />
+				<arg value="org.eclipse.debug.core" />
+				<arg value="org.eclipse.debug.ui" />
+				<arg value="org.eclipse.e4.core.commands" />
+				<arg value="org.eclipse.e4.core.contexts" />
+				<arg value="org.eclipse.e4.core.di" />
+				<arg value="org.eclipse.e4.core.di.annotations" />
+				<arg value="org.eclipse.e4.core.di.extensions" />
+				<arg value="org.eclipse.e4.core.di.extensions.supplier" />
+				<arg value="org.eclipse.e4.core.services" />
+				<arg value="org.eclipse.e4.emf.xpath" />
+				<arg value="org.eclipse.e4.ui.bindings" />
+				<arg value="org.eclipse.e4.ui.css.core" />
+				<arg value="org.eclipse.e4.ui.css.swt" />
+				<arg value="org.eclipse.e4.ui.css.swt.theme" />
+				<arg value="org.eclipse.e4.ui.di" />
+				<arg value="org.eclipse.e4.ui.dialogs" />
+				<arg value="org.eclipse.e4.ui.ide" />
+				<arg value="org.eclipse.e4.ui.model.workbench" />
+				<arg value="org.eclipse.e4.ui.services" />
+				<arg value="org.eclipse.e4.ui.widgets" />
+				<arg value="org.eclipse.e4.ui.workbench" />
+				<arg value="org.eclipse.e4.ui.workbench.addons.swt" />
+				<arg value="org.eclipse.e4.ui.workbench.renderers.swt" />
+				<arg value="org.eclipse.e4.ui.workbench.swt" />
+				<arg value="org.eclipse.e4.ui.workbench3" />
+				<arg value="org.eclipse.emf.common" />
+				<arg value="org.eclipse.emf.ecore" />
+				<arg value="org.eclipse.emf.ecore.change" />
+				<arg value="org.eclipse.emf.ecore.xmi" />
+				<arg value="org.eclipse.equinox.app" />
+				<arg value="org.eclipse.equinox.bidi" />
+				<arg value="org.eclipse.equinox.common" />
+				<arg value="org.eclipse.equinox.p2.artifact.repository" />
+				<arg value="org.eclipse.equinox.p2.core" />
+				<arg value="org.eclipse.equinox.p2.engine" />
+				<arg value="org.eclipse.equinox.p2.jarprocessor" />
+				<arg value="org.eclipse.equinox.p2.metadata" />
+				<arg value="org.eclipse.equinox.p2.metadata.repository" />
+				<arg value="org.eclipse.equinox.p2.repository" />
+				<arg value="org.eclipse.equinox.preferences" />
+				<arg value="org.eclipse.equinox.registry" />
+				<arg value="org.eclipse.equinox.security" />
+				<arg value="org.eclipse.help" />
+				<arg value="org.eclipse.jdt.core" />
+				<arg value="org.eclipse.jdt.core.manipulation" />
+				<arg value="org.eclipse.jdt.debug" />
+				<arg value="org.eclipse.jdt.launching" />
+				<arg value="org.eclipse.jdt.ui" />
+				<arg value="org.eclipse.jface" />
+				<arg value="org.eclipse.jface.databinding" />
+				<arg value="org.eclipse.jface.text" />
+				<arg value="org.eclipse.ltk.core.refactoring" />
+				<arg value="org.eclipse.ltk.ui.refactoring" />
+				<arg value="org.eclipse.osgi" />
+				<arg value="org.eclipse.osgi.services" />
+				<arg value="org.eclipse.osgi.util" />
+				<arg value="org.eclipse.search" />
+				<arg value="org.eclipse.swt" />
+				<arg value="org.eclipse.swt.gtk.linux.x86_64" />
+				<arg value="org.eclipse.team.core" />
+				<arg value="org.eclipse.team.ui" />
+				<arg value="org.eclipse.text" />
+				<arg value="org.eclipse.ui" />
+				<arg value="org.eclipse.ui.console" />
+				<arg value="org.eclipse.ui.editors" />
+				<arg value="org.eclipse.ui.forms" />
+				<arg value="org.eclipse.ui.ide" />
+				<arg value="org.eclipse.ui.navigator" />
+				<arg value="org.eclipse.ui.navigator.resources" />
+				<arg value="org.eclipse.ui.views" />
+				<arg value="org.eclipse.ui.views.properties.tabbed" />
+				<arg value="org.eclipse.ui.workbench" />
+				<arg value="org.eclipse.ui.workbench.texteditor" />
+				<arg value="org.eclipse.urischeme" />
+				<arg value="org.tukaani.xz" />
+				<arg value="org.w3c.css.sac" />
+				<arg value="org.w3c.dom.events" />
+				<arg value="org.w3c.dom.smil" />
+				<arg value="org.w3c.dom.svg" />
+			</java>
 		</sequential>
 	</macrodef>
 	

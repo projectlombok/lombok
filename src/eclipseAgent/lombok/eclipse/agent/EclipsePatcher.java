@@ -109,6 +109,8 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchRenameField(sm);
 		patchNullCheck(sm);
 		
+		patchForTests(sm);
+		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
 	
@@ -1005,6 +1007,14 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "getRealMethodDeclarationNode", "org.eclipse.jdt.core.dom.MethodDeclaration", "org.eclipse.jdt.core.dom.MethodDeclaration", "org.eclipse.jdt.core.IMethod", "org.eclipse.jdt.core.dom.CompilationUnit"))
 				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1, StackRequest.PARAM2)
 				.transplant()
+				.build());
+	}
+	
+	private static void patchForTests(ScriptManager sm) {
+		sm.addScriptIfWitness(new String[] {"lombok/eclipse/EclipseTests"}, ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.osgi.framework.FrameworkUtil", "getBundle", "org.osgi.framework.Bundle", "java.lang.Class"))
+				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "getBundle", "java.lang.Object", "java.lang.Object", "java.lang.Class"))
 				.build());
 	}
 
