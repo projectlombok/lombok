@@ -208,6 +208,38 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.eclipse-X version="202006" compiler.compliance.level="8" />
 	</target>
 	
+	<macrodef name="test.eclipse-X-full">
+		<attribute name="version" />
+		<sequential>
+			<path id="cp.eclipse-@{version}">
+				<fileset dir="testenv/eclipse-@{version}/plugins">
+					<include name="*.jar" />
+				</fileset>
+			</path>
+			<echo>Running EclipseTests on eclipse-@{version} on JVM${ant.java.version}</echo>
+			<junit haltonfailure="yes" fork="true" forkmode="once">
+				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+				<jvmarg value="-javaagent:dist/lombok.jar" />
+				<jvmarg value="-Dlombok.testenv=testenv/eclipse-@{version}" />
+				<classpath refid="cp.eclipse-@{version}" />
+				<classpath location="build/ant" />
+				<classpath refid="cp.test" />
+				<classpath refid="cp.eclipse-@{version}" />
+				<classpath refid="packing.basedirs.path" />
+				<classpath location="build/tests" />
+				<test name="lombok.eclipse.EclipseTests" />
+			</junit>
+		</sequential>
+	</macrodef>
+	
+	<target name="test.eclipse-oxygen-full" depends="test.formatter.compile, test.eclipse.compile, deps.eclipse.oxygen" description="runs the full eclipse tests on your default VM, testing the oxygen release of eclipse">
+		<test.eclipse-X-full version="oxygen" />
+	</target>
+	
+	<target name="test.eclipse-2022-03-full" depends="test.formatter.compile, test.eclipse.compile, deps.eclipse.2022-03" description="runs the full eclipse tests on your default VM, testing the 2022-03 release of eclipse">
+		<test.eclipse-X-full version="2022-03" />
+	</target>
+	
 	<macrodef name="test.ecj-X">
 		<attribute name="version" />
 		<sequential>
@@ -234,46 +266,19 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.ecj-X version="11" />
 	</target>
 	
-	<target name="test.ecj14" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
+	<target name="test.ecj14" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj14 release">
 		<fetchdep.ecj version="14" />
 		<test.ecj-X version="14" />
 	</target>
 	
-	<target name="test.ecj16" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
+	<target name="test.ecj16" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj16 release">
 		<fetchdep.ecj version="16" />
 		<test.ecj-X version="16" />
 	</target>
 	
-	<macrodef name="test.eclipse-X-full">
-		<attribute name="version" />
-		<sequential>
-			<path id="cp.eclipse-@{version}">
-				<fileset dir="testenv/eclipse-@{version}/plugins">
-					<include name="*.jar" />
-				</fileset>
-			</path>
-			<echo>Running EclipseTests on eclipse-@{version} on JVM${ant.java.version}</echo>
-			<junit haltonfailure="yes" fork="true" forkmode="once">
-				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
-				<jvmarg value="-javaagent:dist/lombok.jar" />
-				<jvmarg value="-Dlombok.testenv=testenv/eclipse-@{version}" />
-				<classpath refid="cp.eclipse-@{version}" />
-				<classpath location="build/ant" />
-				<classpath refid="cp.test" />
-				<classpath refid="cp.eclipse-@{version}" />
-				<classpath refid="packing.basedirs.path" />
-				<classpath location="build/tests" />
-				<test name="lombok.eclipse.EclipseTests" />
-			</junit>
-		</sequential>
-	</macrodef>
-
-	<target name="test.eclipse-oxygen-full" depends="test.formatter.compile, test.eclipse.compile, deps.eclipse.oxygen" description="runs the full eclipse tests on your default VM, testing the oxygen release of eclipse">
-		<test.eclipse-X-full version="oxygen" />
-	</target>
-	
-	<target name="test.eclipse-2022-03-full" depends="test.formatter.compile, test.eclipse.compile, deps.eclipse.2022-03" description="runs the full eclipse tests on your default VM, testing the 2022-03 release of eclipse">
-		<test.eclipse-X-full version="2022-03" />
+	<target name="test.ecj19" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj19 release">
+		<fetchdep.ecj version="19" />
+		<test.ecj-X version="19" />
 	</target>
 	
 	<target name="test" depends="test.javacCurrent, test.eclipse-202006" description="runs the tests against the default JVM, javac, and eclipse" />

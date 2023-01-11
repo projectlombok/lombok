@@ -1,11 +1,7 @@
-// version 14:
+// version 19:
 import lombok.NonNull;
 public record NonNullOnRecord3(String a) {
 /* Implicit */  private final String a;
-  public NonNullOnRecord3(String a) {
-    super();
-    .a = a;
-  }
   public NonNullOnRecord3(String a) {
     super();
     this.a = a;
