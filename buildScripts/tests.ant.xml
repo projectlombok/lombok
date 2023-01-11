@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2020-2021 The Project Lombok Authors.
+ Copyright (C) 2020-2023 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -126,14 +126,14 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.javacX version="11" />
 	</target>
 	
-	<!-- For non-LTS versions, feel free to aggressively update these to the current non-LTS openjdk version, and delete them once they roll out of the 6 month window. -->
-	
 	<target name="test.javac17" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac17 as underlying compiler">
 		<test.javacX version="17" />
 	</target>
 	
-	<target name="test.javac18" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac18 as underlying compiler">
-		<test.javacX version="18" />
+	<!-- For non-LTS versions, feel free to aggressively update these to the current non-LTS openjdk version, and delete them once they roll out of the 6 month window. -->
+	
+	<target name="test.javac19" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac19 as underlying compiler">
+		<test.javacX version="19" />
 	</target>
 	
 	<target name="test.javacCurrent" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using its javac as underlying compiler">
@@ -227,5 +227,5 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	</target>
 	
 	<target name="test" depends="test.javacCurrent, test.eclipse-202006" description="runs the tests against the default JVM, javac, and eclipse" />
-	<target name="test.broad" depends="test.javac8, test.javac17, test.javac18, test.eclipse-oxygen, test.eclipse-202006, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
+	<target name="test.broad" depends="test.javac8, test.javac17, test.javac19, test.eclipse-oxygen, test.eclipse-202006, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
 </project>
