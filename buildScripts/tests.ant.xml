@@ -216,14 +216,19 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.ecj-X version="11" />
 	</target>
 	
-	<target name="test.ecj14" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
+	<target name="test.ecj14" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj14 release">
 		<fetchdep.ecj version="14" />
 		<test.ecj-X version="14" />
 	</target>
 	
-	<target name="test.ecj16" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj11 release">
+	<target name="test.ecj16" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj16 release">
 		<fetchdep.ecj version="16" />
 		<test.ecj-X version="16" />
+	</target>
+	
+	<target name="test.ecj19" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, testing the ecj19 release">
+		<fetchdep.ecj version="19" />
+		<test.ecj-X version="19" />
 	</target>
 	
 	<target name="test" depends="test.javacCurrent, test.eclipse-202006" description="runs the tests against the default JVM, javac, and eclipse" />
