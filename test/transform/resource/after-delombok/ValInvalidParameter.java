@@ -1,3 +1,4 @@
+//version 7:8
 public class ValInvalidParameter {
 	public void val() {
 		final java.lang.Object a = a(new NonExistingClass());
