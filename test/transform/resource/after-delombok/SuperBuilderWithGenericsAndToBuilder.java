@@ -21,10 +21,6 @@ public class SuperBuilderWithGenericsAndToBuilder {
 				b.field1(instance.field1);
 				b.items(instance.items == null ? java.util.Collections.<Integer, String>emptyMap() : instance.items);
 			}
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -66,6 +62,10 @@ public class SuperBuilderWithGenericsAndToBuilder {
 				}
 				return self();
 			}
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
@@ -132,12 +132,6 @@ public class SuperBuilderWithGenericsAndToBuilder {
 			private static <A> void $fillValuesFromInstanceIntoBuilder(final SuperBuilderWithGenericsAndToBuilder.Child<A> instance, final SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, ?, ?> b) {
 				b.field3(instance.field3);
 			}
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -146,6 +140,12 @@ public class SuperBuilderWithGenericsAndToBuilder {
 				this.field3 = field3;
 				return self();
 			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

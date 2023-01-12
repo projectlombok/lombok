@@ -11,8 +11,6 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
       public ParentBuilder() {
         super();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -56,6 +54,8 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
             this.names.clear();
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.@org.checkerframework.checker.nullness.qual.NonNull String toString() {
         return (((((((("NullAnnotatedCheckerFrameworkSuperBuilder.Parent.ParentBuilder(x$value=" + this.x$value) + ", y=") + this.y) + ", z=") + this.z) + ", names=") + this.names) + ")");
       }
@@ -111,8 +111,6 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
       public ZChildBuilder() {
         super();
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -128,6 +126,8 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
         this.b = b;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.@org.checkerframework.checker.nullness.qual.NonNull String toString() {
         return (((((("NullAnnotatedCheckerFrameworkSuperBuilder.ZChild.ZChildBuilder(super=" + super.toString()) + ", a$value=") + this.a$value) + ", b=") + this.b) + ")");
       }

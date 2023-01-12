@@ -19,10 +19,6 @@ class SuperBuilderSingularAnnotatedTypes {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<@MyAnnotation @NonNull Integer> bars$value;
 		@java.lang.SuppressWarnings("all")
-		protected abstract B self();
-		@java.lang.SuppressWarnings("all")
-		public abstract C build();
-		@java.lang.SuppressWarnings("all")
 		public B foo(@MyAnnotation @NonNull final String foo) {
 			if (foo == null) {
 				throw new java.lang.NullPointerException("foo is marked non-null but is null");
@@ -84,6 +80,10 @@ class SuperBuilderSingularAnnotatedTypes {
 			}
 			return self();
 		}
+		@java.lang.SuppressWarnings("all")
+		protected abstract B self();
+		@java.lang.SuppressWarnings("all")
+		public abstract C build();
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {

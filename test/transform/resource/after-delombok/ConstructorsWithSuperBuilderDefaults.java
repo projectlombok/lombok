@@ -17,12 +17,6 @@ class ConstructorsWithSuperBuilderDefaults {
 		@java.lang.SuppressWarnings("all")
 		private int y;
 
-		@java.lang.SuppressWarnings("all")
-		protected abstract B self();
-
-		@java.lang.SuppressWarnings("all")
-		public abstract C build();
-
 		/**
 		 * @return {@code this}.
 		 */
@@ -41,6 +35,12 @@ class ConstructorsWithSuperBuilderDefaults {
 			this.y = y;
 			return self();
 		}
+
+		@java.lang.SuppressWarnings("all")
+		protected abstract B self();
+
+		@java.lang.SuppressWarnings("all")
+		public abstract C build();
 
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

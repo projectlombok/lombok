@@ -6,8 +6,6 @@ public class SuperBuilderWithGenerics3 {
       public ParentBuilder() {
         super();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -15,6 +13,8 @@ public class SuperBuilderWithGenerics3 {
         this.str = str;
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("SuperBuilderWithGenerics3.Parent.ParentBuilder(str=" + this.str) + ")");
       }
@@ -50,8 +50,6 @@ public class SuperBuilderWithGenerics3 {
       public ChildBuilder() {
         super();
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -59,6 +57,8 @@ public class SuperBuilderWithGenerics3 {
         this.field3 = field3;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderWithGenerics3.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }

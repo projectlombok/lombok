@@ -386,15 +386,15 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			injectMethod(job.builderType, generateStaticFillValuesMethod(job, annInstance.setterPrefix()));
 		}
 		
-		// Generate abstract self() and build() methods in the abstract builder.
-		injectMethod(job.builderType, generateAbstractSelfMethod(job, superclassBuilderClass != null, builderGenericName));
-		job.setBuilderToAbstract();
-		injectMethod(job.builderType, generateAbstractBuildMethod(job, superclassBuilderClass != null, classGenericName));
-		
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : job.builderFields) {
 			generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
 		}
+		
+		// Generate abstract self() and build() methods in the abstract builder.
+		injectMethod(job.builderType, generateAbstractSelfMethod(job, superclassBuilderClass != null, builderGenericName));
+		job.setBuilderToAbstract();
+		injectMethod(job.builderType, generateAbstractBuildMethod(job, superclassBuilderClass != null, classGenericName));
 		
 		// Create the toString() method for the abstract builder.
 		if (methodExists("toString", job.builderType, 0) == MemberExistsResult.NOT_EXISTS) {

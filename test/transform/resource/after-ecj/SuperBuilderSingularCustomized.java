@@ -8,8 +8,6 @@ import java.util.Set;
     public B custom(final String value) {
       return self();
     }
-    protected abstract @java.lang.SuppressWarnings("all") B self();
-    public abstract @java.lang.SuppressWarnings("all") C build();
     public @java.lang.SuppressWarnings("all") B foo(final String foo) {
       if ((this.foos == null))
           this.foos = new java.util.ArrayList<String>();
@@ -31,6 +29,8 @@ import java.util.Set;
           this.foos.clear();
       return self();
     }
+    protected abstract @java.lang.SuppressWarnings("all") B self();
+    public abstract @java.lang.SuppressWarnings("all") C build();
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder(foos=" + this.foos) + ")");
     }

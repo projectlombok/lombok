@@ -21,10 +21,6 @@ public class SuperBuilderWithDefaults {
 			private boolean numberField$set;
 			@java.lang.SuppressWarnings("all")
 			private N numberField$value;
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -43,6 +39,10 @@ public class SuperBuilderWithDefaults {
 				numberField$set = true;
 				return self();
 			}
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
@@ -89,12 +89,6 @@ public class SuperBuilderWithDefaults {
 			private boolean doubleField$set;
 			@java.lang.SuppressWarnings("all")
 			private double doubleField$value;
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -104,6 +98,12 @@ public class SuperBuilderWithDefaults {
 				doubleField$set = true;
 				return self();
 			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

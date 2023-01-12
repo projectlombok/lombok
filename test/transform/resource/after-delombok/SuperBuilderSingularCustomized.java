@@ -8,10 +8,6 @@ class SuperBuilderSingularCustomized {
 			return self();
 		}
 		@java.lang.SuppressWarnings("all")
-		protected abstract B self();
-		@java.lang.SuppressWarnings("all")
-		public abstract C build();
-		@java.lang.SuppressWarnings("all")
 		public B foo(final String foo) {
 			if (this.foos == null) this.foos = new java.util.ArrayList<String>();
 			this.foos.add(foo);
@@ -31,6 +27,10 @@ class SuperBuilderSingularCustomized {
 			if (this.foos != null) this.foos.clear();
 			return self();
 		}
+		@java.lang.SuppressWarnings("all")
+		protected abstract B self();
+		@java.lang.SuppressWarnings("all")
+		public abstract C build();
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {

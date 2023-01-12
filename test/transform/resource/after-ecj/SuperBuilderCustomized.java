@@ -60,8 +60,6 @@ public class SuperBuilderCustomized {
       public ChildBuilder() {
         super();
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -69,6 +67,8 @@ public class SuperBuilderCustomized {
         this.field2 = field2;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderCustomized.Child.ChildBuilder(super=" + super.toString()) + ", field2=") + this.field2) + ")");
       }

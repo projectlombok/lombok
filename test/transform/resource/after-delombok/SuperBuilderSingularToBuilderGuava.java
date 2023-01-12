@@ -32,10 +32,6 @@ public class SuperBuilderSingularToBuilderGuava {
 				b.users(instance.users == null ? com.google.common.collect.ImmutableTable.<Number, Number, String>of() : instance.users);
 			}
 			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
-			@java.lang.SuppressWarnings("all")
 			public B card(final T card) {
 				if (this.cards == null) this.cards = com.google.common.collect.ImmutableList.builder();
 				this.cards.add(card);
@@ -135,6 +131,10 @@ public class SuperBuilderSingularToBuilderGuava {
 				this.users = null;
 				return self();
 			}
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
@@ -196,12 +196,6 @@ public class SuperBuilderSingularToBuilderGuava {
 			private static <T> void $fillValuesFromInstanceIntoBuilder(final SuperBuilderSingularToBuilderGuava.Child<T> instance, final SuperBuilderSingularToBuilderGuava.Child.ChildBuilder<T, ?, ?> b) {
 				b.field3(instance.field3);
 			}
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -210,6 +204,12 @@ public class SuperBuilderSingularToBuilderGuava {
 				this.field3 = field3;
 				return self();
 			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

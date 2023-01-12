@@ -5,10 +5,6 @@ class BuilderCustomName<T> {
 	public static abstract class SimpleTestBuilder<T, C extends BuilderCustomName<T>, B extends BuilderCustomName.SimpleTestBuilder<T, C, B>> {
 		@java.lang.SuppressWarnings("all")
 		private int field;
-		@java.lang.SuppressWarnings("all")
-		protected abstract B self();
-		@java.lang.SuppressWarnings("all")
-		public abstract C build();
 		/**
 		 * @return {@code this}.
 		 */
@@ -17,6 +13,10 @@ class BuilderCustomName<T> {
 			this.field = field;
 			return self();
 		}
+		@java.lang.SuppressWarnings("all")
+		protected abstract B self();
+		@java.lang.SuppressWarnings("all")
+		public abstract C build();
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {

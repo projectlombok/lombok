@@ -29,12 +29,6 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
 			@java.lang.SuppressWarnings("all")
 			private java.util.ArrayList<String> names;
 
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
-
 			/**
 			 * @return {@code this}.
 			 */
@@ -91,6 +85,12 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
 				if (this.names != null) this.names.clear();
 				return self();
 			}
+
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
@@ -165,14 +165,6 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
 			@java.lang.SuppressWarnings("all")
 			private int b;
 
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
-
 			/**
 			 * @return {@code this}.
 			 */
@@ -193,6 +185,14 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
 				this.b = b;
 				return self();
 			}
+
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")

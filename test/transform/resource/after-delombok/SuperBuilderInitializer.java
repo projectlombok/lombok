@@ -19,12 +19,6 @@ class SuperBuilderInitializer {
 			@java.lang.SuppressWarnings("all")
 			private String world;
 
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
-
 			/**
 			 * @return {@code this}.
 			 */
@@ -33,6 +27,12 @@ class SuperBuilderInitializer {
 				this.world = world;
 				return self();
 			}
+
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")

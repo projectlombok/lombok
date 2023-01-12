@@ -4,8 +4,6 @@ public @lombok.extern.jackson.Jacksonized @lombok.experimental.SuperBuilder @com
     public JacksonizedSuperBuilderWithJsonDeserializeBuilder() {
       super();
     }
-    protected abstract @java.lang.SuppressWarnings("all") B self();
-    public abstract @java.lang.SuppressWarnings("all") C build();
     /**
      * @return {@code this}.
      */
@@ -13,6 +11,8 @@ public @lombok.extern.jackson.Jacksonized @lombok.experimental.SuperBuilder @com
       this.field1 = field1;
       return self();
     }
+    protected abstract @java.lang.SuppressWarnings("all") B self();
+    public abstract @java.lang.SuppressWarnings("all") C build();
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (("JacksonizedSuperBuilderWithJsonDeserialize.JacksonizedSuperBuilderWithJsonDeserializeBuilder(field1=" + this.field1) + ")");
     }

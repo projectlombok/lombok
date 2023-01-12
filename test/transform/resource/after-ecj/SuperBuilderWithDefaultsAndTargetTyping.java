@@ -8,8 +8,6 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
       public ParentBuilder() {
         super();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -18,6 +16,8 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
         foo$set = true;
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("SuperBuilderWithDefaultsAndTargetTyping.Parent.ParentBuilder(foo$value=" + this.foo$value) + ")");
       }
@@ -55,8 +55,6 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
       public ChildBuilder() {
         super();
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -65,6 +63,8 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
         foo$set = true;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderWithDefaultsAndTargetTyping.Child.ChildBuilder(super=" + super.toString()) + ", foo$value=") + this.foo$value) + ")");
       }

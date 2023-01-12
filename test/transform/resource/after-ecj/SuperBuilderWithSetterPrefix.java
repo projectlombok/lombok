@@ -21,8 +21,6 @@ public class SuperBuilderWithSetterPrefix {
         b.withObtainViaStaticMethod(SuperBuilderWithSetterPrefix.Parent.staticMethod(instance));
         b.withItems(((instance.items == null) ? java.util.Collections.<String>emptyList() : instance.items));
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -72,6 +70,8 @@ public class SuperBuilderWithSetterPrefix {
             this.items.clear();
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((((((((("SuperBuilderWithSetterPrefix.Parent.ParentBuilder(field1=" + this.field1) + ", obtainViaField=") + this.obtainViaField) + ", obtainViaMethod=") + this.obtainViaMethod) + ", obtainViaStaticMethod=") + this.obtainViaStaticMethod) + ", items=") + this.items) + ")");
       }
@@ -138,8 +138,6 @@ public class SuperBuilderWithSetterPrefix {
       private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final SuperBuilderWithSetterPrefix.Child instance, final SuperBuilderWithSetterPrefix.Child.ChildBuilder<?, ?> b) {
         b.setField3(instance.field3);
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -147,6 +145,8 @@ public class SuperBuilderWithSetterPrefix {
         this.field3 = field3;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderWithSetterPrefix.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }

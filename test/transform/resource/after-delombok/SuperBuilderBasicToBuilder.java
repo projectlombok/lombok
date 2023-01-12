@@ -37,10 +37,6 @@ public class SuperBuilderBasicToBuilder {
 				b.obtainViaStaticMethod(SuperBuilderBasicToBuilder.Parent.staticMethod(instance));
 				b.items(instance.items == null ? java.util.Collections.<String>emptyList() : instance.items);
 			}
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -93,6 +89,10 @@ public class SuperBuilderBasicToBuilder {
 				if (this.items != null) this.items.clear();
 				return self();
 			}
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
@@ -160,12 +160,6 @@ public class SuperBuilderBasicToBuilder {
 			private static void $fillValuesFromInstanceIntoBuilder(final SuperBuilderBasicToBuilder.Child instance, final SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> b) {
 				b.field3(instance.field3);
 			}
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			protected abstract B self();
-			@java.lang.Override
-			@java.lang.SuppressWarnings("all")
-			public abstract C build();
 			/**
 			 * @return {@code this}.
 			 */
@@ -174,6 +168,12 @@ public class SuperBuilderBasicToBuilder {
 				this.field3 = field3;
 				return self();
 			}
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			protected abstract B self();
+			@java.lang.Override
+			@java.lang.SuppressWarnings("all")
+			public abstract C build();
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

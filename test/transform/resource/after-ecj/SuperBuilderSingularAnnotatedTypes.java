@@ -14,8 +14,6 @@ import lombok.Singular;
     public SuperBuilderSingularAnnotatedTypesBuilder() {
       super();
     }
-    protected abstract @java.lang.SuppressWarnings("all") B self();
-    public abstract @java.lang.SuppressWarnings("all") C build();
     public @java.lang.SuppressWarnings("all") B foo(final @MyAnnotation @NonNull String foo) {
       if ((foo == null))
           {
@@ -84,6 +82,8 @@ import lombok.Singular;
           }
       return self();
     }
+    protected abstract @java.lang.SuppressWarnings("all") B self();
+    public abstract @java.lang.SuppressWarnings("all") C build();
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((("SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder(foos=" + this.foos) + ", bars$key=") + this.bars$key) + ", bars$value=") + this.bars$value) + ")");
     }

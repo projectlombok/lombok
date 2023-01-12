@@ -9,8 +9,6 @@ public class SuperBuilderWithDefaults {
       public ParentBuilder() {
         super();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -27,6 +25,8 @@ public class SuperBuilderWithDefaults {
         numberField$set = true;
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderWithDefaults.Parent.ParentBuilder(millis$value=" + this.millis$value) + ", numberField$value=") + this.numberField$value) + ")");
       }
@@ -72,8 +72,6 @@ public class SuperBuilderWithDefaults {
       public ChildBuilder() {
         super();
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -82,6 +80,8 @@ public class SuperBuilderWithDefaults {
         doubleField$set = true;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderWithDefaults.Child.ChildBuilder(super=" + super.toString()) + ", doubleField$value=") + this.doubleField$value) + ")");
       }

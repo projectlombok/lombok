@@ -16,8 +16,6 @@ public class SuperBuilderWithGenericsAndToBuilder {
         b.field1(instance.field1);
         b.items(((instance.items == null) ? java.util.Collections.<Integer, String>emptyMap() : instance.items));
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -60,6 +58,8 @@ public class SuperBuilderWithGenericsAndToBuilder {
             }
         return self();
       }
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((((("SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder(field1=" + this.field1) + ", items$key=") + this.items$key) + ", items$value=") + this.items$value) + ")");
       }
@@ -117,8 +117,6 @@ public class SuperBuilderWithGenericsAndToBuilder {
       private static @java.lang.SuppressWarnings("all") <A>void $fillValuesFromInstanceIntoBuilder(final SuperBuilderWithGenericsAndToBuilder.Child<A> instance, final SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, ?, ?> b) {
         b.field3(instance.field3);
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       /**
        * @return {@code this}.
        */
@@ -126,6 +124,8 @@ public class SuperBuilderWithGenericsAndToBuilder {
         this.field3 = field3;
         return self();
       }
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }
