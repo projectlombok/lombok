@@ -50,10 +50,10 @@ public class HandleExtensionMethod extends EclipseAnnotationHandler<ExtensionMet
 		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
 		
 		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
+				(ClassFileConstants.AccAnnotation)) != 0;
 		
 		if (typeDecl == null || notAClass) {
-			annotationNode.addError("@ExtensionMethod is legal only on classes and enums.");
+			annotationNode.addError("@ExtensionMethod is legal only on classes and enums and interfaces.");
 			return;
 		}
 		
