@@ -232,7 +232,7 @@ Lombok Changelog
 * FEATURE: A `lombok.config` key can now be used to make your fields `final` and/or `private`... __everywhere__. We'll be monitoring the performance impact of this for a while. We'll touch every source file if you turn these on, and even if you don't, we have to call into the lombok config system for every file.
 * FEATURE: A `lombok.config` key can now be used to set the default behaviour of `@EqualsAndHashCode` when generating methods for a class that extends something in regards to calling the superclass implementations of `equals` and `hashCode` or not. [Issue #965](https://github.com/projectlombok/lombok/issues/965).
 * FEATURE: Putting `@Wither` on abstract classes now generates something slightly more useful: An abstract wither method. [Issue #945](https://github.com/projectlombok/lombok/issues/945).
-* BUGFIX: `@Helper` used to only be be legal in pretty specific places; now it works just about everywhere.
+* BUGFIX: `@Helper` used to only be legal in pretty specific places; now it works just about everywhere.
 * BUGFIX: lambdas with 1 argument that has an explicit type did not pretty print correctly. [Issue #972](https://github.com/projectlombok/lombok/issues/972).
 * BUGFIX: When using delombok, a source file with only `@NonNull` annotations on parameters as lombok feature would not get properly delomboked.  [Issue #950](https://github.com/projectlombok/lombok/issues/950).
 * BUGFIX: `@Delegate` in javac would generate arrays instead of varargs parameters. [Issue #932](https://github.com/projectlombok/lombok/issues/932).
