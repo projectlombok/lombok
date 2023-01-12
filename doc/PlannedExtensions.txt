@@ -46,7 +46,7 @@ call to add our agent? We may have to look into how netbeans' classloading works
 ## IDEA support
 
 It's not open source and I've heard that they don't use javac under the hood but some sort of ANTLR based parser.
-If that is true, IDEA will need a dedicated lombok/IDEA afficionado to write and maintain an IDEA version of lombok,
+If that is true, IDEA will need a dedicated lombok/IDEA aficionado to write and maintain an IDEA version of lombok,
 because that's far too much effort for Roel or Reinier, who don't own an IDEA copy and weren't planning to switch IDEs.
 
 Planned transformations
@@ -166,7 +166,7 @@ assigning to a new variable, which defeats a lot of the purpose!
 ## Dodge access restrictions (call method private stuff, recompile to reflection).
 
 An annotation on a local variable declaration or field that states that any method calls to non-accessible methods
-gets rewritten to reflective calls. Would require knowledge of the depedencies which lombok does not currently have.
+gets rewritten to reflective calls. Would require knowledge of the dependencies which lombok does not currently have.
 
 ## @ReturnThis
 
