@@ -222,9 +222,15 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 				</fileset>
 			</path>
 			<echo>Running EclipseTests on eclipse-@{version} on JVM${ant.java.version}</echo>
+			<condition property="os.specific.firstThread" value="-XstartOnFirstThread">
+				<os name="Mac OS X" />
+			</condition>
+			<!-- On Mac OS X, -XstartOnFirstThread is required, on other OSes, the JVM doesn't recognize the option. -showversion serves as a no-op -->
+			<property name="os.specific.firstThread" value="-showversion" />
 			<junit haltonfailure="yes" fork="true" forkmode="once">
 				<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
 				<jvmarg value="-javaagent:dist/lombok.jar" />
+				<jvmarg value="${os.specific.firstThread}" />
 				<jvmarg value="-Dlombok.testenv=testenv/eclipse-@{version}" />
 				<classpath refid="cp.eclipse-@{version}" />
 				<classpath location="build/ant" />

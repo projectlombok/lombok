@@ -40,6 +40,26 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	<available file="${rtstubs18.loc}" property="rtstubs18.available" />
 	<property name="ssh.configuration.file" location="ssh.configuration" />
 	
+	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.gtk.linux.aarch64">
+		<os name="Linux" arch="aarch64" />
+	</condition>
+	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.gtk.linux.x86_64">
+		<os name="Linux" />
+	</condition>
+	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.cocoa.macosx.aarch64">
+		<os name="Mac OS X" arch="aarch64" />
+	</condition>
+	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.cocoa.macosx.x86_64">
+		<os name="Mac OS X" />
+	</condition>
+	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.win32.win32.aarch64">
+		<os family="windows" arch="aarch64" />
+	</condition>
+	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.win32.win32.x86_64">
+		<os family="windows" />
+	</condition>
+	<fail unless="os.specific.native-swt-lib">Full eclipse testing requires downloading a native SWT binding. This script knows how to download for OS = [mac, linux, or windows] and architecture = [aarch64 or x86-64]. You have something different, you unique snowflake you. Your OS: "${os.name}", Your arch: "${os.arch}".</fail>
+	
 	<target name="-setup.ssh.ask">
 		<property file="${ssh.configuration.file}" />
 		<fail>
@@ -312,7 +332,7 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 				<arg value="org.eclipse.osgi.util" />
 				<arg value="org.eclipse.search" />
 				<arg value="org.eclipse.swt" />
-				<arg value="org.eclipse.swt.gtk.linux.x86_64" />
+				<arg value="${os.specific.native-swt-lib}" />
 				<arg value="org.eclipse.team.core" />
 				<arg value="org.eclipse.team.ui" />
 				<arg value="org.eclipse.text" />
