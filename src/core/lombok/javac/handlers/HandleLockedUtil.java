@@ -160,7 +160,6 @@ public final class HandleLockedUtil {
 		} else {
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
 		}
-
 		recursiveSetGeneratedBy(lockNode, annotationNode);
 
 		final JCExpression lockable;
@@ -168,15 +167,17 @@ public final class HandleLockedUtil {
 			lockable = lockNode;
 		} else {
 			lockable = maker.Apply(NIL_EXPRESSION, maker.Select(lockNode, methodNode.toName(lockableMethodName)), NIL_EXPRESSION);
+			recursiveSetGeneratedBy(lockable, annotationNode);
 		}
 
 		JCExpressionStatement acquireLock = maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(lockable, typeNode.toName("lock")), NIL_EXPRESSION));
 		JCExpressionStatement releaseLock = maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(lockable, typeNode.toName("unlock")), NIL_EXPRESSION));
 
-		JCTry tryBlock = recursiveSetGeneratedBy(maker.Try(maker.Block(0L, method.body.stats), List.<JCCatch>nil(),
-				maker.Block(0L, List.<JCStatement>of(releaseLock))), annotationNode);
+		JCBlock finallyBlock = setGeneratedBy(maker.Block(0, List.<JCStatement>of(recursiveSetGeneratedBy(releaseLock, annotationNode))), annotationNode);
+		JCTry tryBlock = setGeneratedBy(maker.Try(method.body, List.<JCCatch>nil(), finallyBlock), annotationNode);
 
-		method.body.stats = List.<JCStatement>of(tryBlock).prepend(recursiveSetGeneratedBy(acquireLock, annotationNode));
+		method.body = setGeneratedBy(maker.Block(0, List.<JCStatement>of(recursiveSetGeneratedBy(acquireLock, annotationNode), tryBlock)), annotationNode);
+
 		methodNode.rebuild();
 	}
 }
