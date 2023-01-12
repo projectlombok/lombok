@@ -2,7 +2,9 @@ Lombok Changelog
 ----------------
 
 ### v1.18.25 "Edgy Guinea Pig"
-* No new changes since the release of v1.18.24
+* PLATFORM: JDK19 support added. [Issue #3264](https://github.com/projectlombok/lombok/issues/3264).
+* BUGFIX: Using the refactor script: "Rename field" in a `@(Super)Builder`-marked file in eclipse or VSCode would cause issues. [Issue #3181] (https://github.com/projectlombok/lombok/issues/3181).
+* BUGFIX: Using `val` together with any call to a method that explicitly resolves to a default impl in an interface didn't work in javac. [Issue #3242](https://github.com/projectlombok/lombok/issues/3242).
 
 ### v1.18.24 (April 18th, 2022)
 
@@ -19,7 +21,7 @@ Lombok Changelog
 * BUGFIX: Null analysis in eclipse was broken for incremental builds. [Issue #3133](https://github.com/projectlombok/lombok/issues/3133).
 * BUGFIX `VerifyError` would show up in the latest eclipse release when using various refactor scripts. [Issue #3134](https://github.com/projectlombok/lombok/issues/3134).
 * BUGFIX: The various `@Log` annotations can now be placed on inner enums and records. [Issue #2990](https://github.com/projectlombok/lombok/issues/2990).
-* SECURITY: A widely reported security issue with log4j2 ([CVE-2021-44228](https://www.randori.com/blog/cve-2021-44228/)) has absolutely no effect on either lombok itself nor does usage of lombok on its own, or even the usage of lombok's `@Log4j2`, cause any issues whatsoever: You have to ship your own log4j2 dependency in your app - update that to 2.17 or otherwise mitigate this issue (see the CVE page). To avoid unnecessary warnings from dependency checkers, our dep on log4j2, which is used solely for testing, isn't shipped by us, and cannot be exploited in any way, has been updated to 2.17.1. [Issue #3063](https://github.com/projectlombok/lombok/issues/3063)
+* SECURITY: A widely reported security issue with log4j2 ([CVE-2021-44228](https://www.randori.com/blog/cve-2021-44228/)) has absolutely no effect on either lombok itself nor does usage of lombok on its own, or even the usage of lombok's `@Log4j2`, cause any issues whatsoever: You have to ship your own log4j2 dependency in your app - update that to 2.17 or otherwise mitigate this issue (see the CVE page). To avoid unneccessary warnings from dependency checkers, our dep on log4j2, which is used solely for testing, isn't shipped by us, and cannot be exploited in any way, has been updated to 2.17.1. [Issue #3063](https://github.com/projectlombok/lombok/issues/3063)
 * IMPROBABLE BREAKING CHANGE: Lombok now understands a few more annotations that imply "this field should not ever contain a null reference". Lombok will thus copy some of these new annotations e.g. to generated getters and the like.  [Pull Request #2904](https://github.com/projectlombok/lombok/pull/2904)
 
 ### v1.18.22 (October 6th, 2021)
@@ -232,7 +234,7 @@ Lombok Changelog
 * FEATURE: A `lombok.config` key can now be used to make your fields `final` and/or `private`... __everywhere__. We'll be monitoring the performance impact of this for a while. We'll touch every source file if you turn these on, and even if you don't, we have to call into the lombok config system for every file.
 * FEATURE: A `lombok.config` key can now be used to set the default behaviour of `@EqualsAndHashCode` when generating methods for a class that extends something in regards to calling the superclass implementations of `equals` and `hashCode` or not. [Issue #965](https://github.com/projectlombok/lombok/issues/965).
 * FEATURE: Putting `@Wither` on abstract classes now generates something slightly more useful: An abstract wither method. [Issue #945](https://github.com/projectlombok/lombok/issues/945).
-* BUGFIX: `@Helper` used to only be legal in pretty specific places; now it works just about everywhere.
+* BUGFIX: `@Helper` used to only be be legal in pretty specific places; now it works just about everywhere.
 * BUGFIX: lambdas with 1 argument that has an explicit type did not pretty print correctly. [Issue #972](https://github.com/projectlombok/lombok/issues/972).
 * BUGFIX: When using delombok, a source file with only `@NonNull` annotations on parameters as lombok feature would not get properly delomboked.  [Issue #950](https://github.com/projectlombok/lombok/issues/950).
 * BUGFIX: `@Delegate` in javac would generate arrays instead of varargs parameters. [Issue #932](https://github.com/projectlombok/lombok/issues/932).
@@ -275,7 +277,7 @@ Lombok Changelog
 
 ### v1.14.6 (September 2nd, 2014)
 * BUGFIX: Usage of `val` would break starting with JDK8 release `1.8.0_20`. [Issue #766](https://github.com/projectlombok/lombok/issues/766)
-* BUGFIX: Depending on your eclipse project setup, releases v1.14.0 through v1.14.4 could noticeably slow down your eclipse. [Issue #717](https://github.com/projectlombok/lombok/issues/717).
+* BUGFIX: Depending on your eclipse project setup, releases v1.14.0 through v1.14.4 could noticably slow down your eclipse. [Issue #717](https://github.com/projectlombok/lombok/issues/717).
 
 
 ### v1.14.4 (July 1st, 2014)
