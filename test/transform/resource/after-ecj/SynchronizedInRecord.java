@@ -1,8 +1,8 @@
 import lombok.Synchronized;
-public record SynchronizedInRecord(java $lock, String a) {
-  private final java.lang.Object $lock = new java.lang.Object[0];
+public record SynchronizedInRecord(String a, String b) {
 /* Implicit */  private final String a;
 /* Implicit */  private final String b;
+  private final java.lang.Object $lock = new java.lang.Object[0];
   public SynchronizedInRecord(String a, String b) {
     super();
     .a = a;
