@@ -1998,7 +1998,7 @@ public class EclipseHandlerUtil {
 			int index = 0;
 			for (; index < size; index++) {
 				FieldDeclaration f = newArray[index];
-				if (isEnumConstant(f) || isGenerated(f)) continue;
+				if (isEnumConstant(f) || isGenerated(f) || isRecordField(f)) continue;
 				break;
 			}
 			System.arraycopy(newArray, index, newArray, index + 1, size - index);
@@ -2758,6 +2758,13 @@ public class EclipseHandlerUtil {
 	 */
 	public static boolean isRecordField(EclipseNode fieldNode) {
 		return fieldNode.getKind() == Kind.FIELD && (((FieldDeclaration) fieldNode.get()).modifiers & AccRecord) != 0;
+	}
+	
+	/**
+	 * Returns {@code true} If the provided node is a field declaration, and represents a field in a {@code record} declaration.
+	 */
+	public static boolean isRecordField(FieldDeclaration fieldDeclaration) {
+		return (fieldDeclaration.modifiers & AccRecord) != 0;
 	}
 	
 	/**
