@@ -1,18 +1,18 @@
 package lombok.eclipse.dependencies;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,18 +70,34 @@ public class DownloadEclipseDependencies {
 	}
 	
 	private static void downloadFile(String filename, String repositoryUrl, String target) throws IOException {
-		Files.createDirectories(Paths.get(target));
-		Path targetFile = Paths.get(target, filename);
-		if (Files.exists(targetFile)) {
+		new File(target).mkdirs();
+		File targetFile = new File(target, filename);
+		if (targetFile.exists()) {
 			System.out.println("File '" + filename + "' already exists");
 			return;
 		}
 		System.out.print("Downloading '" + filename + "'... ");
+		InputStream in = null;
+		OutputStream out = null;
 		try {
-			Files.copy(getStreamForUrl(repositoryUrl + filename), targetFile, StandardCopyOption.REPLACE_EXISTING);
+			in = getStreamForUrl(repositoryUrl + filename);
+			out = new FileOutputStream(targetFile);
+			copy(in, out);
 			System.out.println("[done]");
 		} catch(IOException e) {
 			System.out.println("[error]");
+		} finally {
+			if (in != null) try { in.close(); } catch (Exception ignore) {}
+			if (out != null) out.close();
+		}
+	}
+	
+	private static void copy(InputStream from, OutputStream to) throws IOException {
+		byte[] b = new byte[4096];
+		while (true) {
+			int r = from.read(b);
+			if (r == -1) return;
+			to.write(b, 0, r);
 		}
 	}
 	
@@ -126,6 +142,12 @@ public class DownloadEclipseDependencies {
 		sb.append("</library>\n");
 		sb.append("</eclipse-userlibraries>\n");
 		
-		Files.writeString(Paths.get(target, eclipseVersion + ".userlibraries"), sb.toString());
+		OutputStream out = null;
+		try {
+			out = new FileOutputStream(new File(target, eclipseVersion + ".userlibraries"));
+			copy(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8)), out);
+		} finally {
+			if (out != null) out.close();
+		}
 	}
 }

@@ -57,7 +57,7 @@ public final class LombokImmutableList<T> implements Iterable<T> {
 		return new LombokImmutableList<T>(new Object[] {a, b, c, d, e});
 	}
 	
-	public static <T> LombokImmutableList<T> of(T a, T b, T c, T d, T e, T f, T... g) {
+	@SafeVarargs public static <T> LombokImmutableList<T> of(T a, T b, T c, T d, T e, T f, T... g) {
 		Object[] rest = g == null ? new Object[] {null} : g;
 		Object[] val = new Object[rest.length + 6];
 		System.arraycopy(rest, 0, val, 6, rest.length);
