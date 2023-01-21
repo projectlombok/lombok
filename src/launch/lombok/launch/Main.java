@@ -24,6 +24,8 @@ package lombok.launch;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
+import lombok.eclipse.EclipseAST;
+
 class Main {
 	private static ShadowClassLoader classLoader;
 	
@@ -37,6 +39,7 @@ class Main {
 	static synchronized void prependClassLoader(ClassLoader loader) {
 		getShadowClassLoader();
 		classLoader.prependParent(loader);
+		EclipseAST.setJdtCoreClassLoader(classLoader);
 	}
 	
 	public static void main(String[] args) throws Throwable {

@@ -21,7 +21,10 @@
  */
 package lombok.eclipse;
 
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -30,13 +33,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.core.AST;
-import lombok.core.LombokImmutableList;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
-import lombok.permit.Permit;
-
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -55,11 +51,25 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 
+import lombok.core.AST;
+import lombok.core.LombokImmutableList;
+import lombok.permit.Permit;
+
 /**
  * Wraps around Eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
  * something Eclipse own AST system does not offer.
  */
 public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
+	private static ClassLoader jdtCoreClassLoader;
+
+	public static ClassLoader getJdtCoreClassLoader() {
+		return jdtCoreClassLoader;
+	}
+
+	public static void setJdtCoreClassLoader(ClassLoader jdtCoreClassLoader) {
+		EclipseAST.jdtCoreClassLoader = jdtCoreClassLoader;
+	}
+
 	/**
 	 * Creates a new EclipseAST of the provided Compilation Unit.
 	 * 
@@ -188,7 +198,41 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 				return null;
 			}
 			try {
-				return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(path)).getLocationURI();
+				if (jdtCoreClassLoader != null) {
+					Class<?> resourcePlugin = jdtCoreClassLoader.loadClass("org.eclipse.core.resources.ResourcesPlugin");
+					if (resourcePlugin != null) {
+						Method getWorkspace = resourcePlugin.getMethod("getWorkspace", new Class<?>[0]);
+						Object workspace = getWorkspace.invoke(resourcePlugin,  new Object[0]);
+						if (workspace != null) {
+							Method getRoot = workspace.getClass().getMethod("getRoot", new Class<?>[0]);
+							Object root = getRoot.invoke(workspace,   new Object[0]);
+							if (root != null) {
+								Class<?> pathClass = jdtCoreClassLoader.loadClass("org.eclipse.core.runtime.Path");
+								if (pathClass != null) {
+									Constructor<? extends Object> constructor = pathClass.getConstructor(path.getClass());
+									if (constructor != null) {
+										Object pathObject = constructor.newInstance(path);
+										if (pathObject != null) {
+											Class<?> iPath = jdtCoreClassLoader.loadClass("org.eclipse.core.runtime.IPath");
+											Method getFile = root.getClass().getSuperclass().getMethod("getFile", iPath);
+											if (getFile != null) {
+												Object fileObject = getFile.invoke(root, pathObject);
+												if (fileObject != null) {
+													Method getLocationUri = fileObject.getClass().getMethod("getLocationURI", new Class<?>[0]);
+													Object uri = getLocationUri.invoke(fileObject,  new Object[0]);
+													if (uri instanceof URI) {
+														return (URI)uri;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				return null; // return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(path)).getLocationURI();
 			} catch (Exception e) {
 				// One of the exceptions that can occur is IllegalStateException (during getWorkspace())
 				// if you try to run this while eclipse is shutting down.
