@@ -171,7 +171,8 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			JCExpression receiver = receiverOf(methodCall);
 			String methodName = methodNameOf(methodCall);
 			
-			if ("this".equals(receiver.toString()) || "this".equals(methodName) || "super".equals(methodName)) return;
+			if ("this".equals(receiver.toString()) && isImplicitReceiver(methodCall)) return;
+			if ("this".equals(methodName) || "super".equals(methodName)) return;
 			Map<JCTree, JCTree> resolution = new JavacResolution(methodCallNode.getContext()).resolveMethodMember(methodCallNode);
 			
 			JCTree resolvedMethodCall = resolution.get(methodCall);
@@ -223,6 +224,10 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			} else {
 				return ((JCFieldAccess) methodCall.meth).selected;
 			}
+		}
+		
+		private boolean isImplicitReceiver(final JCMethodInvocation methodCall) {
+			return methodCall.meth instanceof JCIdent;
 		}
 	}
 }
