@@ -711,7 +711,11 @@ public class Delombok {
 			}
 			if (source != null) {
 				argsList.add("-source");
-				argsList.add(options.get("-source"));
+				if (Javac.getJavaCompilerVersion() < 12) {
+					argsList.add(options.get("-source"));
+				} else {
+					argsList.add(options.get("--source"));
+				}
 			}
 			if (charset != null) {
 				argsList.add("-encoding");
