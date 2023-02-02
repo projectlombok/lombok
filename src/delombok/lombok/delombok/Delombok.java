@@ -97,6 +97,7 @@ public class Delombok {
 	private boolean verbose;
 	private boolean noCopy;
 	private boolean onlyChanged;
+	private boolean keepPathInTargetDirectory = false;
 	private boolean force = false;
 	private boolean disablePreview;
 	private String classpath, sourcepath, bootclasspath, modulepath;
@@ -168,6 +169,10 @@ public class Delombok {
 		@Description("By default lombok enables preview features if available (introduced in JDK 12). With this option, lombok won't do that.")
 		@FullName("disable-preview")
 		private boolean disablePreview;
+		
+		@Description("By default input files are delomboked directly to the target directory, which means files with the same name get overwritten. With this option, the target directory is kept as a prefix in the output file paths.")
+		@FullName("target-keep-path")
+		private boolean keepPathInTargetDirectory;
 		
 		private boolean help;
 	}
@@ -302,6 +307,7 @@ public class Delombok {
 			delombok.setOutputToStandardOut();
 		} else {
 			delombok.setOutput(new File(args.target));
+			if (args.keepPathInTargetDirectory) delombok.setKeepPathInTargetDirectory(true);
 		}
 		
 		if (args.classpath != null) delombok.setClasspath(args.classpath);
@@ -542,6 +548,10 @@ public class Delombok {
 	
 	public void setOnlyChanged(boolean onlyChanged) {
 		this.onlyChanged = onlyChanged;
+	}
+	
+	public void setKeepPathInTargetDirectory(boolean keepPathInTargetDirectory) {
+		this.keepPathInTargetDirectory = keepPathInTargetDirectory;
 	}
 	
 	public void setOutput(File dir) {
@@ -907,7 +917,9 @@ public class Delombok {
 		URI base = inBase.toURI();
 		URI relative = base.relativize(base.resolve(file));
 		File outFile;
-		if (relative.isAbsolute()) {
+		if (keepPathInTargetDirectory) {
+			outFile = new File(outBase, file.getPath().replace(":", ""));
+		} else if (relative.isAbsolute()) {
 			outFile = new File(outBase, new File(relative).getName());
 		} else {
 			outFile = new File(outBase, relative.getPath());
