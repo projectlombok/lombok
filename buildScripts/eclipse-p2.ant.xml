@@ -35,7 +35,7 @@ This buildfile is part of projectlombok.org. It is responsible for building the 
 		<java classname="Epoch" classpath="build/p2-support" fork="false" outputproperty="dt.epochMillis" />
 	</target>
 	
-	<target name="eclipsep2.build" depends="version, -eclipsep2.get-epoch">
+	<target name="eclipsep2.build" depends="version, dist, -eclipsep2.get-epoch">
 		<tstamp><format property="dt.year" pattern="yyyy" /></tstamp>
 		<mkdir dir="build/p2" />
 		<mkdir dir="build/p2/features" />
@@ -109,25 +109,16 @@ This buildfile is part of projectlombok.org. It is responsible for building the 
 		<delete file="build/p2/content.xml" />
 	</target>
 	
-	<target name="eclipsep2.pack" depends="eclipsep2.build">
-		<tar destfile="dist/eclipse-p2.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/p2" />
-		</tar>
-	</target>
-	
-	<target name="eclipsep2.publish" depends="eclipsep2.pack">
-		<ivy:scpUpload
-			from="dist/eclipse-p2.tar.bz2"
-			to="/data/lombok/staging"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
-		<ivy:sshExec
-			cmd="/data/lombok/stagingCmd/deployP2"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
+	<target name="eclipsep2.publish" depends="eclipsep2.build, compile.support">
+		<java classname="lombok.publish.PublishToBucket" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="${gpg.keyrings}/s3_creds.txt" />
+			<arg value="build/p2" />
+			<arg value="p2" />
+			<arg value="true" />
+		</java>
 	</target>
 </project>
