@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2020 The Project Lombok Authors.
+  Copyright (C) 2020-2023 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,7 @@ such as applying the templates to produce the website, converting the changelog 
 		</sequential>
 	</macrodef>
 	
-	<target name="website.release-build" depends="version, -website.clean, compile.support">
+	<target name="website.release-build" depends="version, -website.clean, javadoc.build, compile.support">
 		<website.make version="${lombok.version}" fullversion="${lombok.fullversion}" cmd="all-newrelease" />
 	</target>
 	
@@ -129,27 +129,54 @@ such as applying the templates to produce the website, converting the changelog 
 		</java>
 	</target>
 	
-	<target name="website.pack" depends="website.build">
-		<mkdir dir="dist" />
-		<tar destfile="dist/website.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/website" excludes="download-edge.html" />
-		</tar>
+	<target name="-website.init-hostgit">
+		<property name="loc.hostingGit" location="../website-cloudflare" />
+		<fail>
+			You need the website-cloudflare repo as a sibling to your lombok repo to publish the website.
+			<condition>
+				<not><available file="${loc.hostingGit}/.git" /></not>
+			</condition>
+		</fail>
 	</target>
 	
-	<target name="website.publish" depends="website.pack" description="Builds the website, compresses it, sends it to the projectlombok.org server and deploys it">
-		<ivy:scpUpload
-			from="dist/website.tar.bz2"
-			to="/data/lombok/staging"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
-		<ivy:sshExec
-			cmd="/data/lombok/stagingCmd/deployWebsite"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
+	<target name="-website.copyto-hostgit">
+		<sync todir="${loc.hostingGit}/website">
+			<fileset dir="build/website" />
+		</sync>
+	</target>
+	
+	<target name="-website.pull-hostgit" depends="deps, -website.init-hostgit">
+		<exec executable="${exe.git}" failonerror="true" dir="${loc.hostingGit}">
+			<arg value="pull" />
+		</exec>
+	</target>
+	
+	<target name="-website.commit-and-push-hostgit">
+		<exec executable="${exe.git}" failonerror="true" dir="${loc.hostingGit}">
+			<arg value="add" />
+			<arg value="-A" />
+		</exec>
+		<exec executable="${exe.git}" failonerror="true" dir="${loc.hostingGit}">
+			<arg value="commit" />
+			<arg value="-m" />
+			<arg value="website update" />
+		</exec>
+		<exec executable="${exe.git}" failonerror="true" dir="${loc.hostingGit}">
+			<arg value="push" />
+		</exec>
+	</target>
+	
+	<target name="website.publish" depends="-website.pull-hostgit, website.build, -website.copyto-hostgit" description="Builds the website and copies it to the git repo serving as source for the cloudflare-hosted projectlombok.org site">
+		<antcall target="-website.commit-and-push-hostgit" />
+	</target>
+	
+	<target name="website.release-publish" depends="dist, -website.pull-hostgit, website.release-build, -website.copyto-hostgit" description="Builds the website and copies it to the git repo serving as source for the cloudflare-hosted projectlombok.org site">
+		<sync todir="${loc.hostingGit}/api">
+			<fileset dir="doc/api" />
+		</sync>
+		<echo file="${loc.hostingGit}/CURRENT_VERSION">${lombok.version}</echo>
+		<copy file="dist/lombok-${lombok.version}.jar" todir="${loc.hostingGit}/releases" />
+		<antcall target="-website.commit-and-push-hostgit" />
 	</target>
 	
 	<target name="javadoc.build" description="Generates the javadoc" depends="version, compile" unless="skip.javadoc">
@@ -205,30 +232,6 @@ such as applying the templates to produce the website, converting the changelog 
 		</copy>
 		<echo append="true" file="doc/api/module-search-index.js"></echo>
 		<echo append="true" file="doc/api/tag-search-index.js"></echo>
-	</target>
-	
-	<target name="javadoc.pack" depends="javadoc.build">
-		<mkdir dir="dist" />
-		<tar destfile="dist/javadoc.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/api" />
-		</tar>
-		<echo>File dist/javadoc.tar.bz2 is available</echo>
-	</target>
-	
-	<target name="javadoc.publish" depends="javadoc.pack">
-		<ivy:scpUpload
-			from="dist/javadoc.tar.bz2"
-			to="/data/lombok/staging"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
-		<ivy:sshExec
-			cmd="/data/lombok/stagingCmd/deployJavadoc"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
 	</target>
 	
 	<target name="latest-changes.build" depends="compile.support, version" description="Creates the latest changes HTML file from the markdown in doc/changelog">

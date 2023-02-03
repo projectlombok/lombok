@@ -250,13 +250,16 @@ Turns the changelog at doc/changelog.markdown into
 build/website/changelog.html.
 
   &gt; ant website.build
-  &gt; ant website.pack
+  &gt; ant website.release-build
   &gt; ant website.publish
+  &gt; ant website.release-publish
 
-'build' Builds the website (by for example applying freemarker templates) into
-build/website.
-'pack' bzips this up, ready to ship to the server.
-'publish' sends this to the server and runs a script to deploy.
+'build' Builds the website into build/website, _without_ reflecting a new release; this is
+  just in case you e.g. edited some documentation.
+'publish' deploys this to the server.
+'release-build' builds the website _with_ reflecting a new release, updating all-versions,
+  the download page, updating the javadoc, etc.
+'release-ppublic' deploys this to the server.
 
   &gt; ant website.open
   
@@ -269,14 +272,9 @@ Makes a changelog variant that lists only the newest changes; it is included
 in the distribution for convenience.
 
   &gt; ant javadoc.build
-  &gt; ant javadoc.pack
-  &gt; ant javadoc.publish
 
 'build' Builds the javadoc into build/api.
-'pack' bzips this up, ready to ship to the server.
-'publish' sends this to the server and runs a script to deploy.
 
-  &gt; ant edge.pack
   &gt; ant edge.publish
 
 'pack' creates a bzip with all relevant files needed to deploy a new edge
@@ -285,8 +283,7 @@ maven repo update so that the edge release can be fetched as a maven dep,
 and an update to the download-edge page listing the latest changes included
 in the edge release.
 
-'publish' sends this to the server, runs a script server-side to deploy the
-content, and updates a git tag on success.</echo>
+'publish' sends the edge release to projectlombok.org directly.</echo>
 	</target>
 	
 	<target name="help.p2">

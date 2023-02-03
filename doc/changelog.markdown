@@ -1,7 +1,8 @@
 Lombok Changelog
 ----------------
 
-### v1.18.25 "Edgy Guinea Pig"
+### v1.18.26 (Feb 3rd, 2023)
+
 * PLATFORM: JDK19 support added. [Issue #3264](https://github.com/projectlombok/lombok/issues/3264).
 * BUGFIX: Using the refactor script: "Rename field" in a `@(Super)Builder`-marked file in eclipse or VSCode would cause issues. [Issue #3181] (https://github.com/projectlombok/lombok/issues/3181).
 * BUGFIX: Using `val` together with any call to a method that explicitly resolves to a default impl in an interface didn't work in javac. [Issue #3242](https://github.com/projectlombok/lombok/issues/3242).

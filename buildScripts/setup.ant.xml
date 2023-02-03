@@ -43,6 +43,7 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	<property name="gpg.keyrings" location="gpg.keyring" />
 	<property name="exe.gpg" value="gpg" />
 	<property name="exe.curl" value="curl" />
+	<property name="exe.git" value="git" />
 	
 	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.gtk.linux.aarch64">
 		<os name="Linux" arch="aarch64" />

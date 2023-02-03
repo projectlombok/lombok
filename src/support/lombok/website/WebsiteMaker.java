@@ -388,7 +388,7 @@ public class WebsiteMaker {
 	}
 	
 	private static List<List<String>> readAllVersions(Domain domain) throws IOException {
-		InputStream in = domain.url("all-versions.html").openStream();
+		InputStream in = domain.url("all-versions").openStream();
 		ArrayList<List<String>> links = new ArrayList<List<String>>();
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));

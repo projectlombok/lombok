@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2020-2022 The Project Lombok Authors.
+ Copyright (C) 2020-2023 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -149,7 +149,7 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="build/edge-releases/lombok-edge.jar" />
 	</target>
 	
-	<target name="maven.edge.publish" depends="maven.edge, compile.support" description="Creates the maven repo for the snapshot build and publishes it to projectlombok.org">
+	<target name="maven.edge-publish" depends="maven.edge, compile.support" description="Creates the maven repo for the snapshot build and publishes it to projectlombok.org">
 		<java classname="lombok.publish.PublishToBucket" failonerror="true">
 			<classpath>
 				<path refid="cp.buildtools" />
