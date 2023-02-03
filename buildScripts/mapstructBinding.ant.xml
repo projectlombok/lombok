@@ -96,7 +96,7 @@ exists as a separate dependency solely because it is itself dependent on both lo
 	<target name="mapstructBinding.pack" depends="dist,-mapstructBinding.jar,-mapstructBinding.doc,-mapstructBinding.src">
 	</target>
 	
-	<target name="mapstructBinding.publish" depends="mapstructBinding.pack, setup.ssh">
+	<target name="mapstructBinding.publish" depends="mapstructBinding.pack">
 		<tar destfile="dist/mavenPublish-mapstructBinding.tar.bz2" compression="bzip2">
 		<tarfileset dir="dist">
 			<include name="lombok-mapstruct-binding-${mapstruct-binding.version}.jar" />

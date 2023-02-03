@@ -40,6 +40,10 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	<available file="${rtstubs18.loc}" property="rtstubs18.available" />
 	<property name="ssh.configuration.file" location="ssh.configuration" />
 	
+	<property name="gpg.keyrings" location="gpg.keyring" />
+	<property name="exe.gpg" value="gpg" />
+	<property name="exe.curl" value="curl" />
+	
 	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.gtk.linux.aarch64">
 		<os name="Linux" arch="aarch64" />
 	</condition>
@@ -59,55 +63,6 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<os family="windows" />
 	</condition>
 	<fail unless="os.specific.native-swt-lib">Full eclipse testing requires downloading a native SWT binding. This script knows how to download for OS = [mac, linux, or windows] and architecture = [aarch64 or x86-64]. You have something different, you unique snowflake you. Your OS: "${os.name}", Your arch: "${os.arch}".</fail>
-	
-	<target name="-setup.ssh.ask">
-		<property file="${ssh.configuration.file}" />
-		<fail>
-			Your ssh.configuration file is corrupted; delete it and rerun this script.
-			<condition>
-				<or>
-					<and>
-						<isset property="ssh.username" />
-						<equals arg1="" arg2="${ssh.username}" />
-					</and>
-					<and>
-						<isset property="ssh.keyfile" />
-						<equals arg1="" arg2="${ssh.keyfile}" />
-					</and>
-				</or>
-			</condition>
-		</fail>
-		<fail>
-			The keyfile configured in your ${ssh.configuration.file} file does not exist.
-			<condition>
-				<and>
-					<isset property="ssh.keyfile" />
-					<not><available file="${ssh.keyfile}" /></not>
-				</and>
-			</condition>
-		</fail>
-		
-		<condition property="ssh.configuration.write">
-			<or>
-				<not><isset property="ssh.username" /></not>
-				<not><isset property="ssh.keyfile" /></not>
-			</or>
-		</condition>
-		<input message="What is your SSH username on the projectlombok.org server? (Enter to abort)." addproperty="ssh.username" />
-		<fail>Aborted<condition><equals arg1="" arg2="${ssh.username}" /></condition></fail>
-		<input message="Where is your ssh keyfile located? (Enter to abort)." addproperty="ssh.keyfile" defaultvalue="${user.home}/.ssh/id_rsa" />
-		<fail>File ${ssh.keyfile} does not exist<condition><not><available file="${ssh.keyfile}" /></not></condition></fail>
-	</target>
-	
-	<target name="-setup.ssh.save" if="ssh.configuration.write">
-		<propertyfile file="${ssh.configuration.file}" comment="SSH connect info for projectlombok.org.">
-			<entry key="ssh.username" value="${ssh.username}" />
-			<entry key="ssh.keyfile" value="${ssh.keyfile}" />
-		</propertyfile>
-		<echo>Your connection info has been written to ${ssh.configuration.file} and will be remembered for future invocations.</echo>
-	</target>
-	
-	<target name="setup.ssh" depends="-setup.ssh.ask, -setup.ssh.save" />
 	
 	<target name="-autoclean.check">
 		<available type="dir" file="build" property="existingbuild.present" />
@@ -369,6 +324,15 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<ivy:cachepath pathid="cp.stripe" conf="stripe" />
 		<ivy:cachepath pathid="cp.buildtools" conf="buildtools" />
 		<ivy:cachepath pathid="cp.test" conf="test" />
+	</target>
+	
+	<target name="-setup.ossrh">
+		<loadfile quiet="true" failonerror="false" encoding="UTF-8" property="ossrh.password" srcfile="${gpg.keyrings}/ossrh.password">
+			<filterchain>
+				<striplinebreaks />
+			</filterchain>
+		</loadfile>
+		<property name="ossrh.username" value="rzwitserloot" />
 	</target>
 	
 	<fail>ant needs to be at least v1.10.0 or higher to build lombok. Your version is: ${ant.version}

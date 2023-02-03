@@ -136,7 +136,7 @@ such as applying the templates to produce the website, converting the changelog 
 		</tar>
 	</target>
 	
-	<target name="website.publish" depends="setup.ssh, website.pack" description="Builds the website, compresses it, sends it to the projectlombok.org server and deploys it">
+	<target name="website.publish" depends="website.pack" description="Builds the website, compresses it, sends it to the projectlombok.org server and deploys it">
 		<ivy:scpUpload
 			from="dist/website.tar.bz2"
 			to="/data/lombok/staging"
@@ -215,7 +215,7 @@ such as applying the templates to produce the website, converting the changelog 
 		<echo>File dist/javadoc.tar.bz2 is available</echo>
 	</target>
 	
-	<target name="javadoc.publish" depends="setup.ssh, javadoc.pack">
+	<target name="javadoc.publish" depends="javadoc.pack">
 		<ivy:scpUpload
 			from="dist/javadoc.tar.bz2"
 			to="/data/lombok/staging"
@@ -256,7 +256,7 @@ such as applying the templates to produce the website, converting the changelog 
 		</tar>
 	</target>
 	
-	<target name="-release.publish.site" depends="setup.ssh, release.pack">
+	<target name="-release.publish.site" depends="release.pack">
 		<ivy:scpUpload
 			from="dist/website-release.tar.bz2"
 			to="/data/lombok/staging"
@@ -298,7 +298,7 @@ such as applying the templates to produce the website, converting the changelog 
 		</tar>
 	</target>
 	
-	<target name="edge.publish" depends="setup.ssh, edge.pack" description="Builds an edge release, sends it to the projectlombok.org server and deploys it by updating the download-edge link">
+	<target name="edge.publish" depends="edge.pack" description="Builds an edge release, sends it to the projectlombok.org server and deploys it by updating the download-edge link">
 		<ivy:scpUpload
 			from="dist/website-edge.tar.bz2"
 			to="/data/lombok/staging"

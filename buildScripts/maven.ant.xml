@@ -65,37 +65,61 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 		<mkdir dir="dist" />
 		
 		<maven.make version-name="${lombok.version}" />
-		<tar destfile="dist/mavenPublish.tar.bz2" compression="bzip2">
-			<tarfileset dir="dist">
+	</target>
+	
+	<target name="maven.publish" depends="maven, -setup.ossrh">
+		<fail>
+			Your lombok clone does not include the OSSRH deployment keys. Contact the core maintainers for these keys;
+			place them in ${gpg.keyrings} to continue.
+			
+			<condition>
+				<not><available file="${gpg.keyrings}" /></not>
+			</condition>
+		</fail>
+		
+		<fail unless="ossrh.password">
+			Your lombok clone does not include the OSSRH (sonatype maven central) password, needed to upload and deploy to maven central. Contact the core maintainers.
+		</fail>
+		
+		<delete quiet="true" dir="build/maven-publish" />
+		<mkdir dir="build/maven-publish" />
+		<copy todir="build/maven-publish">
+			<fileset dir="dist">
 				<include name="lombok-${lombok.version}.jar" />
 				<include name="lombok-${lombok.version}-sources.jar" />
 				<include name="lombok-${lombok.version}-javadoc.jar" />
-			</tarfileset>
-			<tarfileset dir="build" includes="pom.xml" />
-		</tar>
-	</target>
-	
-	<target name="maven.publish" depends="maven, setup.ssh">
-		<ivy:scpUpload
-			from="dist/mavenPublish.tar.bz2"
-			to="/data/lombok/staging"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
-		<ivy:sshExec
-			cmd="/data/lombok/stagingCmd/publishToMavenCentral"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
+			</fileset>
+			<fileset dir="build" includes="pom.xml" />
+		</copy>
+		
+		<apply executable="${exe.gpg}" failifexecutionfails="false" resultproperty="gpg.result">
+			<arg value="-ab" />
+			<arg value="--batch" />
+			<arg value="--yes" />
+			<arg value="--homedir" />
+			<arg value="${gpg.keyrings}" />
+			<fileset dir="build/maven-publish" />
+		</apply>
+		
+		<fail>
+			gpg (Gnu Privacy Guard) is not on your path, or ant property exe.gpg is not properly set. Install gpg/add it to your PATH. Alternatively, run with ant -Dexe.gpg=/loc/to/gpg to continue.
+			<condition>
+				<not><isset property="gpg.result" /></not>
+			</condition>
+		</fail>
+		
+		<jar destfile="build/maven-publish/lombok-bundle.jar">
+			<fileset dir="build/maven-publish" />
+		</jar>
+		
+		<exec executable="${exe.curl}" failifexecutionfails="false" resultproperty="curl.result">
+			<arg value="-u" />
+			<arg value="${ossrh.username}:${ossrh.password}" />
+			<arg value="-F" />
+			<arg value="file=@build/maven-publish/lombok-bundle.jar;type=application/java-archive" />
+			<arg value="https://oss.sonatype.org/service/local/staging/bundle_upload" />
+		</exec>
 		<echo>The artifact has been published to staging. Now go to https://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
-		<ivy:sshExec
-			cmd="/data/lombok/stagingCmd/showMavenCentralPassword"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
 	</target>
 	
 	<target name="maven.edge" depends="version, dist, javadoc.build" description="Create a maven repo for the current snapshot into a build dir. The intent is for you to put that on a server someplace. Will invoke your local mvn installation.">
@@ -116,12 +140,25 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 			<arg value="-DpomFile=build/pom.xml" />
 			<arg value="-Durl=file://${basedir}/build/edge-releases" />
 		</exec>
-		
 		<fail>
 			mvn is not on your path and/or MAVEN_HOME is not set. Add mvn to your path or set MAVEN_HOME to continue.
 			<condition>
 				<not><isset property="mvn.result" /></not>
 			</condition>
 		</fail>
+		<copy file="dist/lombok-${lombok.version}.jar" tofile="build/edge-releases/lombok-edge.jar" />
+	</target>
+	
+	<target name="maven.edge.publish" depends="maven.edge, compile.support" description="Creates the maven repo for the snapshot build and publishes it to projectlombok.org">
+		<java classname="lombok.publish.PublishToBucket" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="${gpg.keyrings}/s3_creds.txt" />
+			<arg value="build/edge-releases" />
+			<arg value="edge" />
+			<arg value="true" />
+		</java>
 	</target>
 </project>

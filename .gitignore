@@ -6,7 +6,6 @@
 /google.properties
 /debug
 /*.launch
-/ssh.configuration
 /findbugsReport.html
 /lib
 /.settings
@@ -25,3 +24,4 @@
 /pom.xml
 /jvm.locations
 /testenv
+/gpg.keyring

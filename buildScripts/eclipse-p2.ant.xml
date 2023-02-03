@@ -115,7 +115,7 @@ This buildfile is part of projectlombok.org. It is responsible for building the 
 		</tar>
 	</target>
 	
-	<target name="eclipsep2.publish" depends="setup.ssh, eclipsep2.pack">
+	<target name="eclipsep2.publish" depends="eclipsep2.pack">
 		<ivy:scpUpload
 			from="dist/eclipse-p2.tar.bz2"
 			to="/data/lombok/staging"
