@@ -60,6 +60,8 @@ import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
 import org.eclipse.jdt.internal.corext.refactoring.structure.MemberVisibilityAdjustor.IncomingMemberVisibilityAdjustment;
 
+import lombok.permit.Permit;
+
 import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
 
 /** These contain a mix of the following:
@@ -200,6 +202,13 @@ final class PatchFixesHider {
 			if (TRANSFORM != null) return;
 			
 			Main.prependClassLoader(prepend);
+			try {
+				ClassLoader currentClassLoader = Transform.class.getClassLoader();
+				Method prependParentMethod = Permit.getMethod(currentClassLoader.getClass(), "prependParent", ClassLoader.class);
+				Permit.invoke(prependParentMethod, currentClassLoader, prepend);
+			} catch (Throwable t) {
+				// Ignore
+			}
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.TransformEclipseAST");
 			TRANSFORM = Util.findMethodAnyArgs(shadowed, "transform");
 			TRANSFORM_SWAPPED = Util.findMethodAnyArgs(shadowed, "transform_swapped");
