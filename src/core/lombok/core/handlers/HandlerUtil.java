@@ -103,6 +103,7 @@ public class HandlerUtil {
 			"io.micrometer.core.lang.NonNull",
 			"io.reactivex.annotations.NonNull",
 			"io.reactivex.rxjava3.annotations.NonNull",
+			"jakarta.annotation.Nonnull",
 			"javax.annotation.Nonnull",
 			// "javax.validation.constraints.NotNull", // The field might contain a null value until it is persisted.
 			"libcore.util.NonNull",
@@ -160,8 +161,9 @@ public class HandlerUtil {
 			"io.reactivex.annotations.Nullable",
 			"io.reactivex.rxjava3.annotations.NonNull",
 			"io.reactivex.rxjava3.annotations.Nullable",
+			"jakarta.annotation.Nonnull",
+			"jakarta.annotation.Nullable",
 			"javax.annotation.CheckForNull",
-			"javax.annotation.Nonnull",
 			"javax.annotation.Nonnull",
 			"javax.annotation.Nullable",
 //			"javax.validation.constraints.NotNull", // - this should definitely not be included; validation is not about language-level nullity, therefore should not be in this core list.
