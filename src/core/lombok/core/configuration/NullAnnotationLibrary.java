@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Project Lombok Authors.
+ * Copyright (C) 2020-2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,7 @@ public final class NullAnnotationLibrary implements ConfigurationValueType {
 	
 	public static final NullAnnotationLibrary NONE = new NullAnnotationLibrary("none", null, null, false);
 	public static final NullAnnotationLibrary JAVAX = new NullAnnotationLibrary("javax", "javax.annotation.Nonnull", "javax.annotation.Nullable", false);
+	public static final NullAnnotationLibrary JAKARTA = new NullAnnotationLibrary("jakarta", "jakarta.annotation.Nonnull", "jakarta.annotation.Nullable", false);
 	public static final NullAnnotationLibrary ECLIPSE = new NullAnnotationLibrary("eclipse", "org.eclipse.jdt.annotation.NonNull", "org.eclipse.jdt.annotation.Nullable", true);
 	public static final NullAnnotationLibrary JETBRAINS = new NullAnnotationLibrary("jetbrains", "org.jetbrains.annotations.NotNull", "org.jetbrains.annotations.Nullable", false);
 	public static final NullAnnotationLibrary NETBEANS = new NullAnnotationLibrary("netbeans", "org.netbeans.api.annotations.common.NonNull", "org.netbeans.api.annotations.common.NullAllowed", false);
