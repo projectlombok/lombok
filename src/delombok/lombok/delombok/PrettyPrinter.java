@@ -1253,7 +1253,14 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	@Override public void visitForeachLoop(JCEnhancedForLoop tree) {
 		aPrint("for (");
-		printVarDefInline(tree.var);
+		JCTree varOrRecordPattern = readObject(tree, "varOrRecordPattern", null);
+		if (varOrRecordPattern instanceof JCVariableDecl) {
+			printVarDefInline((JCVariableDecl) varOrRecordPattern);
+		} else if (varOrRecordPattern != null) {
+			print(varOrRecordPattern);
+		} else {
+			printVarDefInline(tree.var);
+		}
 		print(" : ");
 		print(tree.expr);
 		print(") ");
@@ -1427,9 +1434,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	void printBindingPattern(JCTree tree) {
 		JCTree var = readObject(tree, "var", tree);
-		print((JCExpression) readObject(var, "vartype", null));
-		print(" ");
-		print((Name) readObject(var, "name", null));
+		printVarDef0((JCVariableDecl) var);
 	}
 	
 	void printDefaultCase(JCTree tree) {
