@@ -36,7 +36,6 @@ import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
-import com.sun.tools.javac.util.JCDiagnostic;
 import lombok.core.AST;
 import lombok.core.CleanupRegistry;
 import lombok.core.CleanupTask;
@@ -53,6 +52,7 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -63,6 +63,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
@@ -415,6 +416,18 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		JCANNOTATEDTYPE_FIELDS_INITIALIZED = true;
 	}
 	
+	
+	private static Field JCENHANCEDFORLOOP_VARORRECORDPATTERN_FIELD = Permit.permissiveGetField(JCEnhancedForLoop.class, "varOrRecordPattern");
+	private static JCTree getVarOrRecordPattern(JCEnhancedForLoop loop) {
+		if (JCENHANCEDFORLOOP_VARORRECORDPATTERN_FIELD == null) {
+			return loop.var;
+		}
+		try {
+			return (JCTree) JCENHANCEDFORLOOP_VARORRECORDPATTERN_FIELD.get(loop);
+		} catch (Exception ignore) {}
+		return null;
+	}
+	
 	private JavacNode buildTry(JCTry tryNode) {
 		if (setAndGetAsHandled(tryNode)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
@@ -471,6 +484,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (statement instanceof JCVariableDecl) return buildLocalVar((JCVariableDecl) statement, Kind.LOCAL);
 		if (statement instanceof JCTry) return buildTry((JCTry) statement);
 		if (statement.getClass().getName().equals("com.sun.tools.javac.tree.JCTree$JCLambda")) return buildLambda(statement);
+		if (statement instanceof JCEnhancedForLoop) return buildEnhancedForLoop((JCEnhancedForLoop) statement);
 		if (setAndGetAsHandled(statement)) return null;
 		
 		return drill(statement);
@@ -498,6 +512,17 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		}
 		getBodyMethods.putIfAbsent(c, m);
 		return getBodyMethods.get(c);
+	}
+	
+	private JavacNode buildEnhancedForLoop(JCEnhancedForLoop loop) {
+		if (setAndGetAsHandled(loop)) return null;
+		
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		addIfNotNull(childNodes, buildTree(loop.expr, Kind.STATEMENT));
+		addIfNotNull(childNodes, buildStatement(loop.body));
+		addIfNotNull(childNodes, buildTree(getVarOrRecordPattern(loop), Kind.STATEMENT));
+		
+		return putInMap(new JavacNode(this, loop, childNodes, Kind.STATEMENT));
 	}
 	
 	private JavacNode drill(JCTree statement) {

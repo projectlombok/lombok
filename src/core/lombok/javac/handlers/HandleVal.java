@@ -24,15 +24,19 @@ package lombok.javac.handlers;
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.handlers.HandleDelegate.HANDLE_DELEGATE_PRIORITY;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
+import java.lang.reflect.Field;
+
 import lombok.ConfigurationKeys;
 import lombok.val;
-import lombok.core.HandlerPriority;
 import lombok.var;
+import lombok.core.HandlerPriority;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
 import lombok.javac.ResolutionResetNeeded;
+import lombok.permit.Permit;
 import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
@@ -87,7 +91,8 @@ public class HandleVal extends JavacASTAdapter {
 		if (local.init == null) {
 			if (parentRaw instanceof JCEnhancedForLoop) {
 				JCEnhancedForLoop efl = (JCEnhancedForLoop) parentRaw;
-				if (efl.var == local) rhsOfEnhancedForLoop = efl.expr;
+				JCTree var = EnhancedForLoopReflect.getVarOrRecordPattern(efl);
+				if (var == local) rhsOfEnhancedForLoop = efl.expr;
 			}
 		}
 		
@@ -189,6 +194,21 @@ public class HandleVal extends JavacASTAdapter {
 			throw e;
 		} finally {
 			recursiveSetGeneratedBy(local.vartype, typeNode);
+		}
+	}
+	
+	private static class EnhancedForLoopReflect {
+		private static final Field varOrRecordPattern = Permit.permissiveGetField(JCEnhancedForLoop.class, "varOrRecordPattern");
+		
+		private static JCTree getVarOrRecordPattern(JCEnhancedForLoop loop) {
+			if (varOrRecordPattern == null) {
+				return loop.var;
+			}
+			
+			try {
+				return (JCTree) varOrRecordPattern.get(loop);
+			} catch (Exception ignore) {}
+			return null;
 		}
 	}
 }

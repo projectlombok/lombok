@@ -512,6 +512,13 @@ public class JavacHandlerUtil {
 		case LOCAL:
 			JCVariableDecl variable = (JCVariableDecl) parentNode.get();
 			variable.mods.annotations = filterList(variable.mods.annotations, annotation.get());
+			
+			if ((variable.mods.flags & GENERATED_MEMBER) != 0) {
+				JavacNode typeNode = upToTypeNode(annotation);
+				if (isRecord(typeNode)) {
+					RecordComponentReflect.deleteAnnotation((JCClassDecl) typeNode.get(), variable, annotation.get());
+				}
+			}
 			break;
 		case METHOD:
 			JCMethodDecl method = (JCMethodDecl) parentNode.get();
@@ -557,6 +564,47 @@ public class JavacHandlerUtil {
 			if (jcTree != ann) newAnnotations.append(ann);
 		}
 		return newAnnotations.toList();
+	}
+	
+	private static List<JCAnnotation> filterListByPos(List<JCAnnotation> annotations, JCTree jcTree) {
+		ListBuffer<JCAnnotation> newAnnotations = new ListBuffer<JCAnnotation>();
+		for (JCAnnotation ann : annotations) {
+			if (jcTree.pos != ann.pos) newAnnotations.append(ann);
+		}
+		return newAnnotations.toList();
+	}
+	
+	
+	static class RecordComponentReflect {
+		
+		private static final Field astField;
+		private static final Method findRecordComponentToRemove;
+		
+		static {
+			Field a = null;
+			Method m = null;
+			try {
+				Class<?> forName = Class.forName("com.sun.tools.javac.code.Symbol$RecordComponent");
+				a = Permit.permissiveGetField(forName, "ast");
+				m = Permit.permissiveGetMethod(ClassSymbol.class, "findRecordComponentToRemove", JCVariableDecl.class);
+			} catch (Throwable e) {
+				// Ignore
+			}
+			astField = a;
+			findRecordComponentToRemove = m;
+		}
+		
+		static void deleteAnnotation(JCClassDecl record, JCVariableDecl component, JCTree annotation) {
+			if (astField == null || findRecordComponentToRemove == null) return;
+			
+			try {
+				Object toRemove = Permit.invokeSneaky(findRecordComponentToRemove, record.sym, component);
+				JCVariableDecl variable = (JCVariableDecl) Permit.get(astField, toRemove);
+				variable.mods.annotations =  filterListByPos(variable.mods.annotations, annotation);
+			} catch (Throwable e) {
+				// Ignore
+			}
+		}
 	}
 	
 	/** Serves as return value for the methods that check for the existence of fields and methods. */
