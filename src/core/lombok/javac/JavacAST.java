@@ -516,11 +516,12 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	
 	private JavacNode buildEnhancedForLoop(JCEnhancedForLoop loop) {
 		if (setAndGetAsHandled(loop)) return null;
-		
+
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		// The order of the child elements is important and must be kept
+		addIfNotNull(childNodes, buildTree(getVarOrRecordPattern(loop), Kind.STATEMENT));
 		addIfNotNull(childNodes, buildTree(loop.expr, Kind.STATEMENT));
 		addIfNotNull(childNodes, buildStatement(loop.body));
-		addIfNotNull(childNodes, buildTree(getVarOrRecordPattern(loop), Kind.STATEMENT));
 		
 		return putInMap(new JavacNode(this, loop, childNodes, Kind.STATEMENT));
 	}
