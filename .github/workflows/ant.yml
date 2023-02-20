@@ -10,15 +10,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: 'zulu'
           java-version: 11
       
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ivyCache
@@ -30,7 +31,7 @@ jobs:
       - name: Build with Ant
         run: ant -noinput dist
         
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: lombok.jar
           path: dist/lombok.jar
@@ -38,9 +39,10 @@ jobs:
   
   test-javac:
     runs-on: ubuntu-latest
+    needs: build
     strategy: 
       matrix: 
-        jdk: [11, 12, 13, 14, 15, 16]
+        jdk: [11, 12, 13, 14, 15, 16, 17, 18, 19]
         goal: [javacCurrent]
         include:
           - jdk: 11
@@ -51,15 +53,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Set up JDK ${{ matrix.jdk }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.jdk }}
+          distribution: 'zulu'
       
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ivyCache
@@ -75,22 +78,34 @@ jobs:
       
   test-eclipse:
     runs-on: ubuntu-latest
+    needs: build
     strategy: 
       matrix: 
-        version: [eclipse-oxygen, eclipse-202006, ecj11, ecj14, ecj16]
+        version:
+        - eclipse-oxygen
+        - eclipse-202006
+        - eclipse-202006-jdk8
+        - eclipse-202212
+        - eclipse-oxygen-full
+        - eclipse-2022-03-full
+        - ecj11
+        - ecj14
+        - ecj16
+        - ecj19
       fail-fast: false
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: 11
+          distribution: 'zulu'
 
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ivyCache
@@ -119,9 +134,9 @@ jobs:
       
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: lombok.jar
         
