@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
@@ -305,10 +304,7 @@ public class LombokProcessor extends AbstractProcessor {
 		
 		// Step 1: Take all CUs which aren't already in the map. Give them the first priority level.
 		
-		String randomModuleName = null;
-		
 		for (Element element : roundEnv.getRootElements()) {
-			if (randomModuleName == null) randomModuleName = getModuleNameFor(element);
 			JCCompilationUnit unit = toUnit(element);
 			if (unit == null) continue;
 			if (roots.containsKey(unit)) continue;
@@ -353,7 +349,7 @@ public class LombokProcessor extends AbstractProcessor {
 			newLevels.retainAll(priorityLevelsRequiringResolutionReset);
 			if (!newLevels.isEmpty()) {
 				// Force a new round to reset resolution. The next round will cause this method (process) to be called again.
-				forceNewRound(randomModuleName, javacFiler);
+				forceNewRound(javacFiler);
 				return false;
 			}
 			// None of the new levels need resolution, so just keep going.
@@ -361,7 +357,7 @@ public class LombokProcessor extends AbstractProcessor {
 	}
 	
 	private int dummyCount = 0;
-	private void forceNewRound(String randomModuleName, JavacFiler filer) {
+	private void forceNewRound(JavacFiler filer) {
 		if (!filer.newFiles()) {
 			try {
 				filer.getGeneratedSourceNames().add("lombok.dummy.ForceNewRound" + (dummyCount++));
@@ -372,38 +368,7 @@ public class LombokProcessor extends AbstractProcessor {
 			}
 		}
 	}
-	
-	private String getModuleNameFor(Element element) {
-		while (element != null) {
-			if (element.getKind().name().equals("MODULE")) return getModuleName(element);
-			Element n = element.getEnclosingElement();
-			if (n == element) return null;
-			element = n;
-		}
-		return null;
-	}
-	
-	private static Class<?> qualifiedNamableClass = null;
-	private static Method qualifiedNamableQualifiedNameMethod = null;
-	// QualifiedNameable isn't in java 6, so to remain compatible with java6, use reflection.
-	private static String getModuleName(Element element) {
-		try {
-			if (qualifiedNamableClass == null) qualifiedNamableClass = Class.forName("javax.lang.model.element.QualifiedNamable");
-			if (!qualifiedNamableClass.isInstance(element)) return null;
-			if (qualifiedNamableQualifiedNameMethod == null) qualifiedNamableQualifiedNameMethod = Permit.getMethod(qualifiedNamableClass, "getQualifiedName");
-			String name = Permit.invoke(qualifiedNamableQualifiedNameMethod, element).toString().trim();
-			return name.isEmpty() ? null : name;
-		} catch (ClassNotFoundException e) {
-			return null;
-		} catch (NoSuchMethodException e) {
-			return null;
-		} catch (InvocationTargetException e) {
-			return null;
-		} catch (IllegalAccessException e) {
-			return null;
-		}
-	}
-	
+
 	private JCCompilationUnit toUnit(Element element) {
 		TreePath path = null;
 		if (trees != null) {
