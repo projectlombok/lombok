@@ -313,7 +313,11 @@ public class JavacHandlerUtil {
 	 * @param typeNode A type reference to check.
 	 */
 	public static boolean typeMatches(String type, JavacNode node, JCTree typeNode) {
-		String typeName = typeNode == null ? null : typeNode.toString();
+		String typeName = getTypeName(typeNode);
+		return typeMatches(type, node, typeName);
+	}
+
+	private static boolean typeMatches(String type, JavacNode node, String typeName) {
 		if (typeName == null || typeName.length() == 0) return false;
 		int lastIndexA = typeName.lastIndexOf('.') + 1;
 		int lastIndexB = Math.max(type.lastIndexOf('.'), type.lastIndexOf('$')) + 1;
@@ -323,7 +327,11 @@ public class JavacHandlerUtil {
 		TypeResolver resolver = node.getImportListAsTypeResolver();
 		return resolver.typeMatches(node, type, typeName);
 	}
-	
+
+	private static String getTypeName(JCTree typeNode) {
+		return typeNode == null ? null : typeNode.toString();
+	}
+
 	/**
 	 * Returns if a field is marked deprecated, either by {@code @Deprecated} or in javadoc
 	 * @param field the field to check
@@ -1617,7 +1625,8 @@ public class JavacHandlerUtil {
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
-				for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotation.annotationType)) return true;
+				String annotationTypeName = getTypeName(annotation.annotationType);
+				for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
 			}
 		}
 		
@@ -1627,7 +1636,8 @@ public class JavacHandlerUtil {
 	public static boolean hasNonNullAnnotations(JavacNode node, List<JCAnnotation> anns) {
 		if (anns == null) return false;
 		for (JCAnnotation ann : anns) {
-			for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, ann)) return true;
+			String annotationTypeName = getTypeName(ann.annotationType);
+			for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
 		}
 		
 		return false;
@@ -1656,21 +1666,22 @@ public class JavacHandlerUtil {
 		java.util.List<TypeName> configuredCopyable = node.getAst().readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS);
 		
 		if (!annoName.isEmpty()) {
-			for (TypeName cn : configuredCopyable) if (cn != null && typeMatches(cn.toString(), node, anno.annotationType)) return List.of(anno);
-			for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, anno.annotationType)) return List.of(anno);
+			for (TypeName cn : configuredCopyable) if (cn != null && typeMatches(cn.toString(), node, annoName)) return List.of(anno);
+			for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, annoName)) return List.of(anno);
 		}
-		
+
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
+				String annotationTypeName = getTypeName(annotation.annotationType);
 				boolean match = false;
-				for (TypeName cn : configuredCopyable) if (cn != null && typeMatches(cn.toString(), node, annotation.annotationType)) {
+				for (TypeName cn : configuredCopyable) if (cn != null && typeMatches(cn.toString(), node, annotationTypeName)) {
 					result.append(annotation);
 					match = true;
 					break;
 				}
-				if (!match) for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, annotation.annotationType)) {
+				if (!match) for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, annotationTypeName)) {
 					result.append(annotation);
 					break;
 				}
@@ -1714,15 +1725,16 @@ public class JavacHandlerUtil {
 		if (annoName == null) return List.nil();
 		
 		if (!annoName.isEmpty()) {
-			for (String bn : annotationsToFind) if (typeMatches(bn, node, anno.annotationType)) return List.of(anno);
+			for (String bn : annotationsToFind) if (typeMatches(bn, node, annoName)) return List.of(anno);
 		}
 		
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
+				String annotationTypeName = getTypeName(annotation.annotationType);
 				boolean match = false;
-				if (!match) for (String bn : annotationsToFind) if (typeMatches(bn, node, annotation.annotationType)) {
+				if (!match) for (String bn : annotationsToFind) if (typeMatches(bn, node, annotationTypeName)) {
 					result.append(annotation);
 					break;
 				}
