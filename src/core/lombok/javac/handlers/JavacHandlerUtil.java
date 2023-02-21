@@ -1735,6 +1735,26 @@ public class JavacHandlerUtil {
 	 * Searches the given field node for annotations that are in the given list, and returns those.
 	 */
 	private static List<JCAnnotation> findAnnotationsInList(JavacNode node, java.util.List<String> annotationsToFind) {
+		JCAnnotation anno = null;
+		String annoName = null;
+		for (JavacNode child : node.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				if (anno != null) {
+					annoName = "";
+					break;
+				}
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				annoName = annotation.annotationType.toString();
+				anno = annotation;
+			}
+		}
+		
+		if (annoName == null) return List.nil();
+		
+		if (!annoName.isEmpty()) {
+			for (String bn : annotationsToFind) if (typeMatches(bn, node, annoName)) return List.of(anno);
+		}
+		
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
