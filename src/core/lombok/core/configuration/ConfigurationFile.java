@@ -110,7 +110,8 @@ public abstract class ConfigurationFile {
 	
 	private static class RegularConfigurationFile extends ConfigurationFile {
 		private final File file;
-		
+		private ConfigurationFile parent;
+
 		private RegularConfigurationFile(File file) {
 			super(file.getPath());
 			this.file = file;
@@ -173,8 +174,11 @@ public abstract class ConfigurationFile {
 		}
 
 		@Override ConfigurationFile parent() {
-			File parent = file.getParentFile().getParentFile();
-			return parent == null ? null : forDirectory(parent);
+			if (parent == null) {
+				File parentFile = file.getParentFile().getParentFile();
+				parent = parentFile == null ? null : forDirectory(parentFile);
+			}
+			return parent;
 		}
 		
 		private static String replaceEnvironmentVariables(String fileName) {
