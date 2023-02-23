@@ -57,9 +57,13 @@ public class JavacTransformer {
 	}
 	
 	public void transform(long priority, Context context, List<JCCompilationUnit> compilationUnits, CleanupRegistry cleanup) {
+		if (compilationUnits.isEmpty()) {
+			return;
+		}
+		JavacAST.ErrorLog errorLog = JavacAST.ErrorLog.create(messager, context);
 		for (JCCompilationUnit unit : compilationUnits) {
 			if (!Boolean.TRUE.equals(LombokConfiguration.read(ConfigurationKeys.LOMBOK_DISABLE, JavacAST.getAbsoluteFileLocation(unit)))) {
-				JavacAST ast = new JavacAST(messager, context, unit, cleanup);
+				JavacAST ast = new JavacAST(errorLog, context, unit, cleanup);
 				ast.traverse(new AnnotationVisitor(priority));
 				handlers.callASTVisitors(ast, priority);
 				if (ast.isChanged()) LombokOptions.markChanged(context, (JCCompilationUnit) ast.top().get());
