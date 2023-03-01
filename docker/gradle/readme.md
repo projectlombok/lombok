@@ -2,11 +2,12 @@
 
 [_(general configuration and options)_](../readme.md)
 
-### `ARG gradle=6.2.2`
+### `ARG gradle=7.6.1`
 
 The gradle version to be used. Supported values:
 
-- `6.8.3` (default)
+- `6.6.1` (default)
+- `6.8.3`
 - `6.2.2`
 - `6.0.1`
 - `5.6`
