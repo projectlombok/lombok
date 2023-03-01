@@ -60,6 +60,12 @@ jobs:
         with:
           java-version: ${{ matrix.jdk }}
           distribution: 'zulu'
+          
+      - name: Set up Ant
+        uses: sdkman/sdkman-action@master
+        with:
+          candidate: ant
+          version: 1.10.13
       
       - name: Cache dependencies
         uses: actions/cache@v3
