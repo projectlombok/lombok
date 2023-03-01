@@ -60,12 +60,22 @@ jobs:
         with:
           java-version: ${{ matrix.jdk }}
           distribution: 'zulu'
-          
+
       - name: Set up Ant
+        id: sdkman
         uses: sdkman/sdkman-action@master
         with:
           candidate: ant
           version: 1.10.13
+
+      -name: Install Ant
+       run: |
+         wget https://archive.apache.org/dist/ant/binaries/apache-ant-1.10.13-bin.zip
+         unzip apache-ant-1.10.13-bin.zip -d "${HOME}"
+         echo "${ANT_HOME}=${HOME}/apache-ant-1.10.13" >> $GITHUB_ENV
+         echo "${ANT_HOME}/bin" >> $GITHUB_PATH
+         cd $ANT_HOME
+         ant -f fetch.xml -Ddest=system
       
       - name: Cache dependencies
         uses: actions/cache@v3
@@ -85,6 +95,8 @@ jobs:
   test-eclipse:
     runs-on: ubuntu-latest
     needs: build
+    env:
+      SWT_GTK3: 0
     strategy: 
       matrix: 
         version:
