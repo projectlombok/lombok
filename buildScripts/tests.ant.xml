@@ -235,6 +235,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 				<classpath refid="cp.eclipse-@{version}" />
 				<classpath location="build/ant" />
 				<classpath refid="cp.test" />
+				<classpath refid="cp.stripe" />
 				<classpath refid="cp.eclipse-@{version}" />
 				<classpath refid="packing.basedirs.path" />
 				<classpath location="build/tests" />
