@@ -1,4 +1,4 @@
-// version 14:
+// version 16:
 class LoggerFloggerRecord {
 	public record Inner(String x) {
 		@java.lang.SuppressWarnings("all")
