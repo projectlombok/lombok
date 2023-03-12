@@ -43,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -148,14 +149,18 @@ public class HandleLog {
 			LogFactoryParameter parameter = parameters.get(i);
 			switch (parameter) {
 			case TYPE:
-				expressions[i] = loggingType;
+				expressions[i] = cloneType(maker, loggingType, typeNode);
 				break;
 			case NAME:
 				JCExpression method = maker.Select(loggingType, typeNode.toName("getName"));
 				expressions[i] = maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
 				break;
 			case TOPIC:
-				expressions[i] = (JCExpression) loggerTopic.clone();
+				if (loggerTopic instanceof JCLiteral) {
+					expressions[i] = maker.Literal(((JCLiteral) loggerTopic).value);
+				} else {
+					expressions[i] = cloneType(maker, loggerTopic, typeNode);
+				}
 				break;
 			case NULL:
 				expressions[i] = maker.Literal(CTC_BOT, null);

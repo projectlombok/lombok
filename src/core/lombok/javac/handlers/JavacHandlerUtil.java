@@ -1695,29 +1695,8 @@ public class JavacHandlerUtil {
 	 * Searches the given field node for annotations and returns each one that is 'copyable' (either via configuration or from the base list).
 	 */
 	public static List<JCAnnotation> findCopyableAnnotations(JavacNode node) {
-		JCAnnotation anno = null;
-		String annoName = null;
-		for (JavacNode child : node.down()) {
-			if (child.getKind() == Kind.ANNOTATION) {
-				if (anno != null) {
-					annoName = "";
-					break;
-				}
-				JCAnnotation annotation = (JCAnnotation) child.get();
-				annoName = annotation.annotationType.toString();
-				anno = annotation;
-			}
-		}
-		
-		if (annoName == null) return List.nil();
-		
 		java.util.List<TypeName> configuredCopyable = node.getAst().readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS);
 		
-		if (!annoName.isEmpty()) {
-			for (TypeName cn : configuredCopyable) if (cn != null && typeMatches(cn.toString(), node, annoName)) return List.of(anno);
-			for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, annoName)) return List.of(anno);
-		}
-
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
@@ -1735,7 +1714,7 @@ public class JavacHandlerUtil {
 				}
 			}
 		}
-		return result.toList();
+		return copyAnnotations(result.toList());
 	}
 	
 	/**
@@ -1756,26 +1735,6 @@ public class JavacHandlerUtil {
 	 * Searches the given field node for annotations that are in the given list, and returns those.
 	 */
 	private static List<JCAnnotation> findAnnotationsInList(JavacNode node, java.util.List<String> annotationsToFind) {
-		JCAnnotation anno = null;
-		String annoName = null;
-		for (JavacNode child : node.down()) {
-			if (child.getKind() == Kind.ANNOTATION) {
-				if (anno != null) {
-					annoName = "";
-					break;
-				}
-				JCAnnotation annotation = (JCAnnotation) child.get();
-				annoName = annotation.annotationType.toString();
-				anno = annotation;
-			}
-		}
-		
-		if (annoName == null) return List.nil();
-		
-		if (!annoName.isEmpty()) {
-			for (String bn : annotationsToFind) if (typeMatches(bn, node, annoName)) return List.of(anno);
-		}
-		
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
@@ -1788,7 +1747,7 @@ public class JavacHandlerUtil {
 				}
 			}
 		}
-		return result.toList();
+		return copyAnnotations(result.toList());
 	}
 	
 	/**

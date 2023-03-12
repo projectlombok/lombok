@@ -222,7 +222,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
-		JCExpression methodType = cloneType(treeMaker, copyType(treeMaker, fieldNode), source);
+		JCExpression methodType = copyType(treeMaker, fieldNode, source);
 		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		// Generate the methodName; lazy will change the field type
 		Name methodName = field.toName(toGetterName(field, accessors));
@@ -359,7 +359,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-		JCExpression copyOfRawFieldType = copyType(maker, field);
+		JCExpression copyOfRawFieldType = copyType(maker, field, source);
 		JCExpression copyOfBoxedFieldType = null;
 		field.type = null;
 		boolean isPrimitive = false;
@@ -371,7 +371,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				copyOfBoxedFieldType = genJavaLangTypeRef(fieldNode, boxed);
 			}
 		}
-		if (copyOfBoxedFieldType == null) copyOfBoxedFieldType = copyType(maker, field);
+		if (copyOfBoxedFieldType == null) copyOfBoxedFieldType = copyType(maker, field, source);
 		
 		Name valueName = fieldNode.toName("value");
 		Name actualValueName = fieldNode.toName("actualValue");
@@ -446,7 +446,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		/*	private final java.util.concurrent.atomic.AtomicReference<Object> fieldName = new java.util.concurrent.atomic.AtomicReference<Object>(); */ {
 			field.vartype = recursiveSetGeneratedBy(
 				maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(genJavaLangTypeRef(fieldNode, "Object"))), source);
-			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source);
+			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field, source), NIL_EXPRESSION, null), source);
 		}
 		
 		return statements.toList();
@@ -462,7 +462,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		return maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(receiver, source.toName("set")), List.<JCExpression>of(value)));
 	}
 	
-	public JCExpression copyType(JavacTreeMaker treeMaker, JCVariableDecl fieldNode) {
-		return fieldNode.type != null ? treeMaker.Type(fieldNode.type) : fieldNode.vartype;
+	public JCExpression copyType(JavacTreeMaker treeMaker, JCVariableDecl fieldNode, JavacNode source) {
+		return fieldNode.type != null ? treeMaker.Type(fieldNode.type) : cloneType(treeMaker, fieldNode.vartype, source);
 	}
 }

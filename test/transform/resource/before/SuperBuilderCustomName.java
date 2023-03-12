@@ -2,6 +2,6 @@
 import java.util.List;
 
 @lombok.experimental.SuperBuilder
-class BuilderCustomName<T> {
+class SuperBuilderCustomName<T> {
 	private final int field;
 }

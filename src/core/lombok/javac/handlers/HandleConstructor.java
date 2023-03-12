@@ -440,7 +440,7 @@ public class HandleConstructor {
 		
 		if (!type.typarams.isEmpty()) {
 			for (JCTypeParameter param : type.typarams) {
-				typeParams.append(maker.TypeParameter(param.name, param.bounds));
+				typeParams.append(maker.TypeParameter(param.name, cloneTypes(maker, param.bounds, source)));
 			}
 		}
 		List<JCAnnotation> annsOnReturnType = List.nil();

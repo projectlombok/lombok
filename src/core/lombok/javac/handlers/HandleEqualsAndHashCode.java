@@ -191,7 +191,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		injectMethod(typeNode, equalsMethod);
 		
 		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source, onParam);
+			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source, copyAnnotations(onParam));
 			injectMethod(typeNode, canEqualMethod);
 		}
 		
@@ -240,10 +240,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		/* if (this.$hashCodeCache != 0) return this.$hashCodeCache; */ {
 			if (cacheHashCode) {
-				JCIdent receiver = maker.Ident(typeNode.toName("this"));
-				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(receiver, typeNode.toName(HASH_CODE_CACHE_NAME));
-				JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, cacheHashCodeFieldAccess, maker.Literal(CTC_INT, 0));
-				statements.append(maker.If(cacheNotZero, maker.Return(cacheHashCodeFieldAccess), null));
+				JCFieldAccess hashCodeCacheFieldAccess = createHashCodeCacheFieldAccess(typeNode, maker);
+				JCExpression cacheNotZero = maker.Binary(CTC_NOT_EQUAL, hashCodeCacheFieldAccess, maker.Literal(CTC_INT, 0));
+				hashCodeCacheFieldAccess = createHashCodeCacheFieldAccess(typeNode, maker);
+				statements.append(maker.If(cacheNotZero, maker.Return(hashCodeCacheFieldAccess), null));
 			}
 		}
 		
@@ -345,7 +345,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				statements.append(maker.If(maker.Binary(CTC_EQUAL, maker.Ident(resultName), maker.Literal(CTC_INT, 0)), 
 					maker.Exec(maker.Assign(maker.Ident(resultName), genJavaLangTypeRef(typeNode, "Integer", "MIN_VALUE"))), null));
 				
-				JCFieldAccess cacheHashCodeFieldAccess = maker.Select(maker.Ident(typeNode.toName("this")), typeNode.toName(HASH_CODE_CACHE_NAME));
+				JCFieldAccess cacheHashCodeFieldAccess = createHashCodeCacheFieldAccess(typeNode, maker);
 				statements.append(maker.Exec(maker.Assign(cacheHashCodeFieldAccess, maker.Ident(resultName))));
 			}
 		}
@@ -357,6 +357,12 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCBlock body = maker.Block(0, statements.toList());
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("hashCode"), returnType,
 			List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
+	}
+
+	private JCFieldAccess createHashCodeCacheFieldAccess(JavacNode typeNode, JavacTreeMaker maker) {
+		JCIdent receiver = maker.Ident(typeNode.toName("this"));
+		JCFieldAccess cacheHashCodeFieldAccess = maker.Select(receiver, typeNode.toName(HASH_CODE_CACHE_NAME));
+		return cacheHashCodeFieldAccess;
 	}
 
 	public JCExpressionStatement createResultCalculation(JavacNode typeNode, JCExpression expr) {
