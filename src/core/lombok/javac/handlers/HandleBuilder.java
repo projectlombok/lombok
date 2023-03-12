@@ -796,10 +796,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateSideEffectFree() ? List.of(maker.Annotation(genTypeRef(job.builderType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
 		JCVariableDecl recv = generateReceiver(job);
 		JCMethodDecl methodDef;
+		JCExpression returnTypeCopy = cloneType(maker, returnType, job.sourceNode);
 		if (recv != null && maker.hasMethodDefWithRecvParam()) {
-			methodDef = maker.MethodDefWithRecvParam(maker.Modifiers(toJavacModifier(job.accessInners), annsOnMethod), job.toName(job.buildMethodName), returnType, List.<JCTypeParameter>nil(), recv, List.<JCVariableDecl>nil(), thrownExceptions, body, null);
+			methodDef = maker.MethodDefWithRecvParam(maker.Modifiers(toJavacModifier(job.accessInners), annsOnMethod), job.toName(job.buildMethodName), returnTypeCopy, List.<JCTypeParameter>nil(), recv, List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 		} else {
-			methodDef = maker.MethodDef(maker.Modifiers(toJavacModifier(job.accessInners), annsOnMethod), job.toName(job.buildMethodName), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
+			methodDef = maker.MethodDef(maker.Modifiers(toJavacModifier(job.accessInners), annsOnMethod), job.toName(job.buildMethodName), returnTypeCopy, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 		}
 		if (staticName == null) createRelevantNonNullAnnotation(job.builderType, methodDef);
 		return methodDef;

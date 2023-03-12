@@ -260,7 +260,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			Name superclassName = ((JCFieldAccess) extendsClause).getIdentifier();
 			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(superclassName.toString(), builderClassNameTemplate);
-			superclassBuilderClass = parent.getTreeMaker().Select((JCFieldAccess) extendsClause, parent.toName(superclassBuilderClassName));
+			superclassBuilderClass = parent.getTreeMaker().Select(cloneType(maker, (JCFieldAccess) extendsClause, annotationNode), parent.toName(superclassBuilderClassName));
 		} else if (extendsClause != null) {
 			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(extendsClause.toString(), builderClassNameTemplate);
@@ -607,6 +607,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Now add the <?, ?>.
 		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 		typeParameterNames.append(wildcard);
+		wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 		typeParameterNames.append(wildcard);
 		// And return type annotations.
 		List<JCAnnotation> annsOnParamType = List.nil();
@@ -644,6 +645,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Now add the <?, ?>.
 		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 		typeParameterNames.append(wildcard);
+		wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 		typeParameterNames.append(wildcard);
 		JCTypeApply returnType = maker.TypeApply(namePlusTypeParamsToTypeReference(maker, job.parentType, job.toName(job.builderAbstractClassName), false, List.<JCTypeParameter>nil()), typeParameterNames.toList());
 		

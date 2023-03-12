@@ -1,8 +1,8 @@
 import java.util.List;
-class BuilderCustomName<T> {
+class SuperBuilderCustomName<T> {
 	private final int field;
 	@java.lang.SuppressWarnings("all")
-	public static abstract class SimpleTestBuilder<T, C extends BuilderCustomName<T>, B extends BuilderCustomName.SimpleTestBuilder<T, C, B>> {
+	public static abstract class SimpleTestBuilder<T, C extends SuperBuilderCustomName<T>, B extends SuperBuilderCustomName.SimpleTestBuilder<T, C, B>> {
 		@java.lang.SuppressWarnings("all")
 		private int field;
 		/**
@@ -20,31 +20,31 @@ class BuilderCustomName<T> {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderCustomName.SimpleTestBuilder(field=" + this.field + ")";
+			return "SuperBuilderCustomName.SimpleTestBuilder(field=" + this.field + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	private static final class SimpleTestBuilderImpl<T> extends BuilderCustomName.SimpleTestBuilder<T, BuilderCustomName<T>, BuilderCustomName.SimpleTestBuilderImpl<T>> {
+	private static final class SimpleTestBuilderImpl<T> extends SuperBuilderCustomName.SimpleTestBuilder<T, SuperBuilderCustomName<T>, SuperBuilderCustomName.SimpleTestBuilderImpl<T>> {
 		@java.lang.SuppressWarnings("all")
 		private SimpleTestBuilderImpl() {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
-		protected BuilderCustomName.SimpleTestBuilderImpl<T> self() {
+		protected SuperBuilderCustomName.SimpleTestBuilderImpl<T> self() {
 			return this;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
-		public BuilderCustomName<T> build() {
-			return new BuilderCustomName<T>(this);
+		public SuperBuilderCustomName<T> build() {
+			return new SuperBuilderCustomName<T>(this);
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	protected BuilderCustomName(final BuilderCustomName.SimpleTestBuilder<T, ?, ?> b) {
+	protected SuperBuilderCustomName(final SuperBuilderCustomName.SimpleTestBuilder<T, ?, ?> b) {
 		this.field = b.field;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> BuilderCustomName.SimpleTestBuilder<T, ?, ?> builder() {
-		return new BuilderCustomName.SimpleTestBuilderImpl<T>();
+	public static <T> SuperBuilderCustomName.SimpleTestBuilder<T, ?, ?> builder() {
+		return new SuperBuilderCustomName.SimpleTestBuilderImpl<T>();
 	}
 }
