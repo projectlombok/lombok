@@ -1,8 +1,8 @@
 // version 14:
 import lombok.NonNull;
-record NonNullOnRecord2(String a) {
+public record NonNullOnRecordExistingConstructor(String a) {
 /* Implicit */  private final String a;
-  public NonNullOnRecord2(@NonNull String a) {
+  public NonNullOnRecordExistingConstructor(@NonNull String a) {
     super();
     if ((a == null))
         {
