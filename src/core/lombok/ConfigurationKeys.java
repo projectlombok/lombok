@@ -651,6 +651,14 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> FIELD_NAME_CONSTANTS_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.fieldNameConstants.flagUsage", "Emit a warning or error if @FieldNameConstants is used.") {};
 	
+	// ----- Generator -----
+	/**
+	 * lombok configuration: {@code lombok.generator.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Generator} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> GENERATOR_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.generator.flagUsage", "Emit a warning or error if @Generator is used.") {};
+	
 	/**
 	 * lombok configuration: {@code lombok.fieldNameConstants.innerTypeName} = &lt;String: AValidJavaTypeName&gt; (Default: {@code Fields}).
 	 * 

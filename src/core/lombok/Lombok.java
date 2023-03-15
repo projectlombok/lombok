@@ -21,6 +21,8 @@
  */
 package lombok;
 
+import java.util.Iterator;
+
 /**
  * Useful utility methods to manipulate lombok-generated code.
  */
@@ -81,5 +83,40 @@ public class Lombok {
 	public static <T> T checkNotNull(T value, String message) {
 		if (value == null) throw new NullPointerException(message);
 		return value;
+	}
+
+	/**
+	 * Stub class for {@code GeneratorPostTransformation}
+	 */
+	public static abstract class Generator<T> implements Iterable<T>, Iterator<T> {
+
+		protected abstract void advance();
+		
+		protected final void yieldThis(T target) {
+			throw new UnsupportedOperationException("Unimplemented method 'yieldThis'");
+		}
+
+		protected final void yieldAll(Iterable<T> target) {
+			throw new UnsupportedOperationException("Unimplemented method 'yieldAll'");
+		}
+		protected final void yieldAll(T[] target) {
+			throw new UnsupportedOperationException("Unimplemented method 'yieldAll'");
+		}
+
+		@Override public boolean hasNext() {
+			throw new UnsupportedOperationException("Unimplemented method 'hasNext'");
+		}
+
+		@Override public T next() {
+			throw new UnsupportedOperationException("Unimplemented method 'next'");
+		}
+
+		@Override public Iterator<T> iterator() {
+			throw new UnsupportedOperationException("Unimplemented method 'iterator'");
+		}
+
+		@Override public void remove() {
+			throw new UnsupportedOperationException("Unimplemented method 'remove'");
+		}
 	}
 }
