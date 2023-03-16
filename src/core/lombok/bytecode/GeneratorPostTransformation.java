@@ -708,6 +708,10 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
         }
 
         @Override public BasicValue newValue(Type type) {
+            if (type == null) {
+                return BasicValue.UNINITIALIZED_VALUE;
+            } 
+
             return new BasicValue(type);
         }
     }
