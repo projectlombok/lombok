@@ -171,7 +171,7 @@ public class HandleGenerator extends JavacAnnotationHandler<Generator> {
             block,
             null
         );
-        bodyBuffer.add(advanceDecl);
+        bodyBuffer.append(advanceDecl);
 
         return treeMaker.ClassDef(
             treeMaker.Modifiers(Flags.FINAL),
