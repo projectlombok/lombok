@@ -749,7 +749,7 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
                 if (frameType == null) {
                     break;
                 } else if (frameType == Opcodes.TOP) {
-                    continue;
+                    list.add(null);
                 } if (frameType == Opcodes.INTEGER) {
                     list.add(Type.INT_TYPE);
                 } else if (frameType == Opcodes.LONG) {
