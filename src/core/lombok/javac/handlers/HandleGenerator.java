@@ -55,8 +55,7 @@ public class HandleGenerator extends JavacAnnotationHandler<Generator> {
             return;
         }
 
-        intoGeneratorMethod(methodNode);
-        recursiveSetGeneratedBy(methodNode.get(), annotationNode);
+        intoGeneratorMethod(annotationNode, methodNode);
         methodNode.rebuild();
     }
 
@@ -81,6 +80,19 @@ public class HandleGenerator extends JavacAnnotationHandler<Generator> {
 
         methodDecl.accept(new TreeScanner() {
             private int synchronizedDepth = 0;
+            private int localClassDepth = 0;
+            private int lambdaDepth = 0;
+
+            @Override public void scan(JCTree arg0) {
+                if (arg0 != null && arg0.getClass().getName().endsWith("$JCLambda")) {
+                    lambdaDepth++;
+                    super.scan(arg0);
+                    lambdaDepth--;
+                    return;
+                }
+
+                super.scan(arg0);
+            }
 
             @Override public void visitSynchronized(JCSynchronized arg0) {
                 synchronizedDepth++;
@@ -88,8 +100,11 @@ public class HandleGenerator extends JavacAnnotationHandler<Generator> {
                 synchronizedDepth--;
             }
 
-            // Ignore inner class
-            @Override public void visitClassDef(JCClassDecl arg0) {}
+            @Override public void visitClassDef(JCClassDecl arg0) {
+                localClassDepth++;
+                super.visitClassDef(arg0);
+                localClassDepth--;
+            }
 
             @Override public void visitIdent(JCIdent arg0) {
                 if (innerClassName.equals(arg0.name.toString())) {
@@ -101,8 +116,14 @@ public class HandleGenerator extends JavacAnnotationHandler<Generator> {
 
             @Override public void visitApply(JCMethodInvocation arg0) {
                 String name = arg0.meth.toString();
-                if (synchronizedDepth > 0 && ("yieldThis".equals(name) || "yieldAll".equals(name))) {
-                    node.addError("Cannot yield inside synchronized block", arg0.pos());
+                if (("yieldThis".equals(name) || "yieldAll".equals(name))) {
+                    if (synchronizedDepth > 0) {
+                        node.addError("Cannot yield inside synchronized block", arg0.pos());
+                    }
+
+                    if (lambdaDepth > 0 || localClassDepth > 0) {
+                        node.addError("Cannot yield outside generator", arg0.pos());
+                    }
                 }
 
                 if (arg0.meth instanceof JCIdent && "advance".equals(name) && arg0.args.isEmpty()) {
@@ -114,17 +135,17 @@ public class HandleGenerator extends JavacAnnotationHandler<Generator> {
         });
     }
 
-    public static void intoGeneratorMethod(JavacNode sourceMethod) {
+    public static void intoGeneratorMethod(JavacNode annotationNode, JavacNode sourceMethod) {
         JCMethodDecl methodDecl = (JCMethodDecl) sourceMethod.get();
         JCClassDecl classDecl = (JCClassDecl) sourceMethod.up().get();
-        JavacAST ast = sourceMethod.getAst();
-        JavacTreeMaker treeMaker = ast.getTreeMaker();
+        JavacTreeMaker treeMaker = sourceMethod.getTreeMaker();
 
         String className = "__Generator";
 
         checkMethod(sourceMethod, className);
 
         JCClassDecl generatorDecl = createGeneratorClass(
+            annotationNode,
             sourceMethod,
             treeMaker.Ident(classDecl.name),
             className,
@@ -132,30 +153,32 @@ public class HandleGenerator extends JavacAnnotationHandler<Generator> {
             methodDecl.body
         );
 
-        JCBlock methodBody = treeMaker.Block(0, List.of(
-            generatorDecl,
-            treeMaker.Return(
-                treeMaker.NewClass(
-                    (JCExpression) null,
-                    List.<JCExpression>nil(),
-                    treeMaker.Ident(generatorDecl.name),
-                    List.<JCExpression>nil(),
-                    (JCClassDecl) null
-                )
+        JCStatement returnStatement = treeMaker.Return(
+            treeMaker.NewClass(
+                (JCExpression) null,
+                List.<JCExpression>nil(),
+                treeMaker.Ident(generatorDecl.name),
+                List.<JCExpression>nil(),
+                (JCClassDecl) null
             )
-        ));
+        );
+        recursiveSetGeneratedBy(returnStatement, annotationNode);
 
-        methodDecl.body = methodBody;
+        methodDecl.body = treeMaker.at(methodDecl.body.pos).Block(0, List.of(
+            generatorDecl,
+            returnStatement
+        ));
     }
 
     public static JCClassDecl createGeneratorClass(
-        JavacNode node,
+        JavacNode annotationNode,
+        JavacNode methodNode,
         JCExpression classExpr,
         String name,
         JCExpression type,
         JCBlock block
     ) {
-        JavacAST ast = node.getAst();
+        JavacAST ast = methodNode.getAst();
         JavacTreeMaker treeMaker = ast.getTreeMaker();
 
         ListBuffer<JCTree> bodyBuffer = new ListBuffer<JCTree>();
@@ -168,19 +191,24 @@ public class HandleGenerator extends JavacAnnotationHandler<Generator> {
             List.<JCTypeParameter>nil(),
             List.<JCVariableDecl>nil(),
             List.<JCExpression>nil(),
-            block,
+            null,
             null
         );
         bodyBuffer.append(advanceDecl);
 
-        return treeMaker.ClassDef(
+        JCClassDecl decl = treeMaker.ClassDef(
             treeMaker.Modifiers(Flags.FINAL),
             ast.toName(name),
             List.<JCTypeParameter>nil(),
-            treeMaker.TypeApply(chainDots(node, "lombok", "Lombok", "Generator"), List.of(type)),
+            treeMaker.TypeApply(chainDots(methodNode, "lombok", "Lombok", "Generator"), List.of(type)),
             List.<JCExpression>nil(),
             bodyBuffer.toList()
         );
+
+        recursiveSetGeneratedBy(decl, annotationNode);
+        advanceDecl.body = block;
+
+        return decl;
     }
 
     /**

@@ -42,6 +42,7 @@ import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
@@ -104,21 +105,28 @@ public class HandleGenerator extends EclipseAnnotationHandler<Generator> {
 
 		methodDecl.traverse(new ASTVisitor() {
 			private int synchronizedDepth = 0;
+			private int localClassDepth = 0;
+			private int lambdaDepth = 0;
 
 			@Override public boolean visit(MessageSend messageSend, BlockScope scope) {
 				String name = new String(messageSend.selector);
-				if (
-					synchronizedDepth > 0
-					&& messageSend.receiverIsImplicitThis()
-					&& ("yieldThis".equals(name) || "yieldAll".equals(name))
-					&& messageSend.arguments != null
-					&& messageSend.arguments.length == 1
-				) {
-					node.addError(
-						"Cannot yield inside synchronized block",
-						messageSend.sourceStart,
-						messageSend.sourceEnd
-					);
+
+				if (messageSend.receiverIsImplicitThis() && ("yieldThis".equals(name) || "yieldAll".equals(name))) {
+					if (synchronizedDepth > 0) {
+						node.addError(
+							"Cannot yield inside synchronized block",
+							messageSend.sourceStart,
+							messageSend.sourceEnd
+						);
+					}
+
+					if (lambdaDepth > 0 || localClassDepth > 0) {
+						node.addError(
+							"Cannot yield outside generator",
+							messageSend.sourceStart,
+							messageSend.sourceEnd
+						);
+					}
 				}
 
 				if (
@@ -136,9 +144,24 @@ public class HandleGenerator extends EclipseAnnotationHandler<Generator> {
 				return super.visit(messageSend, scope);
 			}
 
-			// Ignore local class
 			@Override public boolean visit(TypeDeclaration localTypeDeclaration, BlockScope scope) {
-				return false;
+				localClassDepth++;
+				return super.visit(localTypeDeclaration, scope);
+			}
+
+			@Override public void endVisit(TypeDeclaration localTypeDeclaration, BlockScope scope) {
+				localClassDepth--;
+				super.endVisit(localTypeDeclaration, scope);
+			}
+
+			@Override public boolean visit(LambdaExpression lambdaExpression, BlockScope blockScope) {
+				lambdaDepth++;
+				return super.visit(lambdaExpression, blockScope);
+			}
+
+			@Override public void endVisit(LambdaExpression lambdaExpression, BlockScope blockScope) {
+				lambdaDepth++;
+				super.endVisit(lambdaExpression, blockScope);
 			}
 
 			private void checkClassName(ASTNode targetNode, String token) {
