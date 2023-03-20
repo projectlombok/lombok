@@ -43,6 +43,7 @@ import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.experimental.ExtensionMethod;
 import lombok.permit.Permit;
 
+import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
@@ -66,6 +67,7 @@ import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
+import org.eclipse.jdt.internal.core.search.matching.MethodPattern;
 
 public class PatchExtensionMethod {
 	static class Extension {
@@ -377,6 +379,17 @@ public class PatchExtensionMethod {
 		
 		MessageSend_postponedErrors.clear(methodCall);
 		return resolvedType;
+	}
+	
+	public static SearchPattern modifyMethodPattern(SearchPattern original) {
+		if (original != null && original instanceof MethodPattern) {
+			MethodPattern methodPattern = (MethodPattern) original;
+			if (methodPattern.parameterCount > 0) {
+				methodPattern.varargs = true;
+			}
+		}
+		
+		return original;
 	}
 
 	private static boolean requiresPolyBinding(Expression argument) {
