@@ -32,7 +32,7 @@ public class SetupBeforeAfterTest extends SetupTest {
 	protected void succeeded(Description description) {
 		try {
 			compareWithAfter();
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

@@ -335,6 +335,7 @@ final class PatchFixesHider {
 		private static final Method ERROR_NO_METHOD_FOR;
 		private static final Method INVALID_METHOD, INVALID_METHOD2;
 		private static final Method NON_STATIC_ACCESS_TO_STATIC_METHOD;
+		private static final Method MODIFY_METHOD_PATTERN;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchExtensionMethod");
@@ -343,6 +344,7 @@ final class PatchFixesHider {
 			INVALID_METHOD = Util.findMethod(shadowed, "invalidMethod", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG);
 			INVALID_METHOD2 = Util.findMethod(shadowed, "invalidMethod", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG, SCOPE_SIG);
 			NON_STATIC_ACCESS_TO_STATIC_METHOD = Util.findMethod(shadowed, "nonStaticAccessToStaticMethod", PROBLEM_REPORTER_SIG, AST_NODE_SIG, METHOD_BINDING_SIG, MESSAGE_SEND_SIG);
+			MODIFY_METHOD_PATTERN = Util.findMethod(shadowed, "modifyMethodPattern", "org.eclipse.jdt.core.search.SearchPattern");
 		}
 		
 		public static Object resolveType(Object resolvedType, Object methodCall, Object scope) {
@@ -363,6 +365,10 @@ final class PatchFixesHider {
 		
 		public static void nonStaticAccessToStaticMethod(Object problemReporter, Object location, Object method, Object messageSend) {
 			Util.invokeMethod(NON_STATIC_ACCESS_TO_STATIC_METHOD, problemReporter, location, method, messageSend);
+		}
+		
+		public static Object modifyMethodPattern(Object original) {
+			return Util.invokeMethod(MODIFY_METHOD_PATTERN, original);
 		}
 	}
 	

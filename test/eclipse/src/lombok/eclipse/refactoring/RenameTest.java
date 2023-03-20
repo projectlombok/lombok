@@ -4,8 +4,11 @@ import static lombok.eclipse.RefactoringUtils.performRefactoring;
 
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.corext.refactoring.rename.RenameFieldProcessor;
+import org.eclipse.jdt.internal.corext.refactoring.rename.RenameMethodProcessor;
+import org.eclipse.jdt.internal.corext.refactoring.rename.RenameNonVirtualMethodProcessor;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,5 +70,17 @@ public class RenameTest {
 		renameFieldProcessor.setNewElementName("newString");
 		
 		performRefactoring(renameFieldProcessor);
+	}
+	
+	@Test
+	public void extensionMethod() throws Exception {
+		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("Extension.java");
+		IType type = cu.findPrimaryType();
+		IMethod method = type.getMethods()[0];
+		
+		RenameMethodProcessor renameMethodProcessor = new RenameNonVirtualMethodProcessor(method);
+		renameMethodProcessor.setNewElementName("newTest");
+		
+		performRefactoring(renameMethodProcessor);
 	}
 }

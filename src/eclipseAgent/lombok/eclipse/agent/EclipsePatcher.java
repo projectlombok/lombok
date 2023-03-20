@@ -918,6 +918,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			.request(StackRequest.THIS)
 			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD_COMPLETIONPROPOSAL_PORTAL, "getJavaCompletionProposals", I_JAVA_COMPLETION_PROPOSAL_SIG, "java.lang.Object[]", "java.lang.Object"))
 			.build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
+			.target(new MethodTarget("org.eclipse.jdt.core.search.SearchPattern", "createPattern", "org.eclipse.jdt.core.search.SearchPattern", "org.eclipse.jdt.core.IJavaElement", "int", "int"))
+			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD, "modifyMethodPattern", "java.lang.Object", "java.lang.Object"))
+			.cast()
+			.request(StackRequest.RETURN_VALUE)
+			.build());
 	}
 
 	private static void patchNullCheck(ScriptManager sm) {
