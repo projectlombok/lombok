@@ -27,6 +27,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.core.AST.Kind;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -64,6 +65,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 @Provides
 @DeferUntilPostDiet
+@HandlerPriority(65536) // 2^16; Handler wraps entire method body, so it must be last.
 public class HandleGenerator extends EclipseAnnotationHandler<Generator> {
 	public void handle(AnnotationValues<Generator> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.GENERATOR_FLAG_USAGE, "@Generator");

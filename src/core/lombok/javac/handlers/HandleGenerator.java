@@ -30,6 +30,7 @@ import com.sun.tools.javac.util.ListBuffer;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.core.AST.Kind;
 import lombok.experimental.Generator;
 import lombok.javac.JavacAST;
@@ -44,6 +45,7 @@ import com.sun.tools.javac.tree.JCTree.*;
 import lombok.spi.Provides;
 
 @Provides
+@HandlerPriority(65536) // 2^16; Handler wraps entire method body, so it must be last.
 public class HandleGenerator extends JavacAnnotationHandler<Generator> {
     @Override public void handle(AnnotationValues<Generator> annotation, JCAnnotation ast, JavacNode annotationNode) {
         handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.GENERATOR_FLAG_USAGE, "@Generator");
