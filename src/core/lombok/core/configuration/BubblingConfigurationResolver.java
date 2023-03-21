@@ -82,7 +82,7 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 					return (T) result.getValue();
 				}
 			}
-			currentLevel = currentLevel.parent();
+			currentLevel = stopBubbling ? null : currentLevel.parent();
 		}
 		
 		if (!isList) return null;
