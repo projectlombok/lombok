@@ -1434,7 +1434,13 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	void printBindingPattern(JCTree tree) {
 		JCTree var = readObject(tree, "var", tree);
-		printVarDef0((JCVariableDecl) var);
+		if (var instanceof JCVariableDecl) {
+			printVarDef0((JCVariableDecl) var);
+		} else {
+			print((JCExpression) readObject(var, "vartype", null));
+			print(" ");
+			print((Name) readObject(var, "name", null));
+		}
 	}
 	
 	void printDefaultCase(JCTree tree) {
