@@ -150,8 +150,8 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	
 	<!-- For non-LTS versions, feel free to aggressively update these to the current non-LTS openjdk version, and delete them once they roll out of the 6 month window. -->
 	
-	<target name="test.javac19" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac19 as underlying compiler">
-		<test.javacX version="19" />
+	<target name="test.javac20" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using javac20 as underlying compiler">
+		<test.javacX version="20" />
 	</target>
 	
 	<target name="test.javacCurrent" depends="test.formatter.compile, test.compile" description="runs the tests on your default VM, using its javac as underlying compiler">
@@ -293,5 +293,5 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	</target>
 	
 	<target name="test" depends="test.javacCurrent, test.eclipse-202212" description="runs the tests against the default JVM, javac, and eclipse" />
-	<target name="test.broad" depends="test.javac8, test.javac17, test.javac19, test.eclipse-oxygen, test.eclipse-202212, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
+	<target name="test.broad" depends="test.javac8, test.javac17, test.javac20, test.eclipse-oxygen, test.eclipse-202212, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
 </project>

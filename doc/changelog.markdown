@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.27 "Edgy Guinea Pig"
-* We recently released v1.18.26; there is no edge release since then.
+* PLATFORM: JDK20 support added. [Issue #3353](https://github.com/projectlombok/lombok/issues/3353).
 
 ### v1.18.26 (Feb 3rd, 2023)
 
