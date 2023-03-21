@@ -42,7 +42,7 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [11, 12, 13, 14, 15, 16, 17, 18, 19]
+        jdk: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
         goal: [javacCurrent]
         include:
           - jdk: 11
