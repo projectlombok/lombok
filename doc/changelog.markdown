@@ -3,6 +3,9 @@ Lombok Changelog
 
 ### v1.18.27 "Edgy Guinea Pig"
 * PLATFORM: JDK20 support added. [Issue #3353](https://github.com/projectlombok/lombok/issues/3353).
+* BUGFIX: Eclipse 4.27 and VSCode 1.14.0 would ignore `lombok.config`. [Issue #3332](https://github.com/projectlombok/lombok/issues/3332).
+* BUGFIX: `@NonNull` on a primitive array field on a record wouldn't work. [Issue #3366](https://github.com/projectlombok/lombok/issues/3366).
+* FEATURE: Jakarta has some non-null annotations (such as `jakarta.annotation.Nonnull`) which we now support. [Issue #3346](https://github.com/projectlombok/lombok/issues/3346).
 
 ### v1.18.26 (Feb 3rd, 2023)
 
