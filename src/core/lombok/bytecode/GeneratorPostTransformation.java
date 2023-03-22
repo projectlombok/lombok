@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2023 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -72,7 +72,7 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
 		if (!"lombok/Lombok$Generator".equals(new ClassFileMetaData(original).getSuperClassName())) return null;
 
 		byte[] fixedByteCode = fixJSRInlining(original);
-		
+
 		ClassReader reader = new ClassReader(fixedByteCode);
 		ClassWriter writer = new ClassWriter(
             reader,
@@ -94,6 +94,28 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
         return opcode == Opcodes.INVOKEVIRTUAL && "yieldAll".equals(name) && owner.equals(className);
     }
 
+    private static void pushIntConstant(MethodVisitor visitor, int constant) {
+        switch (constant) {
+            case -1: visitor.visitInsn(Opcodes.ICONST_M1); break;
+            case 0: visitor.visitInsn(Opcodes.ICONST_0); break;
+            case 1: visitor.visitInsn(Opcodes.ICONST_1); break;
+            case 2: visitor.visitInsn(Opcodes.ICONST_2); break;
+            case 3: visitor.visitInsn(Opcodes.ICONST_3); break;
+            case 4: visitor.visitInsn(Opcodes.ICONST_4); break;
+            case 5: visitor.visitInsn(Opcodes.ICONST_5); break;
+            default: {
+                if (constant <= 0xff) {
+                    visitor.visitIntInsn(Opcodes.BIPUSH, constant);
+                } else if (constant <= 0xffff) {
+                    visitor.visitIntInsn(Opcodes.SIPUSH, constant);
+                } else {
+                    visitor.visitLdcInsn(constant);
+                }
+                break;
+            }
+        }
+    }
+
     private ClassVisitor transformClass(final ClassWriter writer, final String className, final GeneratorClass generatorClass) {
         return new ClassVisitor(Opcodes.ASM7, writer) {
             @Override public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -106,14 +128,13 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
 
                 super.visit(version, access, name, signature, superName, interfaces);
 
-                FieldNode stateNode = generatorClass.stateNode;
-                FieldNode resultNode = generatorClass.resultNode;
-                writer.visitField(stateNode.access, stateNode.name, stateNode.desc, stateNode.signature, stateNode.value);
-                writer.visitField(resultNode.access, resultNode.name, resultNode.desc, resultNode.signature, resultNode.value);
-        
+                generatorClass.stateNode.accept(writer);
+                generatorClass.peekedNode.accept(writer);
+                generatorClass.resultNode.accept(writer);
+
                 visitIterator(writer);
-                visitHasNext(writer, className, resultNode);
-                visitNext(writer, className, resultNode);
+                visitHasNext(writer, className, generatorClass);
+                visitNext(writer, className, generatorClass);
                 visitRemove(writer);
             }
 
@@ -152,27 +173,11 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
 
             private int tmpIndex = 0;
             private Map<Integer, FieldNode> variableMap = new HashMap<Integer, FieldNode>();
-            
+
             private void setState(int index) {
                 super.visitVarInsn(Opcodes.ALOAD, 0);
-                switch (index) {
-                    case 0: super.visitInsn(Opcodes.ICONST_0); break;
-                    case 1: super.visitInsn(Opcodes.ICONST_1); break;
-                    case 2: super.visitInsn(Opcodes.ICONST_2); break;
-                    case 3: super.visitInsn(Opcodes.ICONST_3); break;
-                    case 4: super.visitInsn(Opcodes.ICONST_4); break;
-                    case 5: super.visitInsn(Opcodes.ICONST_5); break;
-                    default: {
-                        if (index <= 0xff) {
-                            super.visitIntInsn(Opcodes.BIPUSH, index);
-                        } else if (index <= 0xffff) {
-                            super.visitIntInsn(Opcodes.SIPUSH, index);
-                        } else {
-                            super.visitLdcInsn(index);
-                        }
-                    }
-                }
-                
+                pushIntConstant(mv, index);
+
                 super.visitFieldInsn(Opcodes.PUTFIELD, className, generatorClass.stateNode.name, generatorClass.stateNode.desc);
             }
 
@@ -278,16 +283,7 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
                 super.visitVarInsn(Opcodes.ALOAD, 0);
                 super.visitInsn(Opcodes.DUP);
                 super.visitFieldInsn(Opcodes.GETFIELD, className, node.name, node.desc);
-                switch (increment) {
-                    case -1: super.visitInsn(Opcodes.ICONST_M1); break;
-                    case 0: super.visitInsn(Opcodes.ICONST_0); break;
-                    case 1: super.visitInsn(Opcodes.ICONST_1); break;
-                    case 2: super.visitInsn(Opcodes.ICONST_2); break;
-                    case 3: super.visitInsn(Opcodes.ICONST_3); break;
-                    case 4: super.visitInsn(Opcodes.ICONST_4); break;
-                    case 5: super.visitInsn(Opcodes.ICONST_5); break;
-                    default: super.visitIntInsn(Opcodes.BIPUSH, increment); break;
-                }
+                pushIntConstant(mv, increment);
                 super.visitInsn(Opcodes.IADD);
 
                 super.visitFieldInsn(Opcodes.PUTFIELD, className, node.name, node.desc);
@@ -366,7 +362,7 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
                 );
                 super.visitFieldInsn(Opcodes.PUTFIELD, className, generatorClass.resultNode.name, generatorClass.resultNode.desc);
                 super.visitInsn(Opcodes.RETURN);
-            
+
                 super.visitLabel(loopEnd);
                 super.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
@@ -417,7 +413,7 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
                 super.visitFieldInsn(Opcodes.GETFIELD, className, incrementNode.name, incrementNode.desc);
                 super.visitInsn(Opcodes.AALOAD);
                 super.visitFieldInsn(Opcodes.PUTFIELD, className, generatorClass.resultNode.name, generatorClass.resultNode.desc);
-                
+
                 // add increment by 1 and return
                 super.visitVarInsn(Opcodes.ALOAD, 0);
                 super.visitInsn(Opcodes.DUP);
@@ -477,7 +473,7 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
                 super.visitLabel(finish);
                 super.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
                 setState(generatorClass.table.getFinishState());
-    
+
                 super.visitLabel(generatorClass.table.end);
                 super.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
                 super.visitInsn(Opcodes.RETURN);
@@ -502,7 +498,7 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
                 super.visitMaxs(maxStack, maxLocals);
             }
         };
-        
+
         return new FrameTracker(Opcodes.ASM7, frame, transformer);
     }
 
@@ -513,9 +509,10 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
         GeneratorTable table
     ) {
         FieldNode stateNode = new FieldNode(Opcodes.ACC_SYNTHETIC, "$state", "I", null, null);
+        FieldNode peekedNode = new FieldNode(Opcodes.ACC_SYNTHETIC, "$peeked", "Z", null, null);
         FieldNode resultNode = new FieldNode(Opcodes.ACC_SYNTHETIC, "$result", type.getDescriptor(), null, null);
 
-        return new GeneratorClass(type, stateNode, resultNode, table);
+        return new GeneratorClass(type, stateNode, peekedNode, resultNode, table);
     }
 
     private void visitIterator(ClassVisitor classVisitor) {
@@ -533,7 +530,10 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
         visitor.visitEnd();
     }
 
-    private void visitHasNext(ClassVisitor classVisitor, String className, FieldNode resultNode) {
+    private void visitHasNext(ClassVisitor classVisitor, String className, GeneratorClass generatorClass) {
+        FieldNode stateNode = generatorClass.stateNode;
+        FieldNode peekedNode = generatorClass.peekedNode;
+
         MethodVisitor visitor = classVisitor.visitMethod(
             Opcodes.ACC_PUBLIC,
             "hasNext",
@@ -541,28 +541,34 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
             null,
             null
         );
-        Label advanceEnd = new Label();
         visitor.visitCode();
 
-        visitor.visitVarInsn(Opcodes.ALOAD, 0);
-        visitor.visitFieldInsn(Opcodes.GETFIELD, className, resultNode.name, resultNode.desc);
-        visitor.visitJumpInsn(Opcodes.IFNONNULL, advanceEnd);
+        Label advanceLabel = new Label();
+        Label returnFalse = new Label();
 
         visitor.visitVarInsn(Opcodes.ALOAD, 0);
-        visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, className, "advance", "()V", false);
-
-        visitor.visitLabel(advanceEnd);
-        visitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-        visitor.visitVarInsn(Opcodes.ALOAD, 0);
-        visitor.visitFieldInsn(Opcodes.GETFIELD, className, resultNode.name, resultNode.desc);
-
-        Label hasNextReturnFalse = new Label();
-        visitor.visitJumpInsn(Opcodes.IFNULL, hasNextReturnFalse);
+        visitor.visitFieldInsn(Opcodes.GETFIELD, className, peekedNode.name, peekedNode.desc);
+        visitor.visitJumpInsn(Opcodes.IFEQ, advanceLabel);
 
         visitor.visitInsn(Opcodes.ICONST_1);
         visitor.visitInsn(Opcodes.IRETURN);
 
-        visitor.visitLabel(hasNextReturnFalse);
+        visitor.visitLabel(advanceLabel);
+        visitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+        visitor.visitVarInsn(Opcodes.ALOAD, 0);
+        visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, className, "advance", "()V", false);
+        visitor.visitVarInsn(Opcodes.ALOAD, 0);
+        visitor.visitFieldInsn(Opcodes.GETFIELD, className, stateNode.name, stateNode.desc);
+        pushIntConstant(visitor, generatorClass.table.getFinishState());
+        visitor.visitJumpInsn(Opcodes.IF_ICMPEQ, returnFalse);
+
+        visitor.visitVarInsn(Opcodes.ALOAD, 0);
+        visitor.visitInsn(Opcodes.ICONST_1);
+        visitor.visitFieldInsn(Opcodes.PUTFIELD, className, peekedNode.name, peekedNode.desc);
+        visitor.visitInsn(Opcodes.ICONST_1);
+        visitor.visitInsn(Opcodes.IRETURN);
+
+        visitor.visitLabel(returnFalse);
         visitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
         visitor.visitInsn(Opcodes.ICONST_0);
         visitor.visitInsn(Opcodes.IRETURN);
@@ -570,8 +576,12 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
         visitor.visitMaxs(2, 1);
         visitor.visitEnd();
     }
-    
-    private void visitNext(ClassVisitor classVisitor, String className, FieldNode resultNode) {
+
+    private void visitNext(ClassVisitor classVisitor, String className, GeneratorClass generatorClass) {
+        FieldNode stateNode = generatorClass.stateNode;
+        FieldNode peekedNode = generatorClass.peekedNode;
+        FieldNode resultNode = generatorClass.resultNode;
+
         MethodVisitor visitor = classVisitor.visitMethod(
             Opcodes.ACC_PUBLIC,
             "next",
@@ -580,26 +590,29 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
             null
         );
         visitor.visitCode();
-        Label checkEnd = new Label();
-        
+        Label throwLabel = new Label();
+        Label returnLabel = new Label();
+        Label advanceLabel = new Label();
+
         visitor.visitVarInsn(Opcodes.ALOAD, 0);
-        visitor.visitFieldInsn(Opcodes.GETFIELD, className, resultNode.name, resultNode.desc);
-        visitor.visitJumpInsn(Opcodes.IFNONNULL, checkEnd);
-        
+        visitor.visitFieldInsn(Opcodes.GETFIELD, className, peekedNode.name, peekedNode.desc);
+        visitor.visitJumpInsn(Opcodes.IFEQ, advanceLabel);
+
+        visitor.visitVarInsn(Opcodes.ALOAD, 0);
+        visitor.visitInsn(Opcodes.ICONST_0);
+        visitor.visitFieldInsn(Opcodes.PUTFIELD, className, peekedNode.name, peekedNode.desc);
+        visitor.visitJumpInsn(Opcodes.GOTO, returnLabel);
+
+        visitor.visitLabel(advanceLabel);
+        visitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
         visitor.visitVarInsn(Opcodes.ALOAD, 0);
         visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, className, "advance", "()V", false);
         visitor.visitVarInsn(Opcodes.ALOAD, 0);
-        visitor.visitFieldInsn(Opcodes.GETFIELD, className, resultNode.name, resultNode.desc);
-        visitor.visitJumpInsn(Opcodes.IFNONNULL, checkEnd);
+        visitor.visitFieldInsn(Opcodes.GETFIELD, className, stateNode.name, stateNode.desc);
+        pushIntConstant(visitor, generatorClass.table.getFinishState());
+        visitor.visitJumpInsn(Opcodes.IF_ICMPEQ, throwLabel);
 
-        String exceptionClass = Type.getInternalName(NoSuchElementException.class);
-        visitor.visitTypeInsn(Opcodes.NEW, exceptionClass);
-        visitor.visitInsn(Opcodes.DUP);
-        visitor.visitLdcInsn(GENERATOR_ERR_RESUME_ON_FINISH);
-        visitor.visitMethodInsn(Opcodes.INVOKESPECIAL, exceptionClass, "<init>", "(Ljava/lang/String;)V", false);
-        visitor.visitInsn(Opcodes.ATHROW);
-
-        visitor.visitLabel(checkEnd);
+        visitor.visitLabel(returnLabel);
         visitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
         visitor.visitVarInsn(Opcodes.ALOAD, 0);
         visitor.visitFieldInsn(Opcodes.GETFIELD, className, resultNode.name, resultNode.desc);
@@ -607,6 +620,15 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
         visitor.visitInsn(Opcodes.ACONST_NULL);
         visitor.visitFieldInsn(Opcodes.PUTFIELD, className, resultNode.name, resultNode.desc);
         visitor.visitInsn(Opcodes.ARETURN);
+
+        visitor.visitLabel(throwLabel);
+        visitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+        String exceptionClass = Type.getInternalName(NoSuchElementException.class);
+        visitor.visitTypeInsn(Opcodes.NEW, exceptionClass);
+        visitor.visitInsn(Opcodes.DUP);
+        visitor.visitLdcInsn(GENERATOR_ERR_RESUME_ON_FINISH);
+        visitor.visitMethodInsn(Opcodes.INVOKESPECIAL, exceptionClass, "<init>", "(Ljava/lang/String;)V", false);
+        visitor.visitInsn(Opcodes.ATHROW);
 
         visitor.visitMaxs(3, 1);
         visitor.visitEnd();
@@ -664,12 +686,14 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
     private static class GeneratorClass {
         public final Type type;
         public final FieldNode stateNode;
+        public final FieldNode peekedNode;
         public final FieldNode resultNode;
         public final GeneratorTable table;
 
-        public GeneratorClass(Type type, FieldNode stateNode, FieldNode resultNode, GeneratorTable table) {
+        public GeneratorClass(Type type, FieldNode stateNode, FieldNode peekedNode, FieldNode resultNode, GeneratorTable table) {
             this.type = type;
             this.stateNode = stateNode;
+            this.peekedNode = peekedNode;
             this.resultNode = resultNode;
             this.table = table;
         }
@@ -710,7 +734,7 @@ public class GeneratorPostTransformation implements PostCompilerTransformation {
         @Override public BasicValue newValue(Type type) {
             if (type == null) {
                 return BasicValue.UNINITIALIZED_VALUE;
-            } 
+            }
 
             return new BasicValue(type);
         }
