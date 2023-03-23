@@ -353,7 +353,7 @@ final class PatchFixesHider {
 			INVALID_METHOD = Util.findMethod(shadowed, "invalidMethod", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG);
 			INVALID_METHOD2 = Util.findMethod(shadowed, "invalidMethod", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG, SCOPE_SIG);
 			NON_STATIC_ACCESS_TO_STATIC_METHOD = Util.findMethod(shadowed, "nonStaticAccessToStaticMethod", PROBLEM_REPORTER_SIG, AST_NODE_SIG, METHOD_BINDING_SIG, MESSAGE_SEND_SIG);
-			MODIFY_METHOD_PATTERN = Util.findMethod(shadowed, "modifyMethodPattern", "org.eclipse.jdt.core.search.SearchPattern");
+			MODIFY_METHOD_PATTERN = Util.findMethod(shadowed, "modifyMethodPattern", Object.class);
 		}
 		
 		public static Object resolveType(Object resolvedType, Object methodCall, Object scope) {
