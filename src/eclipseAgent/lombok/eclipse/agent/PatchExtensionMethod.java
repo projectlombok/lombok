@@ -43,7 +43,6 @@ import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.experimental.ExtensionMethod;
 import lombok.permit.Permit;
 
-import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
@@ -381,7 +380,7 @@ public class PatchExtensionMethod {
 		return resolvedType;
 	}
 	
-	public static SearchPattern modifyMethodPattern(SearchPattern original) {
+	public static Object modifyMethodPattern(Object original) {
 		if (original != null && original instanceof MethodPattern) {
 			MethodPattern methodPattern = (MethodPattern) original;
 			if (methodPattern.parameterCount > 0) {
