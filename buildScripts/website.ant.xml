@@ -283,7 +283,7 @@ such as applying the templates to produce the website, converting the changelog 
 	</target>
 	
 	<target name="-edge.website.tohost" depends="edge.website, -website.init-hostgit, -website.pull-hostgit">
-		<copy file="build/website-edge/download-edge.html" todir="${loc.hostingsite}/website" />
+		<copy file="build/website-edge/download-edge.html" todir="${loc.hostingGit}/website" />
 	</target>
 		
 	<target name="-edge.website.publish" depends="-edge.website.tohost, -website.commit-and-push-hostgit" />
