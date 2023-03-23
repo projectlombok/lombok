@@ -260,25 +260,13 @@ such as applying the templates to produce the website, converting the changelog 
 	</target>
 	
 	<target name="-release.publish.site" depends="release.pack">
-		<ivy:scpUpload
-			from="dist/website-release.tar.bz2"
-			to="/data/lombok/staging"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
-		<ivy:sshExec
-			cmd="/data/lombok/stagingCmd/deployRelease"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
+		<fail />
 	</target>
 	
 	<target name="release.publish" depends="maven, -release.publish.site, website.publish, eclipsep2.publish, maven.publish" description="Deploys a new official lombok release everywhere: maven, website, p2 site" />
 	
-	<target name="edge.pack" depends="compile.support, version, dist, maven.edge">
-		<delete file="build/website/download-edge.html" />
+	<target name="edge.website" depends="compile.support, version, dist">
+		<delete quiet="true" file="build/website/download-edge.html" />
 		<mkdir dir="build/website-edge" />
 		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
@@ -292,30 +280,26 @@ such as applying the templates to produce the website, converting the changelog 
 			<arg value="website" />
 			<arg value="build/website-edge/download-edge.html" />
 		</java>
-		<copy file="dist/lombok.jar" tofile="build/website-edge/lombok-edge.jar" />
-		<tar destfile="dist/website-edge.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/website-edge" />
-			<tarfileset dir="build">
-				<include name="edge-releases/**" />
-			</tarfileset>
-		</tar>
 	</target>
 	
-	<target name="edge.publish" depends="edge.pack" description="Builds an edge release, sends it to the projectlombok.org server and deploys it by updating the download-edge link">
-		<ivy:scpUpload
-			from="dist/website-edge.tar.bz2"
-			to="/data/lombok/staging"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
-		<ivy:sshExec
-			cmd="/data/lombok/stagingCmd/deployEdge"
-			server="projectlombok.org"
-			username="${ssh.username}"
-			keyfile="${ssh.keyfile}"
-			knownHosts="ssh.knownHosts" />
+	<target name="-edge.website.tohost" depends="edge.website, -website.init-hostgit, -website.pull-hostgit">
+		<copy file="build/website-edge/download-edge.html" todir="${loc.hostingsite}/website" />
+	</target>
 		
+	<target name="-edge.website.publish" depends="-edge.website.tohost, -website.commit-and-push-hostgit" />
+	
+	<target name="edge.publish" depends="dist, -edge.website.publish, maven.edge" description="Builds an edge release, sends it to the projectlombok.org server and deploys it by updating the download-edge link">
+		<copy file="dist/lombok-${lombok.version}.jar" tofile="build/edge-releases/lombok-edge.jar" />
+		<java classname="lombok.publish.PublishToBucket" failonerror="true">
+			<classpath>
+				<path refid="cp.buildtools" />
+				<pathelement location="build/support" />
+			</classpath>
+			<arg value="${gpg.keyrings}/s3_creds.txt" />
+			<arg value="build/edge-releases" />
+			<arg value="edge" />
+			<arg value="true" />
+		</java>
 		<exec executable="/usr/bin/git" failonerror="true">
 			<arg value="merge-base" />
 			<arg value="--is-ancestor" />

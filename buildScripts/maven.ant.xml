@@ -146,19 +146,5 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 				<not><isset property="mvn.result" /></not>
 			</condition>
 		</fail>
-		<copy file="dist/lombok-${lombok.version}.jar" tofile="build/edge-releases/lombok-edge.jar" />
-	</target>
-	
-	<target name="maven.edge-publish" depends="maven.edge, compile.support" description="Creates the maven repo for the snapshot build and publishes it to projectlombok.org">
-		<java classname="lombok.publish.PublishToBucket" failonerror="true">
-			<classpath>
-				<path refid="cp.buildtools" />
-				<pathelement location="build/support" />
-			</classpath>
-			<arg value="${gpg.keyrings}/s3_creds.txt" />
-			<arg value="build/edge-releases" />
-			<arg value="edge" />
-			<arg value="true" />
-		</java>
 	</target>
 </project>

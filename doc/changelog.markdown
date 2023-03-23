@@ -6,6 +6,7 @@ Lombok Changelog
 * BUGFIX: Eclipse 4.27 and VSCode 1.14.0 would ignore `lombok.config`. [Issue #3332](https://github.com/projectlombok/lombok/issues/3332).
 * BUGFIX: `@NonNull` on a primitive array field on a record wouldn't work. [Issue #3366](https://github.com/projectlombok/lombok/issues/3366).
 * FEATURE: Jakarta has some non-null annotations (such as `jakarta.annotation.Nonnull`) which we now support. [Issue #3346](https://github.com/projectlombok/lombok/issues/3346).
+* BUGFIX: Eclipse didn't find usages of extension methods (`@ExtensionMethod`) in "find references" nor rename-refactoring. [Issue #3373](https://github.com/projectlombok/lombok/issues/3373)
 
 ### v1.18.26 (Feb 3rd, 2023)
 
