@@ -3,5 +3,5 @@ As per @Rawi01's experimenting:
 * VSCode's lombok plugin simply adds the appropriate `-javaagent` options when it fires up the eclipse-based language server. You can also add debug flags here.
 * Add the flags `-agentlib:jdwp-transport=dt_socket,server=y,suspend=n,quiet=y,address=12345` to the `settings.json` of the VSCode lombok plugin, and then tell your debugger to attach to localhost:12345.
 * Set the property `java.server.launchMode` to `"Standard"`.
-* Consider activing the language server debug mode.
+* Consider activating the language server debug mode.
 
