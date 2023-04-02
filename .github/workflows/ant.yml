@@ -181,7 +181,7 @@ jobs:
     strategy: 
       matrix: 
         jdk: [8, 11, 17, 21, 25]
-        dir: [compileTests]
+        dir: [compileTests, multiReleaseJar, moduleBasedMultiProject]
       fail-fast: false
     
     steps:
@@ -196,7 +196,7 @@ jobs:
           
       - uses: actions/download-artifact@v4
         with:
-          name: lombok.jar
+          name: lombok.jar 
           path: dist
           
       - name: Run tests

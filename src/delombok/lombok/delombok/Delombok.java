@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -324,7 +325,10 @@ public class Delombok {
 				}
 			}
 			
-			delombok.delombok();
+			boolean success = delombok.delombok();
+			if (!success) {
+				System.exit(1);
+			}
 		} catch (Exception e) {
 			if (!args.quiet) {
 				String msg = e.getMessage();
@@ -751,6 +755,11 @@ public class Delombok {
 				((BaseFileManager) jfm_).setContext(context); // reinit with options
 				((BaseFileManager) jfm_).handleOptions(args.getDeferredFileManagerOptions());
 			}
+			
+			if (jfm_.isSupportedOption("--multi-release") == 1) {
+				List<String> compilerVersionString = Arrays.asList(Integer.toString(Javac.getJavaCompilerVersion()));
+				jfm_.handleOption("--multi-release", compilerVersionString.iterator());
+			}
 		}
 		
 		if (Javac.getJavaCompilerVersion() < 9) {
@@ -834,7 +843,7 @@ public class Delombok {
 		}
 		delegate.close();
 		
-		return true;
+		return compiler.errorCount() == 0;
 	}
 	
 	private String unpackClasspath(String cp) {
