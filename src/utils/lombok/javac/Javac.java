@@ -51,6 +51,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
@@ -271,6 +272,19 @@ public class Javac {
 		} catch (IllegalAccessException e) {
 			throw sneakyThrow(e);
 		} catch (InvocationTargetException e) {
+			throw sneakyThrow(e.getCause());
+		}
+	}
+	
+	/**
+	 * In some versions, the field's type is {@code JCTree}, in others it is {@code JCFieldAccess}, which at the JVM level are not the same.
+	 */
+	private static final Field JCIMPORT_QUALID = Permit.permissiveGetField(JCImport.class, "qualid");
+	
+	public static JCTree getQualid(JCImport tree) {
+		try {
+			return (JCTree) JCIMPORT_QUALID.get(tree);
+		} catch (IllegalAccessException e) {
 			throw sneakyThrow(e.getCause());
 		}
 	}

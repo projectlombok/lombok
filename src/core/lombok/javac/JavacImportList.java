@@ -50,7 +50,7 @@ public class JavacImportList implements ImportList {
 	@Override public String getFullyQualifiedNameForSimpleNameNoAliasing(String unqualified) {
 		for (JCTree def : defs) {
 			if (!(def instanceof JCImport)) continue;
-			JCTree qual = ((JCImport) def).qualid;
+			JCTree qual = Javac.getQualid((JCImport) def);
 			if (!(qual instanceof JCFieldAccess)) continue;
 			String simpleName = ((JCFieldAccess) qual).name.toString();
 			if (simpleName.equals(unqualified)) {
@@ -68,7 +68,7 @@ public class JavacImportList implements ImportList {
 		for (JCTree def : defs) {
 			if (!(def instanceof JCImport)) continue;
 			if (((JCImport) def).staticImport) continue;
-			JCTree qual = ((JCImport) def).qualid;
+			JCTree qual = Javac.getQualid((JCImport) def);
 			if (!(qual instanceof JCFieldAccess)) continue;
 			String simpleName = ((JCFieldAccess) qual).name.toString();
 			if (!"*".equals(simpleName)) continue;
@@ -87,7 +87,7 @@ public class JavacImportList implements ImportList {
 		for (JCTree def : defs) {
 			if (!(def instanceof JCImport)) continue;
 			if (((JCImport) def).staticImport) continue;
-			JCTree qual = ((JCImport) def).qualid;
+			JCTree qual = Javac.getQualid((JCImport) def);
 			if (!(qual instanceof JCFieldAccess)) continue;
 			String simpleName = ((JCFieldAccess) qual).name.toString();
 			if (!"*".equals(simpleName)) continue;

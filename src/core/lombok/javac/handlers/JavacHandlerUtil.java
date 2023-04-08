@@ -561,7 +561,7 @@ public class JavacHandlerUtil {
 			if (!(def instanceof JCImport)) continue;
 			JCImport imp0rt = (JCImport) def;
 			if (imp0rt.staticImport) continue;
-			if (!imp0rt.qualid.toString().equals(name)) continue;
+			if (!Javac.getQualid(imp0rt).toString().equals(name)) continue;
 			JavacAugments.JCImport_deletable.set(imp0rt, true);
 		}
 	}

@@ -92,6 +92,7 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 
 import lombok.javac.CommentInfo;
+import lombok.javac.Javac;
 import lombok.javac.PackageName;
 import lombok.permit.Permit;
 import lombok.javac.CommentInfo.EndConnection;
@@ -485,8 +486,9 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	@Override public void visitImport(JCImport tree) {
-		if (tree.qualid instanceof JCFieldAccess) {
-			JCFieldAccess fa = ((JCFieldAccess) tree.qualid);
+		JCTree qualid = Javac.getQualid(tree);
+		if (qualid instanceof JCFieldAccess) {
+			JCFieldAccess fa = ((JCFieldAccess) qualid);
 			if (fa.name.length() == 1 && fa.name.contentEquals("*")) {
 				if (fa.selected instanceof JCFieldAccess) {
 					JCFieldAccess lombokExperimental = (JCFieldAccess) fa.selected;
@@ -500,7 +502,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 		
 		aPrint("import ");
 		if (tree.staticImport) print("static ");
-		print(tree.qualid);
+		print(qualid);
 		println(";", tree);
 	}
 	
