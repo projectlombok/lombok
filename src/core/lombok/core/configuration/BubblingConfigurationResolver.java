@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lombok.core.configuration;
 
 import java.util.ArrayDeque;
@@ -34,21 +35,20 @@ import lombok.core.configuration.ConfigurationSource.ListModification;
 import lombok.core.configuration.ConfigurationSource.Result;
 
 public class BubblingConfigurationResolver implements ConfigurationResolver {
-	
+
 	private final ConfigurationFile start;
 	private final ConfigurationFileToSource fileMapper;
-	
+
 	public BubblingConfigurationResolver(ConfigurationFile start, ConfigurationFileToSource fileMapper) {
 		this.start = start;
 		this.fileMapper = fileMapper;
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	@Override
 	public <T> T resolve(ConfigurationKey<T> key) {
 		boolean isList = key.getType().isList();
 		List<List<ListModification>> listModificationsList = null;
-		
+
 		boolean stopBubbling = false;
 		ConfigurationFile currentLevel = start;
 		Collection<ConfigurationFile> visited = new HashSet<ConfigurationFile>();
@@ -56,22 +56,22 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 		while (currentLevel != null) {
 			Deque<ConfigurationFile> round = new ArrayDeque<ConfigurationFile>();
 			round.push(currentLevel);
-			
+
 			while (!round.isEmpty()) {
 				ConfigurationFile currentFile = round.pop();
-				if (currentFile == null || !visited.add(currentFile)) continue;
-				
+				if (!visited.add(currentFile)) continue;
+
 				ConfigurationSource source = fileMapper.parsed(currentFile);
 				if (source == null) continue;
-				
+
 				for (ConfigurationFile importFile : source.imports()) round.push(importFile);
-				
+
 				Result stop = source.resolve(ConfigurationKeys.STOP_BUBBLING);
 				stopBubbling = stopBubbling || (stop != null && Boolean.TRUE.equals(stop.getValue()));
-				
+
 				Result result = source.resolve(key);
 				if (result == null) continue;
-				
+
 				if (isList) {
 					if (listModificationsList == null) listModificationsList = new ArrayList<List<ListModification>>();
 					listModificationsList.add((List<ListModification>) result.getValue());
@@ -84,16 +84,16 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 			if (stopBubbling) break;
 			currentLevel = currentLevel.parent();
 		}
-		
+
 		if (!isList) return null;
 		if (listModificationsList == null) return (T) Collections.emptyList();
-		
-		List<Object> listValues = new ArrayList<Object>();
+
+		List<T> listValues = new ArrayList<T>();
 		Collections.reverse(listModificationsList);
 		for (List<ListModification> listModifications : listModificationsList) {
 			if (listModifications != null) for (ListModification modification : listModifications) {
 				listValues.remove(modification.getValue());
-				if (modification.isAdded()) listValues.add(modification.getValue());
+				if (modification.isAdded()) listValues.add((T) modification.getValue());
 			}
 		}
 		return (T) listValues;
