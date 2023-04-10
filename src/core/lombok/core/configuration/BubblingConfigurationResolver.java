@@ -49,51 +49,67 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 		boolean isList = key.getType().isList();
 		List<List<ListModification>> listModificationsList = null;
 
-		boolean stopBubbling = false;
 		ConfigurationFile currentLevel = start;
-		Collection<ConfigurationFile> visited = new HashSet<ConfigurationFile>();
+		Collection<ConfigurationFile> visited = new HashSet<>();
+		boolean stopBubbling = false;
+
 		outer:
 		while (!stopBubbling && currentLevel != null) {
-			Deque<ConfigurationFile> round = new ArrayDeque<ConfigurationFile>();
+			Deque<ConfigurationFile> round = new ArrayDeque<>();
 			round.push(currentLevel);
-			
+
 			while (!round.isEmpty()) {
 				ConfigurationFile currentFile = round.pop();
 				if (currentFile == null || !visited.add(currentFile)) continue;
-				
+
 				ConfigurationSource source = fileMapper.parsed(currentFile);
 				if (source == null) continue;
-				
-				for (ConfigurationFile importFile : source.imports()) round.push(importFile);
-				
-				Result stop = source.resolve(ConfigurationKeys.STOP_BUBBLING);
-				stopBubbling = stopBubbling || (stop != null && Boolean.TRUE.equals(stop.getValue()));
-				
+
+				round.addAll(source.imports());
+
+				stopBubbling = updateStopBubbling(stopBubbling, source);
+
 				Result result = source.resolve(key);
-				if (result == null) {
-					continue;
-				}
-				if (isList) {
-					if (listModificationsList == null) listModificationsList = new ArrayList<List<ListModification>>();
-					listModificationsList.add((List<ListModification>)result.getValue());
-				}
-				if (result.isAuthoritative()) {
-					if (isList) break outer;
-					return (T) result.getValue();
+				if (result != null) {
+					listModificationsList = processResult(result, isList, listModificationsList);
+					if (result.isAuthoritative()) {
+						if (isList) break outer;
+						return (T) result.getValue();
+					}
 				}
 			}
 			currentLevel = currentLevel.parent();
 		}
-		
+
+		return processFinalResult(isList, listModificationsList);
+	}
+
+	private boolean updateStopBubbling(boolean stopBubbling, ConfigurationSource source) {
+		Result stop = source.resolve(ConfigurationKeys.STOP_BUBBLING);
+		return stopBubbling || (stop != null && Boolean.TRUE.equals(stop.getValue()));
+	}
+
+	private <T> List<List<ListModification>> processResult(Result result, boolean isList, List<List<ListModification>> listModificationsList) {
+		if (isList) {
+			if (listModificationsList == null) listModificationsList = new ArrayList<>();
+			listModificationsList.add((List<ListModification>) result.getValue());
+		}
+		return listModificationsList;
+	}
+
+	private <T> T processFinalResult(boolean isList, List<List<ListModification>> listModificationsList) {
 		if (!isList) return null;
 		if (listModificationsList == null) return (T) Collections.emptyList();
-		
-		List<Object> listValues = new ArrayList<Object>();
+
+		List<Object> listValues = new ArrayList<>();
 		Collections.reverse(listModificationsList);
+
 		for (List<ListModification> listModifications : listModificationsList) {
-			if (listModifications != null) for (ListModification modification : listModifications) {
-				listValues.remove(modification.getValue());
-				if (modification.isAdded()) listValues.add(modification.getValue());
+			if (listModifications != null) {
+				for (ListModification modification : listModifications) {
+					listValues.remove(modification.getValue());
+					if (modification.isAdded()) listValues.add(modification.getValue());
+				}
 			}
 		}
 		return (T) listValues;
