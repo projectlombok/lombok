@@ -52,8 +52,7 @@ public final class HandleLockedUtil {
 	 * See {@link #handle(String, JCAnnotation, JavacNode, Class, String, String[], String)} for
 	 * {@code lockableMethodName = null}.
 	 */
-	public static <T extends Annotation> void handle(String annotationValue, JCTree.JCAnnotation ast,
-			JavacNode annotationNode, Class<T> annotationClass, String annotationName, String[] lockClass) {
+	public static <T extends Annotation> void handle(String annotationValue, JCTree.JCAnnotation ast, JavacNode annotationNode, Class<T> annotationClass, String annotationName, String[] lockClass) {
 		handle(annotationValue, ast, annotationNode, annotationClass, annotationName, lockClass, null);
 	}
 
@@ -80,8 +79,7 @@ public final class HandleLockedUtil {
 	 * itself can be locked/unlocked.
 	 * @param <T> The annotation type.
 	 */
-	public static <T extends Annotation> void handle(String annotationValue, JCTree.JCAnnotation ast, JavacNode annotationNode,
-			Class<T> annotationClass, String annotationName, String[] lockClass, String lockableMethodName) {
+	public static <T extends Annotation> void handle(String annotationValue, JCTree.JCAnnotation ast, JavacNode annotationNode, Class<T> annotationClass, String annotationName, String[] lockClass, String lockableMethodName) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.LOCKED_FLAG_USAGE, annotationName);
 
 		if (inNetbeansEditor(annotationNode)) return;
@@ -116,7 +114,7 @@ public final class HandleLockedUtil {
 
 		MemberExistsResult exists = MemberExistsResult.NOT_EXISTS;
 
-		JCExpression lockType = chainDots(methodNode, lockClass);
+		JCExpression lockType = chainDots(methodNode, ast.pos, null, null, lockClass);
 
 		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
 			for (JCTree def : ((JCClassDecl) typeNode.get()).defs) {
@@ -133,8 +131,7 @@ public final class HandleLockedUtil {
 						isStatic = st;
 
 						if (exists == MemberExistsResult.EXISTS_BY_LOMBOK && !lockType.toString().equals(varDeclDef.vartype.toString())) {
-							annotationNode.addError("Expected field " + lockName + " to be of type " + lockType + " but got type " +
-									varDeclDef.vartype + "! Did you mix @Locked with @Locked.Read/Write on the same generated field?");
+							annotationNode.addError("Expected field " + lockName + " to be of type " + lockType + " but got type " + varDeclDef.vartype + "! Did you mix @Locked with @Locked.Read/Write on the same generated field?");
 							return;
 						}
 					}
@@ -143,16 +140,14 @@ public final class HandleLockedUtil {
 		}
 
 		if (exists == MemberExistsResult.NOT_EXISTS) {
-			JCNewClass lockInstance = maker.NewClass(null, NIL_EXPRESSION, lockType, NIL_EXPRESSION, null);
+			JCNewClass lockInstance = maker.NewClass(null, NIL_EXPRESSION, cloneType(maker, lockType, typeNode), NIL_EXPRESSION, null);
 			JCVariableDecl newLockField = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
-				methodNode.toName(lockName), lockType, lockInstance
-			), annotationNode);
-
+				methodNode.toName(lockName), lockType, lockInstance), annotationNode);
 			injectFieldAndMarkGenerated(methodNode.up(), newLockField);
 		}
 
-		if (method.body == null || typeNode == null) return;
+		if (method.body == null) return;
 
 		JCExpression lockNode;
 		if (isStatic) {
@@ -160,24 +155,22 @@ public final class HandleLockedUtil {
 		} else {
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
 		}
-		recursiveSetGeneratedBy(lockNode, annotationNode);
 
-		final JCExpression lockable;
-		if (lockableMethodName == null) {
-			lockable = lockNode;
-		} else {
-			lockable = maker.Apply(NIL_EXPRESSION, maker.Select(lockNode, methodNode.toName(lockableMethodName)), NIL_EXPRESSION);
-			recursiveSetGeneratedBy(lockable, annotationNode);
-		}
+		JCExpressionStatement acquireLock = maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(getLockable(maker, typeNode, methodNode, lockableMethodName, lockNode), annotationNode.toName("lock")), NIL_EXPRESSION));
+		JCExpressionStatement releaseLock = maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(getLockable(maker, typeNode, methodNode, lockableMethodName, lockNode), annotationNode.toName("unlock")), NIL_EXPRESSION));
 
-		JCExpressionStatement acquireLock = maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(lockable, typeNode.toName("lock")), NIL_EXPRESSION));
-		JCExpressionStatement releaseLock = maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(lockable, typeNode.toName("unlock")), NIL_EXPRESSION));
-
-		JCBlock finallyBlock = setGeneratedBy(maker.Block(0, List.<JCStatement>of(recursiveSetGeneratedBy(releaseLock, annotationNode))), annotationNode);
-		JCTry tryBlock = setGeneratedBy(maker.Try(method.body, List.<JCCatch>nil(), finallyBlock), annotationNode);
+		JCTry tryBlock = setGeneratedBy(maker.Try(method.body, List.<JCCatch>nil(), recursiveSetGeneratedBy(maker.Block(0, List.<JCStatement>of(releaseLock)), annotationNode)), annotationNode);
 
 		method.body = setGeneratedBy(maker.Block(0, List.<JCStatement>of(recursiveSetGeneratedBy(acquireLock, annotationNode), tryBlock)), annotationNode);
 
 		methodNode.rebuild();
+	}
+
+	private static JCExpression getLockable(JavacTreeMaker maker, JavacNode typeNode, JavacNode methodNode, String lockableMethodName, JCExpression lockNode) {
+		if (lockableMethodName == null) {
+			return cloneType(maker, lockNode, typeNode);
+		} else {
+			return maker.Apply(NIL_EXPRESSION, maker.Select(cloneType(maker, lockNode, typeNode), methodNode.toName(lockableMethodName)), NIL_EXPRESSION);
+		}
 	}
 }
