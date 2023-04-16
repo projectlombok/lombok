@@ -201,17 +201,49 @@ final class PatchFixesHider {
 		private static synchronized void init(ClassLoader prepend) {
 			if (TRANSFORM != null) return;
 			
-			Main.prependClassLoader(prepend);
-			try {
-				ClassLoader currentClassLoader = Transform.class.getClassLoader();
-				Method prependParentMethod = Permit.getMethod(currentClassLoader.getClass(), "prependParent", ClassLoader.class);
-				Permit.invoke(prependParentMethod, currentClassLoader, prepend);
-			} catch (Throwable t) {
-				// Ignore
+			prependClassLoader(prepend);
+			if (!prepend.toString().contains("org.eclipse.jdt.core:")) {
+				ClassLoader jdtCoreClassLoader = findJdtCoreClassLoader(prepend);
+				prependClassLoader(jdtCoreClassLoader);
 			}
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.TransformEclipseAST");
 			TRANSFORM = Util.findMethodAnyArgs(shadowed, "transform");
 			TRANSFORM_SWAPPED = Util.findMethodAnyArgs(shadowed, "transform_swapped");
+		}
+		
+		private static void prependClassLoader(ClassLoader classLoader) {
+			Main.prependClassLoader(classLoader);
+			try {
+				ClassLoader currentClassLoader = Transform.class.getClassLoader();
+				
+				Method prependParentMethod = Permit.getMethod(currentClassLoader.getClass(), "prependParent", ClassLoader.class);
+				Permit.invoke(prependParentMethod, currentClassLoader, classLoader);
+			} catch (Throwable t) {
+				// Ignore
+			}
+		}
+		
+		private static ClassLoader findJdtCoreClassLoader(ClassLoader classLoader) {
+			try {
+				Method getBundleMethod = Permit.getMethod(classLoader.getClass(), "getBundle");
+				Object bundle = Permit.invoke(getBundleMethod, classLoader);
+				
+				Method getBundleContextMethod = Permit.getMethod(bundle.getClass(), "getBundleContext");
+				Object bundleContext = Permit.invoke(getBundleContextMethod, bundle);
+				
+				Method getBundlesMethod = Permit.getMethod(bundleContext.getClass(), "getBundles");
+				Object[] bundles = (Object[]) Permit.invoke(getBundlesMethod, bundleContext);
+				
+				for (Object searchBundle : bundles) {
+					if (searchBundle.toString().startsWith("org.eclipse.jdt.core_")) {
+						Method getModuleClassLoaderMethod = Permit.getMethod(searchBundle.getClass(), "getModuleClassLoader", boolean.class);
+						return (ClassLoader) Permit.invoke(getModuleClassLoaderMethod, searchBundle, false);
+					}
+				}
+			} catch (Throwable t) {
+				// Ignore
+			}
+			return null;
 		}
 		
 		public static void transform(Object parser, Object ast) throws IOException {
