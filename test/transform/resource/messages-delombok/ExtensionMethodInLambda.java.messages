@@ -1,0 +1,1 @@
+19 cannot find symbol symbol: method invalid((s)->s.reverse()) location: variable test of type java.lang.String

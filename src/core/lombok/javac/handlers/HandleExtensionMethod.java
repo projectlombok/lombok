@@ -152,8 +152,10 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		
 		@Override
 		public Void visitMethodInvocation(final MethodInvocationTree tree, final Void p) {
-			super.visitMethodInvocation(tree, p);
+			scan(tree.getTypeArguments(), p);
+			scan(tree.getMethodSelect(), p);
 			handleMethodCall((JCMethodInvocation) tree);
+			scan(tree.getArguments(), p);
 			return null;
 		}
 		
@@ -181,6 +183,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			JCTree resolvedReceiver = resolution.get(receiver);
 			if (resolvedReceiver == null || resolvedReceiver.type == null) return;
 			Type receiverType = resolvedReceiver.type;
+			if (receiverType.isErroneous()) return;
 			
 			// Skip static method access
 			Symbol sym = null;
