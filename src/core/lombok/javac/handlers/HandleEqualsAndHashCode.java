@@ -25,7 +25,6 @@ import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -269,7 +268,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		for (Included<JavacNode, EqualsAndHashCode.Include> member : members) {
 			JavacNode memberNode = member.getNode();
-			JCExpression fType = unnotate(getFieldType(memberNode, fieldAccess));
+			JCExpression fType = removeTypeUseAnnotations(getFieldType(memberNode, fieldAccess));
 			boolean isMethod = memberNode.getKind() == Kind.METHOD;
 			
 			JCExpression fieldAccessor = isMethod ? createMethodAccessor(maker, memberNode) : createFieldAccessor(maker, memberNode, fieldAccess);
@@ -316,8 +315,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			} else if (fType instanceof JCArrayTypeTree) {
 				JCArrayTypeTree array = (JCArrayTypeTree) fType;
 				/* java.util.Arrays.deepHashCode(this.fieldName) //use just hashCode() for primitive arrays. */
-				boolean multiDim = unnotate(array.elemtype) instanceof JCArrayTypeTree;
-				boolean primitiveArray = unnotate(array.elemtype) instanceof JCPrimitiveTypeTree;
+				boolean multiDim = removeTypeUseAnnotations(array.elemtype) instanceof JCArrayTypeTree;
+				boolean primitiveArray = removeTypeUseAnnotations(array.elemtype) instanceof JCPrimitiveTypeTree;
 				boolean useDeepHC = multiDim || !primitiveArray;
 				
 				JCExpression hcMethod = chainDots(typeNode, "java", "util", "Arrays", useDeepHC ? "deepHashCode" : "hashCode");
@@ -503,7 +502,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			JavacNode memberNode = member.getNode();
 			boolean isMethod = memberNode.getKind() == Kind.METHOD;
 			
-			JCExpression fType = unnotate(getFieldType(memberNode, fieldAccess));
+			JCExpression fType = removeTypeUseAnnotations(getFieldType(memberNode, fieldAccess));
 			JCExpression thisFieldAccessor = isMethod ? createMethodAccessor(maker, memberNode) : createFieldAccessor(maker, memberNode, fieldAccess);
 			JCExpression otherFieldAccessor = isMethod ? createMethodAccessor(maker, memberNode, maker.Ident(otherName)) : createFieldAccessor(maker, memberNode, fieldAccess, maker.Ident(otherName));
 			if (fType instanceof JCPrimitiveTypeTree) {
@@ -525,8 +524,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			} else if (fType instanceof JCArrayTypeTree) {
 				JCArrayTypeTree array = (JCArrayTypeTree) fType;
 				/* if (!java.util.Arrays.deepEquals(this.fieldName, other.fieldName)) return false; //use equals for primitive arrays. */
-				boolean multiDim = unnotate(array.elemtype) instanceof JCArrayTypeTree;
-				boolean primitiveArray = unnotate(array.elemtype) instanceof JCPrimitiveTypeTree;
+				boolean multiDim = removeTypeUseAnnotations(array.elemtype) instanceof JCArrayTypeTree;
+				boolean primitiveArray = removeTypeUseAnnotations(array.elemtype) instanceof JCPrimitiveTypeTree;
 				boolean useDeepEquals = multiDim || !primitiveArray;
 				
 				JCExpression eqMethod = chainDots(typeNode, "java", "util", "Arrays", useDeepEquals ? "deepEquals" : "equals");
@@ -602,31 +601,5 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	
 	public JCStatement returnBool(JavacTreeMaker maker, boolean bool) {
 		return maker.Return(maker.Literal(CTC_BOOLEAN, bool ? 1 : 0));
-	}
-	
-	private boolean jcAnnotatedTypeInit;
-	private Class<?> jcAnnotatedTypeClass = null;
-	private Field jcAnnotatedTypeUnderlyingTypeField = null;
-	
-	private JCExpression unnotate(JCExpression type) {
-		if (!isJcAnnotatedType(type)) return type;
-		if (jcAnnotatedTypeUnderlyingTypeField == null) return type;
-		try {
-			return (JCExpression) jcAnnotatedTypeUnderlyingTypeField.get(type);
-		} catch (Exception ignore) {}
-		return type;
-	}
-	
-	private boolean isJcAnnotatedType(JCExpression o) {
-		if (o == null) return false;
-		if (!jcAnnotatedTypeInit) {
-			try {
-				jcAnnotatedTypeClass = Class.forName("com.sun.tools.javac.tree.JCTree$JCAnnotatedType", false, o.getClass().getClassLoader());
-				jcAnnotatedTypeUnderlyingTypeField = jcAnnotatedTypeClass.getDeclaredField("underlyingType");
-			}
-			catch (Exception ignore) {}
-			jcAnnotatedTypeInit = true;
-		}
-		return jcAnnotatedTypeClass == o.getClass();
 	}
 }
