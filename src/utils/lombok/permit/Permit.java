@@ -297,9 +297,9 @@ public class Permit {
 		}
 	}
 	
-	public static Object get(Field f, Object receiver) throws IllegalAccessException {
+	public static <T> T get(Field f, Object receiver) throws IllegalAccessException {
 		try {
-			return f.get(receiver);
+			return (T) f.get(receiver);
 		} catch (IllegalAccessException e) {
 			handleReflectionDebug(e, null);
 			throw e;
