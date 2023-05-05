@@ -4,7 +4,7 @@ public class HelperInMethod {
     super();
   }
   int someMethod(int arg1) {
-    int localVar = 5;
+    final int localVar = 5;
     @Helper class Helpers {
       Helpers() {
         super();

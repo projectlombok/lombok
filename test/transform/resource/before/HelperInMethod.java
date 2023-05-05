@@ -2,7 +2,7 @@ import lombok.experimental.Helper;
 
 public class HelperInMethod {
 	int someMethod(int arg1) {
-		int localVar = 5;
+		final int localVar = 5;
 		
 		@Helper
 		class Helpers {
