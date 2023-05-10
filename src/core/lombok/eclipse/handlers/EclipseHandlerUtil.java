@@ -809,12 +809,12 @@ public class EclipseHandlerUtil {
 	 * Searches the given field node for annotations and returns each one that is 'copyable' (either via configuration or from the base list).
 	 */
 	public static Annotation[] findCopyableAnnotations(EclipseNode node) {
-		AbstractVariableDeclaration avd = (AbstractVariableDeclaration) node.get();
-		if (avd.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
 		List<Annotation> result = new ArrayList<Annotation>();
 		List<TypeName> configuredCopyable = node.getAst().readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS);
-		
-		for (Annotation annotation : avd.annotations) {
+		for (EclipseNode child : node.down()) {
+			if (child.getKind() != Kind.ANNOTATION) continue;
+			
+			Annotation annotation = (Annotation) child.get();
 			TypeReference typeRef = annotation.type;
 			boolean match = false;
 			if (typeRef != null && typeRef.getTypeName() != null) {
@@ -850,11 +850,11 @@ public class EclipseHandlerUtil {
 	 * Searches the given field node for annotations that are in the given list, and returns those.
 	 */
 	private static Annotation[] findAnnotationsInList(EclipseNode node, java.util.List<String> annotationsToFind) {
-		AbstractVariableDeclaration avd = (AbstractVariableDeclaration) node.get();
-		if (avd.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
 		List<Annotation> result = new ArrayList<Annotation>();
-		
-		for (Annotation annotation : avd.annotations) {
+		for (EclipseNode child : node.down()) {
+			if (child.getKind() != Kind.ANNOTATION) continue;
+			
+			Annotation annotation = (Annotation) child.get();
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName() != null) {
 				for (String bn : annotationsToFind) if (typeMatches(bn, node, typeRef)) {
