@@ -259,11 +259,7 @@ such as applying the templates to produce the website, converting the changelog 
 		</tar>
 	</target>
 	
-	<target name="-release.publish.site" depends="release.pack">
-		<fail />
-	</target>
-	
-	<target name="release.publish" depends="-test.release.version, maven, -release.publish.site, website.publish, eclipsep2.publish, maven.publish, -edge.publish" description="Deploys a new official lombok release everywhere: maven, website, p2 site" />
+	<target name="release.publish" depends="-test.release.version, maven, website.release-publish, eclipsep2.publish, maven.publish, -edge.publish" description="Deploys a new official lombok release everywhere: maven, website, p2 site" />
 	
 	<target name="edge.website" depends="compile.support, version, dist">
 		<delete quiet="true" file="build/website/download-edge.html" />
