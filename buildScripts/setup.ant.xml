@@ -336,6 +336,16 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<property name="ossrh.username" value="rzwitserloot" />
 	</target>
 	
+	<target name="test.release.version" depends="-test.release.version" />
+	<target name="-test.release.version" depends="version" unless="skip.test.version">
+		<fail>
+			<condition>
+				<not><matches pattern="^.*[02468]$" string="${lombok.version}"/></not>
+			</condition>
+			You need to manually sort out the changelog, and set Version.java so that the release version is an even number (and the name isn't Edgy Guinea Pig). Use -Dskip.test.version= to override.
+		</fail>
+	</target>
+	
 	<fail>ant needs to be at least v1.10.0 or higher to build lombok. Your version is: ${ant.version}
 		<condition>
 			<not><antversion atleast="1.10.0" /></not>

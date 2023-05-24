@@ -263,7 +263,7 @@ such as applying the templates to produce the website, converting the changelog 
 		<fail />
 	</target>
 	
-	<target name="release.publish" depends="maven, -release.publish.site, website.publish, eclipsep2.publish, maven.publish" description="Deploys a new official lombok release everywhere: maven, website, p2 site" />
+	<target name="release.publish" depends="-test.release.version, maven, -release.publish.site, website.publish, eclipsep2.publish, maven.publish, -edge.publish" description="Deploys a new official lombok release everywhere: maven, website, p2 site" />
 	
 	<target name="edge.website" depends="compile.support, version, dist">
 		<delete quiet="true" file="build/website/download-edge.html" />
@@ -288,7 +288,9 @@ such as applying the templates to produce the website, converting the changelog 
 		
 	<target name="-edge.website.publish" depends="-edge.website.tohost, -website.commit-and-push-hostgit" />
 	
-	<target name="edge.publish" depends="dist, -edge.website.publish, maven.edge" description="Builds an edge release, sends it to the projectlombok.org server and deploys it by updating the download-edge link">
+	<target name="edge.publish" depends="-edge.website.publish, -edge.publish" description="Builds an edge release, sends it to the projectlombok.org server and deploys it by updating the download-edge link" />
+	
+	<target name="-edge.publish" depends="dist, maven.edge">
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="build/edge-releases/lombok-edge.jar" />
 		<java classname="lombok.publish.PublishToBucket" failonerror="true">
 			<classpath>
