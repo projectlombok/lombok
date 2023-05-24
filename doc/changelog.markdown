@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.29 "Edgy Guinea Pig"
+* We recently released v1.18.28; there is no edge release since then.
+
 ### v1.18.28 (May 24th, 2023)
 * PLATFORM: JDK20 support added. [Issue #3353](https://github.com/projectlombok/lombok/issues/3353).
 * BUGFIX: Eclipse 4.27 and VSCode 1.14.0 would ignore `lombok.config`. [Issue #3332](https://github.com/projectlombok/lombok/issues/3332).
