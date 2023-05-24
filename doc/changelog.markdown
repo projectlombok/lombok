@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.27 "Edgy Guinea Pig"
+### v1.18.28 (May 24th, 2023)
 * PLATFORM: JDK20 support added. [Issue #3353](https://github.com/projectlombok/lombok/issues/3353).
 * BUGFIX: Eclipse 4.27 and VSCode 1.14.0 would ignore `lombok.config`. [Issue #3332](https://github.com/projectlombok/lombok/issues/3332).
 * BUGFIX: `@NonNull` on a primitive array field on a record wouldn't work. [Issue #3366](https://github.com/projectlombok/lombok/issues/3366).
