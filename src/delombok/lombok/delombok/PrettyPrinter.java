@@ -1355,6 +1355,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 		} else {
 			aPrint("case ");
 			print(pats, ", ");
+			
+			JCExpression guard = readObject(tree, "guard", null); // JDK 21+
+			if (guard != null) {
+				print(" when ");
+				print(guard);
+			}
 		}
 		
 		Enum<?> caseKind = readObject(tree, "caseKind", null); // JDK 12+
