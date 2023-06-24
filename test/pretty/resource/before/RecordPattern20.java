@@ -1,4 +1,4 @@
-// version 20:
+// version 20:20
 record Point(int x, int y) {
 }
 record Rectangle(Point upperLeft, Point lowerRight) {
