@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +60,7 @@ import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
+import org.eclipse.jdt.internal.compiler.parser.Parser;
 import org.eclipse.jdt.internal.core.SourceField;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
@@ -163,6 +164,38 @@ final class PatchFixesHider {
 			}
 			return true;
 		}
+		
+		private static void prependToClassLoader(ClassLoader currentClassLoader, ClassLoader prepend) {
+			try {
+				Method prependParentMethod = Permit.getMethod(currentClassLoader.getClass(), "prependParent", ClassLoader.class);
+				Permit.invoke(prependParentMethod, currentClassLoader, prepend);
+			} catch (Throwable t) {
+				// Ignore
+			}
+		}
+		
+		private static ClassLoader findJdtCoreClassLoader(ClassLoader classLoader) {
+			try {
+				Method getBundleMethod = Permit.getMethod(classLoader.getClass(), "getBundle");
+				Object bundle = Permit.invoke(getBundleMethod, classLoader);
+				
+				Method getBundleContextMethod = Permit.getMethod(bundle.getClass(), "getBundleContext");
+				Object bundleContext = Permit.invoke(getBundleContextMethod, bundle);
+				
+				Method getBundlesMethod = Permit.getMethod(bundleContext.getClass(), "getBundles");
+				Object[] bundles = (Object[]) Permit.invoke(getBundlesMethod, bundleContext);
+				
+				for (Object searchBundle : bundles) {
+					if (searchBundle.toString().startsWith("org.eclipse.jdt.core_")) {
+						Method getModuleClassLoaderMethod = Permit.getMethod(searchBundle.getClass(), "getModuleClassLoader", boolean.class);
+						return (ClassLoader) Permit.invoke(getModuleClassLoaderMethod, searchBundle, false);
+					}
+				}
+			} catch (Throwable t) {
+				// Ignore
+			}
+			return null;
+		}
 	}
 	
 	/** Contains patch fixes that are dependent on lombok internals. */
@@ -201,6 +234,14 @@ final class PatchFixesHider {
 		}
 	}
 	
+	public static final class ModuleClassLoading {
+		public static void parserClinit() {
+			ClassLoader jdtCoreClassLoader = Util.findJdtCoreClassLoader(Parser.class.getClassLoader());
+			ClassLoader currentClassLoader = ModuleClassLoading.class.getClassLoader();
+			Util.prependToClassLoader(currentClassLoader, jdtCoreClassLoader);
+		}
+	}
+	
 	public static final class Transform {
 		private static Method TRANSFORM;
 		private static Method TRANSFORM_SWAPPED;
@@ -208,49 +249,12 @@ final class PatchFixesHider {
 		private static synchronized void init(ClassLoader prepend) {
 			if (TRANSFORM != null) return;
 			
-			prependClassLoader(prepend);
-			if (!prepend.toString().contains("org.eclipse.jdt.core:")) {
-				ClassLoader jdtCoreClassLoader = findJdtCoreClassLoader(prepend);
-				prependClassLoader(jdtCoreClassLoader);
-			}
+			Main.prependClassLoader(prepend);
+			ClassLoader currentClassLoader = Transform.class.getClassLoader();
+			Util.prependToClassLoader(currentClassLoader, prepend);
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.TransformEclipseAST");
 			TRANSFORM = Util.findMethodAnyArgs(shadowed, "transform");
 			TRANSFORM_SWAPPED = Util.findMethodAnyArgs(shadowed, "transform_swapped");
-		}
-		
-		private static void prependClassLoader(ClassLoader classLoader) {
-			Main.prependClassLoader(classLoader);
-			try {
-				ClassLoader currentClassLoader = Transform.class.getClassLoader();
-				
-				Method prependParentMethod = Permit.getMethod(currentClassLoader.getClass(), "prependParent", ClassLoader.class);
-				Permit.invoke(prependParentMethod, currentClassLoader, classLoader);
-			} catch (Throwable t) {
-				// Ignore
-			}
-		}
-		
-		private static ClassLoader findJdtCoreClassLoader(ClassLoader classLoader) {
-			try {
-				Method getBundleMethod = Permit.getMethod(classLoader.getClass(), "getBundle");
-				Object bundle = Permit.invoke(getBundleMethod, classLoader);
-				
-				Method getBundleContextMethod = Permit.getMethod(bundle.getClass(), "getBundleContext");
-				Object bundleContext = Permit.invoke(getBundleContextMethod, bundle);
-				
-				Method getBundlesMethod = Permit.getMethod(bundleContext.getClass(), "getBundles");
-				Object[] bundles = (Object[]) Permit.invoke(getBundlesMethod, bundleContext);
-				
-				for (Object searchBundle : bundles) {
-					if (searchBundle.toString().startsWith("org.eclipse.jdt.core_")) {
-						Method getModuleClassLoaderMethod = Permit.getMethod(searchBundle.getClass(), "getModuleClassLoader", boolean.class);
-						return (ClassLoader) Permit.invoke(getModuleClassLoaderMethod, searchBundle, false);
-					}
-				}
-			} catch (Throwable t) {
-				// Ignore
-			}
-			return null;
 		}
 		
 		public static void transform(Object parser, Object ast) throws IOException {
