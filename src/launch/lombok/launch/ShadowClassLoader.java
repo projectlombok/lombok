@@ -112,6 +112,7 @@ class ShadowClassLoader extends ClassLoader {
 	public void prependParent(ClassLoader loader) {
 		if (loader == null) return;
 		if (loader == getParent()) return;
+		if (loader == this) return;
 		prependedParentLoaders.add(loader);
 	}
 	

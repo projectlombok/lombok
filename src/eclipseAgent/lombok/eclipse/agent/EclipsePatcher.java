@@ -109,6 +109,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchRenameField(sm);
 		patchInline(sm);
 		patchNullCheck(sm);
+		patchCrossModuleClassLoading(sm);
 		
 		patchForTests(sm);
 		
@@ -1030,6 +1031,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1, StackRequest.PARAM2)
 				.transplant()
 				.build());
+	}
+	
+	private static void patchCrossModuleClassLoading(ScriptManager sm) {
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
+			.target(new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "<clinit>"))
+			.wrapMethod(new Hook("lombok.launch.PatchFixesHider$ModuleClassLoading", "parserClinit", "void"))
+			.build());
 	}
 	
 	private static void patchForTests(ScriptManager sm) {
