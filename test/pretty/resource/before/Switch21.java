@@ -1,5 +1,5 @@
-// version 19:20
-public class Switch19 {
+// version 21:
+public class Switch21 {
 	String switchPatternMatching(Object o) {
 		return switch (o) {
 			case Integer i	-> String.format("int %d", i);
@@ -21,13 +21,6 @@ public class Switch19 {
 			case String s when s.length() > 1	-> s;
 			case String s 						-> s;
 			default								-> o.toString();
-		};
-	}
-
-	String switchParenthesizedPattern(Object o) {
-		return switch (o) {
-			case (String s)	-> s;
-			default			-> o.toString();
 		};
 	}
 }

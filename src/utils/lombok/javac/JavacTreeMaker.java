@@ -589,9 +589,10 @@ public class JavacTreeMaker {
 	//javac versions: 6-11
 	private static final MethodId<JCCase> Case11 = MethodId("Case", JCCase.class, JCExpression.class, com.sun.tools.javac.util.List.class);
 	//javac version: 12+
-	public static class Case12 {
+	public static class Case {
 		private static final Class<?> CASE_KIND_CLASS = classForName(TreeMaker.class, "com.sun.source.tree.CaseTree$CaseKind");
 		static final MethodId<JCCase> Case12 = MethodId("Case", JCCase.class, CASE_KIND_CLASS, com.sun.tools.javac.util.List.class, com.sun.tools.javac.util.List.class, JCTree.class);
+		static final MethodId<JCCase> Case21 = MethodId("Case", JCCase.class, CASE_KIND_CLASS, com.sun.tools.javac.util.List.class, JCExpression.class, com.sun.tools.javac.util.List.class, JCTree.class);
 		static final Object CASE_KIND_STATEMENT = CASE_KIND_CLASS.getEnumConstants()[0];
 	}
 	
@@ -615,7 +616,10 @@ public class JavacTreeMaker {
 		} else {
 			labels = List.<JCTree>of(pat);
 		}
-		return invoke(Case12.Case12, Case12.CASE_KIND_STATEMENT, labels, stats, null);
+		if (tryResolve(Case.Case12)) {
+			return invoke(Case.Case12, Case.CASE_KIND_STATEMENT, labels, stats, null);
+		}
+		return invoke(Case.Case21, Case.CASE_KIND_STATEMENT, labels, null, stats, null);
 	}
 	
 	//javac versions: 17
