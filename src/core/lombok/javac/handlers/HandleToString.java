@@ -206,7 +206,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				memberAccessor = createFieldAccessor(maker, memberNode, fieldAccess);
 			}
 			
-			JCExpression memberType = getFieldType(memberNode, fieldAccess);
+			JCExpression memberType = removeTypeUseAnnotations(getFieldType(memberNode, fieldAccess));
 			
 			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
 			@SuppressWarnings("unused")

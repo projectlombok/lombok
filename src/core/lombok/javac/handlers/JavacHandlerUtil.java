@@ -586,29 +586,40 @@ public class JavacHandlerUtil {
 	static class RecordComponentReflect {
 		
 		private static final Field astField;
+		private static final Field originalAnnos;
 		private static final Method findRecordComponentToRemove;
 		
 		static {
 			Field a = null;
+			Field o = null;
 			Method m = null;
 			try {
 				Class<?> forName = Class.forName("com.sun.tools.javac.code.Symbol$RecordComponent");
 				a = Permit.permissiveGetField(forName, "ast");
+				o = Permit.permissiveGetField(forName, "originalAnnos");
 				m = Permit.permissiveGetMethod(ClassSymbol.class, "findRecordComponentToRemove", JCVariableDecl.class);
 			} catch (Throwable e) {
 				// Ignore
 			}
 			astField = a;
+			originalAnnos = o;
 			findRecordComponentToRemove = m;
 		}
 		
 		static void deleteAnnotation(JCClassDecl record, JCVariableDecl component, JCTree annotation) {
-			if (astField == null || findRecordComponentToRemove == null) return;
+			if ((astField == null && originalAnnos == null) || findRecordComponentToRemove == null) return;
 			
 			try {
 				Object toRemove = Permit.invokeSneaky(findRecordComponentToRemove, record.sym, component);
-				JCVariableDecl variable = (JCVariableDecl) Permit.get(astField, toRemove);
-				variable.mods.annotations =  filterListByPos(variable.mods.annotations, annotation);
+				if (astField != null) {
+					// OpenJDK
+					JCVariableDecl variable = Permit.get(astField, toRemove);
+					variable.mods.annotations =  filterListByPos(variable.mods.annotations, annotation);
+				} else {
+					// Zulu JDK 17
+					List<JCAnnotation> annotations = Permit.get(originalAnnos, toRemove);
+					Permit.set(originalAnnos, toRemove, filterListByPos(annotations, annotation));
+				}
 			} catch (Throwable e) {
 				// Ignore
 			}
@@ -1212,41 +1223,39 @@ public class JavacHandlerUtil {
 	}
 	
 	static class JCAnnotatedTypeReflect {
-		private static Class<?> TYPE;
-		private static Constructor<?> CONSTRUCTOR;
-		private static Field ANNOTATIONS, UNDERLYING_TYPE;
+		private static final Class<?> TYPE;
+		private static final Constructor<?> CONSTRUCTOR;
+		private static final Field ANNOTATIONS, UNDERLYING_TYPE;
 		
-		private static void initByLoader(ClassLoader classLoader) {
-			if (TYPE != null) return;
-			Class<?> c;
+		static {
+			Class<?> t = null;
+			Constructor<?> c = null;
+			Field a = null;
+			Field u = null;
+			
 			try {
-				c = classLoader.loadClass("com.sun.tools.javac.tree.JCTree$JCAnnotatedType");
+				t = Class.forName("com.sun.tools.javac.tree.JCTree$JCAnnotatedType");
+				c = Permit.getConstructor(t, List.class, JCExpression.class);
+				a = Permit.permissiveGetField(t, "annotations");
+				u = Permit.permissiveGetField(t, "underlyingType");
 			} catch (Exception e) {
-				return;
+				// Ignore
 			}
-			init(c);
-		}
-		
-		private static void init(Class<?> in) {
-			if (TYPE != null) return;
-			if (!in.getName().equals("com.sun.tools.javac.tree.JCTree$JCAnnotatedType")) return;
-			try {
-				CONSTRUCTOR = Permit.getConstructor(in, List.class, JCExpression.class);
-				ANNOTATIONS = Permit.getField(in, "annotations");
-				UNDERLYING_TYPE = Permit.getField(in, "underlyingType");
-				TYPE = in;
-			} catch (Exception ignore) {}
+			
+			TYPE = t;
+			CONSTRUCTOR = c;
+			ANNOTATIONS = a;
+			UNDERLYING_TYPE = u;
 		}
 		
 		static boolean is(JCTree obj) {
 			if (obj == null) return false;
-			init(obj.getClass());
 			return obj.getClass() == TYPE;
 		}
 		
 		@SuppressWarnings("unchecked")
 		static List<JCAnnotation> getAnnotations(JCTree obj) {
-			init(obj.getClass());
+			if (ANNOTATIONS == null) return List.nil();
 			try {
 				return (List<JCAnnotation>) ANNOTATIONS.get(obj);
 			} catch (Exception e) {
@@ -1255,14 +1264,16 @@ public class JavacHandlerUtil {
 		}
 		
 		static void setAnnotations(JCTree obj, List<JCAnnotation> anns) {
-			init(obj.getClass());
+			if (ANNOTATIONS == null) return;
 			try {
 				ANNOTATIONS.set(obj, anns);
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				// Ignore
+			}
 		}
 		
 		static JCExpression getUnderlyingType(JCTree obj) {
-			init(obj.getClass());
+			if (UNDERLYING_TYPE == null) return null;
 			try {
 				return (JCExpression) UNDERLYING_TYPE.get(obj);
 			} catch (Exception e) {
@@ -1271,7 +1282,7 @@ public class JavacHandlerUtil {
 		}
 		
 		static JCExpression create(List<JCAnnotation> annotations, JCExpression underlyingType) {
-			initByLoader(underlyingType.getClass().getClassLoader());
+			if (CONSTRUCTOR == null) return underlyingType;
 			try {
 				return (JCExpression) CONSTRUCTOR.newInstance(annotations, underlyingType);
 			} catch (Exception e) {
