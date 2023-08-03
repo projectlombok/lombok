@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.bytecode;
+package lombok.launch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,10 +29,10 @@ import java.util.List;
 /**
  * Utility to read the constant pool, header, and inheritance information of any class file.
  * 
- * THIS IS A COPY OF lombok.launch.ClassFileMetaData - it is used by the shadowclassloader which can't rely on anything from outside the lombok.launch package, but everything in the launch package has to be package private.
+ * THIS IS A COPY OF lombok.bytecode.ClassFileMetaData - it is used by the shadowclassloader which can't rely on anything from outside the lombok.launch package, but everything in the launch package has to be package private.
  * If there is a bug or an update is needed here - make sure to also update it in the lombok.bytecode package.
  */
-public class ClassFileMetaData {
+class ClassFileMetaData {
 	private static final byte UTF8 = 1;
 	private static final byte INTEGER = 3;
 	private static final byte FLOAT = 4;

@@ -34,6 +34,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -104,6 +105,9 @@ class ShadowClassLoader extends ClassLoader {
 	private final List<String> highlanders = new ArrayList<String>();
 	
 	private final Set<ClassLoader> prependedParentLoaders = Collections.newSetFromMap(new IdentityHashMap<ClassLoader, Boolean>());
+	
+	private final PackageShader shader = new PackageShader(
+		"org/objectweb/asm/", "org/lombokweb/asm/");
 	
 	public void prependParent(ClassLoader loader) {
 		if (loader == null) return;
@@ -470,7 +474,9 @@ class ShadowClassLoader extends ClassLoader {
 	
 	private URL getResource_(String name, boolean noSuper) {
 		String altName = null;
+		name = shader.reverseResourceName(name);
 		if (name.endsWith(".class")) altName = name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
+		
 		for (File ce : override) {
 			URL url = getResourceFromLocation(name, altName, ce);
 			if (url != null) return url;
@@ -542,7 +548,7 @@ class ShadowClassLoader extends ClassLoader {
 		if (res == null) {
 			if (!exclusionListMatch(fileNameOfClass)) {
 				try {
-					// First search in the prepended classloaders, the class might be their already
+					// First search in the prepended classloaders, the class might be there already
 					for (ClassLoader pre : prependedParentLoaders) {
 						try {
 							Class<?> loadClass = pre.loadClass(name);
@@ -588,6 +594,8 @@ class ShadowClassLoader extends ClassLoader {
 		} catch (IOException e) {
 			throw new ClassNotFoundException("I/O exception reading class " + name, e);
 		}
+		
+		shader.apply(b);
 		
 		Class<?> c;
 		try {
