@@ -33,7 +33,8 @@ import lombok.Singular;
  * The SuperBuilder annotation creates a so-called 'builder' aspect to the class that is annotated with {@code @SuperBuilder}, but which works well when extending.
  * It is similar to {@code @Builder}, except it is only legal on types, is less configurable, but allows you to {@code extends} other builder-able classes.
  * <p>
- * All classes in the hierarchy must be annotated with {@code @SuperBuilder}.
+ * All classes in the hierarchy must be annotated with {@code @SuperBuilder}. To relax this requirement, set {@link SuperBuilder#root()} to {@code true}
+ * on the top-most class in the hierarchy which should have a generated builder.
  * <p>
  * Lombok generates 2 inner 'builder' classes, which extend the parent class' builder class (unless your class doesn't have an extends clause).
  * Lombok also generates a static method named {@code builder()}, and a protected constructor that takes 1 argument of the builderclass type.
@@ -81,4 +82,12 @@ public @interface SuperBuilder {
 	 * @return The prefix to prepend to generated method names.
 	 */
 	String setterPrefix() default "";
+
+	/**
+	 * If <code>true</code>, ignore extends clause of the annotated class and do not produce builders for any of its
+	 * superclasses. This will only work if superclasses of the annotated class have default constructors.
+	 *
+	 * @return Whether to stop with super-builder generation at this class.
+	 */
+	boolean root() default false;
 }

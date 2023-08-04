@@ -256,7 +256,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			// A class name with a generics type, e.g., "Superclass<A>".
 			extendsClause = ((JCTypeApply) extendsClause).getType();
 		}
-		if (extendsClause instanceof JCFieldAccess) {
+		if (annInstance.root()) {
+			// This is the root builder, stop generating builder superclasses
+			superclassBuilderClass = null;
+		} else if (extendsClause instanceof JCFieldAccess) {
 			Name superclassName = ((JCFieldAccess) extendsClause).getIdentifier();
 			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(superclassName.toString(), builderClassNameTemplate);
