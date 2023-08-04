@@ -78,7 +78,6 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private final JavacTreeMaker treeMaker;
 	private final Symtab symtab;
 	private final JavacTypes javacTypes;
-	private final Log log;
 	private final ErrorLog errorLogger;
 	private final Context context;
 	private static final URI NOT_CALCULATED_MARKER = URI.create("https://projectlombok.org/not/calculated");
@@ -87,16 +86,16 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	/**
 	 * Creates a new JavacAST of the provided Compilation Unit.
 	 * 
-	 * @param messager A Messager for warning and error reporting.
+	 * @param errorLog A logger for warning and error reporting.
 	 * @param context A Context object for interfacing with the compiler.
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
+	 * @param cleanup The registry for cleanup tasks.
 	 */
-	public JavacAST(Messager messager, Context context, JCCompilationUnit top, CleanupRegistry cleanup) {
+	public JavacAST(ErrorLog errorLog, Context context, JCCompilationUnit top, CleanupRegistry cleanup) {
 		super(sourceName(top), PackageName.getPackageName(top), new JavacImportList(top), statementTypes());
 		setTop(buildCompilationUnit(top));
 		this.context = context;
-		this.log = Log.instance(context);
-		this.errorLogger = ErrorLog.create(messager, log);
+		this.errorLogger = errorLog;
 		this.elements = JavacElements.instance(context);
 		this.treeMaker = new JavacTreeMaker(TreeMaker.instance(context));
 		this.symtab = Symtab.instance(context);
@@ -571,7 +570,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		JCCompilationUnit top = (JCCompilationUnit) top().get();
 		newSource = top.sourcefile;
 		if (newSource != null) {
-			oldSource = log.useSource(newSource);
+			oldSource = errorLogger.useSource(newSource);
 			if (pos == null) pos = astObject.pos();
 		}
 		if (pos != null && node != null && attemptToRemoveErrorsInRange) {
@@ -594,7 +593,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				break;
 			}
 		} finally {
-			if (newSource != null) log.useSource(oldSource);
+			if (newSource != null) errorLogger.useSource(oldSource);
 		}
 	}
 
@@ -645,6 +644,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			this.warningCount = warningCount;
 		}
 
+		final JavaFileObject useSource(JavaFileObject file) {
+			return log.useSource(file);
+		}
+
 		final void error(DiagnosticPosition pos, String message) {
 			increment(errorCount);
 			error1(pos, message);
@@ -675,12 +678,13 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			}
 		}
 		
-		static ErrorLog create(Messager messager, Log log) {
+		static ErrorLog create(Messager messager, Context context) {
 			Field errorCount; try {
 				errorCount = Permit.getField(messager.getClass(), "errorCount");
 			} catch (Throwable t) {
 				errorCount = null;
 			}
+			Log log = Log.instance(context);
 			boolean hasMultipleErrors = false;
 			for (Field field : log.getClass().getFields()) {
 				if (field.getName().equals("multipleErrors")) {
