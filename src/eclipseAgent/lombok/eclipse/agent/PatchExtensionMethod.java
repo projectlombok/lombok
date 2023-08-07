@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2022 The Project Lombok Authors.
+ * Copyright (C) 2012-2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,6 @@ import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
-import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 import org.eclipse.jdt.internal.core.search.matching.MethodPattern;
 
@@ -346,13 +345,7 @@ public class PatchExtensionMethod {
 							arg.resolveType(scope);
 						}
 						if (arg.resolvedType != null) {
-							if (!param.isBaseType() && arg.resolvedType.isBaseType()) {
-								int id = arg.resolvedType.id;
-								arg.implicitConversion = TypeIds.BOXING | (id + (id << 4)); // magic see TypeIds
-							} else if (param.isBaseType() && !arg.resolvedType.isBaseType()) {
-								int id = parameters[i].id;
-								arg.implicitConversion = TypeIds.UNBOXING | (id + (id << 4)); // magic see TypeIds
-							}
+							arg.computeConversion(scope, param, arg.resolvedType);
 						}
 					}
 					
