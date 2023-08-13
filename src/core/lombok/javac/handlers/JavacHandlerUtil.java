@@ -25,6 +25,7 @@ import static com.sun.tools.javac.code.Flags.GENERATEDCONSTR;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacAugments.JCTree_generatedNode;
+import static lombok.javac.JavacAugments.JCTree_keepPosition;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -126,6 +127,7 @@ public class JavacHandlerUtil {
 		
 		@Override public void scan(JCTree tree) {
 			if (tree == null) return;
+			if (JCTree_keepPosition.get(tree)) return;
 			setGeneratedBy(tree, source);
 			super.scan(tree);
 		}
@@ -173,10 +175,11 @@ public class JavacHandlerUtil {
 		}
 		JCTree_generatedNode.set(node, sourceNode.get());
 		
-		if (!inNetbeansEditor(sourceNode.getContext()) || isParameter(node)) {
-			node.pos = sourceNode.getStartPos();
-			storeEnd(node, sourceNode.getEndPosition(), (JCCompilationUnit) sourceNode.top().get());
-		}
+		if (JCTree_keepPosition.get(node)) return node;
+		if (inNetbeansEditor(sourceNode.getContext()) && !isParameter(node)) return node;
+		
+		node.pos = sourceNode.getStartPos();
+		storeEnd(node, sourceNode.getEndPosition(), (JCCompilationUnit) sourceNode.top().get());
 		return node;
 	}
 
