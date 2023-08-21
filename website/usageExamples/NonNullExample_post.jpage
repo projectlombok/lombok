@@ -1,3 +1,4 @@
+
 public class NonNullExample extends Something {
 	private String name;
 	
