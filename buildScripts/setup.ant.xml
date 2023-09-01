@@ -314,13 +314,14 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	</macrodef>
 	
 	<target name="deps" depends="ivy.config, deps.jdk-runtime" description="Downloads all dependencies needed for common tasks">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="javac6,javac8,ecj8,build,ant-plugin,eclipse-oxygen,mapstruct,sources,stripe,buildtools,test" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="javac6,javac8,ecj8,build,ant-plugin,maven-plugin,eclipse-oxygen,mapstruct,sources,stripe,buildtools,test" />
 		<ivy:retrieve symlink="true" />
 		<ivy:cachepath pathid="cp.javac6" conf="javac6" />
 		<ivy:cachepath pathid="cp.javac8" conf="javac8" />
 		<ivy:cachepath pathid="cp.ecj8" conf="ecj8" />
 		<ivy:cachepath pathid="cp.build" conf="build" />
 		<ivy:cachepath pathid="cp.ant-plugin" conf="ant-plugin" />
+		<ivy:cachepath pathid="cp.maven-plugin" conf="maven-plugin" />
 		<ivy:cachepath pathid="cp.eclipse-oxygen" conf="eclipse-oxygen" />
 		<ivy:cachepath pathid="cp.mapstruct" conf="mapstruct" />
 		<ivy:cachepath pathid="cp.stripe" conf="stripe" />

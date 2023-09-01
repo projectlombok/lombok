@@ -199,6 +199,16 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 			<annotationProcessor jar="dist/spiProcessor.jar" processor="lombok.spi.SpiProcessor" />
 		</ivy:compile>
 		
+		<ivy:compile destdir="build/lombok-main" source="1.6" target="1.6" ecj="true" nowarn="true">
+			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${jdk6-rt.loc}" />
+			<src path="src/maven-plugin" />
+			<classpath refid="cp.build" />
+			<classpath refid="cp.maven-plugin" />
+			<classpath path="build/lombok-utils:build/lombok-utils6:build/lombok-main:dist/spiProcessor.jar" />
+			<annotationProcessor jar="dist/spiProcessor.jar" processor="lombok.spi.SpiProcessor" />
+		</ivy:compile>
+		
 		<!-- This is really part of the eclipse agent, but references lombok, so that had to be compiled first -->
 		<ivy:compile destdir="build/lombok-main/Class50" source="1.5" target="1.6" ecj="true">
 			<bootclasspath location="build/stubs" />
@@ -235,6 +245,20 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 		<mkdir dir="build/lombok-main/META-INF/gradle" />
 		<echo file="build/lombok-main/META-INF/gradle/incremental.annotation.processors">lombok.launch.AnnotationProcessorHider$AnnotationProcessor,isolating
 lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
+		<mkdir dir="build/lombok-main/META-INF/plexus" />
+		<echo file="build/lombok-main/META-INF/plexus/components.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<component-set>
+	<components>
+		<component>
+			<role>org.codehaus.plexus.compiler.Compiler</role>
+			<role-hint>lombok</role-hint>
+			<implementation>lombok.mavenplugin.LombokedJavacCompiler</implementation>
+			<description />
+			<isolated-realm>false</isolated-realm>
+		</component>
+	</components>
+</component-set>
+]]></echo>
 	</target>
 	
 	<!-- compiles the bit of API from mapstruct that lombok compiles against. -->
@@ -275,6 +299,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 				<include name="lombok/extern/**" />
 				<include name="lombok/launch/**" />
 				<include name="lombok/delombok/ant/Tasks*" />
+				<include name="lombok/mavenplugin/*" />
 				<include name="lombok/javac/apt/Processor.class" />
 				<include name="lombok/META-INF/**" />
 			</patternset>

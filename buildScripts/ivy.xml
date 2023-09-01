@@ -17,6 +17,7 @@
 		<conf name="sources" />
 		
 		<conf name="ant-plugin" />
+		<conf name="maven-plugin" />
 		
 		<!-- and now for custom configs for testing lombok against -->
 		
@@ -42,6 +43,8 @@
 		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build,stripe->runtime" />
 		<dependency org="org.apache.ant" name="ant" rev="1.10.5" conf="ant-plugin->default" />
 		<dependency org="org.apache.ant" name="ant-junit" rev="1.10.5" conf="ant-plugin->default" />
+		<dependency org="org.codehaus.plexus" name="plexus-compiler-javac" rev="2.13.0" conf="maven-plugin->default" />
+		<dependency org="org.codehaus.plexus" name="plexus-container-default" rev="2.1.1" conf="maven-plugin->default" />
 
 		<!-- test deps -->
 		<dependency org="junit" name="junit" rev="4.13.2" conf="test->default; sources" />

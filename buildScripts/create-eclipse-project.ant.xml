@@ -34,6 +34,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			<srcdir dir="src/launch" />
 			<srcdir dir="src/utils" />
 			<srcdir dir="src/ant-plugin" />
+			<srcdir dir="src/maven-plugin" />
 			<srcdir dir="src/eclipseAgent" />
 			<srcdir dir="src/mavenEcjBootstrapAgent" />
 			<srcdir dir="src/installer" />
@@ -52,6 +53,7 @@ This buildfile is part of projectlombok.org. It creates the infrastructure neede
 			<conf name="test" sources="sources" />
 			<conf name="buildtools" sources="sources" />
 			<conf name="ant-plugin" sources="sources" />
+			<conf name="maven-plugin" sources="sources" />
 			<local org="org.projectlombok" name="lombok.patcher" dir="../lombok.patcher" />
 			<settings>
 				<url url="https://projectlombok.org/downloads/lombok.eclipse.settings" />
