@@ -181,11 +181,20 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 			<src path="src/core" />
 			<src path="src/installer" />
 			<src path="src/eclipseAgent" />
-			<src path="src/delombok" />
 			<exclude name="**/*Transplants.java" />
 			<classpath refid="cp.build" />
 			<classpath refid="cp.eclipse-oxygen" />
 			<classpath refid="cp.javac6" />
+			<classpath path="build/lombok-utils:build/lombok-utils6:build/lombok-main:dist/spiProcessor.jar" />
+			<annotationProcessor jar="dist/spiProcessor.jar" processor="lombok.spi.SpiProcessor" />
+		</ivy:compile>
+		
+		<ivy:compile destdir="build/lombok-main" source="1.6" target="1.6" ecj="true" nowarn="true">
+			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${jdk6-rt.loc}" />
+			<src path="src/ant-plugin" />
+			<classpath refid="cp.build" />
+			<classpath refid="cp.ant-plugin" />
 			<classpath path="build/lombok-utils:build/lombok-utils6:build/lombok-main:dist/spiProcessor.jar" />
 			<annotationProcessor jar="dist/spiProcessor.jar" processor="lombok.spi.SpiProcessor" />
 		</ivy:compile>

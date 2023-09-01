@@ -16,6 +16,8 @@
 		<!-- sources of various dependencies where having the sources is useful (for example for debugging purposes) -->
 		<conf name="sources" />
 		
+		<conf name="ant-plugin" />
+		
 		<!-- and now for custom configs for testing lombok against -->
 		
 		<conf name="javac6" />
@@ -38,9 +40,9 @@
 		
 		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.46" conf="build,stripe->default" />
 		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build,stripe->runtime" />
-		<dependency org="org.apache.ant" name="ant" rev="1.10.5" conf="build->default" />
-		<dependency org="org.apache.ant" name="ant-junit" rev="1.10.5" conf="build->default" />
-		
+		<dependency org="org.apache.ant" name="ant" rev="1.10.5" conf="ant-plugin->default" />
+		<dependency org="org.apache.ant" name="ant-junit" rev="1.10.5" conf="ant-plugin->default" />
+
 		<!-- test deps -->
 		<dependency org="junit" name="junit" rev="4.13.2" conf="test->default; sources" />
 		<dependency org="log4j" name="log4j" rev="1.2.17" conf="test->default; sources" />
