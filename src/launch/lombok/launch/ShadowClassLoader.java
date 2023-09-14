@@ -473,7 +473,7 @@ class ShadowClassLoader extends ClassLoader {
 	
 	private URL getResource_(String name, boolean noSuper) {
 		String altName = null;
-		name = shader.reverseResourceName(name);
+		name = shader == null ? name : shader.reverseResourceName(name);
 		if (name.endsWith(".class")) altName = name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
 		
 		for (File ce : override) {
@@ -594,7 +594,7 @@ class ShadowClassLoader extends ClassLoader {
 			throw new ClassNotFoundException("I/O exception reading class " + name, e);
 		}
 		
-		shader.apply(b);
+		if (shader != null) shader.apply(b);
 		
 		Class<?> c;
 		try {
