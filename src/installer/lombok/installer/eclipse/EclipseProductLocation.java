@@ -30,15 +30,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.installer.CorruptedIdeLocationException;
-import lombok.installer.OsUtils;
 import lombok.installer.IdeLocation;
 import lombok.installer.InstallException;
 import lombok.installer.Installer;
+import lombok.installer.OsUtils;
 import lombok.installer.UninstallException;
 
 /**
@@ -51,40 +54,45 @@ public final class EclipseProductLocation extends IdeLocation {
 	private static final String OS_NEWLINE = OsUtils.getOS().getLineEnding();
 	
 	private final EclipseProductDescriptor descriptor;
-	private final String name;
-	private final File eclipseIniPath;
-	private final String pathToLombokJarPrefix;
-	private final boolean hasLombok;
+	private final String[] name;
+	private final File[] eclipseIniPath;
+	private final String[] pathToLombokJarPrefix;
+	private final boolean[] hasLombok;
 	
-	EclipseProductLocation(EclipseProductDescriptor descriptor, String nameOfLocation, File pathToEclipseIni) throws CorruptedIdeLocationException {
+	EclipseProductLocation(EclipseProductDescriptor descriptor, String[] nameOfLocation, File[] pathToEclipseIni) throws CorruptedIdeLocationException {
 		this.descriptor = descriptor;
 		this.name = nameOfLocation;
 		this.eclipseIniPath = pathToEclipseIni;
-		File p1 = pathToEclipseIni.getParentFile();
-		File p2 = p1 == null ? null : p1.getParentFile();
-		File p3 = p2 == null ? null : p2.getParentFile();
-		if (p1 != null && p1.getName().equals("Eclipse") && p2 != null && p2.getName().equals("Contents") && p3 != null && p3.getName().endsWith(".app")) {
-			this.pathToLombokJarPrefix = "../Eclipse/";
-		} else {
-			this.pathToLombokJarPrefix = "";
-		}
+		this.pathToLombokJarPrefix = new String[pathToEclipseIni.length];
+		this.hasLombok = new boolean[pathToEclipseIni.length];
 		
-		try {
-			this.hasLombok = checkForLombok(eclipseIniPath);
-		} catch (IOException e) {
-			throw new CorruptedIdeLocationException(
-					"I can't read the configuration file of the " + descriptor.getProductName() + " installed at " + name + "\n" +
-					"You may need to run this installer with root privileges if you want to modify that " + descriptor.getProductName() + ".", descriptor.getProductName(), e);
+		for (int i = 0; i < pathToEclipseIni.length; i++) {
+			File p1 = pathToEclipseIni[i].getParentFile();
+			File p2 = p1 == null ? null : p1.getParentFile();
+			File p3 = p2 == null ? null : p2.getParentFile();
+			if (p1 != null && p1.getName().equals("Eclipse") && p2 != null && p2.getName().equals("Contents") && p3 != null && p3.getName().endsWith(".app")) {
+				this.pathToLombokJarPrefix[i] = "../Eclipse/";
+			} else {
+				this.pathToLombokJarPrefix[i] = "";
+			}
+			
+			try {
+				this.hasLombok[i] = checkForLombok(eclipseIniPath[i]);
+			} catch (IOException e) {
+				throw new CorruptedIdeLocationException(
+						"I can't read the configuration file of the " + descriptor.getProductName() + " installed at " + name + "\n" +
+						"You may need to run this installer with root privileges if you want to modify that " + descriptor.getProductName() + ".", descriptor.getProductName(), e);
+			}
 		}
 	}
 	
 	@Override public int hashCode() {
-		return eclipseIniPath.hashCode();
+		return Arrays.hashCode(eclipseIniPath);
 	}
 	
 	@Override public boolean equals(Object o) {
 		if (!(o instanceof EclipseProductLocation)) return false;
-		return ((EclipseProductLocation)o).eclipseIniPath.equals(eclipseIniPath);
+		return Arrays.deepEquals(((EclipseProductLocation)o).eclipseIniPath, eclipseIniPath);
 	}
 	
 	/**
@@ -92,7 +100,7 @@ public final class EclipseProductLocation extends IdeLocation {
 	 */
 	@Override
 	public String getName() {
-		return name;
+		return name[0];
 	}
 	
 	/**
@@ -100,7 +108,11 @@ public final class EclipseProductLocation extends IdeLocation {
 	 */
 	@Override
 	public boolean hasLombok() {
-		return hasLombok;
+		for (int i = 0; i < hasLombok.length; i++) {
+			if (!hasLombok[i]) return false;
+		}
+		
+		return true;
 	}
 	
 	private static final Pattern JAVA_AGENT_LINE_MATCHER = Pattern.compile(
@@ -131,12 +143,17 @@ public final class EclipseProductLocation extends IdeLocation {
 	
 	/** Returns directories that may contain lombok.jar files that need to be deleted. */
 	private List<File> getUninstallDirs() {
-		List<File> result = new ArrayList<File>();
-		File x = new File(name);
-		if (!x.isDirectory()) x = x.getParentFile();
-		if (x.isDirectory()) result.add(x);
-		result.add(eclipseIniPath.getParentFile());
-		return result;
+		Set<String> result = new HashSet<String>();
+		for (int i = 0; i < name.length; i++) {
+			File x = new File(name[i]);
+			if (!x.isDirectory()) x = x.getParentFile();
+			if (x.isDirectory()) result.add(x.getAbsolutePath());
+			result.add(eclipseIniPath[i].getAbsolutePath());
+		}
+		
+		List<File> out = new ArrayList<File>();
+		for (String r : result) out.add(new File(r));
+		return out;
 	}
 	
 	/**
@@ -153,77 +170,79 @@ public final class EclipseProductLocation extends IdeLocation {
 	public void uninstall() throws UninstallException {
 		final List<File> lombokJarsForWhichCantDeleteSelf = new ArrayList<File>();
 		StringBuilder newContents = new StringBuilder();
-		if (eclipseIniPath.exists()) {
-			try {
-				FileInputStream fis = new FileInputStream(eclipseIniPath);
+		for (int i = 0; i < eclipseIniPath.length; i++) {
+			if (eclipseIniPath[i].exists()) {
 				try {
-					BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-					String line;
-					while ((line = br.readLine()) != null) {
-						if (JAVA_AGENT_LINE_MATCHER.matcher(line).matches()) continue;
-						Matcher m = BOOTCLASSPATH_LINE_MATCHER.matcher(line);
-						if (m.matches()) {
-							StringBuilder elemBuilder = new StringBuilder();
-							elemBuilder.append("-Xbootclasspath/a:");
-							boolean first = true;
-							for (String elem : m.group(1).split(Pattern.quote(File.pathSeparator))) {
-								if (elem.toLowerCase().endsWith("lombok.jar")) continue;
-								/* legacy code -see previous comment that starts with 'legacy' */ {
-									if (elem.toLowerCase().endsWith("lombok.eclipse.agent.jar")) continue;
+					FileInputStream fis = new FileInputStream(eclipseIniPath[i]);
+					try {
+						BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+						String line;
+						while ((line = br.readLine()) != null) {
+							if (JAVA_AGENT_LINE_MATCHER.matcher(line).matches()) continue;
+							Matcher m = BOOTCLASSPATH_LINE_MATCHER.matcher(line);
+							if (m.matches()) {
+								StringBuilder elemBuilder = new StringBuilder();
+								elemBuilder.append("-Xbootclasspath/a:");
+								boolean first = true;
+								for (String elem : m.group(1).split(Pattern.quote(File.pathSeparator))) {
+									if (elem.toLowerCase().endsWith("lombok.jar")) continue;
+									/* legacy code -see previous comment that starts with 'legacy' */ {
+										if (elem.toLowerCase().endsWith("lombok.eclipse.agent.jar")) continue;
+									}
+									if (first) first = false;
+									else elemBuilder.append(File.pathSeparator);
+									elemBuilder.append(elem);
 								}
-								if (first) first = false;
-								else elemBuilder.append(File.pathSeparator);
-								elemBuilder.append(elem);
+								if (!first) newContents.append(elemBuilder.toString()).append(OS_NEWLINE);
+								continue;
 							}
-							if (!first) newContents.append(elemBuilder.toString()).append(OS_NEWLINE);
-							continue;
+							
+							newContents.append(line).append(OS_NEWLINE);
 						}
-						
-						newContents.append(line).append(OS_NEWLINE);
+						br.close();
+					} finally {
+						fis.close();
 					}
-					br.close();
-				} finally {
-					fis.close();
+					
+					FileOutputStream fos = new FileOutputStream(eclipseIniPath[i]);
+					try {
+						fos.write(newContents.toString().getBytes());
+					} finally {
+						fos.close();
+					}
+				} catch (IOException e) {
+					throw new UninstallException("Cannot uninstall lombok from " + name + generateWriteErrorMessage(), e);
+				}
+			}
+			
+			for (File dir : getUninstallDirs()) {
+				File lombokJar = new File(dir, "lombok.jar");
+				if (lombokJar.exists()) {
+					if (!lombokJar.delete()) {
+						if (OsUtils.getOS() == OsUtils.OS.WINDOWS && Installer.isSelf(lombokJar.getAbsolutePath())) {
+							lombokJarsForWhichCantDeleteSelf.add(lombokJar);
+						} else {
+							throw new UninstallException(
+								"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
+						}
+					}
 				}
 				
-				FileOutputStream fos = new FileOutputStream(eclipseIniPath);
-				try {
-					fos.write(newContents.toString().getBytes());
-				} finally {
-					fos.close();
-				}
-			} catch (IOException e) {
-				throw new UninstallException("Cannot uninstall lombok from " + name + generateWriteErrorMessage(), e);
-			}
-		}
-		
-		for (File dir : getUninstallDirs()) {
-			File lombokJar = new File(dir, "lombok.jar");
-			if (lombokJar.exists()) {
-				if (!lombokJar.delete()) {
-					if (OsUtils.getOS() == OsUtils.OS.WINDOWS && Installer.isSelf(lombokJar.getAbsolutePath())) {
-						lombokJarsForWhichCantDeleteSelf.add(lombokJar);
-					} else {
-						throw new UninstallException(
-							"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
+				/* legacy code - lombok at one point used to have a separate jar for the eclipse agent.
+				 * Leave this code in to delete it for those upgrading from an old version. */ {
+					File agentJar = new File(dir, "lombok.eclipse.agent.jar");
+					if (agentJar.exists()) {
+						agentJar.delete();
 					}
 				}
 			}
 			
-			/* legacy code - lombok at one point used to have a separate jar for the eclipse agent.
-			 * Leave this code in to delete it for those upgrading from an old version. */ {
-				File agentJar = new File(dir, "lombok.eclipse.agent.jar");
-				if (agentJar.exists()) {
-					agentJar.delete();
-				}
+			if (!lombokJarsForWhichCantDeleteSelf.isEmpty()) {
+				throw new UninstallException(true, String.format(
+						"lombok.jar cannot delete itself on windows.\nHowever, lombok has been uncoupled from your %s.\n" +
+						"You can safely delete this jar file. You can find it at:\n%s",
+						descriptor.getProductName(), lombokJarsForWhichCantDeleteSelf.get(0).getAbsolutePath()), null);
 			}
-		}
-		
-		if (!lombokJarsForWhichCantDeleteSelf.isEmpty()) {
-			throw new UninstallException(true, String.format(
-					"lombok.jar cannot delete itself on windows.\nHowever, lombok has been uncoupled from your %s.\n" +
-					"You can safely delete this jar file. You can find it at:\n%s",
-					descriptor.getProductName(), lombokJarsForWhichCantDeleteSelf.get(0).getAbsolutePath()), null);
 		}
 	}
 	
@@ -265,110 +284,113 @@ public final class EclipseProductLocation extends IdeLocation {
 		boolean installSucceeded = false;
 		StringBuilder newContents = new StringBuilder();
 		
-		File lombokJar = new File(eclipseIniPath.getParentFile(), "lombok.jar");
-		
-		/* No need to copy lombok.jar to itself, obviously. On windows this would generate an error so we check for this. */
-		if (!Installer.isSelf(lombokJar.getAbsolutePath())) {
-			File ourJar = findOurJar();
-			byte[] b = new byte[524288];
-			boolean readSucceeded = true;
-			try {
-				FileOutputStream out = new FileOutputStream(lombokJar);
+		for (int i = 0; i < eclipseIniPath.length; i++) {
+			installSucceeded = false;
+			File lombokJar = new File(eclipseIniPath[i].getParentFile(), "lombok.jar");
+			
+			/* No need to copy lombok.jar to itself, obviously. On windows this would generate an error so we check for this. */
+			if (!Installer.isSelf(lombokJar.getAbsolutePath())) {
+				File ourJar = findOurJar();
+				byte[] b = new byte[524288];
+				boolean readSucceeded = true;
 				try {
-					readSucceeded = false;
-					InputStream in = new FileInputStream(ourJar);
+					FileOutputStream out = new FileOutputStream(lombokJar);
 					try {
-						while (true) {
-							int r = in.read(b);
-							if (r == -1) break;
-							if (r > 0) readSucceeded = true;
-							out.write(b, 0, r);
+						readSucceeded = false;
+						InputStream in = new FileInputStream(ourJar);
+						try {
+							while (true) {
+								int r = in.read(b);
+								if (r == -1) break;
+								if (r > 0) readSucceeded = true;
+								out.write(b, 0, r);
+							}
+						} finally {
+							in.close();
 						}
 					} finally {
-						in.close();
+						out.close();
 					}
-				} finally {
-					out.close();
+				} catch (IOException e) {
+					try {
+						lombokJar.delete();
+					} catch (Throwable ignore) { /* Nothing we can do about that. */ }
+					if (!readSucceeded) {
+						throw new InstallException(
+							"I can't read my own jar file (trying: " + ourJar.toString() + "). I think you've found a bug in this installer!\nI suggest you restart it " +
+							"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
+							"http://groups.google.com/group/project-lombok - Thanks!\n\n[DEBUG INFO] " + e.getClass() + ": " + e.getMessage() + "\nBase: " + OsUtils.class.getResource("OsUtils.class"), e);
+					}
+					throw new InstallException("I can't write to your " + descriptor.getProductName() + " directory at " + name + generateWriteErrorMessage(), e);
 				}
-			} catch (IOException e) {
+			}
+			
+			/* legacy - delete lombok.eclipse.agent.jar if its there, which lombok no longer uses. */ {
+				new File(lombokJar.getParentFile(), "lombok.eclipse.agent.jar").delete();
+			}
+			
+			try {
+				FileInputStream fis = new FileInputStream(eclipseIniPath[i]);
 				try {
-					lombokJar.delete();
-				} catch (Throwable ignore) { /* Nothing we can do about that. */ }
-				if (!readSucceeded) {
-					throw new InstallException(
-						"I can't read my own jar file (trying: " + ourJar.toString() + "). I think you've found a bug in this installer!\nI suggest you restart it " +
-						"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
-						"http://groups.google.com/group/project-lombok - Thanks!\n\n[DEBUG INFO] " + e.getClass() + ": " + e.getMessage() + "\nBase: " + OsUtils.class.getResource("OsUtils.class"), e);
-				}
-				throw new InstallException("I can't write to your " + descriptor.getProductName() + " directory at " + name + generateWriteErrorMessage(), e);
-			}
-		}
-		
-		/* legacy - delete lombok.eclipse.agent.jar if its there, which lombok no longer uses. */ {
-			new File(lombokJar.getParentFile(), "lombok.eclipse.agent.jar").delete();
-		}
-		
-		try {
-			FileInputStream fis = new FileInputStream(eclipseIniPath);
-			try {
-				BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-				String line;
-				while ((line = br.readLine()) != null) {
-					if (JAVA_AGENT_LINE_MATCHER.matcher(line).matches()) continue;
-					Matcher m = BOOTCLASSPATH_LINE_MATCHER.matcher(line);
-					if (m.matches()) {
-						StringBuilder elemBuilder = new StringBuilder();
-						elemBuilder.append("-Xbootclasspath/a:");
-						boolean first = true;
-						for (String elem : m.group(1).split(Pattern.quote(File.pathSeparator))) {
-							if (elem.toLowerCase().endsWith("lombok.jar")) continue;
-							/* legacy code -see previous comment that starts with 'legacy' */ {
-								if (elem.toLowerCase().endsWith("lombok.eclipse.agent.jar")) continue;
+					BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+					String line;
+					while ((line = br.readLine()) != null) {
+						if (JAVA_AGENT_LINE_MATCHER.matcher(line).matches()) continue;
+						Matcher m = BOOTCLASSPATH_LINE_MATCHER.matcher(line);
+						if (m.matches()) {
+							StringBuilder elemBuilder = new StringBuilder();
+							elemBuilder.append("-Xbootclasspath/a:");
+							boolean first = true;
+							for (String elem : m.group(1).split(Pattern.quote(File.pathSeparator))) {
+								if (elem.toLowerCase().endsWith("lombok.jar")) continue;
+								/* legacy code -see previous comment that starts with 'legacy' */ {
+									if (elem.toLowerCase().endsWith("lombok.eclipse.agent.jar")) continue;
+								}
+								if (first) first = false;
+								else elemBuilder.append(File.pathSeparator);
+								elemBuilder.append(elem);
 							}
-							if (first) first = false;
-							else elemBuilder.append(File.pathSeparator);
-							elemBuilder.append(elem);
+							if (!first) newContents.append(elemBuilder.toString()).append(OS_NEWLINE);
+							continue;
 						}
-						if (!first) newContents.append(elemBuilder.toString()).append(OS_NEWLINE);
-						continue;
+						
+						newContents.append(line).append(OS_NEWLINE);
 					}
-					
-					newContents.append(line).append(OS_NEWLINE);
+					br.close();
+				} finally {
+					fis.close();
 				}
-				br.close();
+				
+				String pathPrefix;
+				if (fullPathRequired) {
+					pathPrefix = lombokJar.getParentFile().getCanonicalPath() + File.separator;
+				} else {
+					pathPrefix = pathToLombokJarPrefix[i];
+				}
+				
+				// NB: You may be tempted to escape this, but don't; there is no possibility to escape this, but
+				// eclipse/java reads the string following the colon in 'raw' fashion. Spaces, colons - all works fine.
+				newContents.append(String.format(
+					"-javaagent:%s", pathPrefix + "lombok.jar")).append(OS_NEWLINE);
+				
+				FileOutputStream fos = new FileOutputStream(eclipseIniPath[i]);
+				try {
+					fos.write(newContents.toString().getBytes());
+				} finally {
+					fos.close();
+				}
+				installSucceeded = true;
+			} catch (IOException e) {
+				throw new InstallException("Cannot install lombok at " + name + generateWriteErrorMessage(), e);
 			} finally {
-				fis.close();
+				if (!installSucceeded) try {
+					lombokJar.delete();
+				} catch (Throwable ignore) {}
 			}
 			
-			String pathPrefix;
-			if (fullPathRequired) {
-				pathPrefix = lombokJar.getParentFile().getCanonicalPath() + File.separator;
-			} else {
-				pathPrefix = pathToLombokJarPrefix;
+			if (!installSucceeded) {
+				throw new InstallException("I can't find the " + descriptor.getIniFileName() + " file. Is this a real " + descriptor.getProductName() + " installation?", null);
 			}
-			
-			// NB: You may be tempted to escape this, but don't; there is no possibility to escape this, but
-			// eclipse/java reads the string following the colon in 'raw' fashion. Spaces, colons - all works fine.
-			newContents.append(String.format(
-				"-javaagent:%s", pathPrefix + "lombok.jar")).append(OS_NEWLINE);
-			
-			FileOutputStream fos = new FileOutputStream(eclipseIniPath);
-			try {
-				fos.write(newContents.toString().getBytes());
-			} finally {
-				fos.close();
-			}
-			installSucceeded = true;
-		} catch (IOException e) {
-			throw new InstallException("Cannot install lombok at " + name + generateWriteErrorMessage(), e);
-		} finally {
-			if (!installSucceeded) try {
-				lombokJar.delete();
-			} catch (Throwable ignore) {}
-		}
-		
-		if (!installSucceeded) {
-			throw new InstallException("I can't find the " + descriptor.getIniFileName() + " file. Is this a real " + descriptor.getProductName() + " installation?", null);
 		}
 		
 		return "If you start " + descriptor.getProductName() + " with a custom -vm parameter, you'll need to add:<br>" +

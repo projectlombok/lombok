@@ -69,12 +69,12 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 			}
 			
 			File f = new File(p, iniName);
-			if (f.exists()) return makeLocation(canonical(p), f);
+			if (f.exists()) return makeLocation(new String[] {canonical(p)}, new File[] {f});
 		}
 		
 		if (p.isFile()) {
 			if (p.getName().equalsIgnoreCase(iniName)) {
-				return makeLocation(canonical(p.getParentFile()), p);
+				return makeLocation(new String[] {canonical(p.getParentFile())}, new File[] {p});
 			}
 		}
 		
@@ -87,20 +87,43 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 	
 	private IdeLocation findEclipseIniFromExe(File exePath, int loopCounter) throws CorruptedIdeLocationException {
 		String iniName = descriptor.getIniFileName();
+		List<Object> foundResults = new ArrayList<Object>(); // even indices are the canonical path (Strings), the immediately following odd index is the file. (java.io.File).
 		/* Try looking for eclipse.ini as sibling to the executable */ {
 			File ini = new File(exePath.getParentFile(), iniName);
-			if (ini.isFile()) return makeLocation(canonical(exePath), ini);
+			if (ini.isFile()) {
+				foundResults.add(canonical(exePath));
+				foundResults.add(ini);
+			}
 		}
 		
 		String macAppName = descriptor.getMacAppName();
-		/* Try looking for Eclipse.app/Contents/MacOS/eclipse.ini as sibling to executable; this works on Mac OS X. */ {
-			File ini = new File(exePath.getParentFile(), macAppName + "/Contents/MacOS/" + iniName);
-			if (ini.isFile()) return makeLocation(canonical(exePath), ini);
-		}
 		
 		/* Starting with Eclipse Mars (with the oomph installer), the structure has changed, and it's now at Eclipse.app/Contents/Eclipse/eclipse.ini*/ {
 			File ini = new File(exePath.getParentFile(), macAppName + "/Contents/Eclipse/" + iniName);
-			if (ini.isFile()) return makeLocation(canonical(exePath), ini);
+			if (ini.isFile()) {
+				foundResults.add(canonical(exePath));
+				foundResults.add(ini);
+			}
+		}
+		
+		/* Try looking for Eclipse.app/Contents/MacOS/eclipse.ini as sibling to executable; this works on Mac OS X. */ {
+			File ini = new File(exePath.getParentFile(), macAppName + "/Contents/MacOS/" + iniName);
+			if (ini.isFile()) {
+				foundResults.add(canonical(exePath));
+				foundResults.add(ini);
+			}
+		}
+		
+		if (foundResults.size() > 0) {
+			String[] paths = new String[foundResults.size() / 2];
+			File[] files = new File[paths.length];
+			
+			for (int i = 0; i < paths.length; i++) {
+				paths[i] = (String) foundResults.get(i * 2);
+				files[i] = (File) foundResults.get((i * 2) + 1);
+			}
+			
+			return makeLocation(paths, files);
 		}
 		
 		/* If executable is a soft link, follow it and retry. */ {
@@ -127,13 +150,13 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 			String unixAppName = descriptor.getUnixAppName();
 			if (path.equals("/usr/bin/" + unixAppName) || path.equals("/bin/" + unixAppName) || path.equals("/usr/local/bin/" + unixAppName)) {
 				File ini = new File("/usr/lib/" + unixAppName + "/" + iniName);
-				if (ini.isFile()) return makeLocation(path, ini);
+				if (ini.isFile()) return makeLocation(new String[] {path}, new File[] {ini});
 				ini = new File("/usr/local/lib/" + unixAppName + "/" + iniName);
-				if (ini.isFile()) return makeLocation(path, ini);
+				if (ini.isFile()) return makeLocation(new String[] {path}, new File[] {ini});
 				ini = new File("/usr/local/etc/" + unixAppName + "/" + iniName);
-				if (ini.isFile()) return makeLocation(path, ini);
+				if (ini.isFile()) return makeLocation(new String[] {path}, new File[] {ini});
 				ini = new File("/etc/" + iniName);
-				if (ini.isFile()) return makeLocation(path, ini);
+				if (ini.isFile()) return makeLocation(new String[] {path}, new File[] {ini});
 			}
 		}
 		
@@ -141,7 +164,7 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 		return null;
 	}
 	
-	private IdeLocation makeLocation(String name, File ini) throws CorruptedIdeLocationException {
+	private IdeLocation makeLocation(String[] name, File[] ini) throws CorruptedIdeLocationException {
 		return new EclipseProductLocation(descriptor, name, ini);
 	}
 	
