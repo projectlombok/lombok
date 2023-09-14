@@ -21,17 +21,17 @@ The gradle version to be used. Supported values:
 (To be executed from the `<lombokhome>/docker` directory)
 
 ```
-docker build -t lombok-gradle-jdk16 -f gradle/Dockerfile .
+docker build -t lombok-gradle-jdk17 -f gradle/Dockerfile .
 
-docker build -t lombok-gradle-jdk16 --build-arg lombokjar=lombok-1.18.20.jar -f gradle/Dockerfile .
+docker build -t lombok-gradle-jdk17 --build-arg lombokjar=lombok-1.18.20.jar -f gradle/Dockerfile .
 ```
 
 ## Example run commands:
 
 ```
-docker run -it lombok-gradle-jdk16
+docker run -it lombok-gradle-jdk17
 
-docker run --rm -it -v /<lombokhome>/dist/lombok.jar:/workspace/classpath/lombok.jar lombok-gradle-jdk16
+docker run --rm -it -v /<lombokhome>/dist/lombok.jar:/workspace/classpath/lombok.jar lombok-gradle-jdk17
 ```
 
 ## Example container commands:
