@@ -82,18 +82,18 @@ class PackageShader {
 			startPoints[0] = offset;
 			maxStartPoints = 1;
 			
-			for (int i = offset; i < offset + len; i++) {
-				if (b[i] == 'L') startPoints[maxStartPoints++] = offset + 1;
+			for (int i = offset, max = offset + len; i < max; i++) {
+				if (b[i] == 'L') startPoints[maxStartPoints++] = i + 1;
 			}
 			
-			outer: for (int i = 0; i < froms.length; i++) {
-				for (int startPointIdx = 0; startPointIdx < maxStartPoints; startPointIdx++) {
+			for (int i = 0; i < froms.length; i++) {
+				outer: for (int startPointIdx = 0; startPointIdx < maxStartPoints; startPointIdx++) {
 					int indexIntoSignature = startPoints[startPointIdx];
-					if (len - indexIntoSignature < froms[i].length) continue;
+					if (len - (indexIntoSignature - offset) < froms[i].length) continue;
 					for (int p = 0; p < froms[i].length; p++) {
-						if (b[offset + indexIntoSignature + p] != froms[i][p]) continue outer;
+						if (b[indexIntoSignature + p] != froms[i][p]) continue outer;
 					}
-					System.arraycopy(tos[i], 0, b, offset + indexIntoSignature, tos[i].length);
+					System.arraycopy(tos[i], 0, b, indexIntoSignature, tos[i].length);
 					changes = true;
 				}
 			}
