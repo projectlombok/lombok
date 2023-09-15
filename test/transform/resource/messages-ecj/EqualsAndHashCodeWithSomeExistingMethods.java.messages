@@ -1,1 +1,1 @@
-5 Not generating equals: One of equals or hashCode exists. You should either write both of these or none of these (in the latter case, lombok generates them).
+4 Not generating equals: One of equals or hashCode exists. You should either write both of these or none of these (in the latter case, lombok generates them).
