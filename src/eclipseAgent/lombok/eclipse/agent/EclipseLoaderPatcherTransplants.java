@@ -52,21 +52,26 @@ public class EclipseLoaderPatcherTransplants {
 	}
 	
 	public static Class overrideLoadResult(ClassLoader original, String name, boolean resolve) throws ClassNotFoundException {
+		boolean bootstrap = name.equals("lombok.launch.PackageShader") || name.equals("lombok.launch.ClassFileMetaData");
 		try {
 			Field shadowLoaderField = original.getClass().getField("lombok$shadowLoader");
 			ClassLoader shadowLoader = (ClassLoader) shadowLoaderField.get(original);
-			if (shadowLoader == null) {
+			if (bootstrap || shadowLoader == null) {
 				synchronized ("lombok$shadowLoader$globalLock".intern()) {
 					shadowLoader = (ClassLoader) shadowLoaderField.get(original);
-					if (shadowLoader == null) {
+					if (bootstrap || shadowLoader == null) {
 						Class shadowClassLoaderClass = (Class) original.getClass().getField("lombok$shadowLoaderClass").get(null);
 						Class classLoaderClass = Class.forName("java.lang.ClassLoader");
 						String jarLoc = (String) original.getClass().getField("lombok$location").get(null);
-						if (shadowClassLoaderClass == null) {
+						if (bootstrap || shadowClassLoaderClass == null) {
 							JarFile jf = new JarFile(jarLoc);
 							InputStream in = null;
 							try {
-								ZipEntry entry = jf.getEntry("lombok/launch/ShadowClassLoader.class");
+								ZipEntry entry = jf.getEntry(bootstrap ? (name.replace(".", "/") + ".class") : "lombok/launch/ShadowClassLoader.class");
+								if (entry == null) {
+									bootstrap = false;
+									entry = jf.getEntry("lombok/launch/ShadowClassLoader.class");
+								}
 								in = jf.getInputStream(entry);
 								byte[] bytes = new byte[65536];
 								int len = 0;
@@ -74,7 +79,7 @@ public class EclipseLoaderPatcherTransplants {
 									int r = in.read(bytes, len, bytes.length - len);
 									if (r == -1) break;
 									len += r;
-									if (len == bytes.length) throw new IllegalStateException("lombok.launch.ShadowClassLoader too large.");
+									if (len == bytes.length) throw new IllegalStateException((bootstrap ? name : "lombok.launch.ShadowClassLoader") + " too large.");
 								}
 								in.close();
 								
@@ -101,12 +106,13 @@ public class EclipseLoaderPatcherTransplants {
 									Object lookup = lookupMethod.invoke(null, null);
 									Object type = methodTypeMethod.invoke(null, new Object[] {Class.class, new Class[] {String.class, byte[].class, int.class, int.class}});
 									Object method = findVirtualMethod.invoke(lookup, new Object[] {original.getClass(), "defineClass", type});
-									shadowClassLoaderClass = (Class) invokeMethod.invoke(method, new Object[] {new Object[] {original, "lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)}});
+									Class c = (Class) invokeMethod.invoke(method, new Object[] {new Object[] {original, bootstrap ? name : "lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)}});
+									if (bootstrap) return c;
+									shadowClassLoaderClass = c;
 								} catch (ClassNotFoundException e) {
 									// Ignore, old Java
 								}
-								if (shadowClassLoaderClass == null)
-								{
+								if (shadowClassLoaderClass == null) {
 									Class[] paramTypes = new Class[4];
 									paramTypes[0] = "".getClass();
 									paramTypes[1] = new byte[0].getClass();
@@ -114,7 +120,9 @@ public class EclipseLoaderPatcherTransplants {
 									paramTypes[3] = paramTypes[2];
 									Method defineClassMethod = classLoaderClass.getDeclaredMethod("defineClass", paramTypes);
 									defineClassMethod.setAccessible(true);
-									shadowClassLoaderClass = (Class) defineClassMethod.invoke(original, new Object[] {"lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)});
+									Class c = (Class) defineClassMethod.invoke(original, new Object[] {bootstrap ? name : "lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)});
+									if (bootstrap) return c;
+									shadowClassLoaderClass = c;
 								}
 								original.getClass().getField("lombok$shadowLoaderClass").set(null, shadowClassLoaderClass);
 							} finally {
