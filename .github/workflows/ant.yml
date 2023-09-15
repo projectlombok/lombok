@@ -127,7 +127,7 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [8, 9, 10, 11, 12, 13, 16]
+        jdk: [8, 11, 17, 21]
         tool: 
           - {name: "maven",  cmd: "mvn compile"}
           - {name: "gradle", cmd: "gradle assemble"}

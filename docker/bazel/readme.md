@@ -7,8 +7,6 @@
 The bazel version to be used. Supported values:
 
 - `2.0.0` (default)
-- `0.28.1`
-- `0.13.0`
 
 ## Example build commands:
 
@@ -17,7 +15,7 @@ The bazel version to be used. Supported values:
 ```
 docker build -t lombok-bazel-jdk17 -f bazel/Dockerfile .
 
-docker build -t lombok-bazel-jdk17 --build-arg lombokjar=lombok-1.16.20.jar -f bazel/Dockerfile .
+docker build -t lombok-bazel-jdk17 --build-arg lombokjar=lombok-1.18.28.jar -f bazel/Dockerfile .
 ```
 
 ## Example run commands:

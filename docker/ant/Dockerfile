@@ -25,8 +25,7 @@ ADD shared/ ./
 ARG jdk=17
 ADD ant/files/jdk-${jdk} ./
 
-COPY --from=downloader /lombok.jar /workspace/classpath/lombok.jar
-COPY --from=downloader /lombok.jar /workspace/modules/lombok.jar
+COPY --from=downloader /lombok.jar /workspace/lombok.jar
 
 ENV JDK_VERSION=${jdk}
 ENV JAVA_HOME=/opt/jdk

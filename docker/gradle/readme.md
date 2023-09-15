@@ -6,15 +6,8 @@
 
 The gradle version to be used. Supported values:
 
-- `6.6.1` (default)
+- `7.6.1` (default)
 - `6.8.3`
-- `6.2.2`
-- `6.0.1`
-- `5.6`
-- `5.1.1`
-- `4.10.2`
-- `4.7`
-- `4.2.1`
 
 ## Example build commands:
 

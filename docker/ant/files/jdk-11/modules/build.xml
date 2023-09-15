@@ -10,7 +10,7 @@
 	</target>
 	
 	<target name="compile" depends="init" description="compile the source">
-		<javac classpath="lombok.jar" srcdir="${src}" destdir="${build}" fork="true">
+		<javac classpath="../lombok.jar" srcdir="${src}" destdir="${build}" fork="true">
 			<compilerarg value="-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"/>
 			<compilerarg value="-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"/>
 			<compilerarg value="-J--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED"/>

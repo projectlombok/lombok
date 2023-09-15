@@ -7,9 +7,6 @@
 The ant version to be used. Supported values:
 
 - `1.10.9` (default)
-- `1.10.7`
-- `1.10.6`
-- `1.10.1`
 
 ## Example build commands:
 
@@ -18,7 +15,7 @@ The ant version to be used. Supported values:
 ```
 docker build -t lombok-ant-jdk17 -f ant/Dockerfile .
 
-docker build -t lombok-ant-jdk17 --build-arg lombokjar=lombok-1.18.20.jar -f ant/Dockerfile .
+docker build -t lombok-ant-jdk17 --build-arg lombokjar=lombok-1.18.28.jar -f ant/Dockerfile .
 ```
 
 ## Example run commands:

@@ -7,9 +7,6 @@
 The maven version to be used. Supported values:
 
 - `3.6.3` (default)
-- `3.6.1`
-- `3.6.0`
-- `3.5.0`
 
 ## Example build commands:
 

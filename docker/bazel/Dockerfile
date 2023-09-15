@@ -7,6 +7,8 @@ RUN provision/jdk/java-${jdk}.sh
 ARG lombokjar=lombok.jar
 ADD https://projectlombok.org/downloads/${lombokjar} /lombok.jar
 
+RUN apt-get update && apt-get install -y unzip
+
 ARG bazel=2.0.0
 ADD provision/bazel/bazel-${bazel}.sh provision/bazel/bazel-${bazel}.sh
 RUN provision/bazel/bazel-${bazel}.sh
@@ -24,8 +26,7 @@ WORKDIR workspace
 ADD shared/ ./
 ADD bazel/files/ ./
 
-COPY --from=downloader /lombok.jar /workspace/classpath/lombok.jar
-COPY --from=downloader /lombok.jar /workspace/modules/lombok.jar
+COPY --from=downloader /lombok.jar /workspace/lombok.jar
 
 ARG jdk=17
 ENV JDK_VERSION=${jdk}
