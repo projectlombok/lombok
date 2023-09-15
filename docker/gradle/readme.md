@@ -2,11 +2,12 @@
 
 [_(general configuration and options)_](../readme.md)
 
-### `ARG gradle=7.6.1`
+### `ARG gradle=8.3`
 
 The gradle version to be used. Supported values:
 
-- `7.6.1` (default)
+- `8.3` (default)
+- `7.6.1`
 - `6.8.3`
 
 ## Example build commands:
@@ -16,7 +17,7 @@ The gradle version to be used. Supported values:
 ```
 docker build -t lombok-gradle-jdk17 -f gradle/Dockerfile .
 
-docker build -t lombok-gradle-jdk17 --build-arg lombokjar=lombok-1.18.20.jar -f gradle/Dockerfile .
+docker build -t lombok-gradle-jdk17 --build-arg lombokjar=lombok-1.18.28.jar -f gradle/Dockerfile .
 ```
 
 ## Example run commands:
