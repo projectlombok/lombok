@@ -10,7 +10,7 @@
 	</target>
 	
 	<target name="compile" depends="init" description="compile the source">
-		<javac classpath="lombok.jar" srcdir="${src}" destdir="${build}" fork="true"/>
+		<javac classpath="../lombok.jar" srcdir="${src}" destdir="${build}" fork="true"/>
 	</target>
 	
 	<target name="dist" depends="compile" description="generate the distribution">
