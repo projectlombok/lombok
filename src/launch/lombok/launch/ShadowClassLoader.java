@@ -85,7 +85,8 @@ import java.util.zip.ZipInputStream;
  * with hot code replace and the like (this is what the {@code shadow.override} feature is for).
  * </ul>
  * 
- * Implementation note: {@code lombok.eclipse.agent.EclipseLoaderPatcher} <em>relies</em> on this class having no dependencies on any other class except the JVM boot class, notably
+ * Implementation note: {@code lombok.eclipse.agent.EclipseLoaderPatcher} <em>relies</em> on this class having no dependencies on any other class except the JVM boot class and
+ * package private classes inside this package <strong>explicitly</strong> listed in EclipseLoaderPatcherTransplants's {@code overrideLoadResult} (near the top). This notably
  * including any other classes in this package, <strong>including</strong> inner classes. So, don't write closures, anonymous inner class literals,
  * enums, or anything else that could cause the compilation of this file to produce more than 1 class file. In general, actually passing load control to this loader is a bit tricky
  * so ensure that this class has zero dependencies on anything except java core classes.
