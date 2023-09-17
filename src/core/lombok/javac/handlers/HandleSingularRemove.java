@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2023 The Project Lombok Authors.
+ * Copyright (C) 2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 
-import lombok.Builder;
-import lombok.Builder.Default;
+import lombok.Singular;
 import lombok.core.AlreadyHandledAnnotations;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -37,10 +36,9 @@ import lombok.spi.Provides;
 @Provides
 @HandlerPriority(32768)
 @AlreadyHandledAnnotations
-public class HandleBuilderDefaultRemove extends JavacAnnotationHandler<Builder.Default> {
-	@Override public void handle(AnnotationValues<Default> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		deleteAnnotationIfNeccessary(annotationNode, Builder.Default.class);
-		deleteImportFromCompilationUnit(annotationNode, Builder.class.getName());
-		deleteImportFromCompilationUnit(annotationNode, Builder.Default.class.getName());
+public class HandleSingularRemove extends JavacAnnotationHandler<Singular> {
+	@Override public void handle(AnnotationValues<Singular> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, Singular.class);
+		deleteImportFromCompilationUnit(annotationNode, Singular.class.getName());
 	}
 }

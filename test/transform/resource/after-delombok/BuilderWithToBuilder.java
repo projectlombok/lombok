@@ -108,7 +108,6 @@ class ConstructorWithToBuilder<T> {
 	private String mOne;
 	private String mTwo;
 	private T foo;
-	@lombok.Singular
 	private com.google.common.collect.ImmutableList<T> bars;
 	public ConstructorWithToBuilder(String mOne, T baz, com.google.common.collect.ImmutableList<T> bars) {
 	}
