@@ -1,4 +1,3 @@
-//CONF: lombok.addGeneratedAnnotation = false
 import lombok.*;
 import static lombok.AccessLevel.NONE;
 

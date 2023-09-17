@@ -2088,6 +2088,7 @@ public class EclipseHandlerUtil {
 	private static final char[] GENERATED_CODE = "generated code".toCharArray();
 	private static final char[] LOMBOK = "lombok".toCharArray();
 	private static final char[][] JAVAX_ANNOTATION_GENERATED = Eclipse.fromQualifiedName("javax.annotation.Generated");
+	private static final char[][] JAKARTA_ANNOTATION_GENERATED = Eclipse.fromQualifiedName("jakarta.annotation.Generated");
 	private static final char[][] LOMBOK_GENERATED = Eclipse.fromQualifiedName("lombok.Generated");
 	private static final char[][] EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS = Eclipse.fromQualifiedName("edu.umd.cs.findbugs.annotations.SuppressFBWarnings");
 	
@@ -2110,6 +2111,9 @@ public class EclipseHandlerUtil {
 		Annotation[] result = originalAnnotationArray;
 		if (HandlerUtil.shouldAddGenerated(node)) {
 			result = addAnnotation(source, result, JAVAX_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
+		}
+		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_JAKARTA_GENERATED_ANNOTATIONS))) {
+			result = addAnnotation(source, result, JAKARTA_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
 		}
 		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
 			result = addAnnotation(source, result, LOMBOK_GENERATED);

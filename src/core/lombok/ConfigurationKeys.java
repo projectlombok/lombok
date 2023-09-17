@@ -59,6 +59,7 @@ public class ConfigurationKeys {
 	 * <em>BREAKING CHANGE</em>: Starting with lombok v1.16.20, defaults to {@code false} instead of {@code true}, as this annotation is broken in JDK9.
 	 * 
 	 * @see ConfigurationKeys#ADD_JAVAX_GENERATED_ANNOTATIONS
+	 * @see ConfigurationKeys#ADD_JAKARTA_GENERATED_ANNOTATIONS
 	 * @see ConfigurationKeys#ADD_LOMBOK_GENERATED_ANNOTATIONS
 	 * @deprecated Since version 1.16.14, use {@link #ADD_JAVAX_GENERATED_ANNOTATIONS} instead.
 	 */
@@ -73,6 +74,13 @@ public class ConfigurationKeys {
 	 * <em>BREAKING CHANGE</em>: Starting with lombok v1.16.20, defaults to {@code false} instead of {@code true}, as this annotation is broken in JDK9.
 	 */
 	public static final ConfigurationKey<Boolean> ADD_JAVAX_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addJavaxGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: follow lombok.addGeneratedAnnotation).") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.addJakartaGeneratedAnnotation} = {@code true} | {@code false}.
+	 * 
+	 * If {@code true}, lombok generates {@code @jakarta.annotation.Generated("lombok")} on all fields, methods, and types that are generated.
+	 */
+	public static final ConfigurationKey<Boolean> ADD_JAKARTA_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addJakartaGeneratedAnnotation", "Generate @jakarta.annotation.Generated on all generated code (default: false).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.addLombokGeneratedAnnotation} = {@code true} | {@code false}.
