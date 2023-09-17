@@ -7,6 +7,7 @@ Lombok Changelog
 * BUGFIX: If using the module system and lombok is on the runtime classpath (shouldn't be, but happens), you'd get a split package error: `Package org.objectweb.asm in both module lombok and module org.objectweb.asm`. [Issue #3474](https://github.com/projectlombok/lombok/issues/3474)
 * BUGFIX: Lombok wasn't properly copying the annotations it should be copying when generating methods in `record`s. [Issue #3315](https://github.com/projectlombok/lombok/issues/3315).
 * BUGFIX: Delomboking anything with `@lombok.Singular` in it wouldn't remove that annotation. [Issue #1377](https://github.com/projectlombok/lombok/issues/1377).
+* BUGFIX: Calling extension methods such that automatic widening is applied (i.e. calling `void ext(long arg)` with an `int`) would fail at runtime. [Issue #3463](https://github.com/projectlombok/lombok/issues/3463).
 
 ### v1.18.28 (May 24th, 2023)
 * PLATFORM: JDK20 support added. [Issue #3353](https://github.com/projectlombok/lombok/issues/3353).
