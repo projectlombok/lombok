@@ -1,3 +1,4 @@
+// version 8:
 // issue #1377: @Singular is not removed by delombok.
 
 import java.util.Set;
