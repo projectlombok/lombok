@@ -165,7 +165,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	public void createGetterForField(AccessLevel level,
 			JavacNode fieldNode, JavacNode source, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
 		
-		if (fieldNode.getKind() != Kind.FIELD) {
+		if (fieldNode.getKind() != Kind.FIELD || fieldNode.isEnumMember()) {
 			source.addError(GETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}

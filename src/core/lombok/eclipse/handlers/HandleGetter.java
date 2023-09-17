@@ -168,7 +168,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	public void createGetterForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
 		
-		if (fieldNode.getKind() != Kind.FIELD) {
+		if (fieldNode.getKind() != Kind.FIELD || fieldNode.isEnumMember()) {
 			errorNode.addError(GETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
