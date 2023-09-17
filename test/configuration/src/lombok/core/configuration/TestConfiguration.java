@@ -76,7 +76,7 @@ public class TestConfiguration {
 	private void checkContent(File dir, String actual, String type) throws Exception {
 		String expected = fileToString(new File(dir, type + ".txt")).replace("\r", "").trim();
 		if (!expected.equals(actual)) {
-			System.out.printf("**** Expected %s:\n", type);
+			System.out.printf("**** Expected %s (@%s):\n", type, new File(dir, type + ".txt").getCanonicalPath());
 			System.out.println(expected);
 			System.out.printf("**** Actual %s:\n", type);
 			System.out.println(actual);

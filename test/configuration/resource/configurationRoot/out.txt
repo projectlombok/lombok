@@ -10,7 +10,7 @@ lombok.accessors.chain = false
 # BASE/d1/d11/lombok.config (stopped bubbling):
 #    3: lombok.accessors.chain = false
 
-# Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.
+# Strip this field prefix, like 'f' or 'm_', from the names of generated getters, setters, and with-ers.
 lombok.accessors.prefix += f
 # BASE/d1/d11/lombok.config (stopped bubbling):
 #    5: lombok.accessors.prefix += f
@@ -50,7 +50,7 @@ clear lombok.accessors.chain
 # BASE/d1/d11/d111/lombok.config:
 #    3: clear lombok.accessors.chain
 
-# Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.
+# Strip this field prefix, like 'f' or 'm_', from the names of generated getters, setters, and with-ers.
 lombok.accessors.prefix += e_
 lombok.accessors.prefix += h_
 lombok.accessors.prefix += z_
@@ -112,7 +112,7 @@ lombok.accessors.chain = true
 # BASE/d1/d12/lombok.config (stopped bubbling):
 #    3: lombok.accessors.chain = true
 
-# Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.
+# Strip this field prefix, like 'f' or 'm_', from the names of generated getters, setters, and with-ers.
 clear lombok.accessors.prefix
 
 # Generate @javax.annotation.Generated on all generated code (default: false). Deprecated, use 'lombok.addJavaxGeneratedAnnotation' instead.
