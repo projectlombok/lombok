@@ -2963,4 +2963,13 @@ public class EclipseHandlerUtil {
 			setDocComment(cud, type, to, newJavadoc);
 		} catch (Exception ignore) {}
 	}
+	
+	public static void copyJavadocFromParam(EclipseNode from, MethodDeclaration to, TypeDeclaration type, String param) {
+		try {
+			CompilationUnitDeclaration cud = (CompilationUnitDeclaration) from.top().get();
+			String methodComment = getDocComment(from);
+			String newJavadoc = addReturnsThisIfNeeded(getParamJavadoc(methodComment, param));
+			setDocComment(cud, type, to, newJavadoc);
+		} catch (Exception ignore) {}
+	}
 }
