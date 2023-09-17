@@ -18,4 +18,7 @@ class GetterLazyArguments {
 	
 	@lombok.Getter(lazy=true)
 	private final String field5 = stringRunnable(("a"), () -> { });
+	
+	@lombok.Getter(lazy=true)
+	private final String field6 = true ? stringInt(true ? "a" : "b", true ? 1 : 0) : "";
 }

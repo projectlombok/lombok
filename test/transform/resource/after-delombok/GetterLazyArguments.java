@@ -17,6 +17,7 @@ class GetterLazyArguments {
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field3 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field4 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field5 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field6 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 
 	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public String getField1() {
@@ -98,5 +99,21 @@ class GetterLazyArguments {
 			}
 		}
 		return (String) (value == this.field5 ? null : value);
+	}
+
+	@java.lang.SuppressWarnings({"all", "unchecked"})
+	public String getField6() {
+		java.lang.Object value = this.field6.get();
+		if (value == null) {
+			synchronized (this.field6) {
+				value = this.field6.get();
+				if (value == null) {
+					final String actualValue = true ? stringInt(true ? "a" : "b", true ? 1 : 0) : "";
+					value = actualValue == null ? this.field6 : actualValue;
+					this.field6.set(value);
+				}
+			}
+		}
+		return (String) (value == this.field6 ? null : value);
 	}
 }

@@ -23,6 +23,7 @@ package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacAugments.JCTree_keepPosition;
 import static lombok.javac.JavacTreeMaker.TypeTag.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
@@ -47,7 +48,6 @@ import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -229,18 +229,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		boolean makeFinal = shouldMakeFinal(field, accessors);
 		
 		List<JCStatement> statements;
-		JCTree toClearOfMarkers = null;
-		int[] methodArgPos = null;
 		boolean addSuppressWarningsUnchecked = false;
 		if (lazy && !inNetbeansEditor(field)) {
-			toClearOfMarkers = fieldNode.init;
-			if (toClearOfMarkers instanceof JCMethodInvocation) {
-				List<JCExpression> args = ((JCMethodInvocation) toClearOfMarkers).args;
-				methodArgPos = new int[args.length()];
-				for (int i = 0; i < methodArgPos.length; i++) {
-					methodArgPos[i] = args.get(i).pos;
-				}
-			}
+			JCTree_keepPosition.set(fieldNode.init, true);
 			statements = createLazyGetterBody(treeMaker, field, source);
 			addSuppressWarningsUnchecked = LombokOptionsFactory.getDelombokOptions(field.getContext()).getFormatPreferences().generateSuppressWarnings();
 		} else {
@@ -268,12 +259,6 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 		
-		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null);
-		if (methodArgPos != null) {
-			for (int i = 0; i < methodArgPos.length; i++) {
-				((JCMethodInvocation) toClearOfMarkers).args.get(i).pos = methodArgPos[i];
-			}
-		}
 		decl.mods.annotations = decl.mods.annotations.appendList(delegates);
 		if (addSuppressWarningsUnchecked) {
 			ListBuffer<JCExpression> suppressions = new ListBuffer<JCExpression>();
