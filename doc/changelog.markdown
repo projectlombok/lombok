@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.29 "Edgy Guinea Pig"
+### v1.18.30 (September 20th, 2023)
 * PLATFORM: Initial JDK21 support added. [Issue #3393](https://github.com/projectlombok/lombok/issues/3393).
 * BUGFIX: Any `@Helper` class directly in a method (and not nested more deeply) wouldn't work. [Issue #3370](https://github.com/projectlombok/lombok/issues/3370).
 * BUGFIX: If using the module system and lombok is on the runtime classpath (shouldn't be, but happens), you'd get a split package error: `Package org.objectweb.asm in both module lombok and module org.objectweb.asm`. [Issue #3474](https://github.com/projectlombok/lombok/issues/3474)
