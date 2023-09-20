@@ -1,6 +1,6 @@
 FROM ubuntu:22.04 as downloader
 
-ARG jdk=17
+ARG jdk=21
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
@@ -22,7 +22,7 @@ WORKDIR workspace
 
 ADD shared/ ./
 
-ARG jdk=17
+ARG jdk=21
 ADD ant/files/jdk-${jdk} ./
 
 COPY --from=downloader /lombok.jar /workspace/lombok.jar

@@ -1,6 +1,6 @@
 FROM ubuntu:22.04 as downloader
 
-ARG jdk=17
+ARG jdk=21
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
@@ -28,7 +28,7 @@ ADD bazel/files/ ./
 
 COPY --from=downloader /lombok.jar /workspace/lombok.jar
 
-ARG jdk=17
+ARG jdk=21
 ENV JDK_VERSION=${jdk}
 ENV JAVA_HOME=/opt/jdk
 ENV BAZEL_HOME=/opt/bazel
