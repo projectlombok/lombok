@@ -13,6 +13,7 @@ By default, this is the latest released version. You can download a specific ver
 ### `ARG jdk=21`
 
 The jdk version to be used. Supported values:
+- `22`(experimental, based on openjdk early access)
 - `21` (default)(based on openjdk instead of adoptium)
 - `17`
 - `11`
