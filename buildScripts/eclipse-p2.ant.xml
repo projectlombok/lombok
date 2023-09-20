@@ -110,7 +110,7 @@ This buildfile is part of projectlombok.org. It is responsible for building the 
 	</target>
 	
 	<target name="eclipsep2.publish" depends="eclipsep2.build, compile.support">
-		<java classname="lombok.publish.PublishToBucket" failonerror="true">
+		<java fork="true" classname="lombok.publish.PublishToBucket" failonerror="true">
 			<classpath>
 				<path refid="cp.buildtools" />
 				<pathelement location="build/support" />
