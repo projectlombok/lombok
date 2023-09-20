@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.31 "Edgy Guinea Pig"
+* We recently released v1.18.30; there is no edge release since then.
+
 ### v1.18.30 (September 20th, 2023)
 * PLATFORM: Initial JDK21 support added. [Issue #3393](https://github.com/projectlombok/lombok/issues/3393).
 * BUGFIX: Any `@Helper` class directly in a method (and not nested more deeply) wouldn't work. [Issue #3370](https://github.com/projectlombok/lombok/issues/3370).
