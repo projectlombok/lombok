@@ -23,8 +23,7 @@ WORKDIR workspace
 ADD shared/ ./
 ADD gradle/files/ ./
 
-COPY --from=downloader /lombok.jar /workspace/classpath/lombok.jar
-COPY --from=downloader /lombok.jar /workspace/modules/lombok.jar
+COPY --from=downloader /lombok.jar /workspace/lombok.jar
 
 ARG jdk=17
 ENV JDK_VERSION=${jdk}

@@ -46,7 +46,7 @@
             <artifactId>lombok</artifactId>
             <version>1.2.3</version>
             <scope>system</scope>
-            <systemPath>/workspace/classpath/lombok.jar</systemPath>
+            <systemPath>/workspace/lombok.jar</systemPath>
         </dependency>
     </dependencies>
 
