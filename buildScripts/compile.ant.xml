@@ -282,7 +282,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 					<patternset refid="packing.shadowed" />
 				</multirootfileset>
 				<firstmatchmapper>
-					<globmapper from="*.class" to="*.SCL.lombok" />
+					<globmapper from="*.class" to="SCL.lombok/*.SCL.lombok" />
 					<identitymapper />
 				</firstmatchmapper>
 			</mappedresources>

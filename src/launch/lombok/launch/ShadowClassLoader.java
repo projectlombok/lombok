@@ -430,9 +430,13 @@ class ShadowClassLoader extends ClassLoader {
 		return false;
 	}
 	
+	private String toSclResourceName(String name) {
+		return "SCL." + sclSuffix + "/" + name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
+	}
+	
 	@Override public Enumeration<URL> getResources(String name) throws IOException {
 		String altName = null;
-		if (name.endsWith(".class")) altName = name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
+		if (name.endsWith(".class")) altName = toSclResourceName(name);
 		
 		// Vector? Yes, we need one:
 		// * We can NOT make inner classes here (this class is loaded with special voodoo magic in eclipse, as a one off, it's not a full loader.
@@ -475,7 +479,7 @@ class ShadowClassLoader extends ClassLoader {
 	private URL getResource_(String name, boolean noSuper) {
 		String altName = null;
 		name = shader == null ? name : shader.reverseResourceName(name);
-		if (name.endsWith(".class")) altName = name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
+		if (name.endsWith(".class")) altName = toSclResourceName(name);
 		
 		for (File ce : override) {
 			URL url = getResourceFromLocation(name, altName, ce);

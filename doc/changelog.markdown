@@ -10,6 +10,7 @@ Lombok Changelog
 * BUGFIX: Calling extension methods such that automatic widening is applied (i.e. calling `void ext(long arg)` with an `int`) would fail at runtime. [Issue #3463](https://github.com/projectlombok/lombok/issues/3463).
 * BUGFIX: Extension methods can now be used in records. [Issue #3450](https://github.com/projectlombok/lombok/issues/3450).
 * BUGFIX: `@Getter(lazy=true)` with complicated initialization expressions would fail on javac. [Issue #3314](https://github.com/projectlombok/lombok/issues/3314).
+* BUGFIX: Using the maven surefire plugin with a `module-info.java` based project would fail with a `SurefireBooterForkException`. [Issue #3474](https://github.com/projectlombok/lombok/issues/3474).
 
 ### v1.18.28 (May 24th, 2023)
 * PLATFORM: JDK20 support added. [Issue #3353](https://github.com/projectlombok/lombok/issues/3353).
