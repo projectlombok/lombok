@@ -9,7 +9,7 @@ Looking for professional support of Project Lombok? Lombok is now part of a [tid
 
 For a list of all authors, see the [AUTHORS] file. 
 
-For complete project information, see [projectlombok.org]
+For complete project information, a short tutorial on what lombok does, and how to download / use / install it, see [projectlombok.org]
 
 You can review our security policy via [SECURITY.md]
 
