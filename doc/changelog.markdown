@@ -2,12 +2,13 @@ Lombok Changelog
 ----------------
 
 ### v1.18.31 "Edgy Guinea Pig"
+* FEATURE: `@Locked` has been introduced. Like `@Synchronized` but with `java.util.concurrent.locks` locks instead of the `synchronized` primitive. Thanks, Pim van der Loos for the PR! [Issue #3506](https://github.com/projectlombok/lombok/issues/3506).
 * We recently released v1.18.30; there is no edge release since then.
 
 ### v1.18.30 (September 20th, 2023)
 * PLATFORM: Initial JDK21 support added. [Issue #3393](https://github.com/projectlombok/lombok/issues/3393).
 * BUGFIX: Any `@Helper` class directly in a method (and not nested more deeply) wouldn't work. [Issue #3370](https://github.com/projectlombok/lombok/issues/3370).
-* BUGFIX: If using the module system and lombok is on the runtime classpath (shouldn't be, but happens), you'd get a split package error: `Package org.objectweb.asm in both module lombok and module org.objectweb.asm`. [Issue #3474](https://github.com/projectlombok/lombok/issues/3474)
+* BUGFIX: If using the module system and lombok is on the runtime classpath (shouldn't be, but happens), you'd get a split package error: `Package org.objectweb.asm in both module lombok and module org.objectweb.asm`. [Issue #3474](https://github.com/projectlombok/lombok/issues/3474).
 * BUGFIX: Lombok wasn't properly copying the annotations it should be copying when generating methods in `record`s. [Issue #3315](https://github.com/projectlombok/lombok/issues/3315).
 * BUGFIX: Delomboking anything with `@lombok.Singular` in it wouldn't remove that annotation. [Issue #1377](https://github.com/projectlombok/lombok/issues/1377).
 * BUGFIX: Calling extension methods such that automatic widening is applied (i.e. calling `void ext(long arg)` with an `int`) would fail at runtime. [Issue #3463](https://github.com/projectlombok/lombok/issues/3463).
