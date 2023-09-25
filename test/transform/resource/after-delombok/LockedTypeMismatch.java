@@ -1,12 +1,12 @@
 class LockedGeneratedTypeMismatch {
 	@java.lang.SuppressWarnings("all")
-	private final java.util.concurrent.locks.ReentrantLock lock = new java.util.concurrent.locks.ReentrantLock();
+	private final java.util.concurrent.locks.Lock $lock = new java.util.concurrent.locks.ReentrantLock();
 	void test() {
-		this.lock.lock();
+		this.$lock.lock();
 		try {
 			System.out.println("one");
 		} finally {
-			this.lock.unlock();
+			this.$lock.unlock();
 		}
 	}
 	void test2() {
@@ -14,7 +14,7 @@ class LockedGeneratedTypeMismatch {
 	}
 }
 class LockedUserTypeMismatch {
-	private final java.util.concurrent.locks.ReentrantLock userLock = new java.util.concurrent.locks.ReentrantLock();
+	private final java.util.concurrent.locks.Lock userLock = new java.util.concurrent.locks.ReentrantLock();
 	void test() {
 		this.userLock.lock();
 		try {

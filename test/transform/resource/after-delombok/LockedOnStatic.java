@@ -1,6 +1,6 @@
 class LockedOnStatic<Z> {
 	static class Inner {
-		private static final java.util.concurrent.locks.ReentrantLock LCK = new java.util.concurrent.locks.ReentrantLock();
+		private static final java.util.concurrent.locks.Lock LCK = new java.util.concurrent.locks.ReentrantLock();
 		public void foo() {
 			LockedOnStatic.Inner.LCK.lock();
 			try {

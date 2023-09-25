@@ -1,9 +1,7 @@
+import java.util.concurrent.locks.*;
 class LockedName {
-	@java.lang.SuppressWarnings("all")
-	private final java.util.concurrent.locks.ReentrantLock basicLock = new java.util.concurrent.locks.ReentrantLock();
-	@java.lang.SuppressWarnings("all")
-	private final java.util.concurrent.locks.ReentrantReadWriteLock rwLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
-
+	private final Lock basicLock = new ReentrantLock();
+	private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 	void test() {
 		this.basicLock.lock();
 		try {

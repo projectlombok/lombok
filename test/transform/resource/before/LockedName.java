@@ -1,11 +1,14 @@
+import java.util.concurrent.locks.*;
 class LockedName {
-	@lombok.experimental.Locked("basicLock") void test() {
+	private final Lock basicLock = new ReentrantLock();
+	private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+	@lombok.Locked("basicLock") void test() {
 		System.out.println("one");
 	}
-	@lombok.experimental.Locked.Read("rwLock") void test2() {
+	@lombok.Locked.Read("rwLock") void test2() {
 		System.out.println("two");
 	}
-	@lombok.experimental.Locked.Write("rwLock") void test3() {
+	@lombok.Locked.Write("rwLock") void test3() {
 		System.out.println("three");
 	}
 }

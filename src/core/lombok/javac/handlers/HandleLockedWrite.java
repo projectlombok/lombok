@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2021-2023 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ package lombok.javac.handlers;
 
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.experimental.Locked;
+import lombok.Locked;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.spi.Provides;
@@ -38,10 +38,11 @@ import static com.sun.tools.javac.tree.JCTree.*;
 public class HandleLockedWrite extends JavacAnnotationHandler<Locked.Write> {
 	private static final String LOCK_METHOD = "writeLock";
 	private static final String ANNOTATION_NAME = "@Locked.Write";
-	private static final String[] LOCK_CLASS = new String[]{"java", "util", "concurrent", "locks", "ReentrantReadWriteLock"};
-
+	private static final String[] LOCK_TYPE_CLASS = new String[]{"java", "util", "concurrent", "locks", "ReadWriteLock"};
+	private static final String[] LOCK_IMPL_CLASS = new String[]{"java", "util", "concurrent", "locks", "ReentrantReadWriteLock"};
+	
 	@Override public void handle(AnnotationValues<Locked.Write> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		String annotationValue = annotation.getInstance().value();
-		HandleLockedUtil.handle(annotationValue, ast, annotationNode, Locked.Write.class, ANNOTATION_NAME, LOCK_CLASS, LOCK_METHOD);
+		HandleLockedUtil.handle(annotationValue, ast, annotationNode, Locked.Write.class, ANNOTATION_NAME, LOCK_TYPE_CLASS, LOCK_IMPL_CLASS, LOCK_METHOD);
 	}
 }

@@ -1,12 +1,12 @@
 class LockedOnStatic<Z> {
   static class Inner {
-    private static final java.util.concurrent.locks.ReentrantLock LCK = new java.util.concurrent.locks.ReentrantLock();
+    private static final java.util.concurrent.locks.Lock LCK = new java.util.concurrent.locks.ReentrantLock();
     <clinit>() {
     }
     Inner() {
       super();
     }
-    public @lombok.experimental.Locked("LCK") void foo() {
+    public @lombok.Locked("LCK") void foo() {
       LockedOnStatic.Inner.LCK.lock();
       try
         {
@@ -23,7 +23,7 @@ class LockedOnStatic<Z> {
     Inner2() {
       super();
     }
-    public @lombok.experimental.Locked("LCK") void foo() {
+    public @lombok.Locked("LCK") void foo() {
       this.LCK.lock();
       try
         {

@@ -1,8 +1,8 @@
 public class LockedExample {
-	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-	private final ReentrantLock baseLock = new ReentrantLock();
+	private final ReadWriteLock lock = new ReentrantReadWriteLock();
+	private final Lock baseLock = new ReentrantLock();
 	private int value = 0;
-
+	
 	public int getValue() {
 		this.lock.readLock().lock();
 		try {
@@ -11,7 +11,7 @@ public class LockedExample {
 			this.lock.readLock().unlock();
 		}
 	}
-
+	
 	public void setValue(int newValue) {
 		this.lock.writeLock().lock();
 		try {
@@ -20,7 +20,7 @@ public class LockedExample {
 			this.lock.writeLock().unlock();
 		}
 	}
-
+	
 	public void foo() {
 		this.baseLock.lock();
 		try {

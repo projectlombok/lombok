@@ -1,6 +1,6 @@
-import lombok.experimental.Locked;
+import lombok.Locked;
 class LockedPlain {
-	@lombok.experimental.Locked void test() {
+	@Locked void test() {
 		System.out.println("one");
 	}
 	@Locked void test2() {
@@ -8,7 +8,7 @@ class LockedPlain {
 	}
 }
 class LockedPlainStatic {
-	@lombok.experimental.Locked static void test() {
+	@Locked static void test() {
 		System.out.println("three");
 	}
 	@Locked static void test2() {
@@ -16,7 +16,7 @@ class LockedPlainStatic {
 	}
 }
 class LockedPlainRead {
-	@lombok.experimental.Locked.Read static void test() {
+	@Locked.Read static void test() {
 		System.out.println("five");
 	}
 	@Locked.Read static void test2() {
@@ -24,7 +24,7 @@ class LockedPlainRead {
 	}
 }
 class LockedPlainWrite {
-	@lombok.experimental.Locked.Write void test() {
+	@Locked.Write void test() {
 		System.out.println("seven");
 	}
 	@Locked.Write void test2() {

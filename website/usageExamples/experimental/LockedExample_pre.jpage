@@ -1,18 +1,18 @@
-import lombok.experimental.Locked;
+import lombok.Locked;
 
 public class LockedExample {
 	private int value = 0;
-
+	
 	@Locked.Read
 	public int getValue() {
 		return value;
 	}
-
+	
 	@Locked.Write
 	public void setValue(int newValue) {
 		value = newValue;
 	}
-
+	
 	@Locked("baseLock")
 	public void foo() {
 		System.out.println("bar");

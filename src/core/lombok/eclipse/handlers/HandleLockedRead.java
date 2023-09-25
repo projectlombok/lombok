@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2021-2023 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ import lombok.core.HandlerPriority;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.experimental.Locked;
+import lombok.Locked;
 import lombok.spi.Provides;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
@@ -40,16 +40,18 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 public class HandleLockedRead extends EclipseAnnotationHandler<Locked.Read> {
 	private static final char[] LOCK_METHOD = "readLock".toCharArray();
 	private static final String ANNOTATION_NAME = "@Locked.Read";
-	private static final char[][] LOCK_CLASS = new char[][] { TypeConstants.JAVA, TypeConstants.UTIL,
-			"concurrent".toCharArray(), "locks".toCharArray(), "ReentrantReadWriteLock".toCharArray() };
-
+	private static final char[][] LOCK_TYPE_CLASS = new char[][] { TypeConstants.JAVA, TypeConstants.UTIL,
+		"concurrent".toCharArray(), "locks".toCharArray(), "ReadWriteLock".toCharArray() };
+		private static final char[][] LOCK_IMPL_CLASS = new char[][] { TypeConstants.JAVA, TypeConstants.UTIL,
+		"concurrent".toCharArray(), "locks".toCharArray(), "ReentrantReadWriteLock".toCharArray() };
+		
 	@Override public void handle(AnnotationValues<Locked.Read> annotation, Annotation source, EclipseNode annotationNode) {
 		String annotationValue = annotation.getInstance().value();
-		HandleLockedUtil.handle(annotationValue, source, annotationNode, ANNOTATION_NAME, LOCK_CLASS, LOCK_METHOD);
+		HandleLockedUtil.handle(annotationValue, source, annotationNode, ANNOTATION_NAME, LOCK_TYPE_CLASS, LOCK_IMPL_CLASS, LOCK_METHOD);
 	}
-
+	
 	@Override public void preHandle(AnnotationValues<Locked.Read> annotation, Annotation source, EclipseNode annotationNode) {
 		String annotationValue = annotation.getInstance().value();
-		HandleLockedUtil.preHandle(annotationValue, LOCK_CLASS, annotationNode);
+		HandleLockedUtil.preHandle(annotationValue, LOCK_TYPE_CLASS, LOCK_IMPL_CLASS, annotationNode);
 	}
 }

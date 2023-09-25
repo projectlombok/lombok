@@ -1,29 +1,29 @@
 class LockedGeneratedTypeMismatch {
-  private final java.util.concurrent.locks.ReentrantLock lock = new java.util.concurrent.locks.ReentrantLock();
+  private final java.util.concurrent.locks.Lock $lock = new java.util.concurrent.locks.ReentrantLock();
   LockedGeneratedTypeMismatch() {
     super();
   }
-  @lombok.experimental.Locked void test() {
-    this.lock.lock();
+  @lombok.Locked void test() {
+    this.$lock.lock();
     try
       {
         System.out.println("one");
       }
     finally
       {
-        this.lock.unlock();
+        this.$lock.unlock();
       }
   }
-  @lombok.experimental.Locked.Read void test2() {
+  @lombok.Locked.Read void test2() {
     System.out.println("two");
   }
 }
 class LockedUserTypeMismatch {
-  private final java.util.concurrent.locks.ReentrantLock userLock = new java.util.concurrent.locks.ReentrantLock();
+  private final java.util.concurrent.locks.Lock userLock = new java.util.concurrent.locks.ReentrantLock();
   LockedUserTypeMismatch() {
     super();
   }
-  @lombok.experimental.Locked("userLock") void test() {
+  @lombok.Locked("userLock") void test() {
     this.userLock.lock();
     try
       {
@@ -34,7 +34,7 @@ class LockedUserTypeMismatch {
         this.userLock.unlock();
       }
   }
-  @lombok.experimental.Locked.Read("userLock") void test2() {
+  @lombok.Locked.Read("userLock") void test2() {
     this.userLock.readLock().lock();
     try
       {
