@@ -1,0 +1,32 @@
+public class LockedExample {
+	private final ReadWriteLock lock = new ReentrantReadWriteLock();
+	private final Lock baseLock = new ReentrantLock();
+	private int value = 0;
+	
+	public int getValue() {
+		this.lock.readLock().lock();
+		try {
+			return value;
+		} finally {
+			this.lock.readLock().unlock();
+		}
+	}
+	
+	public void setValue(int newValue) {
+		this.lock.writeLock().lock();
+		try {
+			value = newValue;
+		} finally {
+			this.lock.writeLock().unlock();
+		}
+	}
+	
+	public void foo() {
+		this.baseLock.lock();
+		try {
+			System.out.println("bar");
+		} finally {
+			this.baseLock.unlock();
+		}
+	}
+}

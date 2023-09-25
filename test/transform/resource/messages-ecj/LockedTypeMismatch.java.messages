@@ -1,0 +1,2 @@
+5 Expected field lock to be of type java.util.concurrent.locks.ReadWriteLock but got type java.util.concurrent.locks.Lock. Did you mix @Locked with @Locked.Read/Write on the same generated field?
+14 The method readLock() is undefined for the type Lock

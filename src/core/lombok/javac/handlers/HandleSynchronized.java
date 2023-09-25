@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,8 +60,8 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 		handleFlagUsage(annotationNode, ConfigurationKeys.SYNCHRONIZED_FLAG_USAGE, "@Synchronized");
 		
 		if (inNetbeansEditor(annotationNode)) return;
-		
 		deleteAnnotationIfNeccessary(annotationNode, Synchronized.class);
+		
 		JavacNode methodNode = annotationNode.up();
 		
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof JCMethodDecl)) {
@@ -82,12 +82,12 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 			return;
 		}
 		
-		boolean[] isStatic = new boolean[] {(method.mods.flags & Flags.STATIC) != 0};
+		boolean isStatic = (method.mods.flags & Flags.STATIC) != 0;
 		String lockName = annotation.getInstance().value();
 		boolean autoMake = false;
 		if (lockName.length() == 0) {
 			autoMake = true;
-			lockName = isStatic[0] ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+			lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		}
 		
 		JavacTreeMaker maker = methodNode.getTreeMaker().at(ast.pos);
@@ -100,11 +100,11 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 					if (((JCVariableDecl) def).name.contentEquals(lockName)) {
 						exists = getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 						boolean st = ((((JCVariableDecl) def).mods.flags) & Flags.STATIC) != 0;
-						if (isStatic[0] && !st) {
+						if (isStatic && !st) {
 							annotationNode.addError("The field " + lockName + " is non-static and this cannot be used on this static method");
 							return;
 						}
-						isStatic[0] = st;
+						isStatic = st;
 					}
 				}
 			}
@@ -120,7 +120,7 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 			JCNewArray newObjectArray = maker.NewArray(genJavaLangTypeRef(methodNode, ast.pos, "Object"),
 				List.<JCExpression>of(maker.Literal(CTC_INT, 0)), null);
 			JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
-				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic[0] ? Flags.STATIC : 0)),
+				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 				methodNode.toName(lockName), objectType, newObjectArray), annotationNode);
 			injectFieldAndMarkGenerated(methodNode.up(), fieldDecl);
 		}
@@ -128,7 +128,7 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 		if (method.body == null) return;
 		
 		JCExpression lockNode;
-		if (isStatic[0]) {
+		if (isStatic) {
 			lockNode = namePlusTypeParamsToTypeReference(maker, typeNode, methodNode.toName(lockName), false, List.<JCTypeParameter>nil());
 		} else {
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));

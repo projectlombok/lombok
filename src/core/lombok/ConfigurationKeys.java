@@ -632,8 +632,17 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> HELPER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.helper.flagUsage", "Emit a warning or error if @Helper is used.") {};
 	
+	// ----- LOCKED -----
+	
+	/**
+	 * lombok configuration: {@code lombok.locked.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 *
+	 * If set, <em>any</em> usage of {@code @Locked} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> LOCKED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.locked.flagUsage", "Emit a warning or error if @Locked is used.") {};
+	
 	// ----- onX -----
-
+	
 	/**
 	 * lombok configuration: {@code lombok.onX.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 *

@@ -1,0 +1,38 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="@Locked" logline="Pop it and <strong>lock</strong> it! <code>ReentrantLock</code>, now with less hassle.">
+	<@f.history>
+		<p>
+			<code>@Locked</code> was introduced in lombok v1.20.
+		</p>
+	</@f.history>
+
+	<@f.overview>
+		<p>
+			<code>@Locked</code> wraps all code in a method into a block that acquires a <code>java.util.concurrent.locks.ReentrantLock</code> first, and unlocks it when exiting the method. It is a lot like <a href="Synchronized"><code>@Synchronized</code></a>.
+		</p><p>
+			You can optionally name a field, which must be a <code>ReentrantLock</code>; in that case, lombok locks on that field. Otherwise, the annotation defaults to a field named <code>$LOCK</code> (on static methods) / <code>$lock</code> (on instance methods), which lombok will generate if the field does not exist yet.
+		</p><p>
+			Additionally, there are the <code>@Locked.Read</code> and <code>@Locked.Write</code> annotations. These use a <code>java.util.concurrent.locks.ReadWriteLock</code> (specifically, <code>ReentrantReadWriteLock</code>). Methods annotated with <code>@Locked.Write</code> will lock on the write lock and methods annotated with <code>@Locked.Read</code> will lock on the read lock. When required, a <code>java.util.concurrent.locks.ReentrantReadWriteLock</code> is generated.
+		</p><p>
+			When using <a href="https://docs.oracle.com/en/java/javase/20/core/virtual-threads.html">Virtual threads (introduced in Java 20)</a>, these locks are recommended compared to what <code>@Synchronized</code> does.
+		</p>
+	</@f.overview>
+
+	<@f.snippets name="Locked" />
+
+	<@f.confKeys>
+		<dt>
+			<code>lombok.locked.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@Locked</code> as a warning or error if configured.
+		</dd>
+	</@f.confKeys>
+
+	<@f.smallPrint>
+		<p>
+			Because <code>@Locked.Read</code> and <code>@Locked.Write</code> use a different type of lock than <code>@Locked</code>, these annotations cannot be used on the same lock object without explicitly specifying the name of the field containing the lock object.<br />
+			The name of the default field of the <code>@Locked</code>, <code>@Locked.Read</code>, and <code>@Locked.Write</code> annotations is the same, so it is not possible to mix the basic <code>@Locked</code> annotation with the other two using the default name.
+		</p>
+	</@f.smallPrint>
+</@f.scaffold>
