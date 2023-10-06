@@ -13,28 +13,28 @@ import java.lang.annotation.Target;
  * <ol>
  * 	<li>return non-void type</li>
  *  <li>requires no argument</li>
- * 	<li>match the variable name specified, prefixed by get|is, and ignoring case. In the order : 
+ * 	<li>match the variable name specified, prefixed by get|is, and ignoring case. In the order :
  * 		<ol>
  * 			<li>getName is selected if exists</li>
  * 			<li>isName is selected if exists</li>
  * 			<li>getname (ignoring case) is selected if exists only ONE. compiling error if several found</li>
  * 			<li>isname (ignoring case) is selected if exists only ONE. compiling error if several found</li>
- * 			<li>if no matching method exists, error</li>	
+ * 			<li>if no matching method exists, error</li>
  * 		</ol>
  * 	</li>
- * </ol>  
- * 
+ * </ol>
+ *
  * <p>
  * It MUST only be applied to var declarations.
  * </p>
  *
- * 
+ *
  * <p>
  * Before:
  *
  * <pre>
  * &#064;Onstruct(prefix="b_")
- * var author, name=mybook;
+ * var author, name, editiondate, purchasable = mybook;
  * </pre>
  *
  * After:
@@ -42,6 +42,8 @@ import java.lang.annotation.Target;
  * <pre>
  * var b_author = mybook.getAuthor();
  * var b_name = mybook.getName();
+ * var b_editiondate = mybook.getEditionDate();
+ * var b_purchasable = mybook.isPurchasable();
  * </pre>
  *
  */
