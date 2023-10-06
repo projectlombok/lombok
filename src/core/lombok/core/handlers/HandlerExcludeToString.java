@@ -9,10 +9,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-
+/**
+ * Handles the {@code ExcludeToString} annotation for javac.
+ */
 @Aspect
 @Component
-public class HandlerToString {
+public class HandlerExcludeToString {
 
 
     /**
@@ -21,7 +23,7 @@ public class HandlerToString {
      * @param joinPoint the join point
      * @throws Exception the exception
      */
-    @Around("@annotation(src.core.lombok.ToString)")
+    @Around("@annotation(src.core.lombok.ExcludeToString)")
     public void getParams(JoinPoint joinPoint) throws Exception {
         if(null != joinPoint){
             Object[] args = joinPoint.getArgs();
