@@ -17,5 +17,5 @@ public @interface ExcludeToString {
      *
      * @return A list of fields to exclude.
      */
-    String[] exclude();
+    String[] exclude() default {};
 }
