@@ -42,8 +42,7 @@ import java.lang.annotation.Target;
  * Before:
  *
  * <pre>
- * &#064;Onstruct(prefix = "b_")
- * Object author, name, editiondate, purchasable = mybook;
+ * &#064;Onstruct(pre = "b_") Object author, name, editiondate, purchasable = mybook;
  * </pre>
  *
  * After:
@@ -60,8 +59,29 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Onstruct {
 
-	String prefix() default "";
+	/**
+	 * prefix to start the created var name with. Default is empty
+	 */
+	String pre() default "";
 
-	String suffix() default "";
+	/**
+	 * suffix to append to created var name. Default is empty
+	 */
+	String suf() default "";
+	
+	/**
+	 * if true, should camel case the variable name. Only applied when prefix is
+	 * non blank. Default is false.
+	 */
+	boolean cml() default false;
+
+	/** prefix to start the getter call by. Default is "get" */
+	String methodPre() default "get";
+	
+	/**
+	 * if true, should camel case the method call. Only applied when method
+	 * prefix is non blank. Default is true.
+	 */
+	boolean methodCml() default true;
 
 }
