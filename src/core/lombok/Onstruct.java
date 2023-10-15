@@ -58,30 +58,78 @@ import java.lang.annotation.Target;
 @Target(ElementType.LOCAL_VARIABLE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Onstruct {
-
+	
+	//
+	// variable generation
+	//
+	
 	/**
 	 * prefix to start the created var name with. Default is empty
 	 */
 	String pre() default "";
-
+	
 	/**
 	 * suffix to append to created var name. Default is empty
 	 */
 	String suf() default "";
-	
+
 	/**
 	 * if true, should camel case the variable name. Only applied when prefix is
 	 * non blank. Default is false.
 	 */
 	boolean cml() default false;
-
-	/** prefix to start the getter call by. Default is "get" */
-	String methodPre() default "get";
+	
+	//
+	// method generation
+	//
 	
 	/**
-	 * if true, should camel case the method call. Only applied when method
-	 * prefix is non blank. Default is true.
+	 * how to build the getter for a var name
 	 */
-	boolean methodCml() default true;
+	public enum SourceType {
+		GET("get", true), BOOL("is", true), FLUENT("", false);
+		
+		/** prefix to start the getter method with*/
+		public final String pre;
 
+		/** should we uppercase the first letter of the variable in the method name ? */
+		public final boolean cml;
+		
+		SourceType(String pre, boolean cml) {
+			this.pre = pre;
+			this.cml = cml;
+		}
+	}
+
+	public SourceType source() default SourceType.GET;
+
+	public enum Cml {
+		CML(true), NOCML(false), SOURCE(null);
+		;
+
+		public final Boolean cml;
+		
+		Cml(Boolean cml) {
+			this.cml = cml;
+		}
+	}
+
+	/**
+	 * can't set default value to null or non-constant values :/
+	 */
+	static final String NULLSTRING = "NULLSTRING";
+	
+	/**
+	 * overwrite the {@link #source()} prefix to start the getter call by.
+	 * Default is {@link #NULLSTRING} to not overwrite
+	 */
+	String methodPre() default NULLSTRING;
+
+	/**
+	 * Overwrite the {@link #source()}'s method camel case. If
+	 * {@link Cml#SOURCE}(default), don't overwrite. If {@link Cml#CML}, should
+	 * camel case the method call. If {@link Cml#NOCML}, don't camel case it.
+	 */
+	Cml methodCml() default Cml.SOURCE;
+	
 }
