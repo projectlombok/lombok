@@ -222,9 +222,8 @@ public class HandlerLibrary {
 
 		String fqn = resolver.typeRefToFullyQualifiedName(annotationNode, typeLibrary, toQualifiedName(annotation.type.getTypeName()));
 		if (fqn == null) {
-			if (isNonNullAnnotation(annotationNode.up(), annotation)) {
+			if (isNonNullAnnotation(annotationNode, annotation)) {
 				fqn = lombok.NonNull.class.getName();
-
 			} else {
 				return Long.MAX_VALUE;
 			}
