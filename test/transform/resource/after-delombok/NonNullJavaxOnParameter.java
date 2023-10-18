@@ -1,4 +1,5 @@
 //version 8:
+import javax.annotation.Nonnull;
 class NonNullJavaxOnParameter extends Thread {
 	NonNullJavaxOnParameter(@javax.annotation.Nonnull String arg) {
 		this(arg, "");
@@ -31,7 +32,7 @@ class NonNullJavaxOnParameter extends Thread {
 		}
 		if (arg != null) throw new IllegalStateException();
 	}
-	public void test(@javax.annotation.Nonnull String stringArg, @javax.annotation.Nonnull String arg2, @javax.annotation.Nonnull int primitiveArg) {
+	public void test(@javax.annotation.Nonnull String stringArg, @Nonnull String arg2, @javax.annotation.Nonnull int primitiveArg) {
 		if (stringArg == null) {
 			throw new java.lang.NullPointerException("stringArg is marked non-null but is null");
 		}
