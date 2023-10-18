@@ -802,7 +802,12 @@ public class EclipseHandlerUtil {
 		}
 		return false;
 	}
-	
+
+	public static boolean isNonNullAnnotation(EclipseNode node, Annotation annotation) {
+		for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, annotation.type)) return true;
+		return false;
+	}
+
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 	
 	/**

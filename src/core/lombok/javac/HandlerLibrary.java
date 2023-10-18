@@ -22,7 +22,7 @@
 package lombok.javac;
 
 import static lombok.javac.JavacAugments.JCTree_handled;
-
+import static lombok.javac.handlers.JavacHandlerUtil.isNonNullAnnotation;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -245,7 +245,14 @@ public class HandlerLibrary {
 		TypeResolver resolver = new TypeResolver(node.getImportList());
 		String rawType = annotation.annotationType.toString();
 		String fqn = resolver.typeRefToFullyQualifiedName(node, typeLibrary, rawType);
-		if (fqn == null) return;
+		if (fqn == null) {
+			if (isNonNullAnnotation(node.up(), annotation)) {
+				fqn = lombok.NonNull.class.getName();
+			} else {
+				return;
+			}
+		}
+
 		List<AnnotationHandlerContainer<?>> containers = annotationHandlers.get(fqn);
 		if (containers == null) return;
 		
