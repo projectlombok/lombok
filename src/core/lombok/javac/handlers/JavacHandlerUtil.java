@@ -1708,7 +1708,8 @@ public class JavacHandlerUtil {
 
 	public static boolean isNonNullAnnotation(JavacNode node, JCAnnotation annotation) {
 		String annotationTypeName = getTypeName(annotation.annotationType);
-		for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
+		Boolean useForeignAnnotations = node.getAst().readConfiguration(ConfigurationKeys.NON_NULL_FOREIGN_ANNOTATIONS);
+		for (String nn : nonNullAnnotations(useForeignAnnotations)) if (typeMatches(nn, node, annotationTypeName)) return true;
 		return false;
 	}
 

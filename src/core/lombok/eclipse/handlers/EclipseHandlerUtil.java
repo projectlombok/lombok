@@ -787,7 +787,7 @@ public class EclipseHandlerUtil {
 		for (EclipseNode child : node.down()) {
 			if (child.getKind() != Kind.ANNOTATION) continue;
 			Annotation annotation = (Annotation) child.get();
-			for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, annotation.type)) return true;
+			if (isNonNullAnnotation(node, annotation)) return true;
 		}
 		return false;
 	}
@@ -797,14 +797,16 @@ public class EclipseHandlerUtil {
 		for (Annotation annotation : anns) {
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName() != null) {
-				for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) return true;
+				Boolean useForeignAnnotations = node.getAst().readConfiguration(ConfigurationKeys.NON_NULL_FOREIGN_ANNOTATIONS);
+				for (String bn : nonNullAnnotations(useForeignAnnotations)) if (typeMatches(bn, node, typeRef)) return true;
 			}
 		}
 		return false;
 	}
 
 	public static boolean isNonNullAnnotation(EclipseNode node, Annotation annotation) {
-		for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, annotation.type)) return true;
+		Boolean useForeignAnnotations = node.getAst().readConfiguration(ConfigurationKeys.NON_NULL_FOREIGN_ANNOTATIONS);
+		for (String bn : nonNullAnnotations(useForeignAnnotations)) if (typeMatches(bn, node, annotation.type)) return true;
 		return false;
 	}
 

@@ -79,7 +79,7 @@ public class HandlerUtil {
 		return 43;
 	}
 	
-	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
+	public static final List<String> FOREIGN_NONNULL_ANNOTATIONS, LOMBOK_NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
 	static {
 		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
 		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
@@ -88,7 +88,7 @@ public class HandlerUtil {
 		// In addition, the intent for these annotations is that they can be used 'in public' - it's not for internal-only usage annotations.
 		
 		// Presence of these annotations mean that lombok will generate null checks in any created setters and constructors.
-		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+		FOREIGN_NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"android.annotation.NonNull",
 			"android.support.annotation.NonNull",
 			"android.support.annotation.RecentlyNonNull",
@@ -119,7 +119,11 @@ public class HandlerUtil {
 			"org.springframework.lang.NonNull",
 			"reactor.util.annotation.NonNull",
 		}));
-		
+
+		LOMBOK_NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"lombok.NonNull",
+		}));
+
 		// This is a list of annotations that lombok will automatically 'copy' - be it to the method (when generating a getter for a field annotated with one of these), or to a parameter (generating a setter, with-er, or builder 'setter').
 		// You can't disable this behaviour, so the list should only contain annotations where 'copy it!' is the desired behaviour in at least 95%, preferably 98%, of all non-buggy usages.
 		// As a general rule, lombok takes on maintenance of adding all nullity-related annotations here, _if_ they fit the definition of language-level nullity as per {@see #NONNULL_ANNOTATIONS}. As a consequence, everything from the NONNULL list should probably
@@ -979,5 +983,9 @@ public class HandlerUtil {
 			return matcher.group();
 		}
 		return null;
+	}
+
+	public static List<String> nonNullAnnotations(Boolean useForeignAnnotations) {
+		return Boolean.FALSE.equals(useForeignAnnotations) ? LOMBOK_NONNULL_ANNOTATIONS : FOREIGN_NONNULL_ANNOTATIONS;
 	}
 }
