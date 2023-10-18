@@ -246,6 +246,8 @@ public class HandlerLibrary {
 		String rawType = annotation.annotationType.toString();
 		String fqn = resolver.typeRefToFullyQualifiedName(node, typeLibrary, rawType);
 		if (fqn == null) {
+			// We have found an unknown annotation, so check, if this could be an alternative nonNull annotation
+			// and treat it like lombok.NonNull
 			if (isNonNullAnnotation(node, annotation)) {
 				fqn = lombok.NonNull.class.getName();
 			} else {

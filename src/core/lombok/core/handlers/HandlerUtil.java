@@ -78,8 +78,10 @@ public class HandlerUtil {
 	public static int primeForNull() {
 		return 43;
 	}
-	
-	public static final List<String> FOREIGN_NONNULL_ANNOTATIONS, LOMBOK_NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
+
+	private static final List<String> NONNULL_ANNOTATIONS, LOMBOK_NONNULL_ANNOTATIONS;
+
+	public static final List<String> BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
 	static {
 		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
 		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
@@ -88,7 +90,8 @@ public class HandlerUtil {
 		// In addition, the intent for these annotations is that they can be used 'in public' - it's not for internal-only usage annotations.
 		
 		// Presence of these annotations mean that lombok will generate null checks in any created setters and constructors.
-		FOREIGN_NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+		// It will also add additional null checks if method parameters are annotated.
+		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"android.annotation.NonNull",
 			"android.support.annotation.NonNull",
 			"android.support.annotation.RecentlyNonNull",
@@ -120,6 +123,8 @@ public class HandlerUtil {
 			"reactor.util.annotation.NonNull",
 		}));
 
+		// by default, for non-null checks, the NONNULL_ANNOTATION list is checked. If foreign non null annotations are disabled, this list is used,
+		// which usually contains only the lombok.NonNull annotation
 		LOMBOK_NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"lombok.NonNull",
 		}));
@@ -985,7 +990,12 @@ public class HandlerUtil {
 		return null;
 	}
 
+	/**
+	 * Determines the list of non-null annotations that should be used.
+	 * @param useForeignAnnotations the config parameter, if we want to use foreign non-null annotations (default: true).
+	 * @return depending on the config, it either returns a list of all known non-null annotations or just containing the lombok.NonNull annotation
+	 */
 	public static List<String> nonNullAnnotations(Boolean useForeignAnnotations) {
-		return Boolean.FALSE.equals(useForeignAnnotations) ? LOMBOK_NONNULL_ANNOTATIONS : FOREIGN_NONNULL_ANNOTATIONS;
+		return Boolean.FALSE.equals(useForeignAnnotations) ? LOMBOK_NONNULL_ANNOTATIONS : NONNULL_ANNOTATIONS;
 	}
 }

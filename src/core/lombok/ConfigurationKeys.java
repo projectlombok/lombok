@@ -382,13 +382,12 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> NON_NULL_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.nonNull.flagUsage", "Emit a warning or error if @NonNull is used.") {};
 
-
 	/**
-	 * Foreign {@code @NonNull} annotations  (like {@code javax.annotations.NotNull} or {@code org.jetbrains.annotations.NotNull}) are handled the same way as {@code lombok.NonNull}
+	 * Foreign {@code @NonNull} annotations  (like {@code javax.annotations.NotNull} or {@code org.jetbrains.annotations.NotNull}) are handled the same way as {@code lombok.NonNull}.
 	 */
 	public static final ConfigurationKey<Boolean> NON_NULL_FOREIGN_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.nonNull.useForeignAnnotations", "Foreign @NonNull annotations (like javax.annotations.NotNull or org.jetbrains.annotations.NotNull) are handled the same way as lombok.NonNull (default: true)") {};
 	// ----- SneakyThrows -----
-	
+
 	/**
 	 * lombok configuration: {@code lombok.sneakyThrows.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
