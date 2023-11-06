@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2023 The Project Lombok Authors.
+ * Copyright (C) 2010-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,9 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.internal.compiler.ISourceElementRequestor.FieldInfo;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -61,7 +63,9 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
+import org.eclipse.jdt.internal.core.CompilationUnitStructureRequestor;
 import org.eclipse.jdt.internal.core.SourceField;
+import org.eclipse.jdt.internal.core.SourceFieldElementInfo;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
@@ -931,6 +935,68 @@ final class PatchFixesHider {
 				return new String[] {sb.toString().trim()};
 			} catch (Throwable e) {
 				return blocks;
+			}
+		}
+	}
+	
+	public static class FieldInitializer {
+		public static final Field INFO_STACK;
+		public static final Field FIELD_INFO;
+		public static final Field SOURCE_FIELD_ELEMENT_INFO;
+		public static final Field INITIALIZATION_SOURCE;
+		public static final Field NODE;
+		public static final boolean INITIALIZED;
+		
+		static {
+			INFO_STACK = Permit.permissiveGetField(CompilationUnitStructureRequestor.class, "infoStack");
+			FIELD_INFO = Permit.permissiveGetField(CompilationUnitStructureRequestor.class, "$fieldInfo");
+			SOURCE_FIELD_ELEMENT_INFO = Permit.permissiveGetField(CompilationUnitStructureRequestor.class, "$sourceFieldElementInfo");
+			INITIALIZATION_SOURCE = Permit.permissiveGetField(SourceFieldElementInfo.class, "initializationSource");
+			NODE = Permit.permissiveGetField(FieldInfo.class, "node");
+			INITIALIZED = INFO_STACK != null && FIELD_INFO != null && SOURCE_FIELD_ELEMENT_INFO != null && INITIALIZATION_SOURCE != null && NODE != null;
+		}
+		
+		public static boolean storeFieldInfo(CompilationUnitStructureRequestor compilationUnitStructureRequestor) {
+			try {
+				if (INITIALIZED) {
+					Stack<?> infoStack = Permit.get(INFO_STACK, compilationUnitStructureRequestor);
+					Object fieldInfo = infoStack.peek();
+					Permit.set(FIELD_INFO, compilationUnitStructureRequestor, fieldInfo);
+				}
+			} catch (Exception e) {
+				// do not break eclipse
+			}
+			return false;
+		}
+		public static void storeSourceFieldElementInfo(SourceFieldElementInfo fieldInfo, CompilationUnitStructureRequestor compilationUnitStructureRequestor) {
+			try {
+				if (INITIALIZED) {
+					Permit.set(SOURCE_FIELD_ELEMENT_INFO, compilationUnitStructureRequestor, fieldInfo);
+				}
+			} catch (Exception e) {
+				// do not break eclipse
+			}
+		}
+		
+		public static void overwriteInitializer(CompilationUnitStructureRequestor compilationUnitStructureRequestor) {
+			try {
+				if (INITIALIZED) {
+					FieldInfo fieldInfo = Permit.get(FIELD_INFO, compilationUnitStructureRequestor);
+					Permit.set(FIELD_INFO, compilationUnitStructureRequestor, null);
+					
+					SourceFieldElementInfo sourceFieldElementInfo = Permit.get(SOURCE_FIELD_ELEMENT_INFO,compilationUnitStructureRequestor);
+					Permit.set(SOURCE_FIELD_ELEMENT_INFO, compilationUnitStructureRequestor, null);
+					
+					if (sourceFieldElementInfo.getInitializationSource() != null) {
+						AbstractVariableDeclaration node = Permit.get(NODE, fieldInfo);
+						
+						if (PatchFixes.isGenerated(node)) {
+							Permit.set(INITIALIZATION_SOURCE, sourceFieldElementInfo, node.initialization.toString().toCharArray());
+						}
+					}
+				}
+			} catch (Exception e) {
+				// do not break eclipse
 			}
 		}
 	}
