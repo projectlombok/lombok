@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,10 @@
  */
 package lombok.eclipse;
 
+import static lombok.eclipse.EcjAugments.CompilationUnitDeclaration_transformationState;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import lombok.ConfigurationKeys;
 import lombok.core.LombokConfiguration;
@@ -63,7 +61,6 @@ public class TransformEclipseAST {
 	
 	public static boolean disableLombok = false;
 	private static final HistogramTracker lombokTracker;
-	private static Map<CompilationUnitDeclaration, State> transformationStates = Collections.synchronizedMap(new WeakHashMap<CompilationUnitDeclaration, State>());
 	
 	static {
 		String v = System.getProperty("lombok.histogram");
@@ -142,14 +139,14 @@ public class TransformEclipseAST {
 	 * @return <code>true</code> if this AST was already handled by lombok.
 	 */
 	public static boolean alreadyTransformed(CompilationUnitDeclaration ast) {
-		State state = transformationStates.get(ast);
+		TransformationState state = CompilationUnitDeclaration_transformationState.get(ast);
 		
-		if (state == State.FULL) return true;
-		if (state == State.DIET) {
+		if (state == TransformationState.FULL) return true;
+		if (state == TransformationState.DIET) {
 			if (!EclipseAST.isComplete(ast)) return true;
-			transformationStates.put(ast, State.FULL);
+			CompilationUnitDeclaration_transformationState.set(ast, TransformationState.FULL);
 		} else {
-			transformationStates.put(ast, State.DIET);
+			CompilationUnitDeclaration_transformationState.set(ast, TransformationState.DIET);
 		}
 		return false;
 	}
@@ -167,6 +164,10 @@ public class TransformEclipseAST {
 	 */
 	public static void transform(Parser parser, CompilationUnitDeclaration ast) {
 		if (disableLombok) return;
+		
+		// Skip module-info.java
+		char[] fileName = ast.getFileName();
+		if (fileName != null && String.valueOf(fileName).endsWith("module-info.java")) return;
 		
 		if (Symbols.hasSymbol("lombok.disable")) return;
 		if (alreadyTransformed(ast)) return;
@@ -269,10 +270,5 @@ public class TransformEclipseAST {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
 			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
-	}
-	
-	private static enum State {
-		DIET,
-		FULL
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,13 @@
  */
 package lombok.eclipse;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.core.CompilationUnit;
@@ -44,6 +45,7 @@ public final class EcjAugments {
 	public static final FieldAugment<ASTNode, ASTNode> ASTNode_generatedBy = FieldAugment.augment(ASTNode.class, ASTNode.class, "$generatedBy");
 	public static final FieldAugment<Annotation, Boolean> Annotation_applied = FieldAugment.augment(Annotation.class, boolean.class, "lombok$applied");
 	public static final FieldAugment<ICompilationUnit, Map<String, String>> CompilationUnit_javadoc = FieldAugment.augment(ICompilationUnit.class, Map.class, "$javadoc");
+	public static final FieldAugment<CompilationUnitDeclaration, TransformationState> CompilationUnitDeclaration_transformationState = FieldAugment.augment(CompilationUnitDeclaration.class, Object.class, "$transformationState");
 	
 	public static final class EclipseAugments {
 		private EclipseAugments() {
