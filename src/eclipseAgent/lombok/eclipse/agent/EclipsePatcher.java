@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -700,6 +700,11 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		sm.addScript(ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration")
 				.fieldName("$lombokAST").fieldType("Ljava/lang/Object;")
+				.setPublic().setTransient().build());
+		
+		sm.addScript(ScriptBuilder.addField()
+				.targetClass("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration")
+				.fieldName("$transformationState").fieldType("Ljava/lang/Object;")
 				.setPublic().setTransient().build());
 		
 		final String PARSER_SIG = "org.eclipse.jdt.internal.compiler.parser.Parser";
