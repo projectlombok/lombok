@@ -931,7 +931,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(bfd.originalFieldNode);
-		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(job.accessInners), deprecate, fieldNode, maker, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, job.sourceNode, methodAnns, bfd.annotations);
+		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(job.accessInners), false, deprecate, fieldNode, maker, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, job.sourceNode, methodAnns, bfd.annotations);
 		recursiveSetGeneratedBy(newMethod, job.sourceNode);
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
 			copyJavadocFromParam(bfd.originalFieldNode.up(), newMethod, bfd.name.toString());

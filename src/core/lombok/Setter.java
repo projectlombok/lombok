@@ -92,4 +92,12 @@ public @interface Setter {
 	@Retention(RetentionPolicy.SOURCE)
 	@Target({})
 	@interface AnyAnnotation {}
+	
+	/**
+	 * If you want your setter to invoke {@link java.lang.String#intern() String.intern()} on input string to reuse JVM string pool, you can turn this to true.
+	 * Note: Can only take effect to String field. And a field level @Setter annotation can override type level @Setter annotation on this feature.
+	 * 
+	 * @return Whether or not use {@link java.lang.String#intern() String.intern()} on input string to reuse JVM string pool.
+	 */
+	boolean internString() default false;
 }
