@@ -71,7 +71,7 @@ import com.sun.tools.javac.util.Name;
  */
 @Provides
 public class HandleGetter extends JavacAnnotationHandler<Getter> {
-	private static final String GETTER_NODE_NOT_SUPPORTED_ERR = "@Getter is only supported on a class, an enum, or a field.";
+	private static final String GETTER_NODE_NOT_SUPPORTED_ERR = "@Getter is only supported on a class, a record, an enum, or a field.";
 	
 	public void generateGetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelGetter, List<JCAnnotation> onMethod) {
 		if (checkForTypeLevelGetter) {
@@ -81,7 +81,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			}
 		}
 		
-		if (!isClassOrEnum(typeNode)) {
+		if (!isClassEnumOrRecord(typeNode)) {
 			errorNode.addError(GETTER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
