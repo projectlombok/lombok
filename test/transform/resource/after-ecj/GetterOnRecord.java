@@ -9,10 +9,10 @@ public @Getter record GetterOnRecord(String a, String b) {
     .b = b;
   }
 
-  public String getA() {
-    return a;
+  public @java.lang.SuppressWarnings("all") String getA() {
+    return this.a;
   }
-  public String getB() {
-    return b;
+  public @java.lang.SuppressWarnings("all") String getB() {
+    return this.b;
   }
 }
