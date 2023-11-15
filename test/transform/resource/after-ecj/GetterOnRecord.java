@@ -8,4 +8,11 @@ public @Getter record GetterOnRecord(String a, String b) {
     .a = a;
     .b = b;
   }
+
+  public String getA() {
+    return a;
+  }
+  public String getB() {
+    return b;
+  }
 }
