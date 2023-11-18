@@ -24,9 +24,9 @@ jobs:
           path: |
             ivyCache
             lib
-          key: ${{ runner.os }}-${{ hashFiles('**/ivy.xml') }}
+          key: ivy-${{ hashFiles('**/ivy.xml') }}
           restore-keys: |
-            ${{ runner.os }}-
+            ivy-
         
       - name: Build with Ant
         run: ant -noinput dist
@@ -83,9 +83,9 @@ jobs:
           path: |
             ivyCache
             lib
-          key: ${{ runner.os }}-${{ hashFiles('**/ivy.xml') }}
+          key: ivy-${{ hashFiles('**/ivy.xml') }}
           restore-keys: |
-            ${{ runner.os }}-
+            ivy-
         
       - name: Run tests
         run: ant -noinput test.${{ matrix.goal }}
@@ -100,8 +100,10 @@ jobs:
         - eclipse-202006
         - eclipse-202006-jdk8
         - eclipse-202212
+        - eclipse-202309
         - eclipse-oxygen-full
         - eclipse-2022-03-full
+        - eclipse-2023-09-full
         - ecj11
         - ecj14
         - ecj16
@@ -112,10 +114,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: 11
+          java-version: 17
           distribution: 'zulu'
 
       - name: Cache dependencies
@@ -124,9 +126,25 @@ jobs:
           path: |
             ivyCache
             lib
-          key: ${{ runner.os }}-${{ hashFiles('**/ivy.xml') }}
+          key: ivy-${{ hashFiles('**/ivy.xml') }}
           restore-keys: |
-            ${{ runner.os }}-
+            ivy-
+
+      - name: Cache base testenv
+        if: ${{ !endsWith(matrix.version, 'full') }}
+        uses: actions/cache@v3
+        with:
+          path: |
+            testenv
+          key: base-testenv-${{ hashFiles('**/setup.ant.xml') }}
+
+      - name: Cache full testenv
+        if: ${{ endsWith(matrix.version, 'full') }}
+        uses: actions/cache@v3
+        with:
+          path: |
+            testenv
+          key: ${{ matrix.version }}-testenv-${{ hashFiles('**/setup.ant.xml') }}
           
       - name: Build with Ant
         run: xvfb-run ant -noinput dist test.${{ matrix.version }}
