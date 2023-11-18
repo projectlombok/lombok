@@ -9,9 +9,6 @@ public @ExtensionMethod(ExtensionMethodOnRecord.Extensions.class) record Extensi
       return Integer.valueOf(s);
     }
   }
-  public ExtensionMethodOnRecord() {
-    super();
-  }
   public void test() {
     ExtensionMethodOnRecord.Extensions.intValue("1");
   }

@@ -21,6 +21,9 @@
  */
 package lombok.launch;
 
+import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
+import static lombok.eclipse.Eclipse.*;
+
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -61,8 +64,6 @@ import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
 import org.eclipse.jdt.internal.corext.refactoring.structure.MemberVisibilityAdjustor.IncomingMemberVisibilityAdjustment;
 
 import lombok.permit.Permit;
-
-import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
 
 /** These contain a mix of the following:
  * <ul>
@@ -924,6 +925,14 @@ final class PatchFixesHider {
 				}
 			}
 			return null;
+		}
+		
+		public static boolean isImplicitCanonicalConstructor(AbstractMethodDeclaration method, Object parameter) {
+			return (method.bits & IsCanonicalConstructor) != 0 && (method.bits & IsImplicit) != 0;
+		}
+		
+		public static StringBuffer returnStringBuffer(Object p1, StringBuffer buffer) {
+			return buffer;
 		}
 	}
 }
