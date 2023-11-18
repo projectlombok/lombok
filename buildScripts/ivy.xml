@@ -28,9 +28,10 @@
 		<conf name="ecj16" />
 		<conf name="ecj19" />
 		
-		<conf name="eclipse-202212" />
 		<conf name="eclipse-oxygen" />
 		<conf name="eclipse-202006" />
+		<conf name="eclipse-202212" />
+		<conf name="eclipse-202309" />
 		
 		<conf name="mapstruct" />
 	</configurations>
@@ -81,18 +82,6 @@
 		
 		<!-- eclipses -->
 		
-		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.26.100" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.32.0" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.27.100" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.common" rev="3.17.0" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.registry" rev="3.11.200" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.app" rev="1.6.200" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.platform" name="org.eclipse.core.resources" rev="3.18.100" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.platform" name="org.eclipse.core.contenttype" rev="3.8.200" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.13.200" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.18.200" conf="eclipse-202212->default" transitive="false" />
-		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.12.300" conf="eclipse-202212->default" transitive="false" />
-		
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.13.0" conf="eclipse-oxygen->default" transitive="false" />
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.13.102" conf="eclipse-oxygen->default" transitive="false" />
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.13.100" conf="eclipse-oxygen->default" transitive="false" />
@@ -117,6 +106,31 @@
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.10.800" conf="eclipse-202006->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.15.300" conf="eclipse-202006->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.10.200" conf="eclipse-202006->default" transitive="false" />
+		
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.26.100" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.32.0" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.27.100" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.common" rev="3.17.0" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.registry" rev="3.11.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.app" rev="1.6.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.resources" rev="3.18.100" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.contenttype" rev="3.8.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.13.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.18.200" conf="eclipse-202212->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.12.300" conf="eclipse-202212->default" transitive="false" />
+		
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.29.0" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.35.0" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.30.0" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="ecj" rev="3.35.0" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.common" rev="3.18.100" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.registry" rev="3.11.300" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.app" rev="1.6.300" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.resources" rev="3.19.100" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.contenttype" rev="3.9.100" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.15.0" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.18.500" conf="eclipse-202309->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.13.100" conf="eclipse-202309->default" transitive="false" />
 		
 		<!-- integration with other libraries -->
 		<dependency org="org.mapstruct" name="mapstruct-processor" rev="1.3.1.Final" conf="mapstruct->default" transitive="false" />

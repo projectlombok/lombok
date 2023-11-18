@@ -41,11 +41,14 @@ public class DownloadEclipseDependencies {
 					downloadFile(path, updatePage, pluginTarget);
 				} catch (Exception e) {
 				}
-				try {
-					int index = path.lastIndexOf("_");
-					String source = path.substring(0, index) + ".source" + path.substring(index);
-					downloadFile(source, updatePage, pluginTarget);
-				} catch (Exception e) {
+				
+				int index = path.lastIndexOf("_");
+				String source = path.substring(0, index) + ".source" + path.substring(index);
+				if (indexData.contains(source)) {
+					try {
+						downloadFile(source, updatePage, pluginTarget);
+					} catch (Exception e) {
+					}
 				}
 			} else {
 				System.out.println("Bundle \"" + pkg + "\" not found");
