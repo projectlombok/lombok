@@ -117,12 +117,6 @@ public @Builder record BuilderSingularOnRecord(List children, Collection scarves
 /* Implicit */  private final List<T> children;
 /* Implicit */  private final Collection<? extends Number> scarves;
 /* Implicit */  private final List rawList;
-  public BuilderSingularOnRecord(@Singular List<T> children, @Singular Collection<? extends Number> scarves, @SuppressWarnings("all") @Singular("rawList") List rawList) {
-    super();
-    .children = children;
-    .scarves = scarves;
-    .rawList = rawList;
-  }
   public static @java.lang.SuppressWarnings("all") <T>BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> builder() {
     return new BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T>();
   }

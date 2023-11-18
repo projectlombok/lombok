@@ -30,11 +30,6 @@ public @lombok.Builder(access = lombok.AccessLevel.PROTECTED) record BuilderSimp
   }
 /* Implicit */  private final List<T> l;
 /* Implicit */  private final String a;
-  public BuilderSimpleOnRecord(List<T> l, String a) {
-    super();
-    .l = l;
-    .a = a;
-  }
   protected static @java.lang.SuppressWarnings("all") <T>BuilderSimpleOnRecord.BuilderSimpleOnRecordBuilder<T> builder() {
     return new BuilderSimpleOnRecord.BuilderSimpleOnRecordBuilder<T>();
   }

@@ -18,11 +18,4 @@ public @FieldNameConstants(level = AccessLevel.PACKAGE) record FieldNameConstant
   static double skipMeToo;
   <clinit>() {
   }
-  public FieldNameConstantsOnRecord(String iAmADvdPlayer, int $skipMe,  int andMe, String butPrintMePlease) {
-    super();
-    .iAmADvdPlayer = iAmADvdPlayer;
-    .$skipMe = $skipMe;
-    .andMe = andMe;
-    .butPrintMePlease = butPrintMePlease;
-  }
 }
