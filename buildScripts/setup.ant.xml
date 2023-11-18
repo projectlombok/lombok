@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="lombok.setup" default="deps" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" basedir="..">
+<project name="lombok.setup" default="deps" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus" xmlns:unless="ant:unless" basedir="..">
 	<description>
 This buildfile is part of projectlombok.org. It sets up the build itself.
 	</description>
@@ -167,6 +167,10 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<fetchdep.eclipse.osgi name="2022-03" version="4.23/R-4.23-202203080310" />
 	</target>
 	
+	<target name="deps.eclipse.2023-09" depends="deps.rtstubs18, compile.support">
+		<fetchdep.eclipse.osgi name="2023-09" version="4.29/R-4.29-202309031000" />
+	</target>
+	
 	<macrodef name="fetchdep.ecj">
 		<attribute name="version" />
 		<sequential>
@@ -192,6 +196,9 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<attribute name="name" />
 		<attribute name="version" />
 		<sequential>
+			<condition property="@{name}.isoxygen">
+				<equals arg1="@{name}" arg2="oxygen"/>
+			</condition>
 			<java classname="lombok.eclipse.dependencies.DownloadEclipseDependencies" failonerror="true">
 				<classpath>
 					<path refid="cp.buildtools" />
@@ -200,18 +207,28 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 				<arg value="@{target}" />
 				<arg value="eclipse-@{name}" />
 				<arg value="https://download.eclipse.org/eclipse/updates/@{version}/plugins/" />
+				<arg value="bcpg" />
+				<arg value="bcprov" />
 				<arg value="com.ibm.icu" />
 				<arg value="com.sun.jna" />
 				<arg value="com.sun.jna.platform" />
-				<arg value="javax.inject" />
+				<arg value="jakarta.inject.jakarta.inject-api" />
+				<arg value="jakarta.annotation-api" />
+				<arg value="jakarta.servlet-api" />
 				<arg value="javax.annotation" />
+				<arg value="javax.inject" />
+				<arg value="javax.el-api" />
+				<arg value="javax.servlet.jsp-api" />
 				<arg value="org.apache.batik.constants" />
 				<arg value="org.apache.batik.css" />
 				<arg value="org.apache.batik.i18n" />
 				<arg value="org.apache.batik.util" />
+				<arg value="org.apache.commons.collections" />
+				<arg value="org.apache.commons.commons-beanutils" />
+				<arg value="org.apache.commons.commons-io" />
 				<arg value="org.apache.commons.io" />
-				<arg value="org.apache.commons.logging" />
 				<arg value="org.apache.commons.jxpath" />
+				<arg value="org.apache.commons.logging" />
 				<arg value="org.apache.felix.scr" />
 				<arg value="org.apache.xmlgraphics" />
 				<arg value="org.bouncycastle.bcpg" />
@@ -274,6 +291,7 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 				<arg value="org.eclipse.equinox.security" />
 				<arg value="org.eclipse.help" />
 				<arg value="org.eclipse.jdt.core" />
+				<arg value="org.eclipse.jdt.core.compiler.batch" unless:set="@{name}.isoxygen" />
 				<arg value="org.eclipse.jdt.core.manipulation" />
 				<arg value="org.eclipse.jdt.debug" />
 				<arg value="org.eclipse.jdt.launching" />
@@ -304,6 +322,12 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 				<arg value="org.eclipse.ui.workbench" />
 				<arg value="org.eclipse.ui.workbench.texteditor" />
 				<arg value="org.eclipse.urischeme" />
+				<arg value="org.jdom" />
+				<arg value="org.osgi.service.prefs" />
+				<arg value="org.osgi.service.event" />
+				<arg value="org.osgi.service.component" />
+				<arg value="org.osgi.util.function" />
+				<arg value="org.osgi.util.promise" />
 				<arg value="org.tukaani.xz" />
 				<arg value="org.w3c.css.sac" />
 				<arg value="org.w3c.dom.events" />

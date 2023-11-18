@@ -213,6 +213,11 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.eclipse-X version="202006" compiler.compliance.level="8" />
 	</target>
 	
+	<target name="test.eclipse-202309" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the 2023-09 release of eclipse">
+		<fetchdep.eclipse version="202309" />
+		<test.eclipse-X version="202309" />
+	</target>
+	
 	<macrodef name="test.eclipse-X-full">
 		<attribute name="version" />
 		<sequential>
@@ -250,6 +255,10 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	
 	<target name="test.eclipse-2022-03-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.2022-03" description="runs the full eclipse tests on your default VM, testing the 2022-03 release of eclipse">
 		<test.eclipse-X-full version="2022-03" />
+	</target>
+	
+	<target name="test.eclipse-2023-09-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.2023-09" description="runs the full eclipse tests on your default VM, testing the 2023-09 release of eclipse">
+		<test.eclipse-X-full version="2023-09" />
 	</target>
 	
 	<macrodef name="test.ecj-X">
