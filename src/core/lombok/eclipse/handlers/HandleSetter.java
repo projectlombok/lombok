@@ -41,14 +41,20 @@ import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
 import lombok.spi.Provides;
 
+import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
@@ -66,7 +72,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 	private static final String SETTER_NODE_NOT_SUPPORTED_ERR = "@Setter is only supported on a class or a field.";
 	
-	public boolean generateSetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelSetter, List<Annotation> onMethod, List<Annotation> onParam) {
+	public boolean generateSetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean internString, boolean checkForTypeLevelSetter, List<Annotation> onMethod, List<Annotation> onParam) {
 		if (checkForTypeLevelSetter) {
 			if (hasAnnotation(Setter.class, typeNode)) {
 				//The annotation will make it happen, so we can skip it.
@@ -87,7 +93,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			//Skip final fields.
 			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) continue;
 			
-			generateSetterForField(field, pos, level, onMethod, onParam);
+			generateSetterForField(field, pos, level, internString, onMethod, onParam);
 		}
 		return true;
 	}
@@ -104,12 +110,12 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 	 * If not, the setter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateSetterForField(EclipseNode fieldNode, EclipseNode sourceNode, AccessLevel level, List<Annotation> onMethod, List<Annotation> onParam) {
+	public void generateSetterForField(EclipseNode fieldNode, EclipseNode sourceNode, AccessLevel level, boolean internString, List<Annotation> onMethod, List<Annotation> onParam) {
 		if (hasAnnotation(Setter.class, fieldNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
-		createSetterForField(level, fieldNode, sourceNode, false, onMethod, onParam);
+		createSetterForField(level, internString, fieldNode, sourceNode, false, onMethod, onParam);
 	}
 	
 	@Override public void handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -117,6 +123,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
+		boolean internString = annotation.getInstance().internString();
 		if (level == AccessLevel.NONE || node == null) return;
 		
 		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Setter(onMethod", annotationNode);
@@ -124,22 +131,22 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod, onParam);
+			createSetterForFields(level, internString, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod, onParam);
 			break;
 		case TYPE:
-			generateSetterForType(node, annotationNode, level, false, onMethod, onParam);
+			generateSetterForType(node, annotationNode, level, internString, false, onMethod, onParam);
 			break;
 		}
 	}
 	
-	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
+	public void createSetterForFields(AccessLevel level, boolean internString, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createSetterForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
+			createSetterForField(level, internString, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
 		}
 	}
 	
 	public void createSetterForField(
-			AccessLevel level, EclipseNode fieldNode, EclipseNode sourceNode,
+			AccessLevel level, boolean internString, EclipseNode fieldNode, EclipseNode sourceNode,
 			boolean whineIfExists, List<Annotation> onMethod,
 			List<Annotation> onParam) {
 		
@@ -181,11 +188,11 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			}
 		}
 		
-		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), false, fieldNode, setterName, null, null, shouldReturnThis, modifier, sourceNode, onMethod, onParam);
+		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), internString, false, fieldNode, setterName, null, null, shouldReturnThis, modifier, sourceNode, onMethod, onParam);
 		injectMethod(fieldNode.up(), method);
 	}
 
-	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, boolean internString, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
 		ASTNode source = sourceNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
@@ -198,11 +205,11 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			returnThis = new ReturnStatement(thisRef, pS, pE);
 		}
 		
-		MethodDeclaration d = createSetter(parent, deprecate, fieldNode, name, paramName, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam);
+		MethodDeclaration d = createSetter(parent, internString, deprecate, fieldNode, name, paramName, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam);
 		return d;
 	}
 	
-	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, TypeReference returnType, Statement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, boolean internString, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, TypeReference returnType, Statement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		if (paramName == null) paramName = field.name;
 		ASTNode source = sourceNode.get();
@@ -231,9 +238,17 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		
 		Expression fieldRef = createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);
-		NameReference fieldNameRef = new SingleNameReference(paramName, p);
-		Assignment assignment = new Assignment(fieldRef, fieldNameRef, (int) p);
+		Assignment assignment;
+		if(internString && isStringType(field)) {
+			ConditionalExpression internExpression = createInternExpression(fieldNode, paramName, p, source);
+			assignment = new Assignment(fieldRef, internExpression, (int) p);
+		} else {
+			NameReference fieldNameRef = new SingleNameReference(paramName, p);
+			assignment = new Assignment(fieldRef, fieldNameRef, (int) p);
+		}
+		
 		assignment.sourceStart = pS; assignment.sourceEnd = assignment.statementEnd = pE;
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
@@ -267,5 +282,44 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		copyJavadoc(fieldNode, method, CopyJavadoc.SETTER, returnStatement != null);
 		return method;
+	}
+	
+	private static final char[][] TYPENAME_STRING = new char[][] {{'S','t','r','i','n','g'}};
+	
+	private static final char[][] TYPENAME_STRING_FULL = new char[][] {{'j','a','v','a'},{'l','a','n','g'},{'S','t','r','i','n','g'}};
+	
+	/* is String or java.lang.String */
+	static boolean isStringType(FieldDeclaration field) {
+		if (field == null) {
+			return false;
+		}
+		
+		char[][] typeName = field.type.getTypeName();
+		return CharOperation.equals(typeName, TYPENAME_STRING) || CharOperation.equals(typeName, TYPENAME_STRING_FULL);
+	}
+	
+	/* field == null ? null : field.intern() */
+	static ConditionalExpression createInternExpression(EclipseNode fieldNode, char[] paramName, long p, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		
+		NameReference fieldNameRef = new SingleNameReference(paramName, p);
+		NullLiteral nullLiteral = new NullLiteral(pS, pE);
+		setGeneratedBy(nullLiteral, source);
+		EqualExpression fieldIsNull = new EqualExpression(fieldNameRef, nullLiteral, OperatorIds.EQUAL_EQUAL);
+		
+		nullLiteral = new NullLiteral(pS, pE);
+		
+		fieldNameRef = new SingleNameReference(paramName, p);
+		MessageSend feildIntern = new MessageSend();
+		feildIntern.sourceStart = pS; feildIntern.sourceEnd = pE;
+		setGeneratedBy(feildIntern, source);
+		feildIntern.receiver = fieldNameRef;
+		setGeneratedBy(feildIntern.receiver, source);
+		feildIntern.selector = "intern".toCharArray();
+		
+		ConditionalExpression internExpression = new ConditionalExpression(fieldIsNull, nullLiteral, feildIntern);
+		internExpression.sourceStart = pS; internExpression.sourceEnd = pE;
+		setGeneratedBy(internExpression, source);
+		return internExpression;
 	}
 }

@@ -1050,7 +1050,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(bfd.originalFieldNode);
 		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
 		ASTNode source = job.sourceNode.get();
-		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, toEclipseModifier(job.accessInners),
+		MethodDeclaration setter = HandleSetter.createSetter(td, false, deprecate, fieldNode, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, toEclipseModifier(job.accessInners),
 			job.sourceNode, methodAnnsList, bfd.annotations != null ? Arrays.asList(copyAnnotations(source, bfd.annotations)) : Collections.<Annotation>emptyList());
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
 			copyJavadocFromParam(bfd.originalFieldNode.up(), setter, td, bfd.name.toString());
