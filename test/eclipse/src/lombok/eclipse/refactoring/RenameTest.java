@@ -21,7 +21,7 @@ public class RenameTest {
 	
 	@Rule
 	public SetupBeforeAfterTest setup = new SetupBeforeAfterTest();
-	
+//	
 	@Test
 	public void simple() throws Exception {
 		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("A.java");
@@ -30,6 +30,8 @@ public class RenameTest {
 		
 		RenameFieldProcessor renameFieldProcessor = new RenameFieldProcessor(field);
 		renameFieldProcessor.setNewElementName("newString");
+		renameFieldProcessor.setRenameGetter(true);
+		renameFieldProcessor.setRenameSetter(true);
 		
 		performRefactoring(renameFieldProcessor);
 	}
@@ -82,5 +84,34 @@ public class RenameTest {
 		renameMethodProcessor.setNewElementName("newTest");
 		
 		performRefactoring(renameMethodProcessor);
+	}
+	
+	@Test
+	public void data() throws Exception {
+		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("A.java");
+		IType type = cu.findPrimaryType();
+		IField field = type.getField("string");
+		
+		RenameFieldProcessor renameFieldProcessor = new RenameFieldProcessor(field);
+		renameFieldProcessor.setNewElementName("newString");
+		renameFieldProcessor.setRenameGetter(true);
+		renameFieldProcessor.setRenameSetter(true);
+		
+		performRefactoring(renameFieldProcessor);
+	}
+	
+	@Test
+	public void nestedClass() throws Exception {
+		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("A.java");
+		IType type = cu.findPrimaryType();
+		IType nestedType = type.getType("Nested");
+		IField field = nestedType.getField("string");
+		
+		RenameFieldProcessor renameFieldProcessor = new RenameFieldProcessor(field);
+		renameFieldProcessor.setNewElementName("newString");
+		renameFieldProcessor.setRenameGetter(true);
+		renameFieldProcessor.setRenameSetter(true);
+		
+		performRefactoring(renameFieldProcessor);
 	}
 }
