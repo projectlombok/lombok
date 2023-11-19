@@ -38,7 +38,6 @@ import java.util.Stack;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
-import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -770,27 +769,6 @@ final class PatchFixesHider {
 				if (!isGenerated(m)) result.add(m);
 			}
 			return result.size() == methods.length ? methods : result.toArray(new IMethod[0]);
-		}
-		
-		public static SearchMatch[] removeGenerated(SearchMatch[] returnValue) {
-			List<SearchMatch> result = new ArrayList<SearchMatch>();
-			for (int j = 0; j < returnValue.length; j++) {
-				SearchMatch searchResult = returnValue[j];
-				if (searchResult.getElement() instanceof IField) {
-					IField field = (IField) searchResult.getElement();
-					
-					// can not check for value=lombok because annotation is
-					// not fully resolved
-					IAnnotation annotation = field.getAnnotation("Generated");
-					if (annotation != null) {
-						// Method generated at field location, skip
-						continue;
-					}
-					
-				}
-				result.add(searchResult);
-			}
-			return result.toArray(new SearchMatch[0]);
 		}
 		
 		public static SearchResultGroup[] createFakeSearchResult(SearchResultGroup[] returnValue,

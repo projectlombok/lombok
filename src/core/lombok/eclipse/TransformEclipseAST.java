@@ -170,6 +170,9 @@ public class TransformEclipseAST {
 		if (fileName != null && String.valueOf(fileName).endsWith("module-info.java")) return;
 		
 		if (Symbols.hasSymbol("lombok.disable")) return;
+		// The IndexingParser only supports a single import statement, restricting lombok annotations to either fully qualified ones or
+		// those specified in the last import statement. To avoid handling hard to reproduce edge cases, we opt to ignore the entire parser.
+		if ("org.eclipse.jdt.internal.core.search.indexing.IndexingParser".equals(parser.getClass().getName())) return;
 		if (alreadyTransformed(ast)) return;
 		
 		// Do NOT abort if (ast.bits & ASTNode.HasAllMethodBodies) != 0 - that doesn't work.

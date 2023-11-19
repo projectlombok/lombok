@@ -130,14 +130,16 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.methodToWrap(new Hook("org.eclipse.jdt.internal.corext.refactoring.RefactoringSearchEngine", "search", "org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup[]", "org.eclipse.jdt.core.search.SearchPattern","org.eclipse.jdt.core.search.IJavaSearchScope","org.eclipse.core.runtime.IProgressMonitor","org.eclipse.ltk.core.refactoring.RefactoringStatus"))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "createFakeSearchResult", "org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup[]", "org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup[]", "java.lang.Object"))
 				.requestExtra(StackRequest.THIS)
-				.transplant().build());
+				.transplant()
+				.build());
 		
-		/* Filter search results which are Generated and based on Fields, e.g. Generated getters/setters */
-		sm.addScript(ScriptBuilder.wrapMethodCall()
-				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.RenameFieldProcessor", "addAccessorOccurrences", "void", "org.eclipse.core.runtime.IProgressMonitor", "org.eclipse.jdt.core.IMethod", "java.lang.String","java.lang.String","org.eclipse.ltk.core.refactoring.RefactoringStatus"))
-				.methodToWrap(new Hook("org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup", "getSearchResults", "org.eclipse.jdt.core.search.SearchMatch[]"))
-				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "removeGenerated", "org.eclipse.jdt.core.search.SearchMatch[]", "org.eclipse.jdt.core.search.SearchMatch[]"))
-				.transplant().build());
+		/* Prevent adding generated nodes as possible search matches */
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.search.matching.MatchingNodeSet", "addPossibleMatch", "void", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.request(StackRequest.PARAM1)
+				.transplant()
+				.build());
 	}
 	
 	private static void patchExtractInterfaceAndPullUp(ScriptManager sm) {
@@ -1023,7 +1025,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchForTests(ScriptManager sm) {
-		sm.addScriptIfWitness(new String[] {"lombok/eclipse/EclipseTests"}, ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(new String[] {"lombok/eclipse/EclipseRunner"}, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.osgi.framework.FrameworkUtil", "getBundle", "org.osgi.framework.Bundle", "java.lang.Class"))
 				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "getBundle", "java.lang.Object", "java.lang.Object", "java.lang.Class"))
