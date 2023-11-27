@@ -58,11 +58,6 @@ public @lombok.extern.jackson.Jacksonized @lombok.Builder @JsonIgnoreProperties 
   }
 /* Implicit */  private final String string;
 /* Implicit */  private final List<String> values;
-  public JacksonizedOnRecord(@JsonProperty("test") @Nullable String string, @lombok.Singular List<String> values) {
-    super();
-    .string = string;
-    .values = values;
-  }
   public static @java.lang.SuppressWarnings("all") JacksonizedOnRecord.JacksonizedOnRecordBuilder builder() {
     return new JacksonizedOnRecord.JacksonizedOnRecordBuilder();
   }

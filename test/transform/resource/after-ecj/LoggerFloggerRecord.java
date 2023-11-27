@@ -6,10 +6,6 @@ class LoggerFloggerRecord {
     private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
     <clinit>() {
     }
-    public Inner(String x) {
-      super();
-      .x = x;
-    }
   }
   LoggerFloggerRecord() {
     super();

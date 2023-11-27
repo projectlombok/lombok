@@ -3,11 +3,6 @@ import lombok.With;
 public @With record WithOnRecord(String a, String b) {
 /* Implicit */  private final String a;
 /* Implicit */  private final String b;
-  public WithOnRecord(String a, String b) {
-    super();
-    .a = a;
-    .b = b;
-  }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */

@@ -99,6 +99,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportNonStaticAccessToStatic, "warning");
 		warnings.put("org.eclipse.jdt.core.compiler.problem.reportPreviewFeatures", "ignore");
 		warnings.put(CompilerOptions.OPTION_Source, (ecjCompilerVersion < 9 ? "1." : "") + ecjCompilerVersion);
+		warnings.put("org.eclipse.jdt.core.compiler.codegen.useStringConcatFactory", "disabled");
 		options.set(warnings);
 		return options;
 	}
