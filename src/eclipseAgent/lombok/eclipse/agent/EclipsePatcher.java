@@ -107,6 +107,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchEcjTransformers(sm);
 		patchExtensionMethod(sm);
 		patchRenameField(sm);
+		patchInline(sm);
 		patchNullCheck(sm);
 		
 		patchForTests(sm);
@@ -214,6 +215,15 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ImportRemover", "registerRemovedNode", "void", "org.eclipse.jdt.core.dom.ASTNode"))
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
 				.request(StackRequest.PARAM1)
+				.transplant()
+				.build());
+	}
+	
+	private static void patchInline(ScriptManager sm) {
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.code.SourceProvider", "getCodeBlocks", "java.lang.String[]", "org.eclipse.jdt.internal.corext.refactoring.code.CallContext", "org.eclipse.jdt.core.dom.rewrite.ImportRewrite"))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "getRealCodeBlocks", "java.lang.String[]", "java.lang.String[]", "org.eclipse.jdt.internal.corext.refactoring.code.SourceProvider", "org.eclipse.jdt.internal.corext.refactoring.code.CallContext"))
+				.request(StackRequest.RETURN_VALUE, StackRequest.THIS, StackRequest.PARAM1)
 				.transplant()
 				.build());
 	}
@@ -1023,7 +1033,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchForTests(ScriptManager sm) {
-		sm.addScriptIfWitness(new String[] {"lombok/eclipse/EclipseTests"}, ScriptBuilder.wrapReturnValue()
+		sm.addScriptIfWitness(new String[] {"lombok/eclipse/EclipseRunner"}, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.osgi.framework.FrameworkUtil", "getBundle", "org.osgi.framework.Bundle", "java.lang.Class"))
 				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "getBundle", "java.lang.Object", "java.lang.Object", "java.lang.Class"))
