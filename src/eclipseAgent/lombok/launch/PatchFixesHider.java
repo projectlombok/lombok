@@ -918,12 +918,14 @@ final class PatchFixesHider {
 			try {
 				// Replace parameter references with actual argument
 				AST ast = methodDeclaration.getAST();
-				for (Object param : methodDeclaration.parameters()) {
-					Object data = ((SingleVariableDeclaration)param).getProperty("org.eclipse.jdt.internal.corext.refactoring.code.ParameterData");
+				List<?> parameters = methodDeclaration.parameters();
+				for (int i = 0; i < parameters.size(); i++) {
+					SingleVariableDeclaration param = (SingleVariableDeclaration) parameters.get(i);
+					Object data = param.getProperty("org.eclipse.jdt.internal.corext.refactoring.code.ParameterData");
 					List<SimpleName> names = Permit.get(Permit.permissiveGetField(data.getClass(), "fReferences"), data);
 					
 					for (SimpleName simpleName : names) {
-						ASTNode copy = ASTNode.copySubtree(ast, callContext.arguments[0]);
+						ASTNode copy = ASTNode.copySubtree(ast, callContext.arguments[i]);
 						simpleName.getParent().setStructuralProperty(simpleName.getLocationInParent(), copy);
 					}
 				}
