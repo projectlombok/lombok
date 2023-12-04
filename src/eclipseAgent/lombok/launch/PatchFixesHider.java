@@ -43,7 +43,11 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
@@ -61,6 +65,8 @@ import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
+import org.eclipse.jdt.internal.corext.refactoring.code.CallContext;
+import org.eclipse.jdt.internal.corext.refactoring.code.SourceProvider;
 import org.eclipse.jdt.internal.corext.refactoring.structure.MemberVisibilityAdjustor.IncomingMemberVisibilityAdjustment;
 
 import lombok.permit.Permit;
@@ -901,6 +907,40 @@ final class PatchFixesHider {
 		
 		public static boolean skipRewriteVisibility(IncomingMemberVisibilityAdjustment adjustment) {
 			return isGenerated(adjustment.getMember());
+		}
+		
+		public static String[] getRealCodeBlocks(String[] blocks, SourceProvider sourceProvider, CallContext callContext) {
+			MethodDeclaration methodDeclaration = sourceProvider.getDeclaration();
+			if (!isGenerated(methodDeclaration)) {
+				return blocks;
+			}
+			
+			try {
+				// Replace parameter references with actual argument
+				AST ast = methodDeclaration.getAST();
+				for (Object param : methodDeclaration.parameters()) {
+					Object data = ((SingleVariableDeclaration)param).getProperty("org.eclipse.jdt.internal.corext.refactoring.code.ParameterData");
+					List<SimpleName> names = Permit.get(Permit.permissiveGetField(data.getClass(), "fReferences"), data);
+					
+					for (SimpleName simpleName : names) {
+						ASTNode copy = ASTNode.copySubtree(ast, callContext.arguments[0]);
+						simpleName.getParent().setStructuralProperty(simpleName.getLocationInParent(), copy);
+					}
+				}
+				// Convert AST to source
+				StringBuilder sb = new StringBuilder();
+				for (Object statement : methodDeclaration.getBody().statements()) {
+					if (callContext.callMode != ASTNode.RETURN_STATEMENT && statement instanceof ReturnStatement) {
+						ReturnStatement returnStatement = (ReturnStatement) statement;
+						sb.append(returnStatement.getExpression());
+					} else {
+						sb.append(statement);
+					}
+				}
+				return new String[] {sb.toString().trim()};
+			} catch (Throwable e) {
+				return blocks;
+			}
 		}
 	}
 	
