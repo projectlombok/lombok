@@ -72,8 +72,7 @@ public class PatchJavadoc {
 			String rawJavadoc = docs.get(signature);
 			if (rawJavadoc != null) {
 				for (String line : rawJavadoc.split("\r?\n")) {
-					// TODO call this via reflection
-					ASTNode.printIndent(tab, output).append(line).append("\n");
+					printIndent(tab, output).append(line).append("\n");
 				}
 			}
 		}
@@ -89,8 +88,7 @@ public class PatchJavadoc {
 			String rawJavadoc = docs.get(signature);
 			if (rawJavadoc != null) {
 				for (String line : rawJavadoc.split("\r?\n")) {
-					// TODO call this via reflection
-					ASTNode.printIndent(tab, output).append(line).append("\n");
+					printIndent(tab, output).append(line).append("\n");
 				}
 			}
 		}
@@ -98,6 +96,16 @@ public class PatchJavadoc {
 		return methodDeclaration.print(tab, output);
 	}
 	
+	private static StringBuilder printIndent(int indent, StringBuilder output) {
+		for (int i = indent; i > 0; i--) output.append("  "); //$NON-NLS-1$
+		return output;
+	}
+
+	private static StringBuffer printIndent(int indent, StringBuffer output) {
+		for (int i = indent; i > 0; i--) output.append("  "); //$NON-NLS-1$
+		return output;
+	}
+
 	private static class Signature {
 		static final String getSignature(SourceMethod sourceMethod) {
 			StringBuilder sb = new StringBuilder();
