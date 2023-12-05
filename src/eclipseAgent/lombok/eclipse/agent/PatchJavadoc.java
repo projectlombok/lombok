@@ -72,10 +72,12 @@ public class PatchJavadoc {
 			String rawJavadoc = docs.get(signature);
 			if (rawJavadoc != null) {
 				for (String line : rawJavadoc.split("\r?\n")) {
+					// TODO call this via reflection
 					ASTNode.printIndent(tab, output).append(line).append("\n");
 				}
 			}
 		}
+		// TODO call this via reflection
 		return methodDeclaration.print(tab, output);
 	}
 	
@@ -87,10 +89,12 @@ public class PatchJavadoc {
 			String rawJavadoc = docs.get(signature);
 			if (rawJavadoc != null) {
 				for (String line : rawJavadoc.split("\r?\n")) {
+					// TODO call this via reflection
 					ASTNode.printIndent(tab, output).append(line).append("\n");
 				}
 			}
 		}
+		// TODO call this via reflection
 		return methodDeclaration.print(tab, output);
 	}
 	
