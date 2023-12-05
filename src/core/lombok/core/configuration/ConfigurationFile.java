@@ -183,7 +183,7 @@ public abstract class ConfigurationFile {
 		
 		private static String replaceEnvironmentVariables(String fileName) {
 			int start = 0;
-			StringBuffer result = new StringBuffer();
+			StringBuilder result = new StringBuilder();
 			if (fileName.startsWith("~")) {
 				start = 1;
 				result.append(System.getProperty("user.home", "~"));

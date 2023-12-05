@@ -65,6 +65,21 @@ public class PatchJavadoc {
 		return null;
 	}
 	
+	public static StringBuilder printMethod(AbstractMethodDeclaration methodDeclaration, Integer tab, StringBuilder output, TypeDeclaration type) {
+		Map<String, String> docs = CompilationUnit_javadoc.get(methodDeclaration.compilationResult.compilationUnit);
+		if (docs != null) {
+			String signature = EclipseHandlerUtil.getSignature(type, methodDeclaration);
+			String rawJavadoc = docs.get(signature);
+			if (rawJavadoc != null) {
+				for (String line : rawJavadoc.split("\r?\n")) {
+					ASTNode.printIndent(tab, output).append(line).append("\n");
+				}
+			}
+		}
+		return methodDeclaration.print(tab, output);
+	}
+	
+	
 	public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, Integer tab, StringBuffer output, TypeDeclaration type) {
 		Map<String, String> docs = CompilationUnit_javadoc.get(methodDeclaration.compilationResult.compilationUnit);
 		if (docs != null) {
