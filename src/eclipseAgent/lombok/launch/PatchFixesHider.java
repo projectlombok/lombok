@@ -433,11 +433,8 @@ final class PatchFixesHider {
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchJavadoc");
 			GET_HTML = Util.findMethod(shadowed, "getHTMLContentFromSource", String.class, Object.class);
-			try {
-				PRINT_METHOD_NEW = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuilder.class, TypeDeclaration.class);
-			} catch( RuntimeException e ) {
-				PRINT_METHOD_OLD = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuffer.class, TypeDeclaration.class);
-			}
+			PRINT_METHOD_NEW = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuilder.class, TypeDeclaration.class);
+			PRINT_METHOD_OLD = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuffer.class, TypeDeclaration.class);
 		}
 		
 		public static String getHTMLContentFromSource(String original, IJavaElement member) {
@@ -985,7 +982,7 @@ final class PatchFixesHider {
 			return (method.bits & IsCanonicalConstructor) != 0 && (method.bits & IsImplicit) != 0;
 		}
 		
-		public static StringBuilder returnStringBuffer(Object p1, StringBuffer buffer) {
+		public static StringBuffer returnStringBuffer(Object p1, StringBuffer buffer) {
 			return buffer;
 		}
 
