@@ -24,6 +24,7 @@ package lombok.eclipse.agent;
 import static lombok.eclipse.EcjAugments.CompilationUnit_javadoc;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -76,8 +77,34 @@ public class PatchJavadoc {
 				}
 			}
 		}
-		// TODO call this via reflection
-		return methodDeclaration.print(tab, output);
+		String methodName = "print";
+		Method builderMethod = findMethodOrNull(AbstractMethodDeclaration.class, methodName, int.class, StringBuilder.class);
+		if( builderMethod != null ) {
+			try {
+				return (StringBuilder)builderMethod.invoke(methodDeclaration, tab, output);
+			} catch( IllegalAccessException e ) {
+				// ignore
+			} catch( InvocationTargetException f ) {
+				// ignore
+			}
+		}
+		
+		// Should never happen
+		Method bufferMethod = findMethodOrNull(AbstractMethodDeclaration.class, methodName, int.class, StringBuffer.class);
+		if( bufferMethod != null ) {
+			try {
+				StringBuffer sb = new StringBuffer();
+				StringBuffer out = (StringBuffer)bufferMethod.invoke(methodDeclaration, tab, sb);
+				output.append(out.toString());
+				return output;
+			} catch( IllegalAccessException e ) {
+				// ignore
+			} catch( InvocationTargetException f ) {
+				// ignore
+			}
+		}
+		// Should really never happen
+		return output;
 	}
 	
 	
@@ -92,8 +119,43 @@ public class PatchJavadoc {
 				}
 			}
 		}
-		// TODO call this via reflection
-		return methodDeclaration.print(tab, output);
+
+		String methodName = "print";
+		Method bufferMethod = findMethodOrNull(AbstractMethodDeclaration.class, methodName, int.class, StringBuffer.class);
+		if( bufferMethod != null ) {
+			try {
+				return (StringBuffer)bufferMethod.invoke(methodDeclaration, tab, output);
+			} catch( IllegalAccessException e ) {
+				// ignore
+			} catch( InvocationTargetException f ) {
+				// ignore
+			}
+		}
+
+		// Should never happen
+		Method builderMethod = findMethodOrNull(AbstractMethodDeclaration.class, methodName, int.class, StringBuilder.class);
+		if( builderMethod != null ) {
+			try {
+				StringBuilder sb = new StringBuilder();
+				StringBuilder out = (StringBuilder)builderMethod.invoke(methodDeclaration, tab, sb);
+				output.append(out.toString());
+				return output;
+			} catch( IllegalAccessException e ) {
+				// ignore
+			} catch( InvocationTargetException f ) {
+				// ignore
+			}
+		}
+		// Should really never happen
+		return output;
+	}
+	
+	public static Method findMethodOrNull(Class<?> type, String name, Class<?>... parameterTypes) {
+		try {
+			return type.getDeclaredMethod(name, parameterTypes);
+		} catch (NoSuchMethodException e) {
+			return null;
+		}
 	}
 	
 	private static StringBuilder printIndent(int indent, StringBuilder output) {
