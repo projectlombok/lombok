@@ -201,11 +201,14 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<sequential>
 			<fetchdep.eclipse.updatesite name="@{name}" version="@{version}">
 				<bundles>
+					<!-- Ambiguous + osgi.extender dependecies -->
+					<arg value="osgi.bundle:javax.el-api" />
 					<arg value="osgi.bundle:org.apache.felix.scr" />
 					<arg value="osgi.bundle:org.apache.aries.spifly.dynamic.bundle" />
+					<arg value="osgi.bundle:org.apache.commons.commons-io" />
+					<!-- Real dependencies -->
 					<arg value="osgi.bundle:org.eclipse.jdt.core" />
 					<arg value="osgi.bundle:org.eclipse.jdt.ui" />
-					<arg value="osgi.bundle:org.apache.commons.commons-io" />
 				</bundles>
 			</fetchdep.eclipse.updatesite>
 		</sequential>
