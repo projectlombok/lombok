@@ -218,6 +218,36 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.eclipse-X version="202309" />
 	</target>
 	
+	<target name="test.eclipse-202312" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the 2023-12 release of eclipse">
+		<fetchdep.eclipse version="202312" />
+		<test.eclipse-X version="202312" />
+	</target>
+	
+	<target name="test.eclipse-I-build" depends="test.compile, test.formatter.compile, deps.rtstubs18, compile.support" description="runs the tests on your default VM, testing the latest integration build of eclipse">
+		<fetchdep.eclipse.updatesite name="I-build" version="I-builds" target="lib/" resolveDependencies="false">
+			<bundles>
+				<arg value="osgi.bundle:org.eclipse.core.runtime" />
+				<arg value="osgi.bundle:org.eclipse.jdt.core" />
+				<arg value="osgi.bundle:org.eclipse.jdt.ui" />
+				<arg value="osgi.bundle:org.eclipse.jdt.core.compiler.batch" />
+				<arg value="osgi.bundle:org.eclipse.equinox.common" />
+				<arg value="osgi.bundle:org.eclipse.equinox.registry" />
+				<arg value="osgi.bundle:org.eclipse.equinox.app" />
+				<arg value="osgi.bundle:org.eclipse.core.resources" />
+				<arg value="osgi.bundle:org.eclipse.core.contenttype" />
+				<arg value="osgi.bundle:org.eclipse.core.jobs" />
+				<arg value="osgi.bundle:org.eclipse.osgi" />
+				<arg value="osgi.bundle:org.eclipse.text" />
+			</bundles>
+		</fetchdep.eclipse.updatesite>
+		<path id="cp.eclipse-I-build">
+			<fileset dir="lib/eclipse-I-build/plugins">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+		<test.eclipse-X version="I-build" />
+	</target>
+	
 	<macrodef name="test.eclipse-X-full">
 		<attribute name="version" />
 		<sequential>
@@ -259,6 +289,14 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	
 	<target name="test.eclipse-2023-09-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.2023-09" description="runs the full eclipse tests on your default VM, testing the 2023-09 release of eclipse">
 		<test.eclipse-X-full version="2023-09" />
+	</target>
+	
+	<target name="test.eclipse-2023-12-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.2023-12" description="runs the full eclipse tests on your default VM, testing the 2023-12 release of eclipse">
+		<test.eclipse-X-full version="2023-12" />
+	</target>
+	
+	<target name="test.eclipse-I-build-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.integration" description="runs the full eclipse tests on your default VM, testing the latest integration build of eclipse">
+		<test.eclipse-X-full version="I-build" />
 	</target>
 	
 	<macrodef name="test.ecj-X">

@@ -45,25 +45,21 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	<property name="exe.curl" value="curl" />
 	<property name="exe.git" value="git" />
 	
-	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.gtk.linux.aarch64">
-		<os name="Linux" arch="aarch64" />
+	<condition property="os.supported">
+		<and>
+			<or>
+				<os family="unix" />
+				<os family="windows" />
+				<os name="Mac OS X" />
+			</or>
+			<or>
+				<os arch="aarch64" />
+				<os arch="x86-64" />
+				<os arch="amd64" />
+			</or>
+		</and>
 	</condition>
-	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.gtk.linux.x86_64">
-		<os name="Linux" />
-	</condition>
-	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.cocoa.macosx.aarch64">
-		<os name="Mac OS X" arch="aarch64" />
-	</condition>
-	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.cocoa.macosx.x86_64">
-		<os name="Mac OS X" />
-	</condition>
-	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.win32.win32.aarch64">
-		<os family="windows" arch="aarch64" />
-	</condition>
-	<condition property="os.specific.native-swt-lib" value="org.eclipse.swt.win32.win32.x86_64">
-		<os family="windows" />
-	</condition>
-	<fail unless="os.specific.native-swt-lib">Full eclipse testing requires downloading a native SWT binding. This script knows how to download for OS = [mac, linux, or windows] and architecture = [aarch64 or x86-64]. You have something different, you unique snowflake you. Your OS: "${os.name}", Your arch: "${os.arch}".</fail>
+	<fail unless="os.supported">Full eclipse testing requires downloading a native SWT binding. This script knows how to download for OS = [mac, linux, or windows] and architecture = [aarch64 or x86-64]. You have something different, you unique snowflake you. Your OS: "${os.name}", Your arch: "${os.arch}".</fail>
 	
 	<target name="-autoclean.check">
 		<available type="dir" file="build" property="existingbuild.present" />
@@ -160,15 +156,23 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	</target>
 	
 	<target name="deps.eclipse.oxygen" depends="deps.rtstubs18, compile.support">
-		<fetchdep.eclipse.osgi name="oxygen" version="4.7/R-4.7-201706120950" />
+		<fetchdep.eclipse.osgi name="oxygen" version="4.7" />
 	</target>
 	
 	<target name="deps.eclipse.2022-03" depends="deps.rtstubs18, compile.support">
-		<fetchdep.eclipse.osgi name="2022-03" version="4.23/R-4.23-202203080310" />
+		<fetchdep.eclipse.osgi name="2022-03" version="4.23" />
 	</target>
 	
 	<target name="deps.eclipse.2023-09" depends="deps.rtstubs18, compile.support">
-		<fetchdep.eclipse.osgi name="2023-09" version="4.29/R-4.29-202309031000" />
+		<fetchdep.eclipse.osgi name="2023-09" version="4.29" />
+	</target>
+	
+	<target name="deps.eclipse.2023-12" depends="deps.rtstubs18, compile.support">
+		<fetchdep.eclipse.osgi name="2023-12" version="4.30" />
+	</target>
+	
+	<target name="deps.eclipse.integration" depends="deps.rtstubs18, compile.support">
+		<fetchdep.eclipse.osgi name="I-build" version="I-builds" />
 	</target>
 	
 	<macrodef name="fetchdep.ecj">
@@ -192,13 +196,28 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	</macrodef>
 	
 	<macrodef name="fetchdep.eclipse.osgi">
-		<attribute name="target" default="testenv" />
 		<attribute name="name" />
 		<attribute name="version" />
 		<sequential>
-			<condition property="@{name}.isoxygen">
-				<equals arg1="@{name}" arg2="oxygen"/>
-			</condition>
+			<fetchdep.eclipse.updatesite name="@{name}" version="@{version}">
+				<bundles>
+					<arg value="osgi.bundle:org.apache.felix.scr" />
+					<arg value="osgi.bundle:org.apache.aries.spifly.dynamic.bundle" />
+					<arg value="osgi.bundle:org.eclipse.jdt.core" />
+					<arg value="osgi.bundle:org.eclipse.jdt.ui" />
+					<arg value="osgi.bundle:org.apache.commons.commons-io" />
+				</bundles>
+			</fetchdep.eclipse.updatesite>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="fetchdep.eclipse.updatesite">
+		<attribute name="target" default="testenv" />
+		<attribute name="name" />
+		<attribute name="version" />
+		<attribute name="resolveDependencies" default="true" />
+		<element name="bundles" />
+		<sequential>
 			<java classname="lombok.eclipse.dependencies.DownloadEclipseDependencies" failonerror="true">
 				<classpath>
 					<path refid="cp.buildtools" />
@@ -206,133 +225,9 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 				</classpath>
 				<arg value="@{target}" />
 				<arg value="eclipse-@{name}" />
-				<arg value="https://download.eclipse.org/eclipse/updates/@{version}/plugins/" />
-				<arg value="bcpg" />
-				<arg value="bcprov" />
-				<arg value="com.ibm.icu" />
-				<arg value="com.sun.jna" />
-				<arg value="com.sun.jna.platform" />
-				<arg value="jakarta.inject.jakarta.inject-api" />
-				<arg value="jakarta.annotation-api" />
-				<arg value="jakarta.servlet-api" />
-				<arg value="javax.annotation" />
-				<arg value="javax.inject" />
-				<arg value="javax.el-api" />
-				<arg value="javax.servlet.jsp-api" />
-				<arg value="org.apache.batik.constants" />
-				<arg value="org.apache.batik.css" />
-				<arg value="org.apache.batik.i18n" />
-				<arg value="org.apache.batik.util" />
-				<arg value="org.apache.commons.collections" />
-				<arg value="org.apache.commons.commons-beanutils" />
-				<arg value="org.apache.commons.commons-io" />
-				<arg value="org.apache.commons.io" />
-				<arg value="org.apache.commons.jxpath" />
-				<arg value="org.apache.commons.logging" />
-				<arg value="org.apache.felix.scr" />
-				<arg value="org.apache.xmlgraphics" />
-				<arg value="org.bouncycastle.bcpg" />
-				<arg value="org.bouncycastle.bcprov" />
-				<arg value="org.eclipse.compare" />
-				<arg value="org.eclipse.compare.core" />
-				<arg value="org.eclipse.core.commands" />
-				<arg value="org.eclipse.core.contenttype" />
-				<arg value="org.eclipse.core.databinding" />
-				<arg value="org.eclipse.core.databinding.observable" />
-				<arg value="org.eclipse.core.databinding.property" />
-				<arg value="org.eclipse.core.expressions" />
-				<arg value="org.eclipse.core.filebuffers" />
-				<arg value="org.eclipse.core.filesystem" />
-				<arg value="org.eclipse.core.jobs" />
-				<arg value="org.eclipse.core.resources" />
-				<arg value="org.eclipse.core.runtime" />
-				<arg value="org.eclipse.core.variables" />
-				<arg value="org.eclipse.debug.core" />
-				<arg value="org.eclipse.debug.ui" />
-				<arg value="org.eclipse.e4.core.commands" />
-				<arg value="org.eclipse.e4.core.contexts" />
-				<arg value="org.eclipse.e4.core.di" />
-				<arg value="org.eclipse.e4.core.di.annotations" />
-				<arg value="org.eclipse.e4.core.di.extensions" />
-				<arg value="org.eclipse.e4.core.di.extensions.supplier" />
-				<arg value="org.eclipse.e4.core.services" />
-				<arg value="org.eclipse.e4.emf.xpath" />
-				<arg value="org.eclipse.e4.ui.bindings" />
-				<arg value="org.eclipse.e4.ui.css.core" />
-				<arg value="org.eclipse.e4.ui.css.swt" />
-				<arg value="org.eclipse.e4.ui.css.swt.theme" />
-				<arg value="org.eclipse.e4.ui.di" />
-				<arg value="org.eclipse.e4.ui.dialogs" />
-				<arg value="org.eclipse.e4.ui.ide" />
-				<arg value="org.eclipse.e4.ui.model.workbench" />
-				<arg value="org.eclipse.e4.ui.services" />
-				<arg value="org.eclipse.e4.ui.widgets" />
-				<arg value="org.eclipse.e4.ui.workbench" />
-				<arg value="org.eclipse.e4.ui.workbench.addons.swt" />
-				<arg value="org.eclipse.e4.ui.workbench.renderers.swt" />
-				<arg value="org.eclipse.e4.ui.workbench.swt" />
-				<arg value="org.eclipse.e4.ui.workbench3" />
-				<arg value="org.eclipse.emf.common" />
-				<arg value="org.eclipse.emf.ecore" />
-				<arg value="org.eclipse.emf.ecore.change" />
-				<arg value="org.eclipse.emf.ecore.xmi" />
-				<arg value="org.eclipse.equinox.app" />
-				<arg value="org.eclipse.equinox.bidi" />
-				<arg value="org.eclipse.equinox.common" />
-				<arg value="org.eclipse.equinox.p2.artifact.repository" />
-				<arg value="org.eclipse.equinox.p2.core" />
-				<arg value="org.eclipse.equinox.p2.engine" />
-				<arg value="org.eclipse.equinox.p2.jarprocessor" />
-				<arg value="org.eclipse.equinox.p2.metadata" />
-				<arg value="org.eclipse.equinox.p2.metadata.repository" />
-				<arg value="org.eclipse.equinox.p2.repository" />
-				<arg value="org.eclipse.equinox.preferences" />
-				<arg value="org.eclipse.equinox.registry" />
-				<arg value="org.eclipse.equinox.security" />
-				<arg value="org.eclipse.help" />
-				<arg value="org.eclipse.jdt.core" />
-				<arg value="org.eclipse.jdt.core.compiler.batch" unless:set="@{name}.isoxygen" />
-				<arg value="org.eclipse.jdt.core.manipulation" />
-				<arg value="org.eclipse.jdt.debug" />
-				<arg value="org.eclipse.jdt.launching" />
-				<arg value="org.eclipse.jdt.ui" />
-				<arg value="org.eclipse.jface" />
-				<arg value="org.eclipse.jface.databinding" />
-				<arg value="org.eclipse.jface.text" />
-				<arg value="org.eclipse.ltk.core.refactoring" />
-				<arg value="org.eclipse.ltk.ui.refactoring" />
-				<arg value="org.eclipse.osgi" />
-				<arg value="org.eclipse.osgi.services" />
-				<arg value="org.eclipse.osgi.util" />
-				<arg value="org.eclipse.search" />
-				<arg value="org.eclipse.swt" />
-				<arg value="${os.specific.native-swt-lib}" />
-				<arg value="org.eclipse.team.core" />
-				<arg value="org.eclipse.team.ui" />
-				<arg value="org.eclipse.text" />
-				<arg value="org.eclipse.ui" />
-				<arg value="org.eclipse.ui.console" />
-				<arg value="org.eclipse.ui.editors" />
-				<arg value="org.eclipse.ui.forms" />
-				<arg value="org.eclipse.ui.ide" />
-				<arg value="org.eclipse.ui.navigator" />
-				<arg value="org.eclipse.ui.navigator.resources" />
-				<arg value="org.eclipse.ui.views" />
-				<arg value="org.eclipse.ui.views.properties.tabbed" />
-				<arg value="org.eclipse.ui.workbench" />
-				<arg value="org.eclipse.ui.workbench.texteditor" />
-				<arg value="org.eclipse.urischeme" />
-				<arg value="org.jdom" />
-				<arg value="org.osgi.service.prefs" />
-				<arg value="org.osgi.service.event" />
-				<arg value="org.osgi.service.component" />
-				<arg value="org.osgi.util.function" />
-				<arg value="org.osgi.util.promise" />
-				<arg value="org.tukaani.xz" />
-				<arg value="org.w3c.css.sac" />
-				<arg value="org.w3c.dom.events" />
-				<arg value="org.w3c.dom.smil" />
-				<arg value="org.w3c.dom.svg" />
+				<arg value="https://download.eclipse.org/eclipse/updates/@{version}/" />
+				<arg value="@{resolveDependencies}" />
+				<bundles />
 			</java>
 		</sequential>
 	</macrodef>
