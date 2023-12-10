@@ -90,16 +90,26 @@ public class UpdateSite {
 				System.out.println("Skipping unknown unit " + next);
 				continue;
 			}
+			// Remove a.jre.javase dependency
+			List<Unit> filteredProvidedUnits = providedUnits.stream()
+				.filter(u -> !u.id.equals("a.jre.javase")) // Remove
+				.collect(Collectors.toList());
+			
+			if (filteredProvidedUnits.size() == 0) {
+				// This is a JDK only dependency, skip
+				continue;
+			}
+			
 			// Skip ambiguous (we could use version ranges to solve that...)
-			if (providedUnits.size() > 1) {
-				boolean alreadyResolved = providedUnits.stream().anyMatch(resolved::contains);
+			if (filteredProvidedUnits.size() > 1) {
+				boolean alreadyResolved = filteredProvidedUnits.stream().anyMatch(resolved::contains);
 				if (!alreadyResolved) {
-					System.out.println("Ambiguous resolution for " + next + ": " + providedUnits.toString());
+					System.out.println("Ambiguous resolution for " + next + ": " + filteredProvidedUnits.toString());
 					continue;
 				}
 			}
 			
-			Unit unit = providedUnits.get(0);
+			Unit unit = filteredProvidedUnits.get(0);
 			resolved.add(unit);
 			
 			if (withDependencies && unit.requires != null) {
