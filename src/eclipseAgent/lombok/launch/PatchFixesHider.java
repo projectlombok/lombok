@@ -21,7 +21,7 @@
  */
 package lombok.launch;
 
-import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
+import static lombok.eclipse.EcjAugments.*;
 import static lombok.eclipse.Eclipse.*;
 
 import java.io.BufferedOutputStream;
@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.eclipse.core.runtime.CoreException;
@@ -70,6 +71,7 @@ import org.eclipse.jdt.internal.corext.refactoring.code.CallContext;
 import org.eclipse.jdt.internal.corext.refactoring.code.SourceProvider;
 import org.eclipse.jdt.internal.corext.refactoring.structure.MemberVisibilityAdjustor.IncomingMemberVisibilityAdjustment;
 
+import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.permit.Permit;
 
 /** These contain a mix of the following:
@@ -956,6 +958,36 @@ final class PatchFixesHider {
 	}
 	
 	public static class Tests {
+		public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuffer output, TypeDeclaration type) {
+			return (StringBuffer) printMethod(methodDeclaration, tab, (Object) output, type);
+		}
+		
+		public static StringBuilder printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuilder output, TypeDeclaration type) {
+			return (StringBuilder) printMethod(methodDeclaration, tab, (Object) output, type);
+		}
+		
+		public static Object printMethod(AbstractMethodDeclaration methodDeclaration, int tab, Object output, TypeDeclaration type) {
+			Map<String, String> docs = CompilationUnit_javadoc.get(methodDeclaration.compilationResult.compilationUnit);
+			Method printIndent = Permit.permissiveGetMethod(org.eclipse.jdt.internal.compiler.ast.ASTNode.class, "printIndent", int.class, output.getClass());
+			if (docs != null) {
+				String signature = EclipseHandlerUtil.getSignature(type, methodDeclaration);
+				String rawJavadoc = docs.get(signature);
+				if (rawJavadoc != null) {
+					for (String line : rawJavadoc.split("\r?\n")) {
+						try {
+							Appendable sb = (Appendable) Permit.invoke(printIndent, null, tab, output);
+							sb.append(line).append("\n");
+						} catch (Throwable e) {
+							// Ignore
+						}
+					}
+				}
+			}
+			Method printMethodDeclaration = Permit.permissiveGetMethod(AbstractMethodDeclaration.class, "print", int.class, output.getClass());
+			Permit.invokeSneaky(printMethodDeclaration, methodDeclaration, tab, output);
+			return output;
+		}
+		
 		public static Object getBundle(Object original, Class<?> c) {
 			if (original != null) {
 				return original;
