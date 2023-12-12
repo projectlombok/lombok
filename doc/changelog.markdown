@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.18.31 "Edgy Guinea Pig"
 * FEATURE: `@Locked` has been introduced. Like `@Synchronized` but with `java.util.concurrent.locks` locks instead of the `synchronized` primitive. Thanks, Pim van der Loos for the PR! [Issue #3506](https://github.com/projectlombok/lombok/issues/3506).
+* BUGFIX: Eclipse projects using the com.pro-crafting.tools:jasperreports-plugin will now compile
 * We recently released v1.18.30; there is no edge release since then.
 
 ### v1.18.30 (September 20th, 2023)
