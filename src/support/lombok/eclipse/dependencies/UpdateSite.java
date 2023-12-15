@@ -2,10 +2,8 @@ package lombok.eclipse.dependencies;
 
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +16,13 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
+
+import org.xml.sax.InputSource;
 
 public class UpdateSite {
 	private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
@@ -31,10 +34,17 @@ public class UpdateSite {
 	private Repository repository;
 	private Map<String, List<Unit>> providesIndex;
 	private String resolvedUrl;
+	private SAXParserFactory saxParserFactory;
 	
-	public UpdateSite() throws JAXBException {
+	public UpdateSite() throws Exception {
 		jaxbContext = JAXBContext.newInstance(Repository.class);
 		providesIndex = new HashMap<>();
+		
+		SAXParserFactory spf = SAXParserFactory.newInstance();
+		spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		spf.setXIncludeAware(false);
+		saxParserFactory = spf;
 	}
 	
 	public void read(String url) throws Exception {
@@ -55,7 +65,7 @@ public class UpdateSite {
 		resolvedUrl = currentUrl;
 		
 		try (InputStream inputStream = readJarOrXml(resolvedUrl, "content")) {
-			repository = (Repository) jaxbContext.createUnmarshaller().unmarshal(inputStream);
+			repository = unmarshalRepository(inputStream);
 			
 			// Build index
 			for (Unit unit : repository.units) {
@@ -139,15 +149,21 @@ public class UpdateSite {
 		return true;
 	}
 
-	private String resolveNextChild(String currentUrl) throws MalformedURLException, IOException, JAXBException {
+	private String resolveNextChild(String currentUrl) throws Exception {
 		try (InputStream inputStream = readJarOrXml(currentUrl, "compositeContent")) {
-			Repository repository = (Repository) jaxbContext.createUnmarshaller().unmarshal(inputStream);
+			Repository repository = unmarshalRepository(inputStream);
 			Child lastChild = repository.children.get(repository.children.size() - 1);
 			return lastChild.location;
 		}
 	}
+
+	private Repository unmarshalRepository(InputStream inputStream) throws Exception {
+		Source source = new SAXSource(saxParserFactory.newSAXParser().getXMLReader(), new InputSource(inputStream));
+		Repository repository = (Repository) jaxbContext.createUnmarshaller().unmarshal(source);
+		return repository;
+	}
 	
-	private InputStream readJarOrXml(String url, String name) throws MalformedURLException, IOException {
+	private InputStream readJarOrXml(String url, String name) throws Exception {
 		try {
 			return getStreamForUrl(url + "/" + name + ".xml");
 		} catch (FileNotFoundException e) {
@@ -163,7 +179,7 @@ public class UpdateSite {
 		throw new FileNotFoundException();
 	}
 	
-	private static InputStream getStreamForUrl(String url) throws IOException, MalformedURLException {
+	private static InputStream getStreamForUrl(String url) throws Exception {
 		System.out.println("Reading " + url);
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setRequestProperty("User-Agent", "lombok");
