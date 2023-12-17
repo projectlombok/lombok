@@ -1,7 +1,7 @@
 // version 14:
 import lombok.With;
 
-public class WithOnNestedRecord<T> {
+public record WithOnNestedRecord<T>() {
 	@With
 	public record Nested(String a, String b) {
 		

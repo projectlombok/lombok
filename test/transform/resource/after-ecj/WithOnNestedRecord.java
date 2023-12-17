@@ -1,5 +1,5 @@
 import lombok.With;
-public class WithOnNestedRecord<T> {
+public record WithOnNestedRecord()<T> {
   public @With record Nested(String a, String b) {
 /* Implicit */    private final String a;
 /* Implicit */    private final String b;
@@ -16,8 +16,5 @@ public class WithOnNestedRecord<T> {
     public @java.lang.SuppressWarnings("all") WithOnNestedRecord.Nested withB(final String b) {
       return ((this.b == b) ? this : new WithOnNestedRecord.Nested(this.a, b));
     }
-  }
-  public WithOnNestedRecord() {
-    super();
   }
 }

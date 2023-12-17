@@ -1,5 +1,5 @@
 // version 14:
-public class WithOnNestedRecord<T> {
+public record WithOnNestedRecord<T>() {
 
 	public record Nested(String a, String b) {
 		/**
