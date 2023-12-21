@@ -42,7 +42,7 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+        jdk: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
         goal: [javacCurrent]
         include:
           - jdk: 11
@@ -56,18 +56,18 @@ jobs:
         uses: actions/checkout@v3
       
       - name: Set up JDK ${{ matrix.jdk }}
-        if: ${{ matrix.jdk != 21 }}
+        if: ${{ matrix.jdk != 22 }}
         uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.jdk }}
           distribution: 'zulu'
       
-      - name: Set up JDK 21-ea
-        if: ${{ matrix.jdk == 21 }}
+      - name: Set up JDK 22-ea
+        if: ${{ matrix.jdk == 22 }}
         uses: oracle-actions/setup-java@v1
         with:
           website: jdk.java.net
-          release: 21
+          release: 22-ea
           version: latest
           
       - name: Install Ant
