@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2022 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2971,5 +2971,42 @@ public class EclipseHandlerUtil {
 			String newJavadoc = addReturnsThisIfNeeded(getParamJavadoc(methodComment, param));
 			setDocComment(cud, type, to, newJavadoc);
 		} catch (Exception ignore) {}
+	}
+
+	/**
+	 * Returns the method node containing the given annotation, or {@code null} if the given annotation node is not on a method or argument.
+	 */
+	public static EclipseNode getAnnotatedMethod(EclipseNode node) {
+		if (node == null || node.getKind() != Kind.ANNOTATION) return null;
+		
+		EclipseNode result = node.up();
+		if (result.getKind() == Kind.ARGUMENT) {
+			result = node.up();
+		}
+		if (result.getKind() != Kind.METHOD) {
+			result = null;
+		}
+		return result;
+	}
+
+	/**
+	 * Returns {@code true} if the given method node body was parsed.
+	 */
+	public static boolean hasParsedBody(EclipseNode method) {
+		if (method == null || method.getKind() != Kind.METHOD) return false;
+		
+		boolean isCompleteParse = method.getAst().isCompleteParse();
+		if (isCompleteParse) return true;
+		
+		AbstractMethodDeclaration methodDecl = (AbstractMethodDeclaration) method.get();
+		if (methodDecl.statements != null) return true;
+		
+		// If the method is part of a field initializer it was parsed
+		EclipseNode parent = method.up();
+		while (parent != null) {
+			if (parent.getKind() == Kind.FIELD) return true;
+			parent = parent.up();
+		}
+		return false;
 	}
 }

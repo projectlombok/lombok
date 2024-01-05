@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.eclipse.EcjAugments.ASTNode_handled;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
@@ -70,6 +71,12 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		if (method.isAbstract()) return;
 		
 		createLockField(annotation, annotationNode, new boolean[] {method.isStatic()}, false);
+		
+		if (hasParsedBody(getAnnotatedMethod(annotationNode))) {
+			// This method has a body in diet mode, so we have to handle it now.
+			handle(annotation, source, annotationNode);
+			ASTNode_handled.set(source, true);
+		}
 	}
 	
 	public char[] createLockField(AnnotationValues<Synchronized> annotation, EclipseNode annotationNode, boolean[] isStatic, boolean reportErrors) {
