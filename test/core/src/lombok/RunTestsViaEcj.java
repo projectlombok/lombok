@@ -123,8 +123,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	}
 	
 	@Override
-	public TransformationResult transformCode(File file, TestParameters parameters) throws Throwable {
-		TransformationResult result = new TransformationResult();
+	public TransformationResult transformCode(File file, final TestParameters parameters) throws Throwable {
+		final TransformationResult result = new TransformationResult();
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
 		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
 		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
