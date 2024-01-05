@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-@com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonBuilderSingular.JacksonBuilderSingularBuilder.class)
-public class JacksonBuilderSingular {
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder.class)
+public class JacksonizedBuilderSingular {
 	@JsonAnySetter
 	private Map<String, Object> any;
 	@JsonProperty("v_a_l_u_e_s")
@@ -16,7 +16,7 @@ public class JacksonBuilderSingular {
 	@JsonProperty("guava_v_a_l_u_e_s")
 	private ImmutableList<String> guavaValues;
 	@java.lang.SuppressWarnings("all")
-	JacksonBuilderSingular(final Map<String, Object> any, final List<String> values, final ImmutableMap<String, Object> guavaAny, final ImmutableList<String> guavaValues) {
+	JacksonizedBuilderSingular(final Map<String, Object> any, final List<String> values, final ImmutableMap<String, Object> guavaAny, final ImmutableList<String> guavaValues) {
 		this.any = any;
 		this.values = values;
 		this.guavaAny = guavaAny;
@@ -24,7 +24,7 @@ public class JacksonBuilderSingular {
 	}
 	@java.lang.SuppressWarnings("all")
 	@com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
-	public static class JacksonBuilderSingularBuilder {
+	public static class JacksonizedBuilderSingularBuilder {
 		@java.lang.SuppressWarnings("all")
 		private java.util.ArrayList<String> any$key;
 		@java.lang.SuppressWarnings("all")
@@ -36,11 +36,11 @@ public class JacksonBuilderSingular {
 		@java.lang.SuppressWarnings("all")
 		private com.google.common.collect.ImmutableList.Builder<String> guavaValues;
 		@java.lang.SuppressWarnings("all")
-		JacksonBuilderSingularBuilder() {
+		JacksonizedBuilderSingularBuilder() {
 		}
 		@JsonAnySetter
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder any(final String anyKey, final Object anyValue) {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder any(final String anyKey, final Object anyValue) {
 			if (this.any$key == null) {
 				this.any$key = new java.util.ArrayList<String>();
 				this.any$value = new java.util.ArrayList<Object>();
@@ -50,7 +50,7 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder any(final java.util.Map<? extends String, ? extends Object> any) {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder any(final java.util.Map<? extends String, ? extends Object> any) {
 			if (any == null) {
 				throw new java.lang.NullPointerException("any cannot be null");
 			}
@@ -65,7 +65,7 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder clearAny() {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder clearAny() {
 			if (this.any$key != null) {
 				this.any$key.clear();
 				this.any$value.clear();
@@ -73,14 +73,14 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder value(final String value) {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder value(final String value) {
 			if (this.values == null) this.values = new java.util.ArrayList<String>();
 			this.values.add(value);
 			return this;
 		}
 		@JsonProperty("v_a_l_u_e_s")
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder values(final java.util.Collection<? extends String> values) {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder values(final java.util.Collection<? extends String> values) {
 			if (values == null) {
 				throw new java.lang.NullPointerException("values cannot be null");
 			}
@@ -89,19 +89,19 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder clearValues() {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder clearValues() {
 			if (this.values != null) this.values.clear();
 			return this;
 		}
 		@JsonAnySetter
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaAny(final String key, final Object value) {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder guavaAny(final String key, final Object value) {
 			if (this.guavaAny == null) this.guavaAny = com.google.common.collect.ImmutableMap.builder();
 			this.guavaAny.put(key, value);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaAny(final java.util.Map<? extends String, ? extends Object> guavaAny) {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder guavaAny(final java.util.Map<? extends String, ? extends Object> guavaAny) {
 			if (guavaAny == null) {
 				throw new java.lang.NullPointerException("guavaAny cannot be null");
 			}
@@ -110,19 +110,19 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder clearGuavaAny() {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder clearGuavaAny() {
 			this.guavaAny = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaValue(final String guavaValue) {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder guavaValue(final String guavaValue) {
 			if (this.guavaValues == null) this.guavaValues = com.google.common.collect.ImmutableList.builder();
 			this.guavaValues.add(guavaValue);
 			return this;
 		}
 		@JsonProperty("guava_v_a_l_u_e_s")
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaValues(final java.lang.Iterable<? extends String> guavaValues) {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder guavaValues(final java.lang.Iterable<? extends String> guavaValues) {
 			if (guavaValues == null) {
 				throw new java.lang.NullPointerException("guavaValues cannot be null");
 			}
@@ -131,12 +131,12 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular.JacksonBuilderSingularBuilder clearGuavaValues() {
+		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder clearGuavaValues() {
 			this.guavaValues = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public JacksonBuilderSingular build() {
+		public JacksonizedBuilderSingular build() {
 			java.util.Map<String, Object> any;
 			switch (this.any$key == null ? 0 : this.any$key.size()) {
 			case 0: 
@@ -163,16 +163,16 @@ public class JacksonBuilderSingular {
 			}
 			com.google.common.collect.ImmutableMap<String, Object> guavaAny = this.guavaAny == null ? com.google.common.collect.ImmutableMap.<String, Object>of() : this.guavaAny.build();
 			com.google.common.collect.ImmutableList<String> guavaValues = this.guavaValues == null ? com.google.common.collect.ImmutableList.<String>of() : this.guavaValues.build();
-			return new JacksonBuilderSingular(any, values, guavaAny, guavaValues);
+			return new JacksonizedBuilderSingular(any, values, guavaAny, guavaValues);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "JacksonBuilderSingular.JacksonBuilderSingularBuilder(any$key=" + this.any$key + ", any$value=" + this.any$value + ", values=" + this.values + ", guavaAny=" + this.guavaAny + ", guavaValues=" + this.guavaValues + ")";
+			return "JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder(any$key=" + this.any$key + ", any$value=" + this.any$value + ", values=" + this.values + ", guavaAny=" + this.guavaAny + ", guavaValues=" + this.guavaValues + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static JacksonBuilderSingular.JacksonBuilderSingularBuilder builder() {
-		return new JacksonBuilderSingular.JacksonBuilderSingularBuilder();
+	public static JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder builder() {
+		return new JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder();
 	}
 }
