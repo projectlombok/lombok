@@ -66,7 +66,7 @@ import lombok.spi.Provides;
 @Provides(EclipseSingularizer.class)
 public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
+		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap", "java.util.SequencedMap");
 	}
 	
 	private static final char[] EMPTY_SORTED_MAP = {'e', 'm', 'p', 't', 'y', 'S', 'o', 'r', 't', 'e', 'd', 'M', 'a', 'p'};
@@ -78,7 +78,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 	}
 	
 	@Override protected char[] getEmptyMakerSelector(String targetFqn) {
-		if (targetFqn.endsWith("SortedMap")) return EMPTY_SORTED_MAP;
+		if (targetFqn.endsWith("SortedMap") || targetFqn.endsWith("SequencedMap")) return EMPTY_SORTED_MAP;
 		if (targetFqn.endsWith("NavigableMap")) return EMPTY_NAVIGABLE_MAP;
 		return EMPTY_MAP;
 	}
@@ -348,6 +348,8 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		
 		if (data.getTargetFqn().equals("java.util.Map")) {
 			statements.addAll(createJavaUtilSetMapInitialCapacitySwitchStatements(data, builderType, true, "emptyMap", "singletonMap", "LinkedHashMap", builderVariable));
+		} else if (data.getTargetFqn().equals("java.util.SequencedMap")) {
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, true, true, false, true, "LinkedHashMap", source, builderVariable));
 		} else {
 			statements.addAll(createJavaUtilSimpleCreationAndFillStatements(data, builderType, true, true, false, true, "TreeMap", builderVariable));
 		}

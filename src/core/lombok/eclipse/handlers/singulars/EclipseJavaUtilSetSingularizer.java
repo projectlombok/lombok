@@ -34,7 +34,7 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 @Provides(EclipseSingularizer.class)
 public class EclipseJavaUtilSetSingularizer extends EclipseJavaUtilListSetSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of("java.util.Set", "java.util.SortedSet", "java.util.NavigableSet");
+		return LombokImmutableList.of("java.util.Set", "java.util.SortedSet", "java.util.NavigableSet", "java.util.SequencedSet");
 	}
 	
 	private static final char[] EMPTY_SORTED_SET = {'e', 'm', 'p', 't', 'y', 'S', 'o', 'r', 't', 'e', 'd', 'S', 'e', 't'};
@@ -46,7 +46,7 @@ public class EclipseJavaUtilSetSingularizer extends EclipseJavaUtilListSetSingul
 	}
 	
 	@Override protected char[] getEmptyMakerSelector(String targetFqn) {
-		if (targetFqn.endsWith("SortedSet")) return EMPTY_SORTED_SET;
+		if (targetFqn.endsWith("SortedSet") || targetFqn.endsWith("SequencedSet")) return EMPTY_SORTED_SET;
 		if (targetFqn.endsWith("NavigableSet")) return EMPTY_NAVIGABLE_SET;
 		return EMPTY_SET;
 	}
@@ -59,8 +59,10 @@ public class EclipseJavaUtilSetSingularizer extends EclipseJavaUtilListSetSingul
 		
 		if (data.getTargetFqn().equals("java.util.Set")) {
 			statements.addAll(createJavaUtilSetMapInitialCapacitySwitchStatements(data, builderType, false, "emptySet", "singleton", "LinkedHashSet", builderVariable));
+		} else if (data.getTargetFqn().equals("java.util.SequencedSet")) {
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, false, true, false, true, "LinkedHashSet", source, builderVariable));
 		} else {
-			statements.addAll(createJavaUtilSimpleCreationAndFillStatements(data, builderType, false, true, false, true, "TreeSet", builderVariable));
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, false, true, false, true, "TreeSet", source, builderVariable));
 		}
 	}
 }
