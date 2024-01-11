@@ -288,7 +288,7 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		if (node instanceof JCClassDecl) {
 			JCClassDecl t = (JCClassDecl) node;
 			long f = t.mods.flags;
-			if (((Flags.INTERFACE | Flags.ENUM) & f) != 0) return true;
+			if (((Flags.INTERFACE | Flags.ENUM | Javac.RECORD) & f) != 0) return true;
 			JavacNode directUp = directUp();
 			if (directUp == null || directUp.getKind() == Kind.COMPILATION_UNIT) return true;
 			if (!(directUp.get() instanceof JCClassDecl)) return false;
