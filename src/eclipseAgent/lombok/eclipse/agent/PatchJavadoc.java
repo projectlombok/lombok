@@ -24,6 +24,7 @@ package lombok.eclipse.agent;
 import static lombok.eclipse.EcjAugments.CompilationUnit_javadoc;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -64,21 +65,7 @@ public class PatchJavadoc {
 		
 		return null;
 	}
-	
-	public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, Integer tab, StringBuffer output, TypeDeclaration type) {
-		Map<String, String> docs = CompilationUnit_javadoc.get(methodDeclaration.compilationResult.compilationUnit);
-		if (docs != null) {
-			String signature = EclipseHandlerUtil.getSignature(type, methodDeclaration);
-			String rawJavadoc = docs.get(signature);
-			if (rawJavadoc != null) {
-				for (String line : rawJavadoc.split("\r?\n")) {
-					ASTNode.printIndent(tab, output).append(line).append("\n");
-				}
-			}
-		}
-		return methodDeclaration.print(tab, output);
-	}
-	
+
 	private static class Signature {
 		static final String getSignature(SourceMethod sourceMethod) {
 			StringBuilder sb = new StringBuilder();

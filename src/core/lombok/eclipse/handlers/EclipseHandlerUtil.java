@@ -1331,9 +1331,7 @@ public class EclipseHandlerUtil {
 				expressions = new Expression[] { rhs };
 			}
 			if (expressions != null) for (Expression ex : expressions) {
-				StringBuffer sb = new StringBuffer();
-				ex.print(0, sb);
-				raws.add(sb.toString());
+				raws.add(ex.toString()); 
 				expressionValues.add(ex);
 				guesses.add(calculateValue(ex));
 			}

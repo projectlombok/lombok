@@ -989,13 +989,6 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.requestExtra(StackRequest.PARAM1)
 				.build());
 		
-		sm.addScript(ScriptBuilder.replaceMethodCall()
-				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.TypeDeclaration", "printBody", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
-				.methodToReplace(new Hook("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
-				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "printMethod", "java.lang.StringBuffer", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "int", "java.lang.StringBuffer", "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration"))
-				.requestExtra(StackRequest.THIS)
-				.build());
-
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
 				.fieldName("$javadoc")
 				.fieldType("Ljava/util/Map;")
@@ -1044,14 +1037,40 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchForTests(ScriptManager sm) {
-		sm.addScriptIfWitness(new String[] {"lombok/eclipse/EclipseRunner"}, ScriptBuilder.wrapReturnValue()
+		String[] ECLIPSE_TEST_CLASSES = new String[] {"lombok/transform/TestWithEcj", "lombok/eclipse/EclipseRunner"};
+		
+		// Add support for javadoc in tests
+		sm.addScriptIfWitness(ECLIPSE_TEST_CLASSES, ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.TypeDeclaration", "printBody", "java.lang.StringBuilder", "int", "java.lang.StringBuilder"))
+				.methodToReplace(new Hook("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print", "java.lang.StringBuilder", "int", "java.lang.StringBuilder"))
+				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "printMethod", "java.lang.StringBuilder", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "int", "java.lang.StringBuilder", "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration"))
+				.requestExtra(StackRequest.THIS)
+				.build());
+		
+		sm.addScriptIfWitness(ECLIPSE_TEST_CLASSES, ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.TypeDeclaration", "printBody", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
+				.methodToReplace(new Hook("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
+				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "printMethod", "java.lang.StringBuffer", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "int", "java.lang.StringBuffer", "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration"))
+				.requestExtra(StackRequest.THIS)
+				.build());
+		
+		sm.addScriptIfWitness(ECLIPSE_TEST_CLASSES, ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.osgi.framework.FrameworkUtil", "getBundle", "org.osgi.framework.Bundle", "java.lang.Class"))
 				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "getBundle", "java.lang.Object", "java.lang.Object", "java.lang.Class"))
 				.build());
 		
-		sm.addScriptIfWitness(new String[] {"lombok/transform/TestWithEcj"}, ScriptBuilder.exitEarly()
-				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print"))
+		// Remove implicit canonical constructors in tests
+		sm.addScriptIfWitness(ECLIPSE_TEST_CLASSES, ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print", "java.lang.StringBuilder", "int", "java.lang.StringBuilder"))
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "isImplicitCanonicalConstructor", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "java.lang.Object"))
+				.valueMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "returnStringBuilder", "java.lang.StringBuilder", "java.lang.Object", "java.lang.StringBuilder"))
+				.request(StackRequest.THIS, StackRequest.PARAM2)
+				.transplant()
+				.build());
+		
+		sm.addScriptIfWitness(ECLIPSE_TEST_CLASSES, ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "isImplicitCanonicalConstructor", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "java.lang.Object"))
 				.valueMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "returnStringBuffer", "java.lang.StringBuffer", "java.lang.Object", "java.lang.StringBuffer"))
 				.request(StackRequest.THIS, StackRequest.PARAM2)
