@@ -101,9 +101,11 @@ jobs:
         - eclipse-202006-jdk8
         - eclipse-202212
         - eclipse-202309
+        - eclipse-202312
         - eclipse-oxygen-full
         - eclipse-2022-03-full
         - eclipse-2023-09-full
+        - eclipse-2023-12-full
         - ecj11
         - ecj14
         - ecj16
