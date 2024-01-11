@@ -1,12 +1,12 @@
-package lombok.eclipse.dependencies;
+package lombok.eclipse.dependencies.model;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
 public class Provided {
 	@XmlAttribute
-	String namespace;
+	public String namespace;
 	@XmlAttribute
-	String name;
+	public String name;
 	@XmlAttribute
-	String version;
+	public String version;
 }

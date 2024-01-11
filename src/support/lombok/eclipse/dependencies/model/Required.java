@@ -1,17 +1,17 @@
-package lombok.eclipse.dependencies;
+package lombok.eclipse.dependencies.model;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
 public class Required {
 	@XmlAttribute
-	String namespace;
+	public String namespace;
 	@XmlAttribute
-	String name;
+	public String name;
 	@XmlAttribute
-	String range;
+	public String range;
 	@XmlAttribute
-	boolean optional;
+	public boolean optional;
 	@XmlElement
-	String filter;
+	public String filter;
 }

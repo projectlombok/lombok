@@ -24,6 +24,12 @@ import javax.xml.transform.sax.SAXSource;
 
 import org.xml.sax.InputSource;
 
+import lombok.eclipse.dependencies.model.Child;
+import lombok.eclipse.dependencies.model.Provided;
+import lombok.eclipse.dependencies.model.Repository;
+import lombok.eclipse.dependencies.model.Required;
+import lombok.eclipse.dependencies.model.Unit;
+
 public class UpdateSite {
 	private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
 	private static final String OSGI_OS = OS_NAME.contains("windows") ? "windows" : OS_NAME.contains("mac") ? "mac" : "linux";

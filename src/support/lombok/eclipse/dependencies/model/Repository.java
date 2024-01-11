@@ -1,4 +1,4 @@
-package lombok.eclipse.dependencies;
+package lombok.eclipse.dependencies.model;
 
 import java.util.List;
 
@@ -10,9 +10,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Repository {
 	@XmlElementWrapper(name = "children")
 	@XmlElement(name="child")
-	List<Child> children;
+	public List<Child> children;
 	
 	@XmlElementWrapper(name = "units")
 	@XmlElement(name="unit")
-	List<Unit> units;
+	public List<Unit> units;
 }

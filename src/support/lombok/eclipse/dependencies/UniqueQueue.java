@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A incomplete implementation of a queue that maintains a history of all queued items and ensures unique elements.
+ * An incomplete implementation of a queue that maintains a history of all queued items and ensures unique elements.
  * Elements cannot be added to the queue if they already exist in the history.
  */
 public class UniqueQueue<T> extends ArrayDeque<T> {

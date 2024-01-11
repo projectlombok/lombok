@@ -1,8 +1,8 @@
-package lombok.eclipse.dependencies;
+package lombok.eclipse.dependencies.model;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
 public class Child {
 	@XmlAttribute
-	String location;
+	public String location;
 }

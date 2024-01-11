@@ -1,4 +1,4 @@
-package lombok.eclipse.dependencies;
+package lombok.eclipse.dependencies.model;
 
 import java.util.List;
 
@@ -8,17 +8,17 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 
 public class Unit {
 	@XmlAttribute
-	String id;
+	public String id;
 	@XmlAttribute
-	String version;
+	public String version;
 	
 	@XmlElementWrapper(name = "provides")
 	@XmlElement(name="provided")
-	List<Provided> provides;
+	public List<Provided> provides;
 	
 	@XmlElementWrapper(name = "requires")
 	@XmlElement(name="required")
-	List<Required> requires;
+	public List<Required> requires;
 
 	@Override
 	public String toString() {
