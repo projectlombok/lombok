@@ -985,7 +985,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "getHTMLContentFromSource", "java.lang.String", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
 				.requestExtra(StackRequest.PARAM1)
 				.build());
-
+		
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
 				.fieldName("$javadoc")
 				.fieldType("Ljava/util/Map;")
@@ -1043,7 +1043,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$Tests", "printMethod", "java.lang.StringBuilder", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "int", "java.lang.StringBuilder", "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration"))
 				.requestExtra(StackRequest.THIS)
 				.build());
-
+		
 		sm.addScriptIfWitness(ECLIPSE_TEST_CLASSES, ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.ast.TypeDeclaration", "printBody", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
 				.methodToReplace(new Hook("org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "print", "java.lang.StringBuffer", "int", "java.lang.StringBuffer"))
