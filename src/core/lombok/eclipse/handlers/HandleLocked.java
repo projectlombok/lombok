@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 The Project Lombok Authors.
+ * Copyright (C) 2021-2024 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,19 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.eclipse.EcjAugments.ASTNode_handled;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
+
+import lombok.Locked;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.Locked;
 import lombok.spi.Provides;
-import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 
 /**
  * Handles the {@code lombok.Locked} annotation for eclipse.
@@ -52,5 +56,11 @@ public class HandleLocked extends EclipseAnnotationHandler<Locked> {
 	@Override public void preHandle(AnnotationValues<Locked> annotation, Annotation source, EclipseNode annotationNode) {
 		String annotationValue = annotation.getInstance().value();
 		HandleLockedUtil.preHandle(annotationValue, LOCK_TYPE_CLASS, LOCK_IMPL_CLASS, annotationNode);
+		
+		if (hasParsedBody(getAnnotatedMethod(annotationNode))) {
+			// This method has a body in diet mode, so we have to handle it now.
+			handle(annotation, source, annotationNode);
+			ASTNode_handled.set(source, true);
+		}
 	}
 }

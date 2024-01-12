@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,13 @@
 package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.eclipse.EcjAugments.ASTNode_handled;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import lombok.ConfigurationKeys;
-import lombok.SneakyThrows;
-import lombok.core.AnnotationValues;
-import lombok.core.HandlerPriority;
-import lombok.eclipse.DeferUntilPostDiet;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseNode;
-import lombok.spi.Provides;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -58,6 +50,15 @@ import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
+import lombok.ConfigurationKeys;
+import lombok.SneakyThrows;
+import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
+import lombok.eclipse.DeferUntilPostDiet;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
+import lombok.spi.Provides;
+
 /**
  * Handles the {@code lombok.HandleSneakyThrows} annotation for eclipse.
  */
@@ -73,6 +74,15 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 		DeclaredException(String exceptionName, ASTNode node) {
 			this.exceptionName = exceptionName;
 			this.node = node;
+		}
+	}
+	
+	@Override
+	public void preHandle(AnnotationValues<SneakyThrows> annotation, Annotation ast, EclipseNode annotationNode) {
+		if (hasParsedBody(getAnnotatedMethod(annotationNode))) {
+			// This method has a body in diet mode, so we have to handle it now.
+			handle(annotation, ast, annotationNode);
+			ASTNode_handled.set(ast, true);
 		}
 	}
 	
