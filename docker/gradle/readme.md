@@ -2,11 +2,12 @@
 
 [_(general configuration and options)_](../readme.md)
 
-### `ARG gradle=8.3`
+### `ARG gradle=8.5`
 
 The gradle version to be used. Supported values:
 
-- `8.3` (default)
+- `8.5` (default)
+- `8.3`
 - `7.6.1`
 - `6.8.3`
 
