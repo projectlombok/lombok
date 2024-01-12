@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.31 "Edgy Guinea Pig"
 * PLATFORM: Added support for recent versions of eclipse (released Q4 2023 or later or so) which would cause failures in the eclipse logs such as `java.lang.NoSuchMethodError: 'java.lang.StringBuffer org.eclipse.jdt…`. [Issue #3564](https://github.com/projectlombok/lombok/issues/3564).
 * FEATURE: `@Locked` has been introduced. Like `@Synchronized` but with `java.util.concurrent.locks` locks instead of the `synchronized` primitive. Thanks, Pim van der Loos for the PR! [Issue #3506](https://github.com/projectlombok/lombok/issues/3506).
+* NECROMANCY: Inlining a generated getter in eclipse would result in eclipse incorrectly replacing calls with `@Getter` instead of the actual field's name. [Issue #562](https://github.com/projectlombok/lombok/issues/562). This issue is almost old enough to drink. Points for dedication go to Rawi for fixing this one.
 * BUGFIX: Many lombok features wouldn't work properly on records contained within an outer type unless you explicitly marked it `static`. [Issue #3497](https://github.com/projectlombok/lombok/issues/3497) [Issue #3559](https://github.com/projectlombok/lombok/issues/3559).
 * BUGFIX: Eclipse projects using the com.pro-crafting.tools:jasperreports-plugin will now compile
 * We recently released v1.18.30; there is no edge release since then.
