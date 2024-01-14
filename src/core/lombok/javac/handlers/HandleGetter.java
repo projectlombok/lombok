@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2022 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -358,7 +358,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		if (copyOfBoxedFieldType == null) copyOfBoxedFieldType = copyType(maker, field, source);
 		
-		Name valueName = fieldNode.toName("value");
+		Name valueName = fieldNode.toName("$value");
 		Name actualValueName = fieldNode.toName("actualValue");
 		
 		/* java.lang.Object value = this.fieldName.get();*/ {

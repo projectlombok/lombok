@@ -8,37 +8,37 @@ class GetterLazyGenerics<E> {
     return null;
   }
   public @java.lang.SuppressWarnings({"all", "unchecked"}) E getField() {
-    java.lang.Object value = this.field.get();
-    if ((value == null))
+    java.lang.Object $value = this.field.get();
+    if (($value == null))
         {
           synchronized (this.field)
             {
-              value = this.field.get();
-              if ((value == null))
+              $value = this.field.get();
+              if (($value == null))
                   {
                     final E actualValue = getAny();
-                    value = ((actualValue == null) ? this.field : actualValue);
-                    this.field.set(value);
+                    $value = ((actualValue == null) ? this.field : actualValue);
+                    this.field.set($value);
                   }
             }
         }
-    return (E) ((value == this.field) ? null : value);
+    return (E) (($value == this.field) ? null : $value);
   }
   public @java.lang.SuppressWarnings({"all", "unchecked"}) long getField2() {
-    java.lang.Object value = this.field2.get();
-    if ((value == null))
+    java.lang.Object $value = this.field2.get();
+    if (($value == null))
         {
           synchronized (this.field2)
             {
-              value = this.field2.get();
-              if ((value == null))
+              $value = this.field2.get();
+              if (($value == null))
                   {
                     final long actualValue = System.currentTimeMillis();
-                    value = actualValue;
-                    this.field2.set(value);
+                    $value = actualValue;
+                    this.field2.set($value);
                   }
             }
         }
-    return (java.lang.Long) value;
+    return (java.lang.Long) $value;
   }
 }
