@@ -46,18 +46,18 @@ class GetterLazyEahcToString {
 	
 	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public String getValue() {
-		java.lang.Object value = this.value.get();
-		if (value == null) {
+		java.lang.Object $value = this.value.get();
+		if ($value == null) {
 			synchronized (this.value) {
-				value = this.value.get();
-				if (value == null) {
+				$value = this.value.get();
+				if ($value == null) {
 					final String actualValue = "";
-					value = actualValue == null ? this.value : actualValue;
-					this.value.set(value);
+					$value = actualValue == null ? this.value : actualValue;
+					this.value.set($value);
 				}
 			}
 		}
-		return (String) (value == this.value ? null : value);
+		return (String) ($value == this.value ? null : $value);
 	}
 	
 	@java.lang.SuppressWarnings("all")

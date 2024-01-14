@@ -3,17 +3,17 @@ class GetterLazyErrorPosition {
 
 	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public String getField() {
-		java.lang.Object value = this.field.get();
-		if (value == null) {
+		java.lang.Object $value = this.field.get();
+		if ($value == null) {
 			synchronized (this.field) {
-				value = this.field.get();
-				if (value == null) {
+				$value = this.field.get();
+				if ($value == null) {
 					final String actualValue = true ? "" : new ErrorPosition();
-					value = actualValue == null ? this.field : actualValue;
-					this.field.set(value);
+					$value = actualValue == null ? this.field : actualValue;
+					this.field.set($value);
 				}
 			}
 		}
-		return (String) (value == this.field ? null : value);
+		return (String) ($value == this.field ? null : $value);
 	}
 }

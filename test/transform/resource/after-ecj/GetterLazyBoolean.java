@@ -8,38 +8,38 @@
     return true;
   }
   public @java.lang.SuppressWarnings({"all", "unchecked"}) boolean isBooleanValue() {
-    java.lang.Object value = this.booleanValue.get();
-    if ((value == null))
+    java.lang.Object $value = this.booleanValue.get();
+    if (($value == null))
         {
           synchronized (this.booleanValue)
             {
-              value = this.booleanValue.get();
-              if ((value == null))
+              $value = this.booleanValue.get();
+              if (($value == null))
                   {
                     final boolean actualValue = calculateBoolean();
-                    value = actualValue;
-                    this.booleanValue.set(value);
+                    $value = actualValue;
+                    this.booleanValue.set($value);
                   }
             }
         }
-    return (java.lang.Boolean) value;
+    return (java.lang.Boolean) $value;
   }
   public @java.lang.SuppressWarnings({"all", "unchecked"}) boolean isOtherBooleanValue() {
-    java.lang.Object value = this.otherBooleanValue.get();
-    if ((value == null))
+    java.lang.Object $value = this.otherBooleanValue.get();
+    if (($value == null))
         {
           synchronized (this.otherBooleanValue)
             {
-              value = this.otherBooleanValue.get();
-              if ((value == null))
+              $value = this.otherBooleanValue.get();
+              if (($value == null))
                   {
                     final boolean actualValue = (! calculateBoolean());
-                    value = actualValue;
-                    this.otherBooleanValue.set(value);
+                    $value = actualValue;
+                    this.otherBooleanValue.set($value);
                   }
             }
         }
-    return (java.lang.Boolean) value;
+    return (java.lang.Boolean) $value;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
