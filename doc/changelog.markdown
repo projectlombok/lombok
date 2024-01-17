@@ -6,8 +6,8 @@ Lombok Changelog
 * FEATURE: `@Locked` has been introduced. Like `@Synchronized` but with `java.util.concurrent.locks` locks instead of the `synchronized` primitive. Thanks, Pim van der Loos for the PR! [Issue #3506](https://github.com/projectlombok/lombok/issues/3506).
 * NECROMANCY: Inlining a generated getter in eclipse would result in eclipse incorrectly replacing calls with `@Getter` instead of the actual field's name. [Issue #562](https://github.com/projectlombok/lombok/issues/562). This issue is almost old enough to drink. Points for dedication go to Rawi for fixing this one.
 * BUGFIX: Many lombok features wouldn't work properly on records contained within an outer type unless you explicitly marked it `static`. [Issue #3497](https://github.com/projectlombok/lombok/issues/3497) [Issue #3559](https://github.com/projectlombok/lombok/issues/3559).
-* BUGFIX: Eclipse projects using the com.pro-crafting.tools:jasperreports-plugin will now compile
-* We recently released v1.18.30; there is no edge release since then.
+* BUGFIX: Eclipse projects using the `com.pro-crafting.tools:jasperreports-plugin` will now compile.
+* BUGFIX: `@FieldNameConstants` now works when generated fields are involved. [Issue #3529](https://github.com/projectlombok/lombok/issues/3529).
 
 ### v1.18.30 (September 20th, 2023)
 * PLATFORM: Initial JDK21 support added. [Issue #3393](https://github.com/projectlombok/lombok/issues/3393).
