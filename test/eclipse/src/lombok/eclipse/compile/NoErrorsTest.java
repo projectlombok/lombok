@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Project Lombok Authors.
+ * Copyright (C) 2024 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,15 +19,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.eclipse.edit;
+package lombok.eclipse.compile;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IField;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.ISourceRange;
-import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.IProblemRequestor;
+import org.eclipse.jdt.core.WorkingCopyOwner;
+import org.eclipse.jdt.core.compiler.IProblem;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,34 +38,52 @@ import lombok.eclipse.EclipseRunner;
 import lombok.eclipse.SetupSingleFileTest;
 
 @RunWith(EclipseRunner.class)
-public class SelectTest {
+public class NoErrorsTest {
 	
 	@Rule
 	public SetupSingleFileTest setup = new SetupSingleFileTest();
 	
 	@Test
-	public void builderField() throws Exception {
-		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("A.java");
-		IType type = cu.findPrimaryType();
-		IField field = type.getField("id");
+	public void fieldNameConstantsInAnnotation() throws Exception {
+		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("Usage.java");
 		
-		ISourceRange sourceRange = field.getNameRange();
-		IJavaElement[] codeSelect = cu.codeSelect(sourceRange.getOffset(), sourceRange.getLength());
+		final List<IProblem> problems = new ArrayList<IProblem>();
+		final IProblemRequestor requestor = new IProblemRequestor() {
+			@Override
+			public void acceptProblem(IProblem problem) {
+				problems.add(problem);
+			}
+			
+			@Override
+			public void beginReporting() {
+				problems.clear();
+			}
+			
+			@Override
+			public void endReporting() {
+			}
+			
+			@Override
+			public boolean isActive() {
+				return true;
+			}
+		};
 		
-		assertEquals(1, codeSelect.length);
-		assertEquals(field, codeSelect[0]);
-	}
-	
-	@Test
-	public void superbuilderField() throws Exception {
-		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("A.java");
-		IType type = cu.findPrimaryType();
-		IField field = type.getField("id");
+		WorkingCopyOwner workingCopyOwner = new WorkingCopyOwner() {
+			@Override
+			public IProblemRequestor getProblemRequestor(ICompilationUnit workingCopy) {
+				return requestor;
+			}
+		};
 		
-		ISourceRange sourceRange = field.getNameRange();
-		IJavaElement[] codeSelect = cu.codeSelect(sourceRange.getOffset(), sourceRange.getLength());
+		ICompilationUnit workingCopy = cu.getWorkingCopy(workingCopyOwner, null);
+		try {
+			workingCopy.reconcile(ICompilationUnit.NO_AST, true, true, workingCopy.getOwner(), null);
+		} finally {
+			workingCopy.discardWorkingCopy();
+		}
 		
-		assertEquals(1, codeSelect.length);
-		assertEquals(field, codeSelect[0]);
+		System.out.println(problems);
+		assertTrue(problems.isEmpty());
 	}
 }
