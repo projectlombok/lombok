@@ -42,6 +42,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.HandlerUtil;
+import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.javac.JavacAnnotationHandler;
@@ -73,8 +74,9 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 
 		JavacNode builderAnnotationNode = findAnnotation(Builder.class, annotatedNode);
 		JavacNode superBuilderAnnotationNode = findAnnotation(SuperBuilder.class, annotatedNode);
-		if (builderAnnotationNode == null && superBuilderAnnotationNode == null) {
-			annotationNode.addWarning("@Jacksonized requires @Builder or @SuperBuilder for it to mean anything.");
+		JavacNode accessorsAnnotationNode = findAnnotation(Accessors.class, annotatedNode);
+		if (builderAnnotationNode == null && superBuilderAnnotationNode == null && accessorsAnnotationNode == null) {
+			annotationNode.addWarning("@Jacksonized requires @Builder, @SuperBuilder, or @Accessors for it to mean anything.");
 			return;
 		}
 
