@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2024 The Project Lombok Authors.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse.dependencies;
 
 import java.io.BufferedInputStream;
@@ -5,11 +26,9 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,10 +44,10 @@ import javax.xml.transform.sax.SAXSource;
 import org.xml.sax.InputSource;
 
 import lombok.eclipse.dependencies.model.Child;
-import lombok.eclipse.dependencies.model.Provided;
 import lombok.eclipse.dependencies.model.Repository;
 import lombok.eclipse.dependencies.model.Required;
 import lombok.eclipse.dependencies.model.Unit;
+import lombok.eclipse.dependencies.model.VersionRange;
 
 public class UpdateSite {
 	private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
@@ -38,13 +57,11 @@ public class UpdateSite {
 	
 	private JAXBContext jaxbContext;
 	private Repository repository;
-	private Map<String, List<Unit>> providesIndex;
 	private String resolvedUrl;
 	private SAXParserFactory saxParserFactory;
 	
 	public UpdateSite() throws Exception {
 		jaxbContext = JAXBContext.newInstance(Repository.class);
-		providesIndex = new HashMap<>();
 		
 		SAXParserFactory spf = SAXParserFactory.newInstance();
 		spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
@@ -72,15 +89,7 @@ public class UpdateSite {
 		
 		try (InputStream inputStream = readJarOrXml(resolvedUrl, "content")) {
 			repository = unmarshalRepository(inputStream);
-			
-			// Build index
-			for (Unit unit : repository.units) {
-				for (Provided provides : unit.provides) {
-					providesIndex.computeIfAbsent(provides.namespace + ":" + provides.name, k -> new ArrayList<>()).add(unit);
-				}
-			}
 		}
-		;
 	}
 	
 	public Set<String> resolveWithoutDependencies(List<String> dependencies) {
@@ -92,40 +101,42 @@ public class UpdateSite {
 	}
 	
 	private Set<String> resolve(List<String> dependencies, boolean withDependencies) {
-		Queue<String> toResolve = new UniqueQueue<>();
+		Queue<Required> toResolve = new ArrayDeque<>();
 		for (String dependency : dependencies) {
-			toResolve.add(dependency);
+			String[] split = dependency.split(":");
+			Required required = new Required();
+			required.namespace = split[0];
+			required.name = split[1];
+			required.range = VersionRange.ALL;
+			toResolve.add(required);
 		}
 		Set<Unit> resolved = new HashSet<>();
 		while (!toResolve.isEmpty()) {
-			String next = toResolve.poll();
+			Required next = toResolve.poll();
 			
-			List<Unit> providedUnits = providesIndex.get(next);
+			// Skip already resolved
+			if (resolved.stream().anyMatch(u -> u.satisfies(next))) {
+				continue;
+			}
+			
+			List<Unit> satisfyingUnits = repository.units.stream().filter(u -> u.satisfies(next)).collect(Collectors.toList());
 			// Skip unknown
-			if (providedUnits == null) {
+			if (satisfyingUnits.isEmpty()) {
 				System.out.println("Skipping unknown unit " + next);
 				continue;
 			}
-			// Remove a.jre.javase dependency
-			List<Unit> filteredProvidedUnits = providedUnits.stream()
-				.filter(u -> !u.id.equals("a.jre.javase")) // Remove
-				.collect(Collectors.toList());
 			
-			if (filteredProvidedUnits.size() == 0) {
-				// This is a JDK only dependency, skip
+			// Skip JDK dependencies
+			boolean jdkDependency = satisfyingUnits.stream().anyMatch(u -> u.id.equals("a.jre.javase"));
+			if (jdkDependency) {
 				continue;
 			}
 			
-			// Skip ambiguous (we could use version ranges to solve that...)
-			if (filteredProvidedUnits.size() > 1) {
-				boolean alreadyResolved = filteredProvidedUnits.stream().anyMatch(resolved::contains);
-				if (!alreadyResolved) {
-					System.out.println("Ambiguous resolution for " + next + ": " + filteredProvidedUnits.toString());
-					continue;
-				}
+			if (satisfyingUnits.size() > 1) {
+				System.out.println("Ambiguous resolution for " + next + ": " + satisfyingUnits.toString() + ", picking first");
 			}
 			
-			Unit unit = filteredProvidedUnits.get(0);
+			Unit unit = satisfyingUnits.get(0);
 			resolved.add(unit);
 			
 			if (withDependencies && unit.requires != null) {
@@ -133,7 +144,7 @@ public class UpdateSite {
 					if (required.optional) continue;
 					if (!matchesFilter(required.filter)) continue;
 					
-					toResolve.add(required.namespace + ":" + required.name);
+					toResolve.add(required);
 				}
 			}
 		}

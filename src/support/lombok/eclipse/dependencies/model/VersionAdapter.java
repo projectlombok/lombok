@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 The Project Lombok Authors.
+ * Copyright (C) 2024 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,25 +21,18 @@
  */
 package lombok.eclipse.dependencies.model;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-public class Required {
-	@XmlAttribute
-	public String namespace;
-	@XmlAttribute
-	public String name;
-	@XmlAttribute
-	@XmlJavaTypeAdapter(VersionRangeAdapter.class)
-	public VersionRange range;
-	@XmlAttribute
-	public boolean optional;
-	@XmlElement
-	public String filter;
-	
+public class VersionAdapter extends XmlAdapter<String, Version> {
+
 	@Override
-	public String toString() {
-		return namespace + ":" + name + "_"  + range;
+	public Version unmarshal(String v) throws Exception {
+		return Version.parse(v);
 	}
+
+	@Override
+	public String marshal(Version v) throws Exception {
+		throw new UnsupportedOperationException();
+	}
+	
 }
