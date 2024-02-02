@@ -55,6 +55,7 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 			<or>
 				<os arch="aarch64" />
 				<os arch="x86-64" />
+				<os arch="x86_64" />
 				<os arch="amd64" />
 			</or>
 		</and>
