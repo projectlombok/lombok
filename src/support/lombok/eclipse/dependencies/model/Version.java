@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 The Project Lombok Authors.
+ * Copyright (C) 2024 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,25 +21,46 @@
  */
 package lombok.eclipse.dependencies.model;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-public class Required {
-	@XmlAttribute
-	public String namespace;
-	@XmlAttribute
-	public String name;
-	@XmlAttribute
-	@XmlJavaTypeAdapter(VersionRangeAdapter.class)
-	public VersionRange range;
-	@XmlAttribute
-	public boolean optional;
-	@XmlElement
-	public String filter;
+public class Version {
+	private int major;
+	private int minor;
+	private int micro;
+	private String qualifier = "";
+	
+	public static Version parse(String v) {
+		String[] parts = v.split("\\.", 4);
+		
+		Version version = new Version();
+		version.major = Integer.parseInt(parts[0]);
+		if (parts.length > 1) {
+			version.minor = Integer.parseInt(parts[1]);
+		}
+		if (parts.length > 2) {
+			version.micro = Integer.parseInt(parts[2]);
+		}
+		if (parts.length > 3) {
+			version.qualifier = parts[3];
+		}
+		return version;
+	}
+	
+	public int compareTo(Version other) {
+		int result = major - other.major;
+		if (result != 0) return result;
+		
+		result = minor - other.minor;
+		if (result != 0) return result;
+		
+		result = micro - other.micro;
+		if (result != 0) return result;
+		
+		return qualifier.compareTo(other.qualifier);
+	}
 	
 	@Override
 	public String toString() {
-		return namespace + ":" + name + "_"  + range;
+		String result = major + "." + minor + "." + micro;
+		if (!qualifier.isEmpty()) result += "." + qualifier;
+		return result;
 	}
 }

@@ -52,6 +52,7 @@ import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
+import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -308,7 +309,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		private final char[] mainTypeName;
 		
 		private TestCompilationUnitEclipse(String name, String source) {
-			super(null, name, null);
+			super(null, name, DefaultWorkingCopyOwner.PRIMARY);
 			this.source = source.toCharArray();
 			
 			char[] fileNameCharArray = getFileName();
@@ -318,14 +319,6 @@ public class RunTestsViaEcj extends AbstractRunTests {
 				end = fileNameCharArray.length;
 			}
 			mainTypeName = CharOperation.subarray(fileNameCharArray, start, end);
-		}
-		
-		@Override public int hashCode() {
-			return System.identityHashCode(this);
-		}
-		
-		@Override public boolean equals(Object obj) {
-			return this == obj;
 		}
 		
 		@Override public char[] getContents() {
