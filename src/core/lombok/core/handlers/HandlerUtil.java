@@ -115,6 +115,7 @@ public class HandlerUtil {
 			"org.eclipse.jdt.annotation.NonNull",
 			"org.jetbrains.annotations.NotNull",
 			"org.jmlspecs.annotation.NonNull",
+			"org.jspecify.annotations.NonNull",
 			"org.netbeans.api.annotations.common.NonNull",
 			"org.springframework.lang.NonNull",
 			"reactor.util.annotation.NonNull",
