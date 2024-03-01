@@ -76,7 +76,7 @@
 		
 		<dependency org="org.eclipse.jdt" name="ecj" rev="3.32.0" conf="ecj19->master" />
 		<dependency org="org.eclipse.jdt" name="ecj" rev="3.25.0" conf="ecj16->master" />
-		<dependency org="org.eclipse.jdt" name="ecj" rev="3.22.0.v20200530-2032" conf="ecj14->master" />
+		<dependency org="org.eclipse.jdt" name="ecj" rev="3.22.0" conf="ecj14->master" />
 		<dependency org="org.eclipse.jdt" name="ecj" rev="3.16.0" conf="ecj11->master" />
 		<!-- until oct 2016, ecj was released under org 'org.eclipse.jdt.core.compiler', and the versioning followed eclipse's versions. -->
 		<!-- after that, it switched to group 'org.eclipse.jdt', and follows its own version. That means 3.16.0 is a later release than 4.6.1 on the old group! -->
