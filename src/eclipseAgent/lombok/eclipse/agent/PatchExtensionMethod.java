@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2023 The Project Lombok Authors.
+ * Copyright (C) 2012-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -321,9 +321,11 @@ public class PatchExtensionMethod {
 				MethodBinding fixedBinding = scope.getMethod(extensionMethod.declaringClass, methodCall.selector, argumentTypes.toArray(new TypeBinding[0]), methodCall);
 				if (fixedBinding instanceof ProblemMethodBinding) {
 					methodCall.arguments = originalArgs;
-					if (fixedBinding.declaringClass != null) {
-						PostponedInvalidMethodError.invoke(scope.problemReporter(), methodCall, fixedBinding, scope);
+					// Sometimes the declaring class is null, in that case we have to create a new ProblemMethodBinding using the extension method's declaring class
+					if (fixedBinding.declaringClass == null) {
+						fixedBinding = new ProblemMethodBinding(fixedBinding.selector, fixedBinding.parameters, extensionMethod.declaringClass, fixedBinding.problemId());
 					}
+					PostponedInvalidMethodError.invoke(scope.problemReporter(), methodCall, fixedBinding, scope);
 				} else {
 					// If the extension method uses varargs, the last fixed binding parameter is an array but 
 					// the method arguments are not. Even thought we already know that the method is fine we still
