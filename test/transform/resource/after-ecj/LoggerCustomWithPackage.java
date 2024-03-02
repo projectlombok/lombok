@@ -1,6 +1,6 @@
 package before;
 @lombok.CustomLog class LoggerCustomLog {
-  private static final before.MyLogger log = before.MyLoggerFactory.create(LoggerCustomLog.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated before.MyLogger log = before.MyLoggerFactory.create(LoggerCustomLog.class);
   <clinit>() {
   }
   LoggerCustomLog() {

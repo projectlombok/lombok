@@ -1,6 +1,6 @@
 import lombok.extern.jbosslog.JBossLog;
 @lombok.extern.jbosslog.JBossLog class LoggerJBossLog {
-  private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLog.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLog.class);
   <clinit>() {
   }
   LoggerJBossLog() {
@@ -8,7 +8,7 @@ import lombok.extern.jbosslog.JBossLog;
   }
 }
 @JBossLog class LoggerJBossLogWithImport {
-  private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithImport.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithImport.class);
   <clinit>() {
   }
   LoggerJBossLogWithImport() {
@@ -17,7 +17,7 @@ import lombok.extern.jbosslog.JBossLog;
 }
 class LoggerJBossLogOuter {
   static @lombok.extern.jbosslog.JBossLog class Inner {
-    private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(Inner.class);
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(Inner.class);
     <clinit>() {
     }
     Inner() {
@@ -30,7 +30,7 @@ class LoggerJBossLogOuter {
 }
 @JBossLog enum LoggerJBossLogWithEnum {
   CONSTANT(),
-  private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithEnum.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithEnum.class);
   <clinit>() {
   }
   LoggerJBossLogWithEnum() {
@@ -40,7 +40,7 @@ class LoggerJBossLogOuter {
 class LoggerJBossLogWithInnerEnum {
   @JBossLog enum Inner {
     CONSTANT(),
-    private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(Inner.class);
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(Inner.class);
     <clinit>() {
     }
     Inner() {
@@ -52,7 +52,7 @@ class LoggerJBossLogWithInnerEnum {
   }
 }
 @JBossLog(topic = "DifferentLogger") class LoggerJBossLogWithDifferentLoggerName {
-  private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger("DifferentLogger");
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger("DifferentLogger");
   <clinit>() {
   }
   LoggerJBossLogWithDifferentLoggerName() {
@@ -60,7 +60,7 @@ class LoggerJBossLogWithInnerEnum {
   }
 }
 @JBossLog(topic = LoggerJBossLogWithStaticField.TOPIC) class LoggerJBossLogWithStaticField {
-  private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithStaticField.TOPIC);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogWithStaticField.TOPIC);
   static final String TOPIC = "StaticField";
   <clinit>() {
   }

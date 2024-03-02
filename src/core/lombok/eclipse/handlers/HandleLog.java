@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,9 +109,7 @@ public class HandleLog {
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName.getName(), useStatic, loggerTopic);
 			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
-			// TODO temporary workaround for issue 290. https://github.com/projectlombok/lombok/issues/290
-			// injectFieldSuppressWarnings(owner, fieldDeclaration);
-			injectField(owner, fieldDeclaration);
+			injectFieldAndMarkGenerated(owner, fieldDeclaration);
 			owner.rebuild();
 			break;
 		default:

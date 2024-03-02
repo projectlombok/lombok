@@ -1,6 +1,6 @@
 package before;
 @lombok.extern.slf4j.Slf4j class LoggerSlf4jWithPackage {
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithPackage.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithPackage.class);
   <clinit>() {
   }
   LoggerSlf4jWithPackage() {
@@ -9,7 +9,7 @@ package before;
 }
 class LoggerSlf4jWithPackageOuter {
   static @lombok.extern.slf4j.Slf4j class Inner {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
     <clinit>() {
     }
     Inner() {

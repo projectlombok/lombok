@@ -1,6 +1,6 @@
 import lombok.extern.java.Log;
 @lombok.extern.java.Log class LoggerJul {
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJul.class.getName());
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJul.class.getName());
   <clinit>() {
   }
   LoggerJul() {
@@ -8,7 +8,7 @@ import lombok.extern.java.Log;
   }
 }
 @Log class LoggerJulWithImport {
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJulWithImport.class.getName());
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJulWithImport.class.getName());
   <clinit>() {
   }
   LoggerJulWithImport() {
@@ -16,7 +16,7 @@ import lombok.extern.java.Log;
   }
 }
 @Log(topic = "DifferentName") class LoggerJulWithDifferentName {
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger("DifferentName");
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger("DifferentName");
   <clinit>() {
   }
   LoggerJulWithDifferentName() {
@@ -24,7 +24,7 @@ import lombok.extern.java.Log;
   }
 }
 @Log(topic = LoggerJulWithStaticField.TOPIC) class LoggerJulWithStaticField {
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJulWithStaticField.TOPIC);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJulWithStaticField.TOPIC);
   static final String TOPIC = "StaticField";
   <clinit>() {
   }
@@ -34,7 +34,7 @@ import lombok.extern.java.Log;
 }
 @Log enum LoggerJulWithEnum {
   CONSTANT(),
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJulWithEnum.class.getName());
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJulWithEnum.class.getName());
   <clinit>() {
   }
   LoggerJulWithEnum() {
@@ -44,7 +44,7 @@ import lombok.extern.java.Log;
 class LoggerJulWithInnerEnum {
   @Log enum Inner {
     CONSTANT(),
-    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Inner.class.getName());
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger(Inner.class.getName());
     <clinit>() {
     }
     Inner() {

@@ -1,5 +1,5 @@
 @lombok.CustomLog class LoggerCustomLog {
-  private static final MyLogger log = MyLoggerFactory.create(LoggerCustomLog.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated MyLogger log = MyLoggerFactory.create(LoggerCustomLog.class);
   <clinit>() {
   }
   LoggerCustomLog() {

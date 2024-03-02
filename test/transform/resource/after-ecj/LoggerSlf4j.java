@@ -1,6 +1,6 @@
 import lombok.extern.slf4j.Slf4j;
 @lombok.extern.slf4j.Slf4j class LoggerSlf4j {
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4j.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4j.class);
   <clinit>() {
   }
   LoggerSlf4j() {
@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
   }
 }
 @Slf4j class LoggerSlf4jWithImport {
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithImport.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithImport.class);
   <clinit>() {
   }
   LoggerSlf4jWithImport() {
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 }
 @Slf4j enum LoggerSlf4jWithEnum {
   CONSTANT(),
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithEnum.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithEnum.class);
   <clinit>() {
   }
   LoggerSlf4jWithEnum() {
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 class LoggerSlf4jWithInnerEnum {
   @Slf4j enum Inner {
     CONSTANT(),
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
     <clinit>() {
     }
     Inner() {
@@ -40,7 +40,7 @@ class LoggerSlf4jWithInnerEnum {
 }
 class LoggerSlf4jOuter {
   static @lombok.extern.slf4j.Slf4j class Inner {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
     <clinit>() {
     }
     Inner() {
@@ -51,18 +51,16 @@ class LoggerSlf4jOuter {
     super();
   }
 }
-
 @Slf4j(topic = "DifferentLogger") class LoggerSlf4jWithDifferentLoggerName {
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger("DifferentLogger");
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger("DifferentLogger");
   <clinit>() {
   }
   LoggerSlf4jWithDifferentLoggerName() {
     super();
   }
 }
-
 @Slf4j(topic = LoggerSlf4jWithStaticField.TOPIC) class LoggerSlf4jWithStaticField {
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithStaticField.TOPIC);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithStaticField.TOPIC);
   static final String TOPIC = "StaticField";
   <clinit>() {
   }
@@ -71,7 +69,7 @@ class LoggerSlf4jOuter {
   }
 }
 @Slf4j(topic = (LoggerSlf4jWithTwoStaticFields.TOPIC + LoggerSlf4jWithTwoStaticFields.TOPIC)) class LoggerSlf4jWithTwoStaticFields {
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger((LoggerSlf4jWithTwoStaticFields.TOPIC + LoggerSlf4jWithTwoStaticFields.TOPIC));
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger((LoggerSlf4jWithTwoStaticFields.TOPIC + LoggerSlf4jWithTwoStaticFields.TOPIC));
   static final String TOPIC = "StaticField";
   <clinit>() {
   }
