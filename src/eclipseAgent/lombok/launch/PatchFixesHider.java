@@ -432,25 +432,14 @@ final class PatchFixesHider {
 	/** Contains patch code to support Javadoc for generated methods */
 	public static final class Javadoc {
 		private static final Method GET_HTML;
-		private static final Method PRINT_METHOD_OLD;
-		private static final Method PRINT_METHOD_NEW;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchJavadoc");
 			GET_HTML = Util.findMethod(shadowed, "getHTMLContentFromSource", String.class, Object.class);
-			PRINT_METHOD_NEW = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuilder.class, TypeDeclaration.class);
-			PRINT_METHOD_OLD = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuffer.class, TypeDeclaration.class);
 		}
 		
 		public static String getHTMLContentFromSource(String original, IJavaElement member) {
 			return (String) Util.invokeMethod(GET_HTML, original, member);
-		}
-		
-		public static StringBuilder printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuilder output, TypeDeclaration type) {
-				return (StringBuilder) Util.invokeMethod(PRINT_METHOD_NEW, methodDeclaration, tab, output, type);
-		}
-		public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuffer output, TypeDeclaration type) {
-			return (StringBuffer) Util.invokeMethod(PRINT_METHOD_OLD, methodDeclaration, tab, output, type);
 		}
 	}
 	

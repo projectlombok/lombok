@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 The Project Lombok Authors.
+ * Copyright (C) 2020-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,15 @@ package lombok.eclipse.agent;
 import static lombok.eclipse.EcjAugments.CompilationUnit_javadoc;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.internal.compiler.ast.ASTNode;
-import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.SourceMethod;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 
-import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.permit.Permit;
 
 public class PatchJavadoc {
