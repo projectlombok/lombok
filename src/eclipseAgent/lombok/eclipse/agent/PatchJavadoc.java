@@ -37,7 +37,7 @@ import lombok.permit.Permit;
 
 public class PatchJavadoc {
 	
-	public static String getHTMLContentFromSource(String original, Object member) {
+	public static String getHTMLContentFromSource(Object instance, String original, Object member) {
 		if (original != null) {
 			return original;
 		}
@@ -54,7 +54,7 @@ public class PatchJavadoc {
 				String rawJavadoc = docs.get(signature);
 				if (rawJavadoc == null) return null;
 				
-				return Reflection.javadoc2HTML((IMember) member, (IJavaElement) member, rawJavadoc);
+				return Reflection.javadoc2HTML(instance, (IMember) member, (IJavaElement) member, rawJavadoc);
 			}
 		}
 		
@@ -85,9 +85,10 @@ public class PatchJavadoc {
 	private static class Reflection {
 		private static final Method javadoc2HTML;
 		private static final Method oldJavadoc2HTML;
+		private static final Method reallyOldJavadoc2HTML;
 		private static final Method lsJavadoc2HTML;
 		static {
-			Method a = null, b = null, c = null;
+			Method a = null, b = null, c = null, d = null;
 			
 			try {
 				a = Permit.getMethod(JavadocContentAccess2.class, "javadoc2HTML", IMember.class, IJavaElement.class, String.class);
@@ -98,30 +99,41 @@ public class PatchJavadoc {
 			try {
 				c = Permit.getMethod(Class.forName("org.eclipse.jdt.ls.core.internal.javadoc.JavadocContentAccess2"), "javadoc2HTML", IMember.class, IJavaElement.class, String.class);
 			} catch (Throwable t) {}
+			try {
+				d = Permit.getMethod(Class.forName("org.eclipse.jdt.core.manipulation.internal.javadoc.CoreJavadocAccess"), "javadoc2HTML", IMember.class, IJavaElement.class, String.class);
+			} catch (Throwable t) {}
 			
-			javadoc2HTML = a;
-			oldJavadoc2HTML = b;
+			oldJavadoc2HTML = a;
+			reallyOldJavadoc2HTML = b;
 			lsJavadoc2HTML = c;
+			javadoc2HTML = d;
 		}
 		
-		private static String javadoc2HTML(IMember member, IJavaElement element, String rawJavadoc) {
+		private static String javadoc2HTML(Object instance, IMember member, IJavaElement element, String rawJavadoc) {
 			if (javadoc2HTML != null) {
 				try {
-					return (String) javadoc2HTML.invoke(null, member, element, rawJavadoc);
-				} catch (Throwable t) {
-					return null;
-				}
-			}
-			if (lsJavadoc2HTML != null) {
-				try {
-					return (String) lsJavadoc2HTML.invoke(null, member, element, rawJavadoc);
+					return (String) javadoc2HTML.invoke(instance, member, element, rawJavadoc);
 				} catch (Throwable t) {
 					return null;
 				}
 			}
 			if (oldJavadoc2HTML != null) {
 				try {
-					return (String) oldJavadoc2HTML.invoke(null, member, rawJavadoc);
+					return (String) oldJavadoc2HTML.invoke(instance, member, element, rawJavadoc);
+				} catch (Throwable t) {
+					return null;
+				}
+			}
+			if (lsJavadoc2HTML != null) {
+				try {
+					return (String) lsJavadoc2HTML.invoke(instance, member, element, rawJavadoc);
+				} catch (Throwable t) {
+					return null;
+				}
+			}
+			if (reallyOldJavadoc2HTML != null) {
+				try {
+					return (String) reallyOldJavadoc2HTML.invoke(instance, member, rawJavadoc);
 				} catch (Throwable t) {
 					return null;
 				}
