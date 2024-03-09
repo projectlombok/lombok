@@ -967,6 +967,14 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchJavadoc(ScriptManager sm) {
+		// Moved to new package and changed to instance method in 2024-03
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.manipulation.internal.javadoc.CoreJavadocAccess", "getHTMLContent", "java.lang.String", "org.eclipse.jdt.core.IJavaElement", "boolean"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.manipulation.internal.javadoc.CoreJavadocAccess", "getHTMLContentFromSource", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Javadoc", "getHTMLContentFromSource", "java.lang.String", "java.lang.String", "java.lang.Object", "org.eclipse.jdt.core.IJavaElement"))
+				.requestExtra(StackRequest.THIS, StackRequest.PARAM1)
+				.build());
+		
 		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContent", "java.lang.String", "org.eclipse.jdt.core.IJavaElement", "boolean"))
 				.methodToWrap(new Hook("org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2", "getHTMLContentFromSource", "java.lang.String", "org.eclipse.jdt.core.IJavaElement"))

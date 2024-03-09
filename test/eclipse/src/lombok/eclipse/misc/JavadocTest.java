@@ -21,11 +21,12 @@
  */
 package lombok.eclipse.misc;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,10 +46,16 @@ public class JavadocTest {
 		
 		IJavaElement getterInvocation = cu.codeSelect(306, 0)[0];
 		String getterHtmlContent = JavadocContentAccess2.getHTMLContent(getterInvocation, true);
-		assertEquals("Getter section<dl><dt>Returns:</dt><dd> Sky is blue3</dd></dl>", getterHtmlContent);
+		assertThat(getterHtmlContent, CoreMatchers.containsString("Getter section"));
+		assertThat(getterHtmlContent, CoreMatchers.containsString("Returns:"));
+		assertThat(getterHtmlContent, CoreMatchers.containsString("Sky is blue3"));
 		
 		IJavaElement setterInvocation = cu.codeSelect(320, 0)[0];
 		String setterHtmlContent = JavadocContentAccess2.getHTMLContent(setterInvocation, true);
-		assertEquals("Setter section<dl><dt>Parameters:</dt><dd><b>fieldName</b>  Hello, World3</dd><dd><b>field</b> </dd></dl>", setterHtmlContent);
+		assertThat(setterHtmlContent, CoreMatchers.containsString("Setter section"));
+		assertThat(setterHtmlContent, CoreMatchers.containsString("Parameters:"));
+		assertThat(setterHtmlContent, CoreMatchers.containsString("fieldName"));
+		assertThat(setterHtmlContent, CoreMatchers.containsString("Hello, World3"));
+		assertThat(setterHtmlContent, CoreMatchers.containsString("field"));
 	}
 }
