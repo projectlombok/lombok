@@ -22,8 +22,8 @@
 package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
-import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.EcjAugments.*;
+import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.EclipseReflectiveMembers.*;
 
 import java.lang.reflect.Array;
@@ -60,7 +60,6 @@ import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.DoubleLiteral;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
-import org.eclipse.jdt.internal.compiler.ast.ExtendedStringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
@@ -86,7 +85,6 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
-import org.eclipse.jdt.internal.compiler.ast.StringLiteralConcatenation;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
@@ -123,6 +121,7 @@ import lombok.core.configuration.TypeName;
 import lombok.core.debug.ProblemReporter;
 import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.core.handlers.HandlerUtil.JavadocTag;
 import lombok.eclipse.EcjAugments;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
@@ -416,20 +415,6 @@ public class EclipseHandlerUtil {
 		if (in instanceof LongLiteral) return LongLiteral.buildLongLiteral(((Literal) in).source(), s, e);
 		
 		if (in instanceof StringLiteral) return new StringLiteral(((Literal) in).source(), s, e, reflectInt(STRING_LITERAL__LINE_NUMBER, in) + 1);
-		if (in instanceof ExtendedStringLiteral) {
-			StringLiteral str = new StringLiteral(((Literal) in).source(), s, e, reflectInt(STRING_LITERAL__LINE_NUMBER, in) + 1);
-			StringLiteral empty = new StringLiteral(new char[0], s, e, reflectInt(STRING_LITERAL__LINE_NUMBER, in) + 1);
-			return new ExtendedStringLiteral(str, empty);
-		}
-		if (in instanceof StringLiteralConcatenation) {
-			Expression[] literals = ((StringLiteralConcatenation) in).literals;
-			// 0 and 1 len shouldn't happen.
-			if (literals.length == 0) return new StringLiteral(new char[0], s, e, 0);
-			if (literals.length == 1) return copyAnnotationMemberValue0(literals[0]);
-			StringLiteralConcatenation c = new StringLiteralConcatenation((StringLiteral) literals[0], (StringLiteral) literals[1]);
-			for (int i = 2; i < literals.length; i++) c = c.extendsWith((StringLiteral) literals[i]);
-			return c;
-		}
 		
 		// enums and field accesses (as long as those are references to compile time constant literals that's also acceptable)
 		
