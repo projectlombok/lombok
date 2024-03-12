@@ -771,6 +771,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.request(StackRequest.RETURN_VALUE, StackRequest.THIS)
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "addGeneratedDelegateMethods", "java.lang.Object[]", "java.lang.Object", "java.lang.Object"))
 				.build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.JavaElement", "getElementInfo", "org.eclipse.jdt.internal.compiler.env.IElementInfo"))
+				.request(StackRequest.THIS)
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "isDelegateSourceMethod", "boolean", "java.lang.Object"))
+				.valueMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "returnElementInfo", "java.lang.Object", "java.lang.Object"))
+				.build());
 	}
 	
 	private static void addPatchesForValEclipse(ScriptManager sm) {

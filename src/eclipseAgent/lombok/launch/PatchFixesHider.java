@@ -277,11 +277,16 @@ final class PatchFixesHider {
 	public static final class Delegate {
 		private static final Method HANDLE_DELEGATE_FOR_TYPE;
 		private static final Method ADD_GENERATED_DELEGATE_METHODS;
+		public static final Method IS_DELEGATE_SOURCE_METHOD;
+		public static final Method RETURN_ELEMENT_INFO;
 		
 		static {
-			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegatePortal");
-			HANDLE_DELEGATE_FOR_TYPE = Util.findMethod(shadowed, "handleDelegateForType", Object.class);
-			ADD_GENERATED_DELEGATE_METHODS = Util.findMethod(shadowed, "addGeneratedDelegateMethods", Object.class, Object.class);
+			Class<?> shadowedPortal = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegatePortal");
+			HANDLE_DELEGATE_FOR_TYPE = Util.findMethod(shadowedPortal, "handleDelegateForType", Object.class);
+			ADD_GENERATED_DELEGATE_METHODS = Util.findMethod(shadowedPortal, "addGeneratedDelegateMethods", Object.class, Object.class);
+			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegate");
+			IS_DELEGATE_SOURCE_METHOD = Util.findMethod(shadowed, "isDelegateSourceMethod", Object.class);
+			RETURN_ELEMENT_INFO = Util.findMethod(shadowed, "returnElementInfo", Object.class);
 		}
 		
 		public static boolean handleDelegateForType(Object classScope) {
@@ -290,6 +295,14 @@ final class PatchFixesHider {
 		
 		public static Object[] addGeneratedDelegateMethods(Object returnValue, Object javaElement) {
 			return (Object[]) Util.invokeMethod(ADD_GENERATED_DELEGATE_METHODS, returnValue, javaElement);
+		}
+		
+		public static boolean isDelegateSourceMethod(Object sourceMethod) {
+			return (Boolean) Util.invokeMethod(IS_DELEGATE_SOURCE_METHOD, sourceMethod);
+		}
+		
+		public static Object returnElementInfo(Object delegateSourceMethod) {
+			return Util.invokeMethod(RETURN_ELEMENT_INFO, delegateSourceMethod);
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,11 @@
  */
 package lombok.eclipse.agent;
 
-import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.EcjAugments.*;
+import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -724,6 +725,15 @@ public class PatchDelegate {
 		if (!eclipseAvailable) return returnValue;
 		
 		return EclipseOnlyMethods.addGeneratedDelegateMethodsToChildren(returnValue, javaElement);
+	}
+	
+	public static Object returnElementInfo(Object delegateSourceMethod) {
+		Field field = Permit.permissiveGetField(delegateSourceMethod.getClass(), "sourceMethodInfo");
+		return Permit.permissiveReadField(Object.class, field, delegateSourceMethod);
+	}
+	
+	public static boolean isDelegateSourceMethod(Object sourceMethod) {
+		return sourceMethod.getClass().getName().equals("lombok.eclipse.agent.PatchDelegate$EclipseOnlyMethods$DelegateSourceMethod");
 	}
 	
 	public static class EclipseOnlyMethods {
