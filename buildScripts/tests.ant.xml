@@ -223,6 +223,11 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.eclipse-X version="202312" />
 	</target>
 	
+	<target name="test.eclipse-202403" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, testing the 2024-03 release of eclipse">
+		<fetchdep.eclipse version="202403" />
+		<test.eclipse-X version="202403" />
+	</target>
+	
 	<target name="test.eclipse-I-build" depends="test.compile, test.formatter.compile, deps.rtstubs18, compile.support" description="runs the tests on your default VM, testing the latest integration build of eclipse">
 		<fetchdep.eclipse.updatesite name="I-build" version="I-builds" target="lib/" resolveDependencies="false">
 			<bundles>
@@ -293,6 +298,10 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	
 	<target name="test.eclipse-2023-12-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.2023-12" description="runs the full eclipse tests on your default VM, testing the 2023-12 release of eclipse">
 		<test.eclipse-X-full version="2023-12" />
+	</target>
+	
+	<target name="test.eclipse-2024-03-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.2024-03" description="runs the full eclipse tests on your default VM, testing the 2024-04 release of eclipse">
+		<test.eclipse-X-full version="2024-03" />
 	</target>
 	
 	<target name="test.eclipse-I-build-full" depends="test.eclipse.compile, test.formatter.compile, deps.eclipse.integration" description="runs the full eclipse tests on your default VM, testing the latest integration build of eclipse">
