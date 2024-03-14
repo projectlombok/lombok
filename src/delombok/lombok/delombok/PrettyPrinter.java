@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2021 The Project Lombok Authors.
+ * Copyright (C) 2016-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -261,6 +261,14 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 		
 		return false;
+	}
+	
+	private void print(Name name) {
+		if (name.isEmpty()) {
+			print("_");
+		} else {
+			print(name.toString());
+		}
 	}
 	
 	private void print(CharSequence s) {
@@ -1722,6 +1730,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printPatternCaseLabel(tree);
 		} else if (className.endsWith("$JCRecordPattern")) { // Introduced in JDK19
 			printRecordPattern(tree);
+		} else if (className.endsWith("$JCAnyPattern")) { // Introduced in JDK22
+			print("_");
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
