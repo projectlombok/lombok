@@ -106,11 +106,13 @@ jobs:
         - eclipse-202212
         - eclipse-202309
         - eclipse-202312
+        - eclipse-202403
         - eclipse-I-build
         - eclipse-oxygen-full
         - eclipse-2022-03-full
         - eclipse-2023-09-full
         - eclipse-2023-12-full
+        - eclipse-2024-03-full
         - eclipse-I-build-full
         - ecj11
         - ecj14
