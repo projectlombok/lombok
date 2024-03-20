@@ -1,0 +1,3 @@
+26 @InvokePostConstructors and @SkipPostConstructors are mutually exclusive.
+35 @SkipPostConstructors is not needed; constructors calling this(...) are skipped anyway.
+39 Constructor needs to be annotated with @PostConstruct.(Invoke|Skip)PostConstructors or needs to start with a this(...) call.
