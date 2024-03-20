@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.31 "Edgy Guinea Pig"
+### v1.18.32 (March 20th, 2024)
 * PLATFORM: Initial JDK22 support added.
 * PLAFTORM  Added support for Eclipse 2024-03. [Issue #3620](https://github.com/projectlombok/lombok/issues/3620).
 * PLATFORM: Added support for recent versions of eclipse (released Q4 2023 or later or so) which would cause failures in the eclipse logs such as `java.lang.NoSuchMethodError: 'java.lang.StringBuffer org.eclipse.jdt…`. [Issue #3564](https://github.com/projectlombok/lombok/issues/3564).
