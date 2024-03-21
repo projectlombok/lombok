@@ -1,3 +1,4 @@
+//version 8:
 //conf: lombok.onX.flagUsage = warning
 //skip compare content: We're just checking if the flagUsage key works.
 import lombok.AllArgsConstructor;
