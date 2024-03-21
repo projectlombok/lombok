@@ -143,12 +143,12 @@ and rerun the build; this build is capable of finding VMs automatically on many 
 			<matches pattern="^\s*$" string="${jvm.loc}" />
 		</condition>
 		<fail if="jvm.loc.aborted">aborted</fail>
+		<condition property="jvm.loc.invalid">
+			<not><available file="${jvm.loc}/bin/${exe.java}" type="file" /></not>
+		</condition>
 		<fail if="jvm.loc.invalid">.
 
 ERROR: That does not appear to be a valid location; ${jvm.loc}/bin/${exe.java} should exist.
-			<condition>
-				<not><available file="${jvm.loc}/bin/${exe.java}" type="file" /></not>
-			</condition>
 		</fail>
 		<exec executable="${jvm.loc}/bin/${exe.java}" errorproperty="jvm.versioncheck.answer" failifexecutionfails="false" resultproperty="jvm.versioncheck.result">
 			<arg value="-version" />
