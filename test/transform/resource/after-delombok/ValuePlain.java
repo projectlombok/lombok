@@ -1,8 +1,9 @@
 final class Value1 {
 	private final int x;
+	@lombok.NonNull
 	private final String name;
 	@java.lang.SuppressWarnings("all")
-	public Value1(final int x, final String name) {
+	public Value1(final int x, @lombok.NonNull final String name) {
 		this.x = x;
 		this.name = name;
 	}
@@ -10,6 +11,7 @@ final class Value1 {
 	public int getX() {
 		return this.x;
 	}
+	@lombok.NonNull
 	@java.lang.SuppressWarnings("all")
 	public String getName() {
 		return this.name;

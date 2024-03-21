@@ -1,6 +1,6 @@
 class Data1 {
 	final int x;
-	String name;
+	@lombok.NonNull String name;
 	@java.lang.SuppressWarnings("all")
 	public Data1(final int x) {
 		this.x = x;
@@ -9,12 +9,13 @@ class Data1 {
 	public int getX() {
 		return this.x;
 	}
+	@lombok.NonNull
 	@java.lang.SuppressWarnings("all")
 	public String getName() {
 		return this.name;
 	}
 	@java.lang.SuppressWarnings("all")
-	public void setName(final String name) {
+	public void setName(@lombok.NonNull final String name) {
 		this.name = name;
 	}
 	@java.lang.Override
