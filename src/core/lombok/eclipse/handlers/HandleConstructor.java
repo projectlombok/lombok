@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,6 +101,9 @@ public class HandleConstructor {
 			boolean force = ann.force();
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor", annotationNode);
+			if (!onConstructor.isEmpty()) {
+				handleFlagUsage(annotationNode, ConfigurationKeys.ON_X_FLAG_USAGE, "@NoArgsConstructor(onConstructor=...)");
+			}
 			
 			handleConstructor.generateConstructor(typeNode, level, Collections.<EclipseNode>emptyList(), force, staticName, SkipIfConstructorExists.NO, onConstructor, annotationNode);
 		}
@@ -125,9 +128,42 @@ public class HandleConstructor {
 			}
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor", annotationNode);
+			if (!onConstructor.isEmpty()) {
+				handleFlagUsage(annotationNode, ConfigurationKeys.ON_X_FLAG_USAGE, "@RequiredArgsConstructor(onConstructor=...)");
+			}
 			
 			handleConstructor.generateConstructor(
 				typeNode, level, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
+				onConstructor, annotationNode);
+		}
+	}
+	
+	@Provides
+	public static class HandleAllArgsConstructor extends EclipseAnnotationHandler<AllArgsConstructor> {
+		private static final String NAME = AllArgsConstructor.class.getSimpleName();
+
+		private HandleConstructor handleConstructor = new HandleConstructor();
+		
+		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.ALL_ARGS_CONSTRUCTOR_FLAG_USAGE, "@AllArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
+			
+			EclipseNode typeNode = annotationNode.up();
+			if (!checkLegality(typeNode, annotationNode, NAME)) return;
+			AllArgsConstructor ann = annotation.getInstance();
+			AccessLevel level = ann.access();
+			if (level == AccessLevel.NONE) return;
+			String staticName = ann.staticName();
+			if (annotation.isExplicit("suppressConstructorProperties")) {
+				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
+			}
+			
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor", annotationNode);
+			if (!onConstructor.isEmpty()) {
+				handleFlagUsage(annotationNode, ConfigurationKeys.ON_X_FLAG_USAGE, "@AllArgsConstructor(onConstructor=...)");
+			}
+			
+			handleConstructor.generateConstructor(
+				typeNode, level, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
 				onConstructor, annotationNode);
 		}
 	}
@@ -165,33 +201,6 @@ public class HandleConstructor {
 			fields.add(child);
 		}
 		return fields;
-	}
-	
-	@Provides
-	public static class HandleAllArgsConstructor extends EclipseAnnotationHandler<AllArgsConstructor> {
-		private static final String NAME = AllArgsConstructor.class.getSimpleName();
-
-		private HandleConstructor handleConstructor = new HandleConstructor();
-		
-		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
-			handleFlagUsage(annotationNode, ConfigurationKeys.ALL_ARGS_CONSTRUCTOR_FLAG_USAGE, "@AllArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
-			
-			EclipseNode typeNode = annotationNode.up();
-			if (!checkLegality(typeNode, annotationNode, NAME)) return;
-			AllArgsConstructor ann = annotation.getInstance();
-			AccessLevel level = ann.access();
-			if (level == AccessLevel.NONE) return;
-			String staticName = ann.staticName();
-			if (annotation.isExplicit("suppressConstructorProperties")) {
-				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
-			}
-			
-			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor", annotationNode);
-			
-			handleConstructor.generateConstructor(
-				typeNode, level, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
-				onConstructor, annotationNode);
-		}
 	}
 	
 	static boolean checkLegality(EclipseNode typeNode, EclipseNode errorNode, String name) {
