@@ -981,4 +981,15 @@ public class HandlerUtil {
 		}
 		return null;
 	}
+	
+	public static String getBuilderSetterPrefix(LombokNode<?, ?, ?> node, String setterPrefix) {
+		if (setterPrefix != null && !setterPrefix.isEmpty()) {
+			return setterPrefix;
+		}
+		
+		String configurationPrefix = node.getAst().readConfiguration(ConfigurationKeys.BUILDER_SETTER_PREFIX);
+		if (configurationPrefix != null && !configurationPrefix.isEmpty()) return configurationPrefix;
+		
+		return setterPrefix;
+	}
 }

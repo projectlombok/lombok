@@ -262,7 +262,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.builderFieldName = bfd.name;
 				bfd.annotations = findCopyableAnnotations(fieldNode);
 				bfd.type = fd.vartype;
-				bfd.singularData = getSingularData(fieldNode, annInstance.setterPrefix());
+				bfd.singularData = getSingularData(fieldNode, getBuilderSetterPrefix(annotationNode, annInstance.setterPrefix()));
 				bfd.originalFieldNode = fieldNode;
 				
 				if (bfd.singularData != null && isDefault != null) {
@@ -422,7 +422,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.rawName = raw.name;
 				bfd.annotations = findCopyableAnnotations(param);
 				bfd.type = raw.vartype;
-				bfd.singularData = getSingularData(param, annInstance.setterPrefix());
+				bfd.singularData = getSingularData(param, getBuilderSetterPrefix(annotationNode, annInstance.setterPrefix()));
 				bfd.originalFieldNode = param;
 				addObtainVia(bfd, param);
 				job.builderFields.add(bfd);
@@ -489,7 +489,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : job.builderFields) {
-			makePrefixedSetterMethodsForBuilder(job, bfd, annInstance.setterPrefix());
+			makePrefixedSetterMethodsForBuilder(job, bfd, getBuilderSetterPrefix(annotationNode, annInstance.setterPrefix()));
 		}
 		
 		{
@@ -540,7 +540,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					}
 					tps = lb.toList();
 				}
-				JCMethodDecl md = generateToBuilderMethod(job, tps, annInstance.setterPrefix());
+				JCMethodDecl md = generateToBuilderMethod(job, tps, getBuilderSetterPrefix(annotationNode, annInstance.setterPrefix()));
 				if (md != null) {
 					recursiveSetGeneratedBy(md, annotationNode);
 					injectMethod(job.parentType, md);
