@@ -28,6 +28,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -56,7 +57,7 @@ import lombok.spi.Provides;
  * needs for builders.
  */
 @Provides
-@HandlerPriority(-512) // Above Handle(Super)Builder's level (builders must be already generated).
+@HandlerPriority(-512) // Above Handle(Super)Builder's level (builders must be already generated), but before all handlers generating getters/setters.
 public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	
 	@Override public void handle(AnnotationValues<Jacksonized> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -79,7 +80,49 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			annotationNode.addWarning("@Jacksonized requires @Builder, @SuperBuilder, or @Accessors for it to mean anything.");
 			return;
 		}
+		
+		if (builderAnnotationNode != null || superBuilderAnnotationNode != null) {
+			handleJacksonizedBuilder(annotationNode, annotatedNode, tdNode, td, builderAnnotationNode, superBuilderAnnotationNode);
+		}
+		
+		if (accessorsAnnotationNode != null) {
+			handleJacksonizedAccessors(annotationNode, annotatedNode, tdNode, td, accessorsAnnotationNode);
+		}
+ 	}
 
+	private void handleJacksonizedAccessors(JavacNode annotationNode, JavacNode annotatedNode, JavacNode tdNode, JCClassDecl td, JavacNode accessorsAnnotationNode) {
+		AnnotationValues<Accessors> accessorsAnnotation = accessorsAnnotationNode != null ? 
+			createAnnotation(Accessors.class, accessorsAnnotationNode) :
+				null;
+		boolean fluent = accessorsAnnotation != null && accessorsAnnotation.getInstance().fluent();
+		
+		if (!fluent) {
+			// No changes required for chained-only accessors.
+			return;
+		}
+		
+		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
+		for (JavacNode javacNode : tdNode.down()) {
+			if (javacNode.getKind() == Kind.FIELD) {
+				createJsonPropertyForField(javacNode, annotationNode);
+			}
+		}
+	}
+
+	private void createJsonPropertyForField(JavacNode fieldNode, JavacNode annotationNode) {
+		if (hasAnnotation("com.fasterxml.jackson.annotation.JsonProperty", fieldNode)) {
+			return;
+		}
+		JavacTreeMaker maker = fieldNode.getTreeMaker();
+		
+		JCExpression jsonPropertyType = chainDots(fieldNode, "com", "fasterxml", "jackson", "annotation", "JsonProperty");
+		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.of(maker.Literal(fieldNode.getName())));
+		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
+		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
+		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);
+	}
+
+	private void handleJacksonizedBuilder(JavacNode annotationNode, JavacNode annotatedNode, JavacNode tdNode, JCClassDecl td, JavacNode builderAnnotationNode, JavacNode superBuilderAnnotationNode) {
 		if (builderAnnotationNode != null && superBuilderAnnotationNode != null) {
 			annotationNode.addError("@Jacksonized cannot process both @Builder and @SuperBuilder on the same class.");
 			return;
@@ -155,7 +198,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		// @SuperBuilder? Make it package-private!
 		if (superBuilderAnnotationNode != null)
 			builderClass.mods.flags = builderClass.mods.flags & ~Flags.PRIVATE;
- 	}
+	}
 
 	private String getBuilderClassName(JavacNode annotationNode, JavacNode annotatedNode, JCClassDecl td, AnnotationValues<Builder> builderAnnotation, JavacTreeMaker maker) {
 		String builderClassName = builderAnnotation != null ? 

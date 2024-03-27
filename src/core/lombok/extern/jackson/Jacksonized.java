@@ -38,9 +38,10 @@ import lombok.experimental.SuperBuilder;
  * {@code @}{@link Builder}, {@code @}{@link SuperBuilder}, and
  * {@code @}{@link Accessors}.
  * <p>
- * For {@code @}{@link Accessors}{@code (fluent = true)}, it automatically
+ * For {@code @}{@link Accessors}{@code (fluent = true)} on a type, it automatically
  * configures Jackson to use the generated setters and getters for
  * (de-)serialization by inserting {@code @}{@link JsonProperty} annotations.
+ * (Note that {@code @Jacksonized} {@code @Accessors} on fields are not supported.) 
  * <p>
  * For {@code @}{@link Builder} and {@code @}{@link SuperBuilder}, it
  * automatically configures the generated builder class to be used by Jackson's

@@ -79,7 +79,7 @@ public class HandlerUtil {
 		return 43;
 	}
 	
-	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
+	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_GETTER_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
 	static {
 		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
 		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
@@ -422,6 +422,23 @@ public class HandlerUtil {
 			"org.checkerframework.common.value.qual.StringVal",
 			"org.checkerframework.common.value.qual.UnknownVal",
 			"org.checkerframework.framework.qual.PurityUnqualified",
+		}));
+		COPY_TO_GETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"com.fasterxml.jackson.annotation.JacksonInject",
+			"com.fasterxml.jackson.annotation.JsonAlias",
+			"com.fasterxml.jackson.annotation.JsonFormat",
+			"com.fasterxml.jackson.annotation.JsonIgnore",
+			"com.fasterxml.jackson.annotation.JsonIgnoreProperties",
+			"com.fasterxml.jackson.annotation.JsonProperty",
+			"com.fasterxml.jackson.annotation.JsonSetter",
+			"com.fasterxml.jackson.annotation.JsonSubTypes",
+			"com.fasterxml.jackson.annotation.JsonTypeInfo",
+			"com.fasterxml.jackson.annotation.JsonUnwrapped",
+			"com.fasterxml.jackson.annotation.JsonView",
+			"com.fasterxml.jackson.databind.annotation.JsonDeserialize",
+			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper",
+			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty",
+			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText",
 		}));
 		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JacksonInject",
