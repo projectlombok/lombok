@@ -3,8 +3,8 @@ import java.util.List;
 
 public class SuperBuilderCustomized {
 	@lombok.experimental.SuperBuilder
-	public static class Parent {
-		public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
+	public static class Parent<T> {
+		public static abstract class ParentBuilder<T, C extends Parent<T>, B extends ParentBuilder<T, C, B>> {
 			public B resetToDefault() {
 				field1 = 0;
 				return self();
@@ -16,19 +16,19 @@ public class SuperBuilderCustomized {
 		}
 		int field1;
 		
-		protected Parent(ParentBuilder<?, ?> b) {
+		protected Parent(ParentBuilder<?, ?, ?> b) {
 			if (b.field1 == 0)
 				throw new IllegalArgumentException("field1 must be != 0");
 			this.field1 = b.field1;
 		}
 		
-		public static SuperBuilderCustomized.Parent.ParentBuilder<?, ?> builder(int field1) {
-			return new SuperBuilderCustomized.Parent.ParentBuilderImpl().field1(field1);
+		public static <T> SuperBuilderCustomized.Parent.ParentBuilder<T, ?, ?> builder(int field1) {
+			return new SuperBuilderCustomized.Parent.ParentBuilderImpl<T>().field1(field1);
 		}
 	}
 	
 	@lombok.experimental.SuperBuilder
-	public static class Child extends Parent {
+	public static class Child extends Parent<String> {
 		private static final class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
 			@Override
 			public Child build() {

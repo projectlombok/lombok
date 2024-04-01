@@ -1,7 +1,7 @@
 import java.util.List;
 public class SuperBuilderCustomized {
-  public static @lombok.experimental.SuperBuilder class Parent {
-    public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
+  public static @lombok.experimental.SuperBuilder class Parent<T> {
+    public static abstract class ParentBuilder<T, C extends Parent<T>, B extends ParentBuilder<T, C, B>> {
       private @java.lang.SuppressWarnings("all") int field1;
       public ParentBuilder() {
         super();
@@ -20,29 +20,29 @@ public class SuperBuilderCustomized {
         return (("SuperBuilderCustomized.Parent.ParentBuilder(field1=" + this.field1) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends SuperBuilderCustomized.Parent.ParentBuilder<SuperBuilderCustomized.Parent, SuperBuilderCustomized.Parent.ParentBuilderImpl> {
+    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl<T> extends SuperBuilderCustomized.Parent.ParentBuilder<T, SuperBuilderCustomized.Parent<T>, SuperBuilderCustomized.Parent.ParentBuilderImpl<T>> {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderCustomized.Parent.ParentBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderCustomized.Parent.ParentBuilderImpl<T> self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderCustomized.Parent build() {
-        return new SuperBuilderCustomized.Parent(this);
+      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderCustomized.Parent<T> build() {
+        return new SuperBuilderCustomized.Parent<T>(this);
       }
     }
     int field1;
-    protected Parent(ParentBuilder<?, ?> b) {
+    protected Parent(ParentBuilder<?, ?, ?> b) {
       super();
       if ((b.field1 == 0))
           throw new IllegalArgumentException("field1 must be != 0");
       this.field1 = b.field1;
     }
-    public static SuperBuilderCustomized.Parent.ParentBuilder<?, ?> builder(int field1) {
-      return new SuperBuilderCustomized.Parent.ParentBuilderImpl().field1(field1);
+    public static <T>SuperBuilderCustomized.Parent.ParentBuilder<T, ?, ?> builder(int field1) {
+      return new SuperBuilderCustomized.Parent.ParentBuilderImpl<T>().field1(field1);
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child extends Parent {
+  public static @lombok.experimental.SuperBuilder class Child extends Parent<String> {
     private static final class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
       private ChildBuilderImpl() {
         super();
@@ -55,7 +55,7 @@ public class SuperBuilderCustomized {
         return this;
       }
     }
-    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<C extends SuperBuilderCustomized.Child, B extends SuperBuilderCustomized.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<C extends SuperBuilderCustomized.Child, B extends SuperBuilderCustomized.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<String, C, B> {
       private @java.lang.SuppressWarnings("all") double field2;
       public ChildBuilder() {
         super();

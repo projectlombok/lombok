@@ -1160,7 +1160,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 						if (lastIndexOfDot >= 0) {
 							typeName = typeName.substring(lastIndexOfDot+1);
 						}
-						if ((builderClassName+"<?, ?>").equals(typeName))
+						if (typeName.startsWith(builderClassName) && typeName.endsWith("?, ?>"))
 							return true;
 					}
 				}
