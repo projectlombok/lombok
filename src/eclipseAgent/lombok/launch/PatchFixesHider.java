@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2023 The Project Lombok Authors.
+ * Copyright (C) 2010-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 package lombok.launch;
 
-import static lombok.eclipse.EcjAugments.ASTNode_generatedBy;
+import static lombok.eclipse.EcjAugments.*;
 import static lombok.eclipse.Eclipse.*;
 
 import java.io.BufferedOutputStream;
@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.eclipse.core.runtime.CoreException;
@@ -51,7 +52,9 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.internal.compiler.ISourceElementRequestor.FieldInfo;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -60,7 +63,9 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
+import org.eclipse.jdt.internal.core.CompilationUnitStructureRequestor;
 import org.eclipse.jdt.internal.core.SourceField;
+import org.eclipse.jdt.internal.core.SourceFieldElementInfo;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
@@ -69,6 +74,7 @@ import org.eclipse.jdt.internal.corext.refactoring.code.CallContext;
 import org.eclipse.jdt.internal.corext.refactoring.code.SourceProvider;
 import org.eclipse.jdt.internal.corext.refactoring.structure.MemberVisibilityAdjustor.IncomingMemberVisibilityAdjustment;
 
+import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.permit.Permit;
 
 /** These contain a mix of the following:
@@ -271,11 +277,16 @@ final class PatchFixesHider {
 	public static final class Delegate {
 		private static final Method HANDLE_DELEGATE_FOR_TYPE;
 		private static final Method ADD_GENERATED_DELEGATE_METHODS;
+		public static final Method IS_DELEGATE_SOURCE_METHOD;
+		public static final Method RETURN_ELEMENT_INFO;
 		
 		static {
-			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegatePortal");
-			HANDLE_DELEGATE_FOR_TYPE = Util.findMethod(shadowed, "handleDelegateForType", Object.class);
-			ADD_GENERATED_DELEGATE_METHODS = Util.findMethod(shadowed, "addGeneratedDelegateMethods", Object.class, Object.class);
+			Class<?> shadowedPortal = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegatePortal");
+			HANDLE_DELEGATE_FOR_TYPE = Util.findMethod(shadowedPortal, "handleDelegateForType", Object.class);
+			ADD_GENERATED_DELEGATE_METHODS = Util.findMethod(shadowedPortal, "addGeneratedDelegateMethods", Object.class, Object.class);
+			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchDelegate");
+			IS_DELEGATE_SOURCE_METHOD = Util.findMethod(shadowed, "isDelegateSourceMethod", Object.class);
+			RETURN_ELEMENT_INFO = Util.findMethod(shadowed, "returnElementInfo", Object.class);
 		}
 		
 		public static boolean handleDelegateForType(Object classScope) {
@@ -284,6 +295,14 @@ final class PatchFixesHider {
 		
 		public static Object[] addGeneratedDelegateMethods(Object returnValue, Object javaElement) {
 			return (Object[]) Util.invokeMethod(ADD_GENERATED_DELEGATE_METHODS, returnValue, javaElement);
+		}
+		
+		public static boolean isDelegateSourceMethod(Object sourceMethod) {
+			return (Boolean) Util.invokeMethod(IS_DELEGATE_SOURCE_METHOD, sourceMethod);
+		}
+		
+		public static Object returnElementInfo(Object delegateSourceMethod) {
+			return Util.invokeMethod(RETURN_ELEMENT_INFO, delegateSourceMethod);
 		}
 	}
 	
@@ -426,20 +445,18 @@ final class PatchFixesHider {
 	/** Contains patch code to support Javadoc for generated methods */
 	public static final class Javadoc {
 		private static final Method GET_HTML;
-		private static final Method PRINT_METHOD;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchJavadoc");
-			GET_HTML = Util.findMethod(shadowed, "getHTMLContentFromSource", String.class, Object.class);
-			PRINT_METHOD = Util.findMethod(shadowed, "printMethod", AbstractMethodDeclaration.class, Integer.class, StringBuffer.class, TypeDeclaration.class);
+			GET_HTML = Util.findMethod(shadowed, "getHTMLContentFromSource", Object.class, String.class, Object.class);
 		}
 		
 		public static String getHTMLContentFromSource(String original, IJavaElement member) {
-			return (String) Util.invokeMethod(GET_HTML, original, member);
+			return (String) Util.invokeMethod(GET_HTML, null, original, member);
 		}
 		
-		public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuffer output, TypeDeclaration type) {
-			return (StringBuffer) Util.invokeMethod(PRINT_METHOD, methodDeclaration, tab, output, type);
+		public static String getHTMLContentFromSource(String original, Object instance, IJavaElement member) {
+			return (String) Util.invokeMethod(GET_HTML, instance, original, member);
 		}
 	}
 	
@@ -928,7 +945,99 @@ final class PatchFixesHider {
 		}
 	}
 	
+	public static class FieldInitializer {
+		public static final Field INFO_STACK;
+		public static final Field FIELD_INFO;
+		public static final Field SOURCE_FIELD_ELEMENT_INFO;
+		public static final Field INITIALIZATION_SOURCE;
+		public static final Field NODE;
+		public static final boolean INITIALIZED;
+		
+		static {
+			INFO_STACK = Permit.permissiveGetField(CompilationUnitStructureRequestor.class, "infoStack");
+			FIELD_INFO = Permit.permissiveGetField(CompilationUnitStructureRequestor.class, "$fieldInfo");
+			SOURCE_FIELD_ELEMENT_INFO = Permit.permissiveGetField(CompilationUnitStructureRequestor.class, "$sourceFieldElementInfo");
+			INITIALIZATION_SOURCE = Permit.permissiveGetField(SourceFieldElementInfo.class, "initializationSource");
+			NODE = Permit.permissiveGetField(FieldInfo.class, "node");
+			INITIALIZED = INFO_STACK != null && FIELD_INFO != null && SOURCE_FIELD_ELEMENT_INFO != null && INITIALIZATION_SOURCE != null && NODE != null;
+		}
+		
+		public static boolean storeFieldInfo(CompilationUnitStructureRequestor compilationUnitStructureRequestor) {
+			try {
+				if (INITIALIZED) {
+					Stack<?> infoStack = Permit.get(INFO_STACK, compilationUnitStructureRequestor);
+					Object fieldInfo = infoStack.peek();
+					Permit.set(FIELD_INFO, compilationUnitStructureRequestor, fieldInfo);
+				}
+			} catch (Exception e) {
+				// do not break eclipse
+			}
+			return false;
+		}
+		public static void storeSourceFieldElementInfo(SourceFieldElementInfo fieldInfo, CompilationUnitStructureRequestor compilationUnitStructureRequestor) {
+			try {
+				if (INITIALIZED) {
+					Permit.set(SOURCE_FIELD_ELEMENT_INFO, compilationUnitStructureRequestor, fieldInfo);
+				}
+			} catch (Exception e) {
+				// do not break eclipse
+			}
+		}
+		
+		public static void overwriteInitializer(CompilationUnitStructureRequestor compilationUnitStructureRequestor) {
+			try {
+				if (INITIALIZED) {
+					FieldInfo fieldInfo = Permit.get(FIELD_INFO, compilationUnitStructureRequestor);
+					Permit.set(FIELD_INFO, compilationUnitStructureRequestor, null);
+					
+					SourceFieldElementInfo sourceFieldElementInfo = Permit.get(SOURCE_FIELD_ELEMENT_INFO,compilationUnitStructureRequestor);
+					Permit.set(SOURCE_FIELD_ELEMENT_INFO, compilationUnitStructureRequestor, null);
+					
+					if (sourceFieldElementInfo.getInitializationSource() != null) {
+						AbstractVariableDeclaration node = Permit.get(NODE, fieldInfo);
+						
+						if (PatchFixes.isGenerated(node)) {
+							Permit.set(INITIALIZATION_SOURCE, sourceFieldElementInfo, node.initialization.toString().toCharArray());
+						}
+					}
+				}
+			} catch (Exception e) {
+				// do not break eclipse
+			}
+		}
+	}
+	
 	public static class Tests {
+		public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuffer output, TypeDeclaration type) {
+			return (StringBuffer) printMethod(methodDeclaration, tab, (Object) output, type);
+		}
+		
+		public static StringBuilder printMethod(AbstractMethodDeclaration methodDeclaration, int tab, StringBuilder output, TypeDeclaration type) {
+			return (StringBuilder) printMethod(methodDeclaration, tab, (Object) output, type);
+		}
+		
+		public static Object printMethod(AbstractMethodDeclaration methodDeclaration, int tab, Object output, TypeDeclaration type) {
+			Map<String, String> docs = CompilationUnit_javadoc.get(methodDeclaration.compilationResult.compilationUnit);
+			Method printIndent = Permit.permissiveGetMethod(org.eclipse.jdt.internal.compiler.ast.ASTNode.class, "printIndent", int.class, output.getClass());
+			if (docs != null) {
+				String signature = EclipseHandlerUtil.getSignature(type, methodDeclaration);
+				String rawJavadoc = docs.get(signature);
+				if (rawJavadoc != null) {
+					for (String line : rawJavadoc.split("\r?\n")) {
+						try {
+							Appendable sb = (Appendable) Permit.invoke(printIndent, null, tab, output);
+							sb.append(line).append("\n");
+						} catch (Throwable e) {
+							// Ignore
+						}
+					}
+				}
+			}
+			Method printMethodDeclaration = Permit.permissiveGetMethod(AbstractMethodDeclaration.class, "print", int.class, output.getClass());
+			Permit.invokeSneaky(printMethodDeclaration, methodDeclaration, tab, output);
+			return output;
+		}
+		
 		public static Object getBundle(Object original, Class<?> c) {
 			if (original != null) {
 				return original;
@@ -956,6 +1065,10 @@ final class PatchFixesHider {
 		}
 		
 		public static StringBuffer returnStringBuffer(Object p1, StringBuffer buffer) {
+			return buffer;
+		}
+
+		public static StringBuilder returnStringBuilder(Object p1, StringBuilder buffer) {
 			return buffer;
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,13 @@
 package lombok;
 
 import java.io.File;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
-import lombok.eclipse.Eclipse;
-import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 import org.eclipse.core.internal.registry.ExtensionRegistry;
 import org.eclipse.core.internal.runtime.Activator;
@@ -57,22 +52,24 @@ import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
+import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
+import lombok.eclipse.Eclipse;
+import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
+
 public class RunTestsViaEcj extends AbstractRunTests {
-	protected CompilerOptions ecjCompilerOptions() {
+	protected CompilerOptions ecjCompilerOptions(TestParameters parameters) {
 		CompilerOptions options = new CompilerOptions();
 		Map<String, String> warnings = new HashMap<String, String>();
 		
-		String javaVersionString = System.getProperty("compiler.compliance.level");
 		long ecjCompilerVersionConstant = Eclipse.getLatestEcjCompilerVersionConstant();
 		long ecjCompilerVersion = Eclipse.getEcjCompilerVersion();
-		if (javaVersionString != null) {
-			long javaVersion = Long.parseLong(javaVersionString);
-			ecjCompilerVersionConstant = (javaVersion + 44) << 16;
-			ecjCompilerVersion = javaVersion;
+		if (parameters.getSourceVersion() != null) {
+			ecjCompilerVersionConstant = (parameters.getSourceVersion() + 44) << 16;
+			ecjCompilerVersion = parameters.getSourceVersion();
 		} else {
 			// Preview features are only allowed if the maximum compiler version is equal to the source version
 			warnings.put("org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures", "enabled");
@@ -127,7 +124,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	}
 	
 	@Override
-	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences, int minVersion, boolean checkPositions) throws Throwable {
+	public TransformationResult transformCode(File file, final TestParameters parameters) throws Throwable {
+		final TransformationResult result = new TransformationResult();
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
 		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
 		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
@@ -143,12 +141,18 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			sourceUnit = getSourceUnit(file, source);
 		} catch (Throwable t) {
 			t.printStackTrace();
-			return false;
+			result.setChanged(false);
+			return result;
 		}
 		
-		Compiler ecjCompiler = new Compiler(createFileSystem(file, minVersion), ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
+		Compiler ecjCompiler = new Compiler(createFileSystem(file), ecjErrorHandlingPolicy(), ecjCompilerOptions(parameters), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
 			@Override protected synchronized void addCompilationUnit(ICompilationUnit inUnit, CompilationUnitDeclaration parsedUnit) {
-				if (inUnit == sourceUnit) compilationUnit_.set(parsedUnit);
+				if (inUnit == sourceUnit) {
+					compilationUnit_.set(parsedUnit);
+					if (parameters.isVerifyDiet()) {
+						result.setOutput(parsedUnit.toString());
+					}
+				}
 				super.addCompilationUnit(inUnit, parsedUnit);
 			}
 		};
@@ -161,24 +165,28 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		CategorizedProblem[] problems = compilationResult.getAllProblems();
 		
 		if (problems != null) for (CategorizedProblem p : problems) {
-			messages.add(new CompilerMessage(p.getSourceLineNumber(), p.getSourceStart(), p.isError(), p.getMessage()));
+			result.addMessage(new CompilerMessage(p.getSourceLineNumber(), p.getSourceStart(), p.isError(), p.getMessage()));
 		}
 		
 		CompilationUnitDeclaration cud = compilationUnit_.get();
 		
-		if (cud == null) result.append("---- No CompilationUnit provided by ecj ----");
-		else {
-			String output = cud.toString();
-			// starting somewhere around ecj16, the print code is a bit too cavalier with printing modifiers.
-			output = output.replace("non-sealed @val", "@val");
-			result.append(output);
+		if (cud == null) {
+			result.setOutput("---- No CompilationUnit provided by ecj ----");
+		} else {
+			if (!parameters.isVerifyDiet()) {
+				String output = cud.toString();
+				// starting somewhere around ecj16, the print code is a bit too cavalier with printing modifiers.
+				output = output.replace("non-sealed @val", "@val");
+				result.setOutput(output);
+			}
+			
+			if (eclipseAvailable()) {
+				EclipseDomConversion.toDomAst(cud, sourceArray);
+			}
 		}
 		
-		if (eclipseAvailable()) {
-			EclipseDomConversion.toDomAst(cud, sourceArray);
-		}
-		
-		return true;
+		result.setChanged(true);
+		return result;
 	}
 	
 	@SuppressWarnings("unused")
@@ -238,7 +246,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		}
 	}
 	
-	private FileSystem createFileSystem(File file, int minVersion) {
+	private FileSystem createFileSystem(File file) {
 		List<String> classpath = new ArrayList<String>();
 		if (new File("bin/main").exists()) classpath.add("bin/main");
 		classpath.add("dist/lombok.jar");
@@ -301,7 +309,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		private final char[] mainTypeName;
 		
 		private TestCompilationUnitEclipse(String name, String source) {
-			super(null, name, null);
+			super(null, name, DefaultWorkingCopyOwner.PRIMARY);
 			this.source = source.toCharArray();
 			
 			char[] fileNameCharArray = getFileName();
@@ -311,14 +319,6 @@ public class RunTestsViaEcj extends AbstractRunTests {
 				end = fileNameCharArray.length;
 			}
 			mainTypeName = CharOperation.subarray(fileNameCharArray, start, end);
-		}
-		
-		@Override public int hashCode() {
-			return System.identityHashCode(this);
-		}
-		
-		@Override public boolean equals(Object obj) {
-			return this == obj;
 		}
 		
 		@Override public char[] getContents() {

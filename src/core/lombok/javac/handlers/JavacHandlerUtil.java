@@ -2033,13 +2033,13 @@ public class JavacHandlerUtil {
 	
 	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode type, List<JCTypeParameter> params) {
 		JCClassDecl td = (JCClassDecl) type.get();
-		boolean instance = (td.mods.flags & Flags.STATIC) == 0;
+		boolean instance = !type.isStatic();
 		return namePlusTypeParamsToTypeReference(maker, type.up(), td.name, instance, params, List.<JCAnnotation>nil());
 	}
 	
 	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, JavacNode type, List<JCTypeParameter> params, List<JCAnnotation> annotations) {
 		JCClassDecl td = (JCClassDecl) type.get();
-		boolean instance = (td.mods.flags & Flags.STATIC) == 0;
+		boolean instance = !type.isStatic();
 		return namePlusTypeParamsToTypeReference(maker, type.up(), td.name, instance, params, annotations);
 	}
 	
@@ -2051,7 +2051,7 @@ public class JavacHandlerUtil {
 		JCExpression r = null;
 		if (parentType != null && parentType.getKind() == Kind.TYPE && !parentType.getName().isEmpty()) {
 			JCClassDecl td = (JCClassDecl) parentType.get();
-			boolean outerInstance = instance && ((td.mods.flags & Flags.STATIC) == 0);
+			boolean outerInstance = instance && !parentType.isStatic();
 			List<JCTypeParameter> outerParams = instance ? td.typarams : List.<JCTypeParameter>nil();
 			r = namePlusTypeParamsToTypeReference(maker, parentType.up(), td.name, outerInstance, outerParams, List.<JCAnnotation>nil());
 		}

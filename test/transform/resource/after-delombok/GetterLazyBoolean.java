@@ -33,32 +33,32 @@ class GetterLazyBoolean {
 	}
 	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public boolean isBooleanValue() {
-		java.lang.Object value = this.booleanValue.get();
-		if (value == null) {
+		java.lang.Object $value = this.booleanValue.get();
+		if ($value == null) {
 			synchronized (this.booleanValue) {
-				value = this.booleanValue.get();
-				if (value == null) {
+				$value = this.booleanValue.get();
+				if ($value == null) {
 					final boolean actualValue = calculateBoolean();
-					value = actualValue;
-					this.booleanValue.set(value);
+					$value = actualValue;
+					this.booleanValue.set($value);
 				}
 			}
 		}
-		return (java.lang.Boolean) value;
+		return (java.lang.Boolean) $value;
 	}
 	@java.lang.SuppressWarnings({"all", "unchecked"})
 	public boolean isOtherBooleanValue() {
-		java.lang.Object value = this.otherBooleanValue.get();
-		if (value == null) {
+		java.lang.Object $value = this.otherBooleanValue.get();
+		if ($value == null) {
 			synchronized (this.otherBooleanValue) {
-				value = this.otherBooleanValue.get();
-				if (value == null) {
+				$value = this.otherBooleanValue.get();
+				if ($value == null) {
 					final boolean actualValue = !calculateBoolean();
-					value = actualValue;
-					this.otherBooleanValue.set(value);
+					$value = actualValue;
+					this.otherBooleanValue.set($value);
 				}
 			}
 		}
-		return (java.lang.Boolean) value;
+		return (java.lang.Boolean) $value;
 	}
 }

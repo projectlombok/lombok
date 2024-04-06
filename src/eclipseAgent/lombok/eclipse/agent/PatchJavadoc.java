@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 The Project Lombok Authors.
+ * Copyright (C) 2020-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,19 +29,15 @@ import java.util.Map;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.internal.compiler.ast.ASTNode;
-import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.SourceMethod;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 
-import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.permit.Permit;
 
 public class PatchJavadoc {
 	
-	public static String getHTMLContentFromSource(String original, Object member) {
+	public static String getHTMLContentFromSource(Object instance, String original, Object member) {
 		if (original != null) {
 			return original;
 		}
@@ -58,27 +54,13 @@ public class PatchJavadoc {
 				String rawJavadoc = docs.get(signature);
 				if (rawJavadoc == null) return null;
 				
-				return Reflection.javadoc2HTML((IMember) member, (IJavaElement) member, rawJavadoc);
+				return Reflection.javadoc2HTML(instance, (IMember) member, (IJavaElement) member, rawJavadoc);
 			}
 		}
 		
 		return null;
 	}
-	
-	public static StringBuffer printMethod(AbstractMethodDeclaration methodDeclaration, Integer tab, StringBuffer output, TypeDeclaration type) {
-		Map<String, String> docs = CompilationUnit_javadoc.get(methodDeclaration.compilationResult.compilationUnit);
-		if (docs != null) {
-			String signature = EclipseHandlerUtil.getSignature(type, methodDeclaration);
-			String rawJavadoc = docs.get(signature);
-			if (rawJavadoc != null) {
-				for (String line : rawJavadoc.split("\r?\n")) {
-					ASTNode.printIndent(tab, output).append(line).append("\n");
-				}
-			}
-		}
-		return methodDeclaration.print(tab, output);
-	}
-	
+
 	private static class Signature {
 		static final String getSignature(SourceMethod sourceMethod) {
 			StringBuilder sb = new StringBuilder();
@@ -103,9 +85,10 @@ public class PatchJavadoc {
 	private static class Reflection {
 		private static final Method javadoc2HTML;
 		private static final Method oldJavadoc2HTML;
+		private static final Method reallyOldJavadoc2HTML;
 		private static final Method lsJavadoc2HTML;
 		static {
-			Method a = null, b = null, c = null;
+			Method a = null, b = null, c = null, d = null;
 			
 			try {
 				a = Permit.getMethod(JavadocContentAccess2.class, "javadoc2HTML", IMember.class, IJavaElement.class, String.class);
@@ -116,30 +99,41 @@ public class PatchJavadoc {
 			try {
 				c = Permit.getMethod(Class.forName("org.eclipse.jdt.ls.core.internal.javadoc.JavadocContentAccess2"), "javadoc2HTML", IMember.class, IJavaElement.class, String.class);
 			} catch (Throwable t) {}
+			try {
+				d = Permit.getMethod(Class.forName("org.eclipse.jdt.core.manipulation.internal.javadoc.CoreJavadocAccess"), "javadoc2HTML", IMember.class, IJavaElement.class, String.class);
+			} catch (Throwable t) {}
 			
-			javadoc2HTML = a;
-			oldJavadoc2HTML = b;
+			oldJavadoc2HTML = a;
+			reallyOldJavadoc2HTML = b;
 			lsJavadoc2HTML = c;
+			javadoc2HTML = d;
 		}
 		
-		private static String javadoc2HTML(IMember member, IJavaElement element, String rawJavadoc) {
+		private static String javadoc2HTML(Object instance, IMember member, IJavaElement element, String rawJavadoc) {
 			if (javadoc2HTML != null) {
 				try {
-					return (String) javadoc2HTML.invoke(null, member, element, rawJavadoc);
-				} catch (Throwable t) {
-					return null;
-				}
-			}
-			if (lsJavadoc2HTML != null) {
-				try {
-					return (String) lsJavadoc2HTML.invoke(null, member, element, rawJavadoc);
+					return (String) javadoc2HTML.invoke(instance, member, element, rawJavadoc);
 				} catch (Throwable t) {
 					return null;
 				}
 			}
 			if (oldJavadoc2HTML != null) {
 				try {
-					return (String) oldJavadoc2HTML.invoke(null, member, rawJavadoc);
+					return (String) oldJavadoc2HTML.invoke(instance, member, element, rawJavadoc);
+				} catch (Throwable t) {
+					return null;
+				}
+			}
+			if (lsJavadoc2HTML != null) {
+				try {
+					return (String) lsJavadoc2HTML.invoke(instance, member, element, rawJavadoc);
+				} catch (Throwable t) {
+					return null;
+				}
+			}
+			if (reallyOldJavadoc2HTML != null) {
+				try {
+					return (String) reallyOldJavadoc2HTML.invoke(instance, member, rawJavadoc);
 				} catch (Throwable t) {
 					return null;
 				}

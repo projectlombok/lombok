@@ -217,7 +217,7 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 		if (node instanceof TypeDeclaration) {
 			TypeDeclaration t = (TypeDeclaration) node;
 			int f = t.modifiers;
-			if (((ClassFileConstants.AccInterface | ClassFileConstants.AccEnum) & f) != 0) return true;
+			if (((ClassFileConstants.AccInterface | ClassFileConstants.AccEnum | Eclipse.AccRecord) & f) != 0) return true;
 			
 			EclipseNode directUp = directUp();
 			if (directUp == null || directUp.getKind() == Kind.COMPILATION_UNIT) return true;

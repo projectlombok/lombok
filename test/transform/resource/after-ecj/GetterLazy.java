@@ -9,20 +9,20 @@ class GetterLazy {
     super();
   }
   public @java.lang.SuppressWarnings({"all", "unchecked"}) ValueType getFieldName() {
-    java.lang.Object value = this.fieldName.get();
-    if ((value == null))
+    java.lang.Object $value = this.fieldName.get();
+    if (($value == null))
         {
           synchronized (this.fieldName)
             {
-              value = this.fieldName.get();
-              if ((value == null))
+              $value = this.fieldName.get();
+              if (($value == null))
                   {
                     final ValueType actualValue = new ValueType();
-                    value = ((actualValue == null) ? this.fieldName : actualValue);
-                    this.fieldName.set(value);
+                    $value = ((actualValue == null) ? this.fieldName : actualValue);
+                    this.fieldName.set($value);
                   }
             }
         }
-    return (ValueType) ((value == this.fieldName) ? null : value);
+    return (ValueType) (($value == this.fieldName) ? null : $value);
   }
 }

@@ -1108,6 +1108,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				typeParamsForBuilderParameter.append(copySelect(maker, (JCFieldAccess) typeParam));
 			} else if (typeParam instanceof JCTypeApply) {
 				typeParamsForBuilderParameter.append(cloneType(maker, (JCTypeApply)typeParam, source));
+			} else if (JCAnnotatedTypeReflect.is(typeParam)) {
+				typeParamsForBuilderParameter.append(cloneType(maker, (JCExpression)typeParam, source));
 			}
 		}
 		return typeParamsForBuilderParameter;

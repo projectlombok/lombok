@@ -10,13 +10,13 @@ class DelegateOnGetter {
     super();
   }
   public @Delegate @java.lang.SuppressWarnings({"all", "unchecked"}) Bar getBar() {
-    java.lang.Object value = this.bar.get();
-    if ((value == null))
+    java.lang.Object $value = this.bar.get();
+    if (($value == null))
         {
           synchronized (this.bar)
             {
-              value = this.bar.get();
-              if ((value == null))
+              $value = this.bar.get();
+              if (($value == null))
                   {
                     final Bar actualValue = new Bar() {
                       x() {
@@ -28,12 +28,12 @@ class DelegateOnGetter {
                         return 42;
                       }
                     };
-                    value = ((actualValue == null) ? this.bar : actualValue);
-                    this.bar.set(value);
+                    $value = ((actualValue == null) ? this.bar : actualValue);
+                    this.bar.set($value);
                   }
             }
         }
-    return (Bar) ((value == this.bar) ? null : value);
+    return (Bar) (($value == this.bar) ? null : $value);
   }
   public @java.lang.SuppressWarnings("all") int getInt() {
     return this.getBar().getInt();

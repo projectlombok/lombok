@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019 The Project Lombok Authors.
+ * Copyright (C) 2014-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,7 @@ public class LombokTestSource {
 	private final boolean skipCompareContent;
 	private final boolean skipIdempotent;
 	private final boolean unchanged;
+	private final boolean verifyDiet;
 	private final int versionLowerLimit, versionUpperLimit;
 	private final ConfigurationResolver configuration;
 	private final String specifiedEncoding;
@@ -113,6 +114,10 @@ public class LombokTestSource {
 		return skipIdempotent;
 	}
 	
+	public boolean isVerifyDiet() {
+		return verifyDiet;
+	}
+	
 	public String getSpecifiedEncoding() {
 		return specifiedEncoding;
 	}
@@ -162,6 +167,7 @@ public class LombokTestSource {
 	private static final Pattern SKIP_COMPARE_CONTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?compare[- ]?contents?\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern SKIP_IDEMPOTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?idempotent\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern ISSUE_REF_PATTERN = Pattern.compile("^\\s*issue #?\\d+(:?\\s+.*)?$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern VERIFY_DIET_PATTERN = Pattern.compile("^\\s*eclipse:\\s*verify[- ]?diet\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	
 	private LombokTestSource(File file, String content, List<CompilerMessageMatcher> messages, List<String> directives) {
 		this.file = file;
@@ -175,6 +181,7 @@ public class LombokTestSource {
 		boolean skipCompareContent = false;
 		boolean skipIdempotent = false;
 		boolean unchanged = false;
+		boolean verifyDiet = false;
 		String encoding = null;
 		Map<String, String> formats = new HashMap<String, String>();
 		String[] platformLimit = null;
@@ -202,6 +209,10 @@ public class LombokTestSource {
 				continue;
 			}
 			if (ISSUE_REF_PATTERN.matcher(directive).matches()) {
+				continue;
+			}
+			if (VERIFY_DIET_PATTERN.matcher(directive).matches()) {
+				verifyDiet = true;
 				continue;
 			}
 			
@@ -257,6 +268,7 @@ public class LombokTestSource {
 		this.skipCompareContent = skipCompareContent;
 		this.skipIdempotent = skipIdempotent;
 		this.unchanged = unchanged;
+		this.verifyDiet = verifyDiet;
 		this.platforms = platformLimit == null ? null : Arrays.asList(platformLimit);
 		
 		ConfigurationProblemReporter reporter = new ConfigurationProblemReporter() {

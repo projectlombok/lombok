@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2022-2024 The Project Lombok Authors.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse.dependencies;
 
 import java.io.BufferedInputStream;
@@ -7,69 +28,55 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Download eclipse bundles.
  */
 public class DownloadEclipseDependencies {
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		String target = args[0];
 		String eclipseVersion = args[1];
-		String updatePage = args[2];
-		String[] packages = Arrays.copyOfRange(args, 3, args.length);
+		String updateSiteUrl = args[2];
+		boolean resolveDependencies = Boolean.parseBoolean(args[3]);
+		List<String> bundles = Arrays.asList(Arrays.copyOfRange(args, 4, args.length));
+		
+		UpdateSite updateSite = new UpdateSite();
+		updateSite.read(updateSiteUrl);
+		
+		final Set<String> artifacts;
+		if (resolveDependencies) {
+			artifacts = updateSite.resolveWithDependencies(bundles);
+		} else {
+			artifacts = updateSite.resolveWithoutDependencies(bundles);
+		}
 		
 		String pluginTarget = target + "/" + eclipseVersion + "/plugins/";
+		String pluginSource = updateSite.getResolvedUrl() + "/plugins/";
 		
-		String indexData = readUrlAsString(updatePage);
-		
-		for (String pkg : packages) {
-			Matcher matcher = Pattern.compile("(" + pkg.replace(".", "\\.") + "_.*?\\.jar)").matcher(indexData);
-			if (matcher.find()) {
-				String path = matcher.group(1);
-				
-				try {
-					downloadFile(path, updatePage, pluginTarget);
-				} catch (Exception e) {
-				}
-				
-				int index = path.lastIndexOf("_");
-				String source = path.substring(0, index) + ".source" + path.substring(index);
-				if (indexData.contains(source)) {
-					try {
-						downloadFile(source, updatePage, pluginTarget);
-					} catch (Exception e) {
-					}
-				}
-			} else {
-				System.out.println("Bundle \"" + pkg + "\" not found");
+		for (String artifact : artifacts) {
+			try {
+				downloadFile(artifact, pluginSource, pluginTarget);
+			} catch (Exception e) {
+			}
+			
+			int index = artifact.lastIndexOf("_");
+			String source = artifact.substring(0, index) + ".source" + artifact.substring(index);
+			try {
+				downloadFile(source, pluginSource, pluginTarget);
+			} catch (Exception e) {
 			}
 		}
 		
 		writeEclipseLibrary(target, eclipseVersion);
-	}
-	
-	private static String readUrlAsString(String url) throws MalformedURLException, IOException {
-		InputStream in = getStreamForUrl(url);
-		
-		StringBuilder sb = new StringBuilder();
-		
-		int bufferSize = 1024;
-		char[] buffer = new char[bufferSize];
-		InputStreamReader reader = new InputStreamReader(in, "UTF-8");
-		for (int count = 0;  (count = reader.read(buffer, 0, bufferSize)) > 0;) {
-			sb.append(buffer, 0, count);
-		}
-		return sb.toString();
 	}
 	
 	private static void downloadFile(String filename, String repositoryUrl, String target) throws IOException {
@@ -87,10 +94,13 @@ public class DownloadEclipseDependencies {
 			out = new FileOutputStream(targetFile);
 			copy(in, out);
 			System.out.println("[done]");
-		} catch(IOException e) {
+		} catch (IOException e) {
 			System.out.println("[error]");
 		} finally {
-			if (in != null) try { in.close(); } catch (Exception ignore) {}
+			if (in != null) try {
+				in.close();
+			} catch (Exception ignore) {
+			}
 			if (out != null) out.close();
 		}
 	}
@@ -111,7 +121,7 @@ public class DownloadEclipseDependencies {
 		InputStream in = new BufferedInputStream(connection.getInputStream());
 		return in;
 	}
-
+	
 	private static void writeEclipseLibrary(String target, String eclipseVersion) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
@@ -121,7 +131,8 @@ public class DownloadEclipseDependencies {
 		sb.append("\" systemlibrary=\"false\">\n");
 		
 		File[] files = new File(new File(target, eclipseVersion), "plugins").listFiles(new FilenameFilter() {
-			@Override public boolean accept(File dir, String name) {
+			@Override
+			public boolean accept(File dir, String name) {
 				return name.endsWith(".jar") && !name.contains(".source_");
 			}
 		});

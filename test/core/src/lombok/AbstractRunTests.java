@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,14 +29,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Assert;
 
@@ -83,28 +81,38 @@ public abstract class AbstractRunTests {
 		return new FileTester() {
 			@Override public void runTest() throws Throwable {
 				if (directiveFailure_ != null) throw directiveFailure_;
-				LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
-				StringWriter writer = new StringWriter();
-				
 				LombokConfiguration.overrideConfigurationResolverFactory(new ConfigurationResolverFactory() {
 					@Override public ConfigurationResolver createResolver(URI sourceLocation) {
 						return sourceDirectives_.getConfiguration();
 					}
 				});
 				
+				TestParameters testParameters = new TestParameters();
+				testParameters.setEncoding(sourceDirectives_.getSpecifiedEncoding());
+				testParameters.setFormatPreferences(sourceDirectives_.getFormatPreferences());
+				testParameters.setMinVersion(sourceDirectives_.minVersion());
+				testParameters.setVerifyDiet(sourceDirectives_.isVerifyDiet());
 				boolean checkPositions = !(params instanceof TestLombokFilesIdempotent || params instanceof TestSourceFiles) && !sourceDirectives_.isSkipCompareContent();
+				testParameters.setCheckPositions(checkPositions);
+				String javaVersionString = System.getProperty("compiler.compliance.level");
+				if (javaVersionString != null) {
+					long version = Long.parseLong(javaVersionString);
+					testParameters.setSourceVersion(version);
+					testParameters.setTargetVersion(version);
+				}
 				
-				boolean changed = transformCode(messages, writer, file, sourceDirectives_.getSpecifiedEncoding(), sourceDirectives_.getFormatPreferences(), sourceDirectives_.minVersion(), checkPositions);
+				TransformationResult result = transformCode(file, testParameters);
+				boolean changed = result.isChanged();
 				boolean forceUnchanged = sourceDirectives_.forceUnchanged() || sourceDirectives_.isSkipCompareContent();
-				if (params.expectChanges() && !forceUnchanged && !changed) messages.add(new CompilerMessage(-1, -1, true, "not flagged modified"));
-				if (!params.expectChanges() && changed) messages.add(new CompilerMessage(-1, -1, true, "unexpected modification"));
+				if (params.expectChanges() && !forceUnchanged && !changed) result.addMessage(new CompilerMessage(-1, -1, true, "not flagged modified"));
+				if (!params.expectChanges() && changed) result.addMessage(new CompilerMessage(-1, -1, true, "unexpected modification"));
 				
-				compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives_.isSkipCompareContent() || expected.isSkipCompareContent());
+				compare(file.getName(), expected, result, params.printErrors(), sourceDirectives_.isSkipCompareContent() || expected.isSkipCompareContent());
 			}
 		};
 	}
 	
-	protected abstract boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences, int minVersion, boolean checkPositions) throws Throwable;
+	protected abstract TransformationResult transformCode(File file, TestParameters parameters) throws Throwable;
 	
 	protected String readFile(File file) throws IOException {
 		BufferedReader reader;
@@ -154,7 +162,10 @@ public abstract class AbstractRunTests {
 		}
 	}
 	
-	private void compare(String name, LombokTestSource expected, String actualFile, LinkedHashSet<CompilerMessage> actualMessages, boolean printErrors, boolean skipCompareContent) throws Throwable {
+	private void compare(String name, LombokTestSource expected, TransformationResult result, boolean printErrors, boolean skipCompareContent) throws Throwable {
+		String actualFile = result.getOutput();
+		LinkedHashSet<CompilerMessage> actualMessages = result.getMessages();
+		
 		if (!skipCompareContent) try {
 			compareContent(name, expected.getContent(), actualFile);
 		} catch (Throwable e) {

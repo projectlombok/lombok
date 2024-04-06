@@ -1,10 +1,22 @@
 Lombok Changelog
 ----------------
 
-### v1.18.31 "Edgy Guinea Pig"
+### v1.18.33 "Edgy Guinea Pig"
+* We recently released v1.18.32; there is no edge release since then.
+
+### v1.18.32 (March 20th, 2024)
+* PLATFORM: Initial JDK22 support added.
+* PLAFTORM  Added support for Eclipse 2024-03. [Issue #3620](https://github.com/projectlombok/lombok/issues/3620).
+* PLATFORM: Added support for recent versions of eclipse (released Q4 2023 or later or so) which would cause failures in the eclipse logs such as `java.lang.NoSuchMethodError: 'java.lang.StringBuffer org.eclipse.jdt…`. [Issue #3564](https://github.com/projectlombok/lombok/issues/3564).
 * FEATURE: `@Locked` has been introduced. Like `@Synchronized` but with `java.util.concurrent.locks` locks instead of the `synchronized` primitive. Thanks, Pim van der Loos for the PR! [Issue #3506](https://github.com/projectlombok/lombok/issues/3506).
-* BUGFIX: Eclipse projects using the com.pro-crafting.tools:jasperreports-plugin will now compile
-* We recently released v1.18.30; there is no edge release since then.
+* NECROMANCY: Inlining a generated getter in eclipse would result in eclipse incorrectly replacing calls with `@Getter` instead of the actual field's name. [Issue #562](https://github.com/projectlombok/lombok/issues/562). This issue is almost old enough to drink. Points for dedication go to Rawi for fixing this one.
+* BUGFIX: When `@SuperBuilder` was used on a type with an annotated generic type, it would error `wrong number of type arguments`.  [Issue #3592](https://github.com/projectlombok/lombok/issues/3592).
+* BUGFIX: It was possible to create an infinite build loop using `@ExtensionMethod`. [Issue #3225](https://github.com/projectlombok/lombok/issues/3225).
+* BUGFIX: Using `@Getter(lazy=true)` would fail if the expression contained a variable called `value`. [Issue #2917](https://github.com/projectlombok/lombok/issues/2917).
+* BUGFIX: Many lombok features wouldn't work properly on records contained within an outer type unless you explicitly marked it `static`. [Issue #3497](https://github.com/projectlombok/lombok/issues/3497) [Issue #3559](https://github.com/projectlombok/lombok/issues/3559).
+* BUGFIX: Eclipse projects using the `com.pro-crafting.tools:jasperreports-plugin` will now compile.
+* BUGFIX: `@FieldNameConstants` now works when generated fields are involved. [Issue #3529](https://github.com/projectlombok/lombok/issues/3529).
+* IMPROBABLE BREAKING CHANGE: For JSpecify, the package name changed from `org.jspecify.nullness` to `org.jspecify.annotations`, which might lead to a different null analysis. [Issue #3608](https://github.com/projectlombok/lombok/pull/3608).
 
 ### v1.18.30 (September 20th, 2023)
 * PLATFORM: Initial JDK21 support added. [Issue #3393](https://github.com/projectlombok/lombok/issues/3393).

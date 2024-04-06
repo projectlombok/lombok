@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,24 +66,24 @@ import com.sun.tools.javac.tree.TreeScanner;
 
 import lombok.delombok.Delombok;
 import lombok.javac.CapturingDiagnosticListener;
-import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 import lombok.javac.Javac;
 
 public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences, int version, boolean checkPositions) throws Throwable {
+	public TransformationResult transformCode(final File file, TestParameters parameters) throws Throwable {
+		TransformationResult result = new TransformationResult();
 		delombok.setVerbose(true);
 		ChangedChecker cc = new ChangedChecker();
 		delombok.setFeedback(cc.feedback);
 		delombok.setForceProcess(true);
-		delombok.setCharset(encoding == null ? "UTF-8" : encoding);
-		delombok.setFormatPreferences(formatPreferences);
+		delombok.setCharset(parameters.getEncoding() == null ? "UTF-8" : parameters.getEncoding());
+		delombok.setFormatPreferences(parameters.getFormatPreferences());
 		
-		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, messages));
+		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, result.getMessages()));
 		
-		if (checkPositions) delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor(version));
+		if (parameters.isCheckPositions()) delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor(parameters.getMinVersion()));
 		delombok.addAdditionalAnnotationProcessor(new ValidateTypesProcessor());
 		delombok.addAdditionalAnnotationProcessor(new ValidateNoDuplicateTreeNodeProcessor());
 		
@@ -91,12 +91,15 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());
 		String bcp = System.getProperty("delombok.bootclasspath");
 		if (bcp != null) delombok.setBootclasspath(bcp);
-		delombok.setWriter(result);
+		StringWriter sw = new StringWriter();
+		delombok.setWriter(sw);
 		Locale originalLocale = Locale.getDefault();
 		try {
 			Locale.setDefault(Locale.ENGLISH);
 			delombok.delombok();
-			return cc.isChanged();
+			result.setOutput(sw.toString());
+			result.setChanged(cc.isChanged());
+			return result;
 		} finally {
 			Locale.setDefault(originalLocale);
 		}
