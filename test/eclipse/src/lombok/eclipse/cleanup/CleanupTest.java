@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Project Lombok Authors.
+ * Copyright (C) 2022-2024 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@ package lombok.eclipse.cleanup;
 
 import static lombok.eclipse.RefactoringUtils.performRefactoring;
 
+import java.lang.reflect.Constructor;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -30,8 +32,8 @@ import org.eclipse.jdt.internal.corext.fix.CleanUpConstants;
 import org.eclipse.jdt.internal.corext.fix.CleanUpRefactoring;
 import org.eclipse.jdt.internal.corext.fix.CleanUpRegistry;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.fix.CodeStyleCleanUp;
 import org.eclipse.jdt.internal.ui.fix.MapCleanUpOptions;
+import org.eclipse.jdt.ui.cleanup.ICleanUp;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +61,16 @@ public class CleanupTest {
 		
 		CleanUpRefactoring ref = new CleanUpRefactoring();
 		ref.addCompilationUnit(cu);
-		ref.addCleanUp(new CodeStyleCleanUp(options.getMap()));
+		
+		// Load the class dynamically to avoid compile errors when running with older versions of Eclipse
+		Class<?> cleanUpClass;
+		try {
+			cleanUpClass = Class.forName("org.eclipse.jdt.internal.ui.fix.CodeStyleCleanUp");
+		} catch (ClassNotFoundException e) {
+			cleanUpClass = Class.forName("org.eclipse.jdt.internal.ui.fix.CodeStyleCleanUpCore");
+		}
+		Constructor<?> cleanUpConstructor = cleanUpClass.getConstructor(Map.class);
+		ref.addCleanUp((ICleanUp) cleanUpConstructor.newInstance(options.getMap()));
 		
 		performRefactoring(ref);
 	}
