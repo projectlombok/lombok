@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,13 @@ public class DirectoryRunner extends Runner {
 	/** Add 1 or more file names to reduce the testset to just the named file(s). No files = test it all. */
 	private static final List<String> DEBUG_FOCUS_ON_FILE = Arrays.asList(
 		);
+	
+	/*
+	 * If this is set to true, you are decreeing that all tests pass, and that any test that dares to say it does not, means the test is wrong and not lombok: The framework will <strong>update</strong> the 'target' so that it now passes.
+	 * This is, naturally, an exceedingly dangerous tool. The general way to use it is: First ensure all tests pass, then, do some minor refactor that massively impacts the tests, then, enable this, run the tests, then turn this off again,
+	 * then, thoroughly review your commit diff.
+	 */
+	private static final boolean ITS_ALL_GOOD = false;
 	
 	public enum Compiler {
 		DELOMBOK {
@@ -181,10 +188,10 @@ public class DirectoryRunner extends Runner {
 		File file = new File(params.getBeforeDirectory(), fileName);
 		switch (params.getCompiler()) {
 		case DELOMBOK:
-			return new RunTestsViaDelombok().createTester(params, file, "javac", params.getVersion());
+			return new RunTestsViaDelombok().createTester(params, file, "javac", params.getVersion(), ITS_ALL_GOOD);
 		case ECJ:
 			String platform = RunTestsViaEcj.eclipseAvailable() ? "eclipse" : "ecj";
-			return new RunTestsViaEcj().createTester(params, file, platform, params.getVersion());
+			return new RunTestsViaEcj().createTester(params, file, platform, params.getVersion(), ITS_ALL_GOOD);
 		default:
 		case JAVAC:
 			throw new UnsupportedOperationException();
