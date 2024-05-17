@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.33 "Edgy Guinea Pig"
 * PLATFORM: Added support for Eclipse 2024-06; you'd get some `NoSuchMethodError` traces in your logs if using `@Builder` or `@Singular` prior to this fix. [Issue #3638](https://github.com/projectlombok/lombok/issues/3638).
 * IMPROBABLE BREAKING CHANGE: Lombok now adds `@lombok.Generated` by default to methods and types it generates. This may result in accidentally increasing your test coverage percentage. [Issue #3667](https://github.com/projectlombok/lombok/issues/3667).
+* IMPROBABLE BREAKING CHANGE: When `lombok.config` contains `lombok.onX.flagUsage = WARNING`, from now on warnings will actually be generated if onX is used.[Issue #2848](https://github.com/projectlombok/lombok/issues/2848)
 
 ### v1.18.32 (March 20th, 2024)
 * PLATFORM: Initial JDK22 support added.
