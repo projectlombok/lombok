@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,6 +73,9 @@ public class HandleConstructor {
 			JavacNode typeNode = annotationNode.up();
 			if (!checkLegality(typeNode, annotationNode, NAME)) return;
 			List<JCAnnotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor", annotationNode);
+			if (!onConstructor.isEmpty()) {
+				handleFlagUsage(annotationNode, ConfigurationKeys.ON_X_FLAG_USAGE, "@NoArgsConstructor(onConstructor=...)");
+			}
 			NoArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			if (level == AccessLevel.NONE) return;
@@ -95,6 +98,9 @@ public class HandleConstructor {
 			JavacNode typeNode = annotationNode.up();
 			if (!checkLegality(typeNode, annotationNode, NAME)) return;
 			List<JCAnnotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor", annotationNode);
+			if (!onConstructor.isEmpty()) {
+				handleFlagUsage(annotationNode, ConfigurationKeys.ON_X_FLAG_USAGE, "@RequiredArgsConstructor(onConstructor=...)");
+			}
 			RequiredArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			if (level == AccessLevel.NONE) return;
@@ -104,6 +110,33 @@ public class HandleConstructor {
 			}
 			
 			handleConstructor.generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
+		}
+	}
+	
+	@Provides
+	public static class HandleAllArgsConstructor extends JavacAnnotationHandler<AllArgsConstructor> {
+		private static final String NAME = AllArgsConstructor.class.getSimpleName();
+		private HandleConstructor handleConstructor = new HandleConstructor();
+		
+		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.ALL_ARGS_CONSTRUCTOR_FLAG_USAGE, "@AllArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
+			
+			deleteAnnotationIfNeccessary(annotationNode, AllArgsConstructor.class);
+			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
+			JavacNode typeNode = annotationNode.up();
+			if (!checkLegality(typeNode, annotationNode, NAME)) return;
+			List<JCAnnotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor", annotationNode);
+			if (!onConstructor.isEmpty()) {
+				handleFlagUsage(annotationNode, ConfigurationKeys.ON_X_FLAG_USAGE, "@AllArgsConstructor(onConstructor=...)");
+			}
+			AllArgsConstructor ann = annotation.getInstance();
+			AccessLevel level = ann.access();
+			if (level == AccessLevel.NONE) return;
+			String staticName = ann.staticName();
+			if (annotation.isExplicit("suppressConstructorProperties")) {
+				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
+			}
+			handleConstructor.generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -130,30 +163,6 @@ public class HandleConstructor {
 			if ((isFinal || isNonNull) && fieldDecl.init == null) fields.append(child);
 		}
 		return fields.toList();
-	}
-	
-	@Provides
-	public static class HandleAllArgsConstructor extends JavacAnnotationHandler<AllArgsConstructor> {
-		private static final String NAME = AllArgsConstructor.class.getSimpleName();
-		private HandleConstructor handleConstructor = new HandleConstructor();
-		
-		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			handleFlagUsage(annotationNode, ConfigurationKeys.ALL_ARGS_CONSTRUCTOR_FLAG_USAGE, "@AllArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
-			
-			deleteAnnotationIfNeccessary(annotationNode, AllArgsConstructor.class);
-			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
-			JavacNode typeNode = annotationNode.up();
-			if (!checkLegality(typeNode, annotationNode, NAME)) return;
-			List<JCAnnotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor", annotationNode);
-			AllArgsConstructor ann = annotation.getInstance();
-			AccessLevel level = ann.access();
-			if (level == AccessLevel.NONE) return;
-			String staticName = ann.staticName();
-			if (annotation.isExplicit("suppressConstructorProperties")) {
-				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
-			}
-			handleConstructor.generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
-		}
 	}
 	
 	public static List<JavacNode> findAllFields(JavacNode typeNode) {

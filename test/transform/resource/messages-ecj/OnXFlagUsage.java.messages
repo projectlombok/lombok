@@ -1,0 +1,6 @@
+9 Use of @Getter(onMethod=...) is flagged according to lombok configuration.
+10 Use of @Setter(onMethod=...) is flagged according to lombok configuration.
+10 Use of @Setter(onParam=...) is flagged according to lombok configuration.
+11 Use of @NoArgsConstructor(onConstructor=...) is flagged according to lombok configuration.
+12 Use of @AllArgsConstructor(onConstructor=...) is flagged according to lombok configuration.
+18 Use of @RequiredArgsConstructor(onConstructor=...) is flagged according to lombok configuration.
