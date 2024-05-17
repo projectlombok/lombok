@@ -7,6 +7,7 @@ class GetterDeprecated {
 	int javadoc;
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int getAnnotation() {
 		return this.annotation;
 	}
@@ -15,6 +16,7 @@ class GetterDeprecated {
 	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int getJavadoc() {
 		return this.javadoc;
 	}

@@ -11,7 +11,7 @@ public class NonNullWithAssertion {
     if ((arg == null))
         throw new NullPointerException("Oops");
   }
-  public @java.lang.SuppressWarnings("all") void setTest(final @lombok.NonNull String test) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setTest(final @lombok.NonNull String test) {
     assert (test != null): "test is marked non-null but is null";
     this.test = test;
   }

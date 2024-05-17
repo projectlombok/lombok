@@ -17,7 +17,7 @@ class GetterLazyArguments {
   static String stringRunnable(String arg1, Runnable arg2) {
     return null;
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) String getField1() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated String getField1() {
     java.lang.Object $value = this.field1.get();
     if (($value == null))
         {
@@ -34,7 +34,7 @@ class GetterLazyArguments {
         }
     return (String) (($value == this.field1) ? null : $value);
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) String getField2() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated String getField2() {
     java.lang.Object $value = this.field2.get();
     if (($value == null))
         {
@@ -51,7 +51,7 @@ class GetterLazyArguments {
         }
     return (String) (($value == this.field2) ? null : $value);
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) String getField3() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated String getField3() {
     java.lang.Object $value = this.field3.get();
     if (($value == null))
         {
@@ -68,7 +68,7 @@ class GetterLazyArguments {
         }
     return (String) (($value == this.field3) ? null : $value);
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) String getField4() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated String getField4() {
     java.lang.Object $value = this.field4.get();
     if (($value == null))
         {
@@ -86,7 +86,7 @@ class GetterLazyArguments {
         }
     return (String) (($value == this.field4) ? null : $value);
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) String getField5() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated String getField5() {
     java.lang.Object $value = this.field5.get();
     if (($value == null))
         {
@@ -104,7 +104,7 @@ class GetterLazyArguments {
         }
     return (String) (($value == this.field5) ? null : $value);
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) String getField6() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated String getField6() {
     java.lang.Object $value = this.field6.get();
     if (($value == null))
         {

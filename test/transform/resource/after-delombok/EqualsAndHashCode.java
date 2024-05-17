@@ -6,6 +6,7 @@ class EqualsAndHashCode {
 	String b;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode)) return false;
@@ -23,11 +24,13 @@ class EqualsAndHashCode {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCode;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -49,6 +52,7 @@ final class EqualsAndHashCode2 {
 	boolean b;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode2)) return false;
@@ -62,6 +66,7 @@ final class EqualsAndHashCode2 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -78,6 +83,7 @@ final class EqualsAndHashCode2 {
 final class EqualsAndHashCode3 extends EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode3)) return false;
@@ -86,11 +92,13 @@ final class EqualsAndHashCode3 extends EqualsAndHashCode {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCode3;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int result = 1;
 		return result;
@@ -99,6 +107,7 @@ final class EqualsAndHashCode3 extends EqualsAndHashCode {
 class EqualsAndHashCode4 extends EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode4)) return false;
@@ -108,11 +117,13 @@ class EqualsAndHashCode4 extends EqualsAndHashCode {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCode4;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int result = super.hashCode();
 		return result;

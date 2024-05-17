@@ -13,31 +13,31 @@ class GetterAccessLevel {
   GetterAccessLevel() {
     super();
   }
-  private @java.lang.SuppressWarnings("all") boolean isPrivate() {
+  private @java.lang.SuppressWarnings("all") @lombok.Generated boolean isPrivate() {
     return this.isPrivate;
   }
-  @java.lang.SuppressWarnings("all") boolean isPackage() {
+  @java.lang.SuppressWarnings("all") @lombok.Generated boolean isPackage() {
     return this.isPackage;
   }
-  protected @java.lang.SuppressWarnings("all") boolean isProtected() {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean isProtected() {
     return this.isProtected;
   }
-  public @java.lang.SuppressWarnings("all") boolean isPublic() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isPublic() {
     return this.isPublic;
   }
-  private @java.lang.SuppressWarnings("all") String getPrivateString() {
+  private @java.lang.SuppressWarnings("all") @lombok.Generated String getPrivateString() {
     return this.privateString;
   }
-  @java.lang.SuppressWarnings("all") String getPackageString() {
+  @java.lang.SuppressWarnings("all") @lombok.Generated String getPackageString() {
     return this.packageString;
   }
-  protected @java.lang.SuppressWarnings("all") String getProtectedString() {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated String getProtectedString() {
     return this.protectedString;
   }
-  public @java.lang.SuppressWarnings("all") String getPublicString() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getPublicString() {
     return this.publicString;
   }
-  public @java.lang.SuppressWarnings("all") String getValue() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getValue() {
     return this.value;
   }
 }

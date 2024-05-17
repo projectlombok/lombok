@@ -2098,7 +2098,7 @@ public class EclipseHandlerUtil {
 		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_JAKARTA_GENERATED_ANNOTATIONS))) {
 			result = addAnnotation(source, result, JAKARTA_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
 		}
-		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
+		if (!Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
 			result = addAnnotation(source, result, LOMBOK_GENERATED);
 		}
 		return result;

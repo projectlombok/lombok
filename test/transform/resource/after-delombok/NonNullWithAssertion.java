@@ -8,8 +8,9 @@ public class NonNullWithAssertion {
 	}
 	public void testMethodWithIf(@lombok.NonNull String arg) {
 		if (arg == null) throw new NullPointerException("Oops");
-	}	
+	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void setTest(@lombok.NonNull final String test) {
 		assert test != null : "test is marked non-null but is null";
 		this.test = test;

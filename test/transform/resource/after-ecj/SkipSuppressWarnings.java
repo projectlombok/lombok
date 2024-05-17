@@ -4,10 +4,10 @@ class SkipSuppressWarnings {
   SkipSuppressWarnings() {
     super();
   }
-  public String getField() {
+  public @lombok.Generated String getField() {
     return this.field;
   }
-  public @java.lang.SuppressWarnings({"unchecked"}) String getField2() {
+  public @java.lang.SuppressWarnings({"unchecked"}) @lombok.Generated String getField2() {
     java.lang.Object $value = this.field2.get();
     if (($value == null))
         {

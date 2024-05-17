@@ -13,6 +13,7 @@ class GetterTypeAnnos {
 	List<String> foo;
 	@TA
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public List<String> getFoo() {
 		return this.foo;
 	}

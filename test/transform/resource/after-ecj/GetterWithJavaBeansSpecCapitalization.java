@@ -4,10 +4,10 @@ class GetterWithJavaBeansSpecCapitalization {
   GetterWithJavaBeansSpecCapitalization() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") int getA() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getA() {
     return this.a;
   }
-  public @java.lang.SuppressWarnings("all") int getaField() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getaField() {
     return this.aField;
   }
 }

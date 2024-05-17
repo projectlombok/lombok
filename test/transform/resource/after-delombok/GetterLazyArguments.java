@@ -3,23 +3,20 @@ class GetterLazyArguments {
 	static String fun() {
 		return null;
 	}
-
 	static String stringInt(String arg1, Integer arg2) {
 		return null;
 	}
-
 	static String stringRunnable(String arg1, Runnable arg2) {
 		return null;
 	}
-
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field1 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field2 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field3 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field4 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field5 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> field6 = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
-
 	@java.lang.SuppressWarnings({"all", "unchecked"})
+	@lombok.Generated
 	public String getField1() {
 		java.lang.Object $value = this.field1.get();
 		if ($value == null) {
@@ -34,8 +31,8 @@ class GetterLazyArguments {
 		}
 		return (String) ($value == this.field1 ? null : $value);
 	}
-
 	@java.lang.SuppressWarnings({"all", "unchecked"})
+	@lombok.Generated
 	public String getField2() {
 		java.lang.Object $value = this.field2.get();
 		if ($value == null) {
@@ -50,8 +47,8 @@ class GetterLazyArguments {
 		}
 		return (String) ($value == this.field2 ? null : $value);
 	}
-
 	@java.lang.SuppressWarnings({"all", "unchecked"})
+	@lombok.Generated
 	public String getField3() {
 		java.lang.Object $value = this.field3.get();
 		if ($value == null) {
@@ -66,8 +63,8 @@ class GetterLazyArguments {
 		}
 		return (String) ($value == this.field3 ? null : $value);
 	}
-
 	@java.lang.SuppressWarnings({"all", "unchecked"})
+	@lombok.Generated
 	public String getField4() {
 		java.lang.Object $value = this.field4.get();
 		if ($value == null) {
@@ -83,8 +80,8 @@ class GetterLazyArguments {
 		}
 		return (String) ($value == this.field4 ? null : $value);
 	}
-
 	@java.lang.SuppressWarnings({"all", "unchecked"})
+	@lombok.Generated
 	public String getField5() {
 		java.lang.Object $value = this.field5.get();
 		if ($value == null) {
@@ -100,8 +97,8 @@ class GetterLazyArguments {
 		}
 		return (String) ($value == this.field5 ? null : $value);
 	}
-
 	@java.lang.SuppressWarnings({"all", "unchecked"})
+	@lombok.Generated
 	public String getField6() {
 		java.lang.Object $value = this.field6.get();
 		if ($value == null) {

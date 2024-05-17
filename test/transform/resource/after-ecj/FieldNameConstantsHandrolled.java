@@ -7,7 +7,7 @@ import lombok.AccessLevel;
     thirdField(),
     <clinit>() {
     }
-    private @java.lang.SuppressWarnings("all") TypeTest() {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated TypeTest() {
       super();
     }
   }
@@ -28,7 +28,7 @@ import lombok.AccessLevel;
     public String foo() {
       return name();
     }
-    private @java.lang.SuppressWarnings("all") TypeTest() {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated TypeTest() {
       super();
     }
   }
@@ -46,7 +46,7 @@ import lombok.AccessLevel;
     public static final int alsoAField = 5;
     <clinit>() {
     }
-    private @java.lang.SuppressWarnings("all") Fields() {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated Fields() {
       super();
     }
   }

@@ -30,7 +30,7 @@ public class NonNullWithJdk {
     java.util.Objects.requireNonNull(arg, "arg is marked non-null but is null");
     test = requireNonNull(test);
   }
-  public @java.lang.SuppressWarnings("all") void setTest(final @lombok.NonNull String test) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setTest(final @lombok.NonNull String test) {
     java.util.Objects.requireNonNull(test, "test is marked non-null but is null");
     this.test = test;
   }

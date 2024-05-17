@@ -5,38 +5,49 @@ final class ConstructorsWithBuilderDefaults<T> {
 	private final T x;
 	private final T q;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static <T> java.util.List<T> $default$z() {
 		return new java.util.ArrayList<T>();
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static <T> T $default$x() {
 		return null;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	ConstructorsWithBuilderDefaults(final java.util.List<T> z, final T x, final T q) {
 		this.z = z;
 		this.x = x;
 		this.q = q;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static class ConstructorsWithBuilderDefaultsBuilder<T> {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private boolean z$set;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.List<T> z$value;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private boolean x$set;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private T x$value;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private T q;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		ConstructorsWithBuilderDefaultsBuilder() {
 		}
 		/**
 		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> z(final java.util.List<T> z) {
 			this.z$value = z;
 			z$set = true;
@@ -46,6 +57,7 @@ final class ConstructorsWithBuilderDefaults<T> {
 		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> x(final T x) {
 			this.x$value = x;
 			x$set = true;
@@ -55,12 +67,13 @@ final class ConstructorsWithBuilderDefaults<T> {
 		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> q(final T q) {
 			this.q = q;
 			return this;
 		}
-
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public ConstructorsWithBuilderDefaults<T> build() {
 			java.util.List<T> z$value = this.z$value;
 			if (!this.z$set) z$value = ConstructorsWithBuilderDefaults.<T>$default$z();
@@ -70,34 +83,41 @@ final class ConstructorsWithBuilderDefaults<T> {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(z$value=" + this.z$value + ", x$value=" + this.x$value + ", q=" + this.q + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static <T> ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T> builder() {
 		return new ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder<T>();
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private ConstructorsWithBuilderDefaults() {
 		this.q = null;
 		this.z = ConstructorsWithBuilderDefaults.$default$z();
 		this.x = ConstructorsWithBuilderDefaults.$default$x();
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public java.util.List<T> getZ() {
 		return this.z;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public T getX() {
 		return this.x;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public T getQ() {
 		return this.q;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof ConstructorsWithBuilderDefaults)) return false;
@@ -115,6 +135,7 @@ final class ConstructorsWithBuilderDefaults<T> {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -128,6 +149,7 @@ final class ConstructorsWithBuilderDefaults<T> {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "ConstructorsWithBuilderDefaults(z=" + this.getZ() + ", x=" + this.getX() + ", q=" + this.getQ() + ")";
 	}

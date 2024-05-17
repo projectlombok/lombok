@@ -8,7 +8,7 @@ class WitherLegacyStar {
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") WitherLegacyStar withI(final int i) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WitherLegacyStar withI(final int i) {
     return ((this.i == i) ? this : new WitherLegacyStar(i));
   }
 }

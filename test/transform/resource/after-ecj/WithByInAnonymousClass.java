@@ -6,7 +6,7 @@ public class WithByInAnonymousClass {
       private Inner(String string) {
         super();
       }
-      public @java.lang.SuppressWarnings("all") Inner withStringBy(final java.util.function.Function<? super String, ? extends String> transformer) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated Inner withStringBy(final java.util.function.Function<? super String, ? extends String> transformer) {
         return new Inner(transformer.apply(this.string));
       }
     }

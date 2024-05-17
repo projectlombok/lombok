@@ -4,44 +4,57 @@ public class BuilderDefaultsGenerics<N extends Number, T, R extends List<T>> {
 	private T tee;
 	private R arrr;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static <N extends Number, T, R extends List<T>> java.util.concurrent.Callable<N> $default$callable() {
 		return null;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static <N extends Number, T, R extends List<T>> T $default$tee() {
 		return null;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static <N extends Number, T, R extends List<T>> R $default$arrr() {
 		return null;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	BuilderDefaultsGenerics(final java.util.concurrent.Callable<N> callable, final T tee, final R arrr) {
 		this.callable = callable;
 		this.tee = tee;
 		this.arrr = arrr;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static class BuilderDefaultsGenericsBuilder<N extends Number, T, R extends List<T>> {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private boolean callable$set;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.concurrent.Callable<N> callable$value;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private boolean tee$set;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private T tee$value;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private boolean arrr$set;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private R arrr$value;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		BuilderDefaultsGenericsBuilder() {
 		}
 		/**
 		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> callable(final java.util.concurrent.Callable<N> callable) {
 			this.callable$value = callable;
 			callable$set = true;
@@ -51,6 +64,7 @@ public class BuilderDefaultsGenerics<N extends Number, T, R extends List<T>> {
 		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> tee(final T tee) {
 			this.tee$value = tee;
 			tee$set = true;
@@ -60,12 +74,14 @@ public class BuilderDefaultsGenerics<N extends Number, T, R extends List<T>> {
 		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> arrr(final R arrr) {
 			this.arrr$value = arrr;
 			arrr$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderDefaultsGenerics<N, T, R> build() {
 			java.util.concurrent.Callable<N> callable$value = this.callable$value;
 			if (!this.callable$set) callable$value = BuilderDefaultsGenerics.<N, T, R>$default$callable();
@@ -77,11 +93,13 @@ public class BuilderDefaultsGenerics<N extends Number, T, R extends List<T>> {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder(callable$value=" + this.callable$value + ", tee$value=" + this.tee$value + ", arrr$value=" + this.arrr$value + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static <N extends Number, T, R extends List<T>> BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R> builder() {
 		return new BuilderDefaultsGenerics.BuilderDefaultsGenericsBuilder<N, T, R>();
 	}

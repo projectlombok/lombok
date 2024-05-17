@@ -9,7 +9,7 @@ public class WithInAnonymousClass {
       /**
        * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
        */
-      public @java.lang.SuppressWarnings("all") Inner withString(final String string) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated Inner withString(final String string) {
         return ((this.string == string) ? this : new Inner(string));
       }
     }

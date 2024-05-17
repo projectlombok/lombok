@@ -5,10 +5,10 @@ import lombok.Getter;
   ToStringConfiguration() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("ToStringConfiguration(" + this.x) + ")");
   }
-  public @java.lang.SuppressWarnings("all") int getX() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
 }
@@ -17,7 +17,7 @@ import lombok.Getter;
   ToStringConfiguration2() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("ToStringConfiguration2(x=" + this.x) + ")");
   }
 }
@@ -26,10 +26,10 @@ import lombok.Getter;
   ToStringConfiguration3() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("ToStringConfiguration3(" + this.getX()) + ")");
   }
-  public @java.lang.SuppressWarnings("all") int getX() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
 }

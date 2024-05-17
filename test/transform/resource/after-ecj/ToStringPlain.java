@@ -5,7 +5,7 @@ import lombok.ToString;
   ToString1() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("ToString1(x=" + this.x) + ", name=") + this.name) + ")");
   }
 }
@@ -15,7 +15,7 @@ import lombok.ToString;
   ToString2() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("ToString2(x=" + this.x) + ", name=") + this.name) + ")");
   }
 }

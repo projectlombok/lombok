@@ -3,7 +3,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
   EqualsAndHashCodeWithNonNullByDefault() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final @javax.annotation.Nullable java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final @javax.annotation.Nullable java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCodeWithNonNullByDefault)))
@@ -13,10 +13,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final @javax.annotation.Nullable java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final @javax.annotation.Nullable java.lang.Object other) {
     return (other instanceof EqualsAndHashCodeWithNonNullByDefault);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int result = 1;
     return result;
   }

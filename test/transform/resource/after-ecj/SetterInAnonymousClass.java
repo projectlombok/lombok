@@ -6,7 +6,7 @@ public class SetterInAnonymousClass {
       Inner() {
         super();
       }
-      public @java.lang.SuppressWarnings("all") void setString(final String string) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated void setString(final String string) {
         this.string = string;
       }
     }

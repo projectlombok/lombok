@@ -2,19 +2,19 @@ import java.util.List;
 import java.util.Collection;
 import lombok.Singular;
 @lombok.Builder(toBuilder = true) class BuilderSingularWildcardListsWithToBuilder {
-  public static @java.lang.SuppressWarnings("all") class BuilderSingularWildcardListsWithToBuilderBuilder {
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<java.lang.Object> objects;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<Number> numbers;
-    @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated class BuilderSingularWildcardListsWithToBuilderBuilder {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<java.lang.Object> objects;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<Number> numbers;
+    @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilderBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder object(final java.lang.Object object) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder object(final java.lang.Object object) {
       if ((this.objects == null))
           this.objects = new java.util.ArrayList<java.lang.Object>();
       this.objects.add(object);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder objects(final java.util.Collection<?> objects) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder objects(final java.util.Collection<?> objects) {
       if ((objects == null))
           {
             throw new java.lang.NullPointerException("objects cannot be null");
@@ -24,18 +24,18 @@ import lombok.Singular;
       this.objects.addAll(objects);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearObjects() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearObjects() {
       if ((this.objects != null))
           this.objects.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder number(final Number number) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder number(final Number number) {
       if ((this.numbers == null))
           this.numbers = new java.util.ArrayList<Number>();
       this.numbers.add(number);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder numbers(final java.util.Collection<? extends Number> numbers) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder numbers(final java.util.Collection<? extends Number> numbers) {
       if ((numbers == null))
           {
             throw new java.lang.NullPointerException("numbers cannot be null");
@@ -45,12 +45,12 @@ import lombok.Singular;
       this.numbers.addAll(numbers);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearNumbers() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearNumbers() {
       if ((this.numbers != null))
           this.numbers.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder build() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder build() {
       java.util.List<java.lang.Object> objects;
       switch (((this.objects == null) ? 0 : this.objects.size())) {
       case 0 :
@@ -75,21 +75,21 @@ import lombok.Singular;
       }
       return new BuilderSingularWildcardListsWithToBuilder(objects, numbers);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (((("BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder(objects=" + this.objects) + ", numbers=") + this.numbers) + ")");
     }
   }
   private @Singular List<?> objects;
   private @Singular Collection<? extends Number> numbers;
-  @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder(final List<?> objects, final Collection<? extends Number> numbers) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder(final List<?> objects, final Collection<? extends Number> numbers) {
     super();
     this.objects = objects;
     this.numbers = numbers;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder builder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder builder() {
     return new BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder();
   }
-  public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder toBuilder() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder toBuilder() {
     final BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder builder = new BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder();
     if ((this.objects != null))
         builder.objects(this.objects);

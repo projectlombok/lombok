@@ -3,19 +3,23 @@ class DataWithGetterNone {
 	private int y;
 	private final String z;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public DataWithGetterNone(final String z) {
 		this.z = z;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void setX(final int x) {
 		this.x = x;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void setY(final int y) {
 		this.y = y;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof DataWithGetterNone)) return false;
@@ -29,11 +33,13 @@ class DataWithGetterNone {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof DataWithGetterNone;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -45,6 +51,7 @@ class DataWithGetterNone {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "DataWithGetterNone(x=" + this.x + ", y=" + this.y + ", z=" + this.z + ")";
 	}

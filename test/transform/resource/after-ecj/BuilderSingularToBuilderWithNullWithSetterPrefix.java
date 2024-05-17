@@ -1,17 +1,17 @@
 import lombok.Singular;
 @lombok.Builder(toBuilder = true,setterPrefix = "with") class BuilderSingularToBuilderWithNullWithSetterPrefix {
-  public static @java.lang.SuppressWarnings("all") class BuilderSingularToBuilderWithNullWithSetterPrefixBuilder {
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> elems;
-    @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefixBuilder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated class BuilderSingularToBuilderWithNullWithSetterPrefixBuilder {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> elems;
+    @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularToBuilderWithNullWithSetterPrefixBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElem(final String elem) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElem(final String elem) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.add(elem);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElems(final java.util.Collection<? extends String> elems) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder withElems(final java.util.Collection<? extends String> elems) {
       if ((elems == null))
           {
             throw new java.lang.NullPointerException("elems cannot be null");
@@ -21,12 +21,12 @@ import lombok.Singular;
       this.elems.addAll(elems);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder clearElems() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder clearElems() {
       if ((this.elems != null))
           this.elems.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix build() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularToBuilderWithNullWithSetterPrefix build() {
       java.util.List<String> elems;
       switch (((this.elems == null) ? 0 : this.elems.size())) {
       case 0 :
@@ -40,7 +40,7 @@ import lombok.Singular;
       }
       return new BuilderSingularToBuilderWithNullWithSetterPrefix(elems);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (("BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder(elems=" + this.elems) + ")");
     }
   }
@@ -48,14 +48,14 @@ import lombok.Singular;
   public static void test() {
     new BuilderSingularToBuilderWithNullWithSetterPrefix(null).toBuilder();
   }
-  @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix(final java.util.List<String> elems) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularToBuilderWithNullWithSetterPrefix(final java.util.List<String> elems) {
     super();
     this.elems = elems;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder() {
     return new BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
   }
-  public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder toBuilder() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder toBuilder() {
     final BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder builder = new BuilderSingularToBuilderWithNullWithSetterPrefix.BuilderSingularToBuilderWithNullWithSetterPrefixBuilder();
     if ((this.elems != null))
         builder.withElems(this.elems);

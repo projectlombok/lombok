@@ -3,13 +3,13 @@ public class DelegateGenerics<T> {
   public DelegateGenerics() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") T a(final T a) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated T a(final T a) {
     return this.target.a(a);
   }
-  public @java.lang.SuppressWarnings("all") java.lang.String i(final java.lang.String a) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String i(final java.lang.String a) {
     return this.target.i(a);
   }
-  public @java.lang.SuppressWarnings("all") java.lang.Integer t(final java.lang.Integer t) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.Integer t(final java.lang.Integer t) {
     return this.target.t(t);
   }
 }

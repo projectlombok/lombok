@@ -37,7 +37,7 @@ class Setter5 {
   }
   void setFoo() {
   }
-  public @java.lang.SuppressWarnings("all") void setFoo(final String foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setFoo(final String foo) {
     this.foo = foo;
   }
 }
@@ -48,7 +48,7 @@ class Setter6 {
   }
   void setFoo(String foo, int x) {
   }
-  public @java.lang.SuppressWarnings("all") void setFoo(final String foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setFoo(final String foo) {
     this.foo = foo;
   }
 }

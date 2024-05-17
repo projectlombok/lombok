@@ -19,7 +19,7 @@ final @lombok.experimental.UtilityClass class UtilityClass {
     new InnerClass();
     new InnerStaticClass();
   }
-  private @java.lang.SuppressWarnings("all") UtilityClass() {
+  private @java.lang.SuppressWarnings("all") @lombok.Generated UtilityClass() {
     super();
     throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
   }
@@ -30,7 +30,7 @@ class UtilityInner {
       static int member;
       <clinit>() {
       }
-      private @java.lang.SuppressWarnings("all") InnerInnerInner() {
+      private @java.lang.SuppressWarnings("all") @lombok.Generated InnerInnerInner() {
         super();
         throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
       }
@@ -44,7 +44,7 @@ class UtilityInner {
       static int member;
       <clinit>() {
       }
-      private @java.lang.SuppressWarnings("all") InsideEnum() {
+      private @java.lang.SuppressWarnings("all") @lombok.Generated InsideEnum() {
         super();
         throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
       }
@@ -62,7 +62,7 @@ class UtilityInner {
       static int member;
       <clinit>() {
       }
-      private @java.lang.SuppressWarnings("all") InsideInterface() {
+      private @java.lang.SuppressWarnings("all") @lombok.Generated InsideInterface() {
         super();
         throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
       }

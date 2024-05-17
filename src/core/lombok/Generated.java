@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 The Project Lombok Authors.
+ * Copyright (C) 2015-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Lombok will eventually automatically add this annotation to all generated constructors, methods, fields, and types.
+ * Lombok automatically adds this annotation to all generated constructors, methods, fields, and types.
  * 
  * You can mark the presence of this annotation as 'ignore it' for all code style and bug finding tools.
  * <p>
- * NB: As of v1.16.2 which introduces this annotation, lombok doesn't actually add this annotation; we're setting
- * it up so that lombok jars in widespread use start having this, which will make it easier to actually apply it
- * later on. By adding {@code lombok.addLombokGeneratedAnnotation = true} to {@code lombok.config} you can already
- * get this behavior.
+ * NB: As of v1.18.34, lombok adds this annotation by default; before then you had to add a lombok config key.
+ * <p>
+ * If you want to opt out (not recommended), you can add {@code lombok.addLombokGeneratedAnnotation = false} to
+ * {@code lombok.config}.
  */
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)

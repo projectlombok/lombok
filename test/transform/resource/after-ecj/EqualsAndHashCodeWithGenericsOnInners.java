@@ -4,7 +4,7 @@ public class EqualsAndHashCodeWithGenericsOnInners<A> {
     Inner() {
       super();
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
       if ((o == this))
           return true;
       if ((! (o instanceof EqualsAndHashCodeWithGenericsOnInners.Inner)))
@@ -16,10 +16,10 @@ public class EqualsAndHashCodeWithGenericsOnInners<A> {
           return false;
       return true;
     }
-    protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+    protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
       return (other instanceof EqualsAndHashCodeWithGenericsOnInners.Inner);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
       final int PRIME = 59;
       int result = 1;
       result = ((result * PRIME) + this.x);

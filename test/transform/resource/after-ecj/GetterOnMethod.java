@@ -7,13 +7,13 @@ class GetterOnMethod {
   GetterOnMethod() {
     super();
   }
-  public @Deprecated @java.lang.SuppressWarnings("all") int getI() {
+  public @Deprecated @java.lang.SuppressWarnings("all") @lombok.Generated int getI() {
     return this.i;
   }
-  public @java.lang.Deprecated @Test @java.lang.SuppressWarnings("all") int getJ() {
+  public @java.lang.Deprecated @Test @java.lang.SuppressWarnings("all") @lombok.Generated int getJ() {
     return this.j;
   }
-  public @java.lang.Deprecated @Test @java.lang.SuppressWarnings("all") int getK() {
+  public @java.lang.Deprecated @Test @java.lang.SuppressWarnings("all") @lombok.Generated int getK() {
     return this.k;
   }
 }

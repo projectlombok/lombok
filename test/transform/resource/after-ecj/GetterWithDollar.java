@@ -3,7 +3,7 @@ class GetterWithDollar1 {
   GetterWithDollar1() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") int get$i() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int get$i() {
     return this.$i;
   }
 }
@@ -13,10 +13,10 @@ class GetterWithDollar2 {
   GetterWithDollar2() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") int get$i() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int get$i() {
     return this.$i;
   }
-  public @java.lang.SuppressWarnings("all") int getI() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getI() {
     return this.i;
   }
 }

@@ -12,6 +12,7 @@ public class CommentsInterspersed {
 		javascript;
 	}-*/
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public String getTest() {
 		return this.test;
 	}

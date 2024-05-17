@@ -3,7 +3,7 @@ class GetFoo {
   GetFoo() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") int getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getFoo() {
     return this.foo;
   }
 }

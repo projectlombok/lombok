@@ -3,7 +3,7 @@
   int pUpper;
   int _huh;
   int __huh2;
-  public @java.lang.SuppressWarnings("all") ConstructorsWithAccessors(final int plower, final int upper, final int huh, final int _huh2) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated ConstructorsWithAccessors(final int plower, final int upper, final int huh, final int _huh2) {
     super();
     this.plower = plower;
     this.pUpper = upper;
@@ -16,7 +16,7 @@
   @lombok.NonNull Integer pUpper;
   @lombok.NonNull Integer _huh;
   final @lombok.NonNull Integer __huh2;
-  public @java.lang.SuppressWarnings("all") ConstructorsWithAccessorsNonNull(final @lombok.NonNull Integer plower, final @lombok.NonNull Integer upper, final @lombok.NonNull Integer huh, final @lombok.NonNull Integer _huh2) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated ConstructorsWithAccessorsNonNull(final @lombok.NonNull Integer plower, final @lombok.NonNull Integer upper, final @lombok.NonNull Integer huh, final @lombok.NonNull Integer _huh2) {
     super();
     if ((plower == null))
         {

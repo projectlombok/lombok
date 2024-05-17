@@ -27,7 +27,7 @@ class GetterLazyInvalidNone {
   GetterLazyInvalidClass() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") String getFieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFieldName() {
     return this.fieldName;
   }
 }

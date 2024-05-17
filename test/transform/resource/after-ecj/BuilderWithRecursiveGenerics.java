@@ -5,50 +5,50 @@ public class BuilderWithRecursiveGenerics {
   interface Inter<T, U extends Inter<T, U>> {
   }
   public static final @Builder @Value class Test<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
-    public static @java.lang.SuppressWarnings("all") class TestBuilder<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
-      private @java.lang.SuppressWarnings("all") Foo foo;
-      private @java.lang.SuppressWarnings("all") Bar bar;
-      @java.lang.SuppressWarnings("all") TestBuilder() {
+    public static @java.lang.SuppressWarnings("all") @lombok.Generated class TestBuilder<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
+      private @java.lang.SuppressWarnings("all") @lombok.Generated Foo foo;
+      private @java.lang.SuppressWarnings("all") @lombok.Generated Bar bar;
+      @java.lang.SuppressWarnings("all") @lombok.Generated TestBuilder() {
         super();
       }
       /**
        * @return {@code this}.
        */
-      public @java.lang.SuppressWarnings("all") BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> foo(final Foo foo) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> foo(final Foo foo) {
         this.foo = foo;
         return this;
       }
       /**
        * @return {@code this}.
        */
-      public @java.lang.SuppressWarnings("all") BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> bar(final Bar bar) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> bar(final Bar bar) {
         this.bar = bar;
         return this;
       }
-      public @java.lang.SuppressWarnings("all") BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz> build() {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz> build() {
         return new BuilderWithRecursiveGenerics.Test<Foo, Bar, Quz>(this.foo, this.bar);
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
         return (((("BuilderWithRecursiveGenerics.Test.TestBuilder(foo=" + this.foo) + ", bar=") + this.bar) + ")");
       }
     }
     private final Foo foo;
     private final Bar bar;
-    @java.lang.SuppressWarnings("all") Test(final Foo foo, final Bar bar) {
+    @java.lang.SuppressWarnings("all") @lombok.Generated Test(final Foo foo, final Bar bar) {
       super();
       this.foo = foo;
       this.bar = bar;
     }
-    public static @java.lang.SuppressWarnings("all") <Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>>BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> builder() {
+    public static @java.lang.SuppressWarnings("all") @lombok.Generated <Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>>BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz> builder() {
       return new BuilderWithRecursiveGenerics.Test.TestBuilder<Foo, Bar, Quz>();
     }
-    public @java.lang.SuppressWarnings("all") Foo getFoo() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated Foo getFoo() {
       return this.foo;
     }
-    public @java.lang.SuppressWarnings("all") Bar getBar() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated Bar getBar() {
       return this.bar;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
       if ((o == this))
           return true;
       if ((! (o instanceof BuilderWithRecursiveGenerics.Test)))
@@ -64,7 +64,7 @@ public class BuilderWithRecursiveGenerics {
           return false;
       return true;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
       final int PRIME = 59;
       int result = 1;
       final java.lang.Object $foo = this.getFoo();
@@ -73,7 +73,7 @@ public class BuilderWithRecursiveGenerics {
       result = ((result * PRIME) + (($bar == null) ? 43 : $bar.hashCode()));
       return result;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (((("BuilderWithRecursiveGenerics.Test(foo=" + this.getFoo()) + ", bar=") + this.getBar()) + ")");
     }
   }
@@ -81,4 +81,3 @@ public class BuilderWithRecursiveGenerics {
     super();
   }
 }
-

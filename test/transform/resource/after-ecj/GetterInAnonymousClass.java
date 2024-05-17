@@ -6,7 +6,7 @@ public class GetterInAnonymousClass {
       Inner() {
         super();
       }
-      public @java.lang.SuppressWarnings("all") String getString() {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated String getString() {
         return this.string;
       }
     }

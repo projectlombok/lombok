@@ -2,13 +2,13 @@
   private int x;
   private int y;
   private final String z;
-  public @java.lang.SuppressWarnings("all") void setX(final int x) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setX(final int x) {
     this.x = x;
   }
-  public @java.lang.SuppressWarnings("all") void setY(final int y) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setY(final int y) {
     this.y = y;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof DataWithGetterNone)))
@@ -26,10 +26,10 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof DataWithGetterNone);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
@@ -38,10 +38,10 @@
     result = ((result * PRIME) + (($z == null) ? 43 : $z.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((((("DataWithGetterNone(x=" + this.x) + ", y=") + this.y) + ", z=") + this.z) + ")");
   }
-  public @java.lang.SuppressWarnings("all") DataWithGetterNone(final String z) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated DataWithGetterNone(final String z) {
     super();
     this.z = z;
   }
