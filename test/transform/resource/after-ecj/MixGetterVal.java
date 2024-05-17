@@ -13,7 +13,7 @@ class MixGetterVal {
     final @val int a = getX();
     m(a);
   }
-  public @java.lang.SuppressWarnings("all") int getX() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
 }

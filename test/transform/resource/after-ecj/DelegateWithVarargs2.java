@@ -11,7 +11,7 @@ class DelegateWithVarargs2 {
   DelegateWithVarargs2() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void varargs(final java.lang.Object[]... keys) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void varargs(final java.lang.Object[]... keys) {
     this.bar.varargs(keys);
   }
 }

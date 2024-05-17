@@ -27,10 +27,10 @@ class DelegatePlain {
   DelegatePlain() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void bar(final java.util.ArrayList<java.lang.String> list) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void bar(final java.util.ArrayList<java.lang.String> list) {
     this.bar.bar(list);
   }
-  public @java.lang.SuppressWarnings("all") void foo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void foo() {
     this.foo.foo();
   }
 }
