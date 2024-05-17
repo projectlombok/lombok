@@ -1,20 +1,20 @@
 import java.util.Set;
 @lombok.experimental.SuperBuilder class SuperBuilderSingularCustomized {
   public static abstract class SuperBuilderSingularCustomizedBuilder<C extends SuperBuilderSingularCustomized, B extends SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder<C, B>> {
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> foos;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> foos;
     public SuperBuilderSingularCustomizedBuilder() {
       super();
     }
     public B custom(final String value) {
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B foo(final String foo) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B foo(final String foo) {
       if ((this.foos == null))
           this.foos = new java.util.ArrayList<String>();
       this.foos.add(foo);
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B foos(final java.util.Collection<? extends String> foos) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B foos(final java.util.Collection<? extends String> foos) {
       if ((foos == null))
           {
             throw new java.lang.NullPointerException("foos cannot be null");
@@ -24,30 +24,30 @@ import java.util.Set;
       this.foos.addAll(foos);
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B clearFoos() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B clearFoos() {
       if ((this.foos != null))
           this.foos.clear();
       return self();
     }
-    protected abstract @java.lang.SuppressWarnings("all") B self();
-    public abstract @java.lang.SuppressWarnings("all") C build();
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    protected abstract @java.lang.SuppressWarnings("all") @lombok.Generated B self();
+    public abstract @java.lang.SuppressWarnings("all") @lombok.Generated C build();
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (("SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder(foos=" + this.foos) + ")");
     }
   }
-  private static final @java.lang.SuppressWarnings("all") class SuperBuilderSingularCustomizedBuilderImpl extends SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder<SuperBuilderSingularCustomized, SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilderImpl> {
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated class SuperBuilderSingularCustomizedBuilderImpl extends SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder<SuperBuilderSingularCustomized, SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilderImpl> {
     private SuperBuilderSingularCustomizedBuilderImpl() {
       super();
     }
-    protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilderImpl self() {
+    protected @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilderImpl self() {
       return this;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderSingularCustomized build() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderSingularCustomized build() {
       return new SuperBuilderSingularCustomized(this);
     }
   }
   private @lombok.Singular Set<String> foos;
-  protected @java.lang.SuppressWarnings("all") SuperBuilderSingularCustomized(final SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder<?, ?> b) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderSingularCustomized(final SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder<?, ?> b) {
     super();
     java.util.Set<String> foos;
     switch (((b.foos == null) ? 0 : b.foos.size())) {
@@ -64,7 +64,7 @@ import java.util.Set;
     }
     this.foos = foos;
   }
-  public static @java.lang.SuppressWarnings("all") SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder<?, ?> builder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder<?, ?> builder() {
     return new SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilderImpl();
   }
 }

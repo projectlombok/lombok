@@ -14,7 +14,7 @@ final @UtilityClass class UtilityClassGeneric {
   static Object convert(DTO dto) {
     return null;
   }
-  private @java.lang.SuppressWarnings("all") UtilityClassGeneric() {
+  private @java.lang.SuppressWarnings("all") @lombok.Generated UtilityClassGeneric() {
     super();
     throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
   }

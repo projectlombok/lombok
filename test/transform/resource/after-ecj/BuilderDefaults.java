@@ -1,19 +1,19 @@
 import lombok.Builder;
 import lombok.Value;
 public final @Value @Builder class BuilderDefaults {
-  public static @java.lang.SuppressWarnings("all") class BuilderDefaultsBuilder {
-    private @java.lang.SuppressWarnings("all") int x$value;
-    private @java.lang.SuppressWarnings("all") boolean x$set;
-    private @java.lang.SuppressWarnings("all") String name;
-    private @java.lang.SuppressWarnings("all") long z$value;
-    private @java.lang.SuppressWarnings("all") boolean z$set;
-    @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated class BuilderDefaultsBuilder {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated int x$value;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated boolean x$set;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated String name;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated long z$value;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated boolean z$set;
+    @java.lang.SuppressWarnings("all") @lombok.Generated BuilderDefaultsBuilder() {
       super();
     }
     /**
      * @return {@code this}.
      */
-    public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder x(final int x) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderDefaults.BuilderDefaultsBuilder x(final int x) {
       this.x$value = x;
       x$set = true;
       return this;
@@ -21,19 +21,19 @@ public final @Value @Builder class BuilderDefaults {
     /**
      * @return {@code this}.
      */
-    public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder name(final String name) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderDefaults.BuilderDefaultsBuilder name(final String name) {
       this.name = name;
       return this;
     }
     /**
      * @return {@code this}.
      */
-    public @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder z(final long z) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderDefaults.BuilderDefaultsBuilder z(final long z) {
       this.z$value = z;
       z$set = true;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaults build() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderDefaults build() {
       int x$value = this.x$value;
       if ((! this.x$set))
           x$value = BuilderDefaults.$default$x();
@@ -42,38 +42,38 @@ public final @Value @Builder class BuilderDefaults {
           z$value = BuilderDefaults.$default$z();
       return new BuilderDefaults(x$value, this.name, z$value);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (((((("BuilderDefaults.BuilderDefaultsBuilder(x$value=" + this.x$value) + ", name=") + this.name) + ", z$value=") + this.z$value) + ")");
     }
   }
   private final @Builder.Default int x;
   private final String name;
   private final @Builder.Default long z;
-  private static @java.lang.SuppressWarnings("all") int $default$x() {
+  private static @java.lang.SuppressWarnings("all") @lombok.Generated int $default$x() {
     return 10;
   }
-  private static @java.lang.SuppressWarnings("all") long $default$z() {
+  private static @java.lang.SuppressWarnings("all") @lombok.Generated long $default$z() {
     return System.currentTimeMillis();
   }
-  @java.lang.SuppressWarnings("all") BuilderDefaults(final int x, final String name, final long z) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated BuilderDefaults(final int x, final String name, final long z) {
     super();
     this.x = x;
     this.name = name;
     this.z = z;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderDefaults.BuilderDefaultsBuilder builder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated BuilderDefaults.BuilderDefaultsBuilder builder() {
     return new BuilderDefaults.BuilderDefaultsBuilder();
   }
-  public @java.lang.SuppressWarnings("all") int getX() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") String getName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getName() {
     return this.name;
   }
-  public @java.lang.SuppressWarnings("all") long getZ() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated long getZ() {
     return this.z;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof BuilderDefaults)))
@@ -89,7 +89,7 @@ public final @Value @Builder class BuilderDefaults {
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getX());
@@ -99,7 +99,7 @@ public final @Value @Builder class BuilderDefaults {
     result = ((result * PRIME) + (($name == null) ? 43 : $name.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((((("BuilderDefaults(x=" + this.getX()) + ", name=") + this.getName()) + ", z=") + this.getZ()) + ")");
   }
 }

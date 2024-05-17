@@ -7,7 +7,7 @@
   private static boolean calculateBoolean() {
     return true;
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) boolean isBooleanValue() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated boolean isBooleanValue() {
     java.lang.Object $value = this.booleanValue.get();
     if (($value == null))
         {
@@ -24,7 +24,7 @@
         }
     return (java.lang.Boolean) $value;
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) boolean isOtherBooleanValue() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated boolean isOtherBooleanValue() {
     java.lang.Object $value = this.otherBooleanValue.get();
     if (($value == null))
         {
@@ -41,7 +41,7 @@
         }
     return (java.lang.Boolean) $value;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof GetterLazyBoolean)))
@@ -53,16 +53,16 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof GetterLazyBoolean);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + (this.isBooleanValue() ? 79 : 97));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("GetterLazyBoolean(booleanValue=" + this.isBooleanValue()) + ")");
   }
 }

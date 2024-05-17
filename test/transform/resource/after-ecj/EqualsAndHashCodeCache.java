@@ -1,5 +1,5 @@
 @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
+  private transient @java.lang.SuppressWarnings("all") @lombok.Generated int $hashCodeCache;
   int x;
   boolean[] y;
   Object[] z;
@@ -8,7 +8,7 @@
   EqualsAndHashCode() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode)))
@@ -32,11 +32,11 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    if ((this.$hashCodeCache != 0)) 
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
+    if ((this.$hashCodeCache != 0))
         return this.$hashCodeCache;
     final int PRIME = 59;
     int result = 1;
@@ -54,7 +54,7 @@
   }
 }
 final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode2 {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
+  private transient @java.lang.SuppressWarnings("all") @lombok.Generated int $hashCodeCache;
   int x;
   long y;
   float f;
@@ -63,7 +63,7 @@ final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheSt
   EqualsAndHashCode2() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode2)))
@@ -81,8 +81,8 @@ final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheSt
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    if ((this.$hashCodeCache != 0)) 
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
+    if ((this.$hashCodeCache != 0))
         return this.$hashCodeCache;
     final int PRIME = 59;
     int result = 1;
@@ -100,11 +100,11 @@ final @lombok.EqualsAndHashCode(cacheStrategy = lombok.EqualsAndHashCode.CacheSt
   }
 }
 final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode3 extends EqualsAndHashCode {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
+  private transient @java.lang.SuppressWarnings("all") @lombok.Generated int $hashCodeCache;
   EqualsAndHashCode3() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode3)))
@@ -114,11 +114,11 @@ final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsA
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode3);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    if ((this.$hashCodeCache != 0)) 
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
+    if ((this.$hashCodeCache != 0))
         return this.$hashCodeCache;
     int result = 1;
     if ((result == 0))
@@ -128,11 +128,11 @@ final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsA
   }
 }
 @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode4 extends EqualsAndHashCode {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
+  private transient @java.lang.SuppressWarnings("all") @lombok.Generated int $hashCodeCache;
   EqualsAndHashCode4() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode4)))
@@ -144,11 +144,11 @@ final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsA
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode4);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    if ((this.$hashCodeCache != 0)) 
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
+    if ((this.$hashCodeCache != 0))
         return this.$hashCodeCache;
     int result = super.hashCode();
     if ((result == 0))
@@ -158,11 +158,11 @@ final @lombok.EqualsAndHashCode(callSuper = false,cacheStrategy = lombok.EqualsA
   }
 }
 final @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAndHashCode.CacheStrategy.LAZY) class EqualsAndHashCode5 extends EqualsAndHashCode {
-  private transient @java.lang.SuppressWarnings("all") int $hashCodeCache;
+  private transient @java.lang.SuppressWarnings("all") @lombok.Generated int $hashCodeCache;
   EqualsAndHashCode5() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode5)))
@@ -174,11 +174,11 @@ final @lombok.EqualsAndHashCode(callSuper = true,cacheStrategy = lombok.EqualsAn
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode5);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    if ((this.$hashCodeCache != 0)) 
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
+    if ((this.$hashCodeCache != 0))
         return this.$hashCodeCache;
     int result = super.hashCode();
     if ((result == 0))

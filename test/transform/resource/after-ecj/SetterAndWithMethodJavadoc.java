@@ -11,7 +11,7 @@ class SetterAndWithMethodJavadoc {
    * Some value.
    * @param the new value
    */
-  public @java.lang.SuppressWarnings("all") void setI(final int i) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setI(final int i) {
     this.i = i;
   }
   /**
@@ -19,14 +19,14 @@ class SetterAndWithMethodJavadoc {
    * @param the new value
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") SetterAndWithMethodJavadoc withI(final int i) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated SetterAndWithMethodJavadoc withI(final int i) {
     return ((this.i == i) ? this : new SetterAndWithMethodJavadoc(i, this.j));
   }
   /**
    * Set some other value.
    * @param the new other value
    */
-  public @java.lang.SuppressWarnings("all") void setJ(final int j) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setJ(final int j) {
     this.j = j;
   }
   /**
@@ -34,7 +34,7 @@ class SetterAndWithMethodJavadoc {
    * @param the other new other value
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") SetterAndWithMethodJavadoc withJ(final int j) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated SetterAndWithMethodJavadoc withJ(final int j) {
     return ((this.j == j) ? this : new SetterAndWithMethodJavadoc(this.i, j));
   }
 }

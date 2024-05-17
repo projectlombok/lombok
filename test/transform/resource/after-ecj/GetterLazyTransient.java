@@ -5,7 +5,7 @@ class GetterLazyTransient {
   GetterLazyTransient() {
     super();
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) int getNonTransientField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated int getNonTransientField() {
     java.lang.Object $value = this.nonTransientField.get();
     if (($value == null))
         {
@@ -22,7 +22,7 @@ class GetterLazyTransient {
         }
     return (java.lang.Integer) $value;
   }
-  public @java.lang.SuppressWarnings("all") int getNonLazyTransientField() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getNonLazyTransientField() {
     return this.nonLazyTransientField;
   }
 }

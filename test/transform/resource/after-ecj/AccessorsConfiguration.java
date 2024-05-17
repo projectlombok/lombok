@@ -3,10 +3,10 @@ class AccessorsConfiguration {
   AccessorsConfiguration() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") String fieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String fieldName() {
     return this.m_FieldName;
   }
-  public @java.lang.SuppressWarnings("all") void fieldName(final String m_FieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void fieldName(final String m_FieldName) {
     this.m_FieldName = m_FieldName;
   }
 }
@@ -15,7 +15,7 @@ class AccessorsConfiguration {
   AccessorsConfiguration2() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void setM_FieldName(final String m_FieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setM_FieldName(final String m_FieldName) {
     this.m_FieldName = m_FieldName;
   }
 }
@@ -27,7 +27,7 @@ class AccessorsConfiguration {
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") AccessorsConfiguration3 setFieldName(final String fFieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsConfiguration3 setFieldName(final String fFieldName) {
     this.fFieldName = fFieldName;
     return this;
   }

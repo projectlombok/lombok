@@ -6,7 +6,7 @@ public @lombok.ToString class ToStringArray {
   public ToStringArray() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("ToStringArray(primitiveArray=" + java.util.Arrays.toString(this.primitiveArray)) + ", objectArray=") + java.util.Arrays.deepToString(this.objectArray)) + ")");
   }
 }

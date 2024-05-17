@@ -7,13 +7,13 @@ import lombok.RequiredArgsConstructor;
   private final @Getter String name;
   <clinit>() {
   }
-  public @java.lang.SuppressWarnings("all") int getId() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getId() {
     return this.id;
   }
-  public @java.lang.SuppressWarnings("all") String getName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getName() {
     return this.name;
   }
-  private @java.lang.SuppressWarnings("all") GetterEnum(final int id, final String name) {
+  private @java.lang.SuppressWarnings("all") @lombok.Generated GetterEnum(final int id, final String name) {
     super();
     this.id = id;
     this.name = name;
