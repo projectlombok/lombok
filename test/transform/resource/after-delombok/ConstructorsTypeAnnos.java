@@ -12,6 +12,7 @@ class ConstructorsTypeAnnos {
 	@TB
 	List<String> foo;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public ConstructorsTypeAnnos(@TA final List<String> foo) {
 		this.foo = foo;
 	}

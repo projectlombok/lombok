@@ -4,44 +4,54 @@ class BuilderNestedInEnum {
 		public static final class TestBuilder {
 			private final String field;
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			TestBuilder(final String field) {
 				this.field = field;
 			}
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			public static class TestBuilderBuilder {
 				@java.lang.SuppressWarnings("all")
+				@lombok.Generated
 				private String field;
 				@java.lang.SuppressWarnings("all")
+				@lombok.Generated
 				TestBuilderBuilder() {
 				}
 				/**
 				 * @return {@code this}.
 				 */
 				@java.lang.SuppressWarnings("all")
+				@lombok.Generated
 				public BuilderNestedInEnum.TestEnum.TestBuilder.TestBuilderBuilder field(final String field) {
 					this.field = field;
 					return this;
 				}
 				@java.lang.SuppressWarnings("all")
+				@lombok.Generated
 				public BuilderNestedInEnum.TestEnum.TestBuilder build() {
 					return new BuilderNestedInEnum.TestEnum.TestBuilder(this.field);
 				}
 				@java.lang.Override
 				@java.lang.SuppressWarnings("all")
+				@lombok.Generated
 				public java.lang.String toString() {
 					return "BuilderNestedInEnum.TestEnum.TestBuilder.TestBuilderBuilder(field=" + this.field + ")";
 				}
 			}
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			public static BuilderNestedInEnum.TestEnum.TestBuilder.TestBuilderBuilder builder() {
 				return new BuilderNestedInEnum.TestEnum.TestBuilder.TestBuilderBuilder();
 			}
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			public String getField() {
 				return this.field;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			public boolean equals(final java.lang.Object o) {
 				if (o == this) return true;
 				if (!(o instanceof BuilderNestedInEnum.TestEnum.TestBuilder)) return false;
@@ -53,6 +63,7 @@ class BuilderNestedInEnum {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			public int hashCode() {
 				final int PRIME = 59;
 				int result = 1;
@@ -62,6 +73,7 @@ class BuilderNestedInEnum {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			public java.lang.String toString() {
 				return "BuilderNestedInEnum.TestEnum.TestBuilder(field=" + this.getField() + ")";
 			}

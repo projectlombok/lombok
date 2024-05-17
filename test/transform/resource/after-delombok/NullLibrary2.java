@@ -3,6 +3,7 @@ public class NullLibrary2 {
 	String foo;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(@org.springframework.lang.Nullable final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof NullLibrary2)) return false;
@@ -14,11 +15,13 @@ public class NullLibrary2 {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(@org.springframework.lang.Nullable final java.lang.Object other) {
 		return other instanceof NullLibrary2;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -29,10 +32,12 @@ public class NullLibrary2 {
 	@org.springframework.lang.NonNull
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "NullLibrary2(foo=" + this.foo + ")";
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public NullLibrary2(final String foo) {
 		this.foo = foo;
 	}
@@ -41,6 +46,7 @@ public class NullLibrary2 {
 	 */
 	@org.springframework.lang.NonNull
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public NullLibrary2 withFoo(final String foo) {
 		return this.foo == foo ? this : new NullLibrary2(foo);
 	}

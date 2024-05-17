@@ -6,16 +6,19 @@ class CheckerFrameworkBasic {
 	private int z;
 	@org.checkerframework.dataflow.qual.Pure
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int getX() {
 		return this.x;
 	}
 	@org.checkerframework.dataflow.qual.Pure
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int getY() {
 		return this.y;
 	}
 	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int getZ() {
 		return this.z;
 	}
@@ -23,6 +26,7 @@ class CheckerFrameworkBasic {
 	 * @return {@code this}.
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public @org.checkerframework.common.returnsreceiver.qual.This CheckerFrameworkBasic setZ(final int z) {
 		this.z = z;
 		return this;
@@ -30,6 +34,7 @@ class CheckerFrameworkBasic {
 	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof CheckerFrameworkBasic)) return false;
@@ -42,12 +47,14 @@ class CheckerFrameworkBasic {
 	}
 	@org.checkerframework.dataflow.qual.Pure
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof CheckerFrameworkBasic;
 	}
 	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -59,10 +66,12 @@ class CheckerFrameworkBasic {
 	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "CheckerFrameworkBasic(x=" + this.getX() + ", y=" + this.getY() + ", z=" + this.getZ() + ")";
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public CheckerFrameworkBasic(final int x, final int y, final int z) {
 		this.x = x;
 		this.y = y;
@@ -73,6 +82,7 @@ class CheckerFrameworkBasic {
 	 */
 	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public CheckerFrameworkBasic withX(final int x) {
 		return this.x == x ? this : new CheckerFrameworkBasic(x, this.y, this.z);
 	}

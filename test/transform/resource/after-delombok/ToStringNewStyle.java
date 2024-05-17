@@ -12,6 +12,7 @@ public class ToStringNewStyle {
 	int j;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "ToStringNewStyle(a=" + this.b + ", c=" + this.c + ", e=" + this.d + ", f=" + this.f() + ", g=" + this.g + ", i=" + this.i + ", h=" + this.h + ")";
 	}

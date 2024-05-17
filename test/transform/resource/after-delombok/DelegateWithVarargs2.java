@@ -5,8 +5,8 @@ class DelegateWithVarargs2 {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void varargs(final java.lang.Object[]... keys) {
 		this.bar.varargs(keys);
 	}
 }
-

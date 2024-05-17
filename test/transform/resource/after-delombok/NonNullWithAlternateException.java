@@ -9,6 +9,7 @@ public class NonNullWithAlternateException {
 		System.out.println(arg);
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void setTest(@lombok.NonNull final String test) {
 		if (test == null) {
 			throw new java.lang.IllegalArgumentException("test is marked non-null but is null");

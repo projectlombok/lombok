@@ -12,6 +12,7 @@ class WithMethodMarkedDeprecated {
 	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public WithMethodMarkedDeprecated withAnnotation(final int annotation) {
 		return this.annotation == annotation ? this : new WithMethodMarkedDeprecated(annotation, this.javadoc);
 	}
@@ -21,6 +22,7 @@ class WithMethodMarkedDeprecated {
 	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public WithMethodMarkedDeprecated withJavadoc(final int javadoc) {
 		return this.javadoc == javadoc ? this : new WithMethodMarkedDeprecated(this.annotation, javadoc);
 	}

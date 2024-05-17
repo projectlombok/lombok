@@ -1,5 +1,6 @@
 class SynchronizedPlain1 {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private final java.lang.Object $lock = new java.lang.Object[0];
 	void test() {
 		synchronized (this.$lock) {
@@ -14,6 +15,7 @@ class SynchronizedPlain1 {
 }
 class SynchronizedPlain2 {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static final java.lang.Object $LOCK = new java.lang.Object[0];
 	static void test() {
 		synchronized (SynchronizedPlain2.$LOCK) {

@@ -3,6 +3,7 @@ class GetterLazy {
 	}
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> fieldName = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	@java.lang.SuppressWarnings({"all", "unchecked"})
+	@lombok.Generated
 	public ValueType getFieldName() {
 		java.lang.Object $value = this.fieldName.get();
 		if ($value == null) {

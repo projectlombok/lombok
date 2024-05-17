@@ -3,6 +3,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 class EqualsAndHashCodeWithNonNullByDefault {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(@javax.annotation.Nullable final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithNonNullByDefault)) return false;
@@ -11,11 +12,13 @@ class EqualsAndHashCodeWithNonNullByDefault {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(@javax.annotation.Nullable final java.lang.Object other) {
 		return other instanceof EqualsAndHashCodeWithNonNullByDefault;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int result = 1;
 		return result;
