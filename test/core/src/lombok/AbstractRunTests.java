@@ -51,7 +51,7 @@ import lombok.transform.TestLombokFilesIdempotent;
 import lombok.transform.TestSourceFiles;
 
 public abstract class AbstractRunTests {
-	public final FileTester createTester(final DirectoryRunner.TestParams params, final File file, String platform, int version, boolean copyToSource) throws IOException {
+	public final FileTester createTester(final DirectoryRunner.TestParams params, final File file, String platform, int version, final boolean copyToSource) throws IOException {
 		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
 		AssertionError directiveFailure = null;
 		LombokTestSource sourceDirectives = null;
