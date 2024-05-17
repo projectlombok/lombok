@@ -11,7 +11,7 @@ class GetterTypeAnnos {
   GetterTypeAnnos() {
     super();
   }
-  public @TA @java.lang.SuppressWarnings("all") List<String> getFoo() {
+  public @TA @java.lang.SuppressWarnings("all") @lombok.Generated List<String> getFoo() {
     return this.foo;
   }
 }

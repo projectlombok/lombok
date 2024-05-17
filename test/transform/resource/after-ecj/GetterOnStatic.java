@@ -6,10 +6,10 @@ class Getter {
   Getter() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") boolean isFoo() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated boolean isFoo() {
     return Getter.foo;
   }
-  public static @java.lang.SuppressWarnings("all") int getBar() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated int getBar() {
     return Getter.bar;
   }
 }

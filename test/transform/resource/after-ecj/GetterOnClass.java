@@ -4,7 +4,7 @@
   GetterOnClass1() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") boolean isPublic() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isPublic() {
     return this.isPublic;
   }
 }
@@ -15,10 +15,10 @@
   GetterOnClass2() {
     super();
   }
-  @java.lang.SuppressWarnings("all") boolean isPackage() {
+  @java.lang.SuppressWarnings("all") @lombok.Generated boolean isPackage() {
     return this.isPackage;
   }
-  protected @java.lang.SuppressWarnings("all") boolean isProtected() {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean isProtected() {
     return this.isProtected;
   }
 }
@@ -28,7 +28,7 @@
   GetterOnClass3() {
     super();
   }
-  @java.lang.SuppressWarnings("all") boolean isPackage() {
+  @java.lang.SuppressWarnings("all") @lombok.Generated boolean isPackage() {
     return this.isPackage;
   }
 }
@@ -38,7 +38,7 @@
   GetterOnClass4() {
     super();
   }
-  private @java.lang.SuppressWarnings("all") boolean isPrivate() {
+  private @java.lang.SuppressWarnings("all") @lombok.Generated boolean isPrivate() {
     return this.isPrivate;
   }
 }
@@ -48,7 +48,7 @@
   GetterOnClass5() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") boolean isPublic() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isPublic() {
     return this.isPublic;
   }
 }
@@ -58,10 +58,10 @@
   GetterOnClass6() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") String getCouldBeNull() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getCouldBeNull() {
     return this.couldBeNull;
   }
-  public @lombok.NonNull @java.lang.SuppressWarnings("all") String getNonNull() {
+  public @lombok.NonNull @java.lang.SuppressWarnings("all") @lombok.Generated String getNonNull() {
     return this.nonNull;
   }
 }

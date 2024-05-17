@@ -8,16 +8,16 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.extern.jackson.Jacksonized;
 public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonBuilderSingular.JacksonBuilderSingularBuilder.class) class JacksonBuilderSingular {
-  public static @java.lang.SuppressWarnings("all") @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") class JacksonBuilderSingularBuilder {
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> any$key;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<Object> any$value;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> values;
-    private @java.lang.SuppressWarnings("all") com.google.common.collect.ImmutableMap.Builder<String, Object> guavaAny;
-    private @java.lang.SuppressWarnings("all") com.google.common.collect.ImmutableList.Builder<String> guavaValues;
-    @java.lang.SuppressWarnings("all") JacksonBuilderSingularBuilder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") class JacksonBuilderSingularBuilder {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> any$key;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<Object> any$value;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> values;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.collect.ImmutableMap.Builder<String, Object> guavaAny;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.collect.ImmutableList.Builder<String> guavaValues;
+    @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingularBuilder() {
       super();
     }
-    public @JsonAnySetter @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder any(final String anyKey, final Object anyValue) {
+    public @JsonAnySetter @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder any(final String anyKey, final Object anyValue) {
       if ((this.any$key == null))
           {
             this.any$key = new java.util.ArrayList<String>();
@@ -27,7 +27,7 @@ public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDese
       this.any$value.add(anyValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder any(final java.util.Map<? extends String, ? extends Object> any) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder any(final java.util.Map<? extends String, ? extends Object> any) {
       if ((any == null))
           {
             throw new java.lang.NullPointerException("any cannot be null");
@@ -44,7 +44,7 @@ public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDese
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder clearAny() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder clearAny() {
       if ((this.any$key != null))
           {
             this.any$key.clear();
@@ -52,13 +52,13 @@ public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDese
           }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder value(final String value) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder value(final String value) {
       if ((this.values == null))
           this.values = new java.util.ArrayList<String>();
       this.values.add(value);
       return this;
     }
-    public @JsonProperty("v_a_l_u_e_s") @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder values(final java.util.Collection<? extends String> values) {
+    public @JsonProperty("v_a_l_u_e_s") @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder values(final java.util.Collection<? extends String> values) {
       if ((values == null))
           {
             throw new java.lang.NullPointerException("values cannot be null");
@@ -68,18 +68,18 @@ public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDese
       this.values.addAll(values);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder clearValues() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder clearValues() {
       if ((this.values != null))
           this.values.clear();
       return this;
     }
-    public @JsonAnySetter @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaAny(final String key, final Object value) {
+    public @JsonAnySetter @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaAny(final String key, final Object value) {
       if ((this.guavaAny == null))
           this.guavaAny = com.google.common.collect.ImmutableMap.builder();
       this.guavaAny.put(key, value);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaAny(final java.util.Map<? extends String, ? extends Object> guavaAny) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaAny(final java.util.Map<? extends String, ? extends Object> guavaAny) {
       if ((guavaAny == null))
           {
             throw new java.lang.NullPointerException("guavaAny cannot be null");
@@ -89,17 +89,17 @@ public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDese
       this.guavaAny.putAll(guavaAny);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder clearGuavaAny() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder clearGuavaAny() {
       this.guavaAny = null;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaValue(final String guavaValue) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaValue(final String guavaValue) {
       if ((this.guavaValues == null))
           this.guavaValues = com.google.common.collect.ImmutableList.builder();
       this.guavaValues.add(guavaValue);
       return this;
     }
-    public @JsonProperty("guava_v_a_l_u_e_s") @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaValues(final java.lang.Iterable<? extends String> guavaValues) {
+    public @JsonProperty("guava_v_a_l_u_e_s") @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaValues(final java.lang.Iterable<? extends String> guavaValues) {
       if ((guavaValues == null))
           {
             throw new java.lang.NullPointerException("guavaValues cannot be null");
@@ -109,11 +109,11 @@ public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDese
       this.guavaValues.addAll(guavaValues);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder clearGuavaValues() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder clearGuavaValues() {
       this.guavaValues = null;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") JacksonBuilderSingular build() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular build() {
       java.util.Map<String, Object> any;
       switch (((this.any$key == null) ? 0 : this.any$key.size())) {
       case 0 :
@@ -143,7 +143,7 @@ public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDese
       com.google.common.collect.ImmutableList<String> guavaValues = ((this.guavaValues == null) ? com.google.common.collect.ImmutableList.<String>of() : this.guavaValues.build());
       return new JacksonBuilderSingular(any, values, guavaAny, guavaValues);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (((((((((("JacksonBuilderSingular.JacksonBuilderSingularBuilder(any$key=" + this.any$key) + ", any$value=") + this.any$value) + ", values=") + this.values) + ", guavaAny=") + this.guavaAny) + ", guavaValues=") + this.guavaValues) + ")");
     }
   }
@@ -151,14 +151,14 @@ public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDese
   private @JsonProperty("v_a_l_u_e_s") @Singular List<String> values;
   private @JsonAnySetter @Singular("guavaAny") ImmutableMap<String, Object> guavaAny;
   private @JsonProperty("guava_v_a_l_u_e_s") @Singular ImmutableList<String> guavaValues;
-  @java.lang.SuppressWarnings("all") JacksonBuilderSingular(final Map<String, Object> any, final List<String> values, final ImmutableMap<String, Object> guavaAny, final ImmutableList<String> guavaValues) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular(final Map<String, Object> any, final List<String> values, final ImmutableMap<String, Object> guavaAny, final ImmutableList<String> guavaValues) {
     super();
     this.any = any;
     this.values = values;
     this.guavaAny = guavaAny;
     this.guavaValues = guavaValues;
   }
-  public static @java.lang.SuppressWarnings("all") JacksonBuilderSingular.JacksonBuilderSingularBuilder builder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated JacksonBuilderSingular.JacksonBuilderSingularBuilder builder() {
     return new JacksonBuilderSingular.JacksonBuilderSingularBuilder();
   }
 }

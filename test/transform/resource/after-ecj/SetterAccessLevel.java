@@ -8,19 +8,19 @@ class SetterAccessLevel {
   SetterAccessLevel() {
     super();
   }
-  private @java.lang.SuppressWarnings("all") void setPrivate(final boolean isPrivate) {
+  private @java.lang.SuppressWarnings("all") @lombok.Generated void setPrivate(final boolean isPrivate) {
     this.isPrivate = isPrivate;
   }
-  @java.lang.SuppressWarnings("all") void setPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated void setPackage(final boolean isPackage) {
     this.isPackage = isPackage;
   }
-  protected @java.lang.SuppressWarnings("all") void setProtected(final boolean isProtected) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated void setProtected(final boolean isProtected) {
     this.isProtected = isProtected;
   }
-  public @java.lang.SuppressWarnings("all") void setPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setPublic(final boolean isPublic) {
     this.isPublic = isPublic;
   }
-  public @java.lang.SuppressWarnings("all") void setValue(final boolean value) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setValue(final boolean value) {
     this.value = value;
   }
 }

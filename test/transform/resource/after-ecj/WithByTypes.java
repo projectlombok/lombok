@@ -11,7 +11,7 @@ public @lombok.RequiredArgsConstructor @lombok.experimental.FieldDefaults(level 
   public static void example() {
     new WithByTypes<String>(0, 0, (short) 0, ' ', (byte) 0, 0.0, 0.0F, true, "").withHBy((<no type> x) -> (! x)).withFBy((<no type> x) -> (x + 0.5));
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes(final int a, final long b, final short c, final char d, final byte e, final double f, final float g, final boolean h, final T i) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes(final int a, final long b, final short c, final char d, final byte e, final double f, final float g, final boolean h, final T i) {
     super();
     this.a = a;
     this.b = b;
@@ -23,31 +23,31 @@ public @lombok.RequiredArgsConstructor @lombok.experimental.FieldDefaults(level 
     this.h = h;
     this.i = i;
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withABy(final java.util.function.IntUnaryOperator transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withABy(final java.util.function.IntUnaryOperator transformer) {
     return new WithByTypes<T>(transformer.applyAsInt(this.a), this.b, this.c, this.d, this.e, this.f, this.g, this.h, this.i);
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withBBy(final java.util.function.LongUnaryOperator transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withBBy(final java.util.function.LongUnaryOperator transformer) {
     return new WithByTypes<T>(this.a, transformer.applyAsLong(this.b), this.c, this.d, this.e, this.f, this.g, this.h, this.i);
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withCBy(final java.util.function.IntUnaryOperator transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withCBy(final java.util.function.IntUnaryOperator transformer) {
     return new WithByTypes<T>(this.a, this.b, (short) transformer.applyAsInt(this.c), this.d, this.e, this.f, this.g, this.h, this.i);
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withDBy(final java.util.function.IntUnaryOperator transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withDBy(final java.util.function.IntUnaryOperator transformer) {
     return new WithByTypes<T>(this.a, this.b, this.c, (char) transformer.applyAsInt(this.d), this.e, this.f, this.g, this.h, this.i);
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withEBy(final java.util.function.IntUnaryOperator transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withEBy(final java.util.function.IntUnaryOperator transformer) {
     return new WithByTypes<T>(this.a, this.b, this.c, this.d, (byte) transformer.applyAsInt(this.e), this.f, this.g, this.h, this.i);
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withFBy(final java.util.function.DoubleUnaryOperator transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withFBy(final java.util.function.DoubleUnaryOperator transformer) {
     return new WithByTypes<T>(this.a, this.b, this.c, this.d, this.e, transformer.applyAsDouble(this.f), this.g, this.h, this.i);
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withGBy(final java.util.function.DoubleUnaryOperator transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withGBy(final java.util.function.DoubleUnaryOperator transformer) {
     return new WithByTypes<T>(this.a, this.b, this.c, this.d, this.e, this.f, (float) transformer.applyAsDouble(this.g), this.h, this.i);
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withHBy(final java.util.function.UnaryOperator<java.lang.Boolean> transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withHBy(final java.util.function.UnaryOperator<java.lang.Boolean> transformer) {
     return new WithByTypes<T>(this.a, this.b, this.c, this.d, this.e, this.f, this.g, transformer.apply(this.h), this.i);
   }
-  public @java.lang.SuppressWarnings("all") WithByTypes<T> withIBy(final java.util.function.Function<? super T, ? extends T> transformer) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithByTypes<T> withIBy(final java.util.function.Function<? super T, ? extends T> transformer) {
     return new WithByTypes<T>(this.a, this.b, this.c, this.d, this.e, this.f, this.g, this.h, transformer.apply(this.i));
   }
 }

@@ -6,7 +6,7 @@ public class CommentsInterspersed {
     super();
   }
   public native void gwtTest();
-  public @java.lang.SuppressWarnings("all") String getTest() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getTest() {
     return this.test;
   }
 }

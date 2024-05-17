@@ -10,13 +10,13 @@ class WithPlain {
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") WithPlain withI(final int i) {
+  public @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") @lombok.Generated WithPlain withI(final int i) {
     return ((this.i == i) ? this : new WithPlain(i, this.foo));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") WithPlain withFoo(final int foo) {
+  public @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") @lombok.Generated WithPlain withFoo(final int foo) {
     return ((this.foo == foo) ? this : new WithPlain(this.i, foo));
   }
 }

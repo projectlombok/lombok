@@ -40,7 +40,7 @@ class With5 {
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") With5 withFoo(final String foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated With5 withFoo(final String foo) {
     return ((this.foo == foo) ? this : new With5(foo));
   }
 }
@@ -54,7 +54,7 @@ class With6 {
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") With6 withFoo(final String foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated With6 withFoo(final String foo) {
     return ((this.foo == foo) ? this : new With6(foo));
   }
 }

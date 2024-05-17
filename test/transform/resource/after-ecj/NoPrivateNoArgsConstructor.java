@@ -1,10 +1,10 @@
 public class NoPrivateNoArgsConstructor {
   public static @lombok.Data class NoPrivateNoArgsConstructorData {
     private final int i;
-    public @java.lang.SuppressWarnings("all") int getI() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated int getI() {
       return this.i;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
       if ((o == this))
           return true;
       if ((! (o instanceof NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorData)))
@@ -16,29 +16,29 @@ public class NoPrivateNoArgsConstructor {
           return false;
       return true;
     }
-    protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+    protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
       return (other instanceof NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorData);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
       final int PRIME = 59;
       int result = 1;
       result = ((result * PRIME) + this.getI());
       return result;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (("NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorData(i=" + this.getI()) + ")");
     }
-    public @java.lang.SuppressWarnings("all") NoPrivateNoArgsConstructorData(final int i) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated NoPrivateNoArgsConstructorData(final int i) {
       super();
       this.i = i;
     }
   }
   public static final @lombok.Value class NoPrivateNoArgsConstructorValue {
     private final int i;
-    public @java.lang.SuppressWarnings("all") int getI() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated int getI() {
       return this.i;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
       if ((o == this))
           return true;
       if ((! (o instanceof NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorValue)))
@@ -48,16 +48,16 @@ public class NoPrivateNoArgsConstructor {
           return false;
       return true;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
       final int PRIME = 59;
       int result = 1;
       result = ((result * PRIME) + this.getI());
       return result;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (("NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorValue(i=" + this.getI()) + ")");
     }
-    public @java.lang.SuppressWarnings("all") NoPrivateNoArgsConstructorValue(final int i) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated NoPrivateNoArgsConstructorValue(final int i) {
       super();
       this.i = i;
     }

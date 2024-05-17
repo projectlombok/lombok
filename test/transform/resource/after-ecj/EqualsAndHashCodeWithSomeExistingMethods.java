@@ -5,10 +5,10 @@ import static lombok.AccessLevel.NONE;
   public int hashCode() {
     return 42;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("EqualsAndHashCodeWithSomeExistingMethods(x=" + this.x) + ")");
   }
-  public @java.lang.SuppressWarnings("all") EqualsAndHashCodeWithSomeExistingMethods() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated EqualsAndHashCodeWithSomeExistingMethods() {
     super();
   }
 }
@@ -17,7 +17,7 @@ import static lombok.AccessLevel.NONE;
   protected boolean canEqual(Object other) {
     return false;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCodeWithSomeExistingMethods2)))
@@ -29,16 +29,16 @@ import static lombok.AccessLevel.NONE;
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("EqualsAndHashCodeWithSomeExistingMethods2(x=" + this.x) + ")");
   }
-  public @java.lang.SuppressWarnings("all") EqualsAndHashCodeWithSomeExistingMethods2() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated EqualsAndHashCodeWithSomeExistingMethods2() {
     super();
   }
 }
@@ -50,16 +50,16 @@ import static lombok.AccessLevel.NONE;
   public boolean equals(Object other) {
     return false;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("EqualsAndHashCodeWithAllExistingMethods(x=" + this.x) + ")");
   }
-  public @java.lang.SuppressWarnings("all") EqualsAndHashCodeWithAllExistingMethods() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated EqualsAndHashCodeWithAllExistingMethods() {
     super();
   }
 }
 @Data @Getter(AccessLevel.NONE) @Setter(lombok.AccessLevel.NONE) class EqualsAndHashCodeWithNoExistingMethods {
   int x;
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCodeWithNoExistingMethods)))
@@ -71,19 +71,19 @@ import static lombok.AccessLevel.NONE;
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCodeWithNoExistingMethods);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("EqualsAndHashCodeWithNoExistingMethods(x=" + this.x) + ")");
   }
-  public @java.lang.SuppressWarnings("all") EqualsAndHashCodeWithNoExistingMethods() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated EqualsAndHashCodeWithNoExistingMethods() {
     super();
   }
 }

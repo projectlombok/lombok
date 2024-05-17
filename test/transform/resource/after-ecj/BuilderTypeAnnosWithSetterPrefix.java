@@ -6,31 +6,31 @@ import java.util.List;
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER}) @interface TB {
 }
 @lombok.Builder(setterPrefix = "with") class BuilderTypeAnnosWithSetterPrefix {
-  public static @java.lang.SuppressWarnings("all") class BuilderTypeAnnosWithSetterPrefixBuilder {
-    private @java.lang.SuppressWarnings("all") List<String> foo;
-    @java.lang.SuppressWarnings("all") BuilderTypeAnnosWithSetterPrefixBuilder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated class BuilderTypeAnnosWithSetterPrefixBuilder {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated List<String> foo;
+    @java.lang.SuppressWarnings("all") @lombok.Generated BuilderTypeAnnosWithSetterPrefixBuilder() {
       super();
     }
     /**
      * @return {@code this}.
      */
-    public @java.lang.SuppressWarnings("all") BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder withFoo(final @TA List<String> foo) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder withFoo(final @TA List<String> foo) {
       this.foo = foo;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderTypeAnnosWithSetterPrefix build() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderTypeAnnosWithSetterPrefix build() {
       return new BuilderTypeAnnosWithSetterPrefix(this.foo);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (("BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder(foo=" + this.foo) + ")");
     }
   }
   private @TA @TB List<String> foo;
-  @java.lang.SuppressWarnings("all") BuilderTypeAnnosWithSetterPrefix(final @TA List<String> foo) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated BuilderTypeAnnosWithSetterPrefix(final @TA List<String> foo) {
     super();
     this.foo = foo;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder builder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder builder() {
     return new BuilderTypeAnnosWithSetterPrefix.BuilderTypeAnnosWithSetterPrefixBuilder();
   }
 }

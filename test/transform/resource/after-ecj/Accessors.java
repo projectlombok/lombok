@@ -3,13 +3,13 @@ class AccessorsFluent {
   AccessorsFluent() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") String fieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String fieldName() {
     return this.fieldName;
   }
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") AccessorsFluent fieldName(final String fieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsFluent fieldName(final String fieldName) {
     this.fieldName = fieldName;
     return this;
   }
@@ -23,14 +23,14 @@ class AccessorsFluent {
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") AccessorsFluentOnClass fieldName(final String fieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsFluentOnClass fieldName(final String fieldName) {
     this.fieldName = fieldName;
     return this;
   }
-  public @java.lang.SuppressWarnings("all") String fieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String fieldName() {
     return this.fieldName;
   }
-  public @java.lang.SuppressWarnings("all") String getOtherFieldWithOverride() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getOtherFieldWithOverride() {
     return this.otherFieldWithOverride;
   }
 }
@@ -42,7 +42,7 @@ class AccessorsChain {
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") AccessorsChain setRunning(final boolean isRunning) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsChain setRunning(final boolean isRunning) {
     this.isRunning = isRunning;
     return this;
   }
@@ -53,7 +53,7 @@ class AccessorsChain {
   AccessorsPrefix() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void setActualField(final String fActualField) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setActualField(final String fActualField) {
     this.fActualField = fActualField;
   }
 }
@@ -63,10 +63,10 @@ class AccessorsChain {
   AccessorsPrefix2() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void setFieldName(final String fieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setFieldName(final String fieldName) {
     this.fieldName = fieldName;
   }
-  public @java.lang.SuppressWarnings("all") void setActualField(final String fActualField) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setActualField(final String fActualField) {
     this.fActualField = fActualField;
   }
 }
@@ -78,10 +78,10 @@ class AccessorsChain {
   private String getName() {
     return fName;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("AccessorsPrefix3(fName=" + this.getName()) + ")");
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof AccessorsPrefix3)))
@@ -95,10 +95,10 @@ class AccessorsChain {
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof AccessorsPrefix3);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     final java.lang.Object $fName = this.getName();
@@ -114,7 +114,7 @@ class AccessorsFluentGenerics<T extends Number> {
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") AccessorsFluentGenerics<T> name(final String name) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsFluentGenerics<T> name(final String name) {
     this.name = name;
     return this;
   }
@@ -124,7 +124,7 @@ class AccessorsFluentNoChaining {
   AccessorsFluentNoChaining() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void name(final String name) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void name(final String name) {
     this.name = name;
   }
 }
@@ -135,7 +135,7 @@ class AccessorsFluentStatic<T extends Number> {
   AccessorsFluentStatic() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") void name(final String name) {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated void name(final String name) {
     AccessorsFluentStatic.name = name;
   }
 }

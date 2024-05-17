@@ -12,28 +12,28 @@ class GetterOnMethodErrors2 {
   GetterOnMethodErrors2() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") int getBad1() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getBad1() {
     return this.bad1;
   }
-  public @java.lang.SuppressWarnings("all") int getBad2() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getBad2() {
     return this.bad2;
   }
-  public @java.lang.SuppressWarnings("all") int getBad3() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getBad3() {
     return this.bad3;
   }
-  public @java.lang.SuppressWarnings("all") int getBad4() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getBad4() {
     return this.bad4;
   }
-  public @java.lang.SuppressWarnings("all") int getGood1() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getGood1() {
     return this.good1;
   }
-  public @java.lang.SuppressWarnings("all") int getGood2() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getGood2() {
     return this.good2;
   }
-  public @Deprecated @java.lang.SuppressWarnings("all") int getGood3() {
+  public @Deprecated @java.lang.SuppressWarnings("all") @lombok.Generated int getGood3() {
     return this.good3;
   }
-  public @Deprecated @Test @java.lang.SuppressWarnings("all") int getGood4() {
+  public @Deprecated @Test @java.lang.SuppressWarnings("all") @lombok.Generated int getGood4() {
     return this.good4;
   }
 }

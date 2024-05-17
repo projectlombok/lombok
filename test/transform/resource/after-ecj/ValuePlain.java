@@ -2,13 +2,13 @@ import lombok.Value;
 final @lombok.Value class Value1 {
   private final int x;
   private final String name;
-  public @java.lang.SuppressWarnings("all") int getX() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") String getName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getName() {
     return this.name;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Value1)))
@@ -22,7 +22,7 @@ final @lombok.Value class Value1 {
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getX());
@@ -30,10 +30,10 @@ final @lombok.Value class Value1 {
     result = ((result * PRIME) + (($name == null) ? 43 : $name.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("Value1(x=" + this.getX()) + ", name=") + this.getName()) + ")");
   }
-  public @java.lang.SuppressWarnings("all") Value1(final int x, final String name) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated Value1(final int x, final String name) {
     super();
     this.x = x;
     this.name = name;
@@ -42,13 +42,13 @@ final @lombok.Value class Value1 {
 @Value @lombok.experimental.NonFinal class Value2 {
   public final int x;
   private final String name;
-  public @java.lang.SuppressWarnings("all") int getX() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") String getName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getName() {
     return this.name;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Value2)))
@@ -64,10 +64,10 @@ final @lombok.Value class Value1 {
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof Value2);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getX());
@@ -75,10 +75,10 @@ final @lombok.Value class Value1 {
     result = ((result * PRIME) + (($name == null) ? 43 : $name.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("Value2(x=" + this.getX()) + ", name=") + this.getName()) + ")");
   }
-  public @java.lang.SuppressWarnings("all") Value2(final int x, final String name) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated Value2(final int x, final String name) {
     super();
     this.x = x;
     this.name = name;
@@ -87,13 +87,13 @@ final @lombok.Value class Value1 {
 final @Value class Value3 {
   private @lombok.experimental.NonFinal int x;
   private final int y;
-  public @java.lang.SuppressWarnings("all") int getX() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") int getY() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getY() {
     return this.y;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Value3)))
@@ -105,17 +105,17 @@ final @Value class Value3 {
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getX());
     result = ((result * PRIME) + this.getY());
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("Value3(x=" + this.getX()) + ", y=") + this.getY()) + ")");
   }
-  public @java.lang.SuppressWarnings("all") Value3(final int x, final int y) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated Value3(final int x, final int y) {
     super();
     this.x = x;
     this.y = y;

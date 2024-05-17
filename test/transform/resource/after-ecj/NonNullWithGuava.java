@@ -29,7 +29,7 @@ public class NonNullWithGuava {
     com.google.common.base.Preconditions.checkNotNull(arg, "arg is marked non-null but is null");
     test = checkNotNull(test);
   }
-  public @java.lang.SuppressWarnings("all") void setTest(final @lombok.NonNull String test) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setTest(final @lombok.NonNull String test) {
     com.google.common.base.Preconditions.checkNotNull(test, "test is marked non-null but is null");
     this.test = test;
   }

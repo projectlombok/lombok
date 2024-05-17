@@ -7,7 +7,7 @@
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") WithOnClass1 withPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithOnClass1 withPublic(final boolean isPublic) {
     return ((this.isPublic == isPublic) ? this : new WithOnClass1(this.isNone, isPublic));
   }
 }
@@ -21,13 +21,13 @@
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  @java.lang.SuppressWarnings("all") WithOnClass2 withPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated WithOnClass2 withPackage(final boolean isPackage) {
     return ((this.isPackage == isPackage) ? this : new WithOnClass2(this.isNone, this.isProtected, isPackage));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  protected @java.lang.SuppressWarnings("all") WithOnClass2 withProtected(final boolean isProtected) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated WithOnClass2 withProtected(final boolean isProtected) {
     return ((this.isProtected == isProtected) ? this : new WithOnClass2(this.isNone, isProtected, this.isPackage));
   }
 }
@@ -40,13 +40,13 @@
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") WithOnClass3 withCouldBeNull(final String couldBeNull) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithOnClass3 withCouldBeNull(final String couldBeNull) {
     return ((this.couldBeNull == couldBeNull) ? this : new WithOnClass3(couldBeNull, this.nonNull));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") WithOnClass3 withNonNull(final @lombok.NonNull String nonNull) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithOnClass3 withNonNull(final @lombok.NonNull String nonNull) {
     if ((nonNull == null))
         {
           throw new java.lang.NullPointerException("nonNull is marked non-null but is null");
@@ -64,7 +64,7 @@
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") WithOnClass4 withY(final int fY) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithOnClass4 withY(final int fY) {
     return ((this.fY == fY) ? this : new WithOnClass4(fY));
   }
 }
