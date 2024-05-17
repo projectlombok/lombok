@@ -1,10 +1,9 @@
 public class GetterLazyInAnonymousClass {
 	Object annonymous = new Object() {
-
 		class Inner {
 			private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> string = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
-
 			@java.lang.SuppressWarnings({"all", "unchecked"})
+			@lombok.Generated
 			public String getString() {
 				java.lang.Object $value = this.string.get();
 				if ($value == null) {

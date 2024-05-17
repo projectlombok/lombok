@@ -16,6 +16,7 @@ public class JacksonBuilderSingular {
 	@JsonProperty("guava_v_a_l_u_e_s")
 	private ImmutableList<String> guavaValues;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	JacksonBuilderSingular(final Map<String, Object> any, final List<String> values, final ImmutableMap<String, Object> guavaAny, final ImmutableList<String> guavaValues) {
 		this.any = any;
 		this.values = values;
@@ -23,23 +24,31 @@ public class JacksonBuilderSingular {
 		this.guavaValues = guavaValues;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	@com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
 	public static class JacksonBuilderSingularBuilder {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<String> any$key;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<Object> any$value;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<String> values;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private com.google.common.collect.ImmutableMap.Builder<String, Object> guavaAny;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private com.google.common.collect.ImmutableList.Builder<String> guavaValues;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		JacksonBuilderSingularBuilder() {
 		}
 		@JsonAnySetter
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder any(final String anyKey, final Object anyValue) {
 			if (this.any$key == null) {
 				this.any$key = new java.util.ArrayList<String>();
@@ -50,6 +59,7 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder any(final java.util.Map<? extends String, ? extends Object> any) {
 			if (any == null) {
 				throw new java.lang.NullPointerException("any cannot be null");
@@ -65,6 +75,7 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder clearAny() {
 			if (this.any$key != null) {
 				this.any$key.clear();
@@ -73,6 +84,7 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder value(final String value) {
 			if (this.values == null) this.values = new java.util.ArrayList<String>();
 			this.values.add(value);
@@ -80,6 +92,7 @@ public class JacksonBuilderSingular {
 		}
 		@JsonProperty("v_a_l_u_e_s")
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder values(final java.util.Collection<? extends String> values) {
 			if (values == null) {
 				throw new java.lang.NullPointerException("values cannot be null");
@@ -89,18 +102,21 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder clearValues() {
 			if (this.values != null) this.values.clear();
 			return this;
 		}
 		@JsonAnySetter
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaAny(final String key, final Object value) {
 			if (this.guavaAny == null) this.guavaAny = com.google.common.collect.ImmutableMap.builder();
 			this.guavaAny.put(key, value);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaAny(final java.util.Map<? extends String, ? extends Object> guavaAny) {
 			if (guavaAny == null) {
 				throw new java.lang.NullPointerException("guavaAny cannot be null");
@@ -110,11 +126,13 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder clearGuavaAny() {
 			this.guavaAny = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaValue(final String guavaValue) {
 			if (this.guavaValues == null) this.guavaValues = com.google.common.collect.ImmutableList.builder();
 			this.guavaValues.add(guavaValue);
@@ -122,6 +140,7 @@ public class JacksonBuilderSingular {
 		}
 		@JsonProperty("guava_v_a_l_u_e_s")
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder guavaValues(final java.lang.Iterable<? extends String> guavaValues) {
 			if (guavaValues == null) {
 				throw new java.lang.NullPointerException("guavaValues cannot be null");
@@ -131,11 +150,13 @@ public class JacksonBuilderSingular {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular.JacksonBuilderSingularBuilder clearGuavaValues() {
 			this.guavaValues = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public JacksonBuilderSingular build() {
 			java.util.Map<String, Object> any;
 			switch (this.any$key == null ? 0 : this.any$key.size()) {
@@ -167,11 +188,13 @@ public class JacksonBuilderSingular {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "JacksonBuilderSingular.JacksonBuilderSingularBuilder(any$key=" + this.any$key + ", any$value=" + this.any$value + ", values=" + this.values + ", guavaAny=" + this.guavaAny + ", guavaValues=" + this.guavaValues + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static JacksonBuilderSingular.JacksonBuilderSingularBuilder builder() {
 		return new JacksonBuilderSingular.JacksonBuilderSingularBuilder();
 	}

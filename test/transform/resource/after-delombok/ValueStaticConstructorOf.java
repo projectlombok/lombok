@@ -6,19 +6,23 @@ public final class ValueStaticConstructorOf {
 		this.price = price;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static ValueStaticConstructorOf of(final String name, final Double price) {
 		return new ValueStaticConstructorOf(name, price);
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public String getName() {
 		return this.name;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public Double getPrice() {
 		return this.price;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof ValueStaticConstructorOf)) return false;
@@ -33,6 +37,7 @@ public final class ValueStaticConstructorOf {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -44,6 +49,7 @@ public final class ValueStaticConstructorOf {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "ValueStaticConstructorOf(name=" + this.getName() + ", price=" + this.getPrice() + ")";
 	}

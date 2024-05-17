@@ -8,6 +8,7 @@ class WithOnClass1 {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public WithOnClass1 withPublic(final boolean isPublic) {
 		return this.isPublic == isPublic ? this : new WithOnClass1(this.isNone, isPublic);
 	}
@@ -22,6 +23,7 @@ class WithOnClass2 {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected WithOnClass2 withProtected(final boolean isProtected) {
 		return this.isProtected == isProtected ? this : new WithOnClass2(this.isNone, isProtected, this.isPackage);
 	}
@@ -29,6 +31,7 @@ class WithOnClass2 {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	WithOnClass2 withPackage(final boolean isPackage) {
 		return this.isPackage == isPackage ? this : new WithOnClass2(this.isNone, this.isProtected, isPackage);
 	}
@@ -43,6 +46,7 @@ class WithOnClass3 {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public WithOnClass3 withCouldBeNull(final String couldBeNull) {
 		return this.couldBeNull == couldBeNull ? this : new WithOnClass3(couldBeNull, this.nonNull);
 	}
@@ -50,6 +54,7 @@ class WithOnClass3 {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public WithOnClass3 withNonNull(@lombok.NonNull final String nonNull) {
 		if (nonNull == null) {
 			throw new java.lang.NullPointerException("nonNull is marked non-null but is null");
@@ -67,6 +72,7 @@ class WithOnClass4 {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public WithOnClass4 withY(final int fY) {
 		return this.fY == fY ? this : new WithOnClass4(fY);
 	}

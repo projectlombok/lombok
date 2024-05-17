@@ -5,29 +5,37 @@ class BuilderSingularNoAuto {
 	private List<String> widgets;
 	private List<String> items;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
 		this.things = things;
 		this.widgets = widgets;
 		this.items = items;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static class BuilderSingularNoAutoBuilder {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<String> things;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<String> widgets;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<String> items;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		BuilderSingularNoAutoBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final String things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.add(things);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
 			if (things == null) {
 				throw new java.lang.NullPointerException("things cannot be null");
@@ -37,17 +45,20 @@ class BuilderSingularNoAuto {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearThings() {
 			if (this.things != null) this.things.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widget(final String widget) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.add(widget);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
 			if (widgets == null) {
 				throw new java.lang.NullPointerException("widgets cannot be null");
@@ -57,17 +68,20 @@ class BuilderSingularNoAuto {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearWidgets() {
 			if (this.widgets != null) this.widgets.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final String items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.add(items);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
 			if (items == null) {
 				throw new java.lang.NullPointerException("items cannot be null");
@@ -77,11 +91,13 @@ class BuilderSingularNoAuto {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearItems() {
 			if (this.items != null) this.items.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularNoAuto build() {
 			java.util.List<String> things;
 			switch (this.things == null ? 0 : this.things.size()) {
@@ -120,11 +136,13 @@ class BuilderSingularNoAuto {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "BuilderSingularNoAuto.BuilderSingularNoAutoBuilder(things=" + this.things + ", widgets=" + this.widgets + ", items=" + this.items + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static BuilderSingularNoAuto.BuilderSingularNoAutoBuilder builder() {
 		return new BuilderSingularNoAuto.BuilderSingularNoAutoBuilder();
 	}

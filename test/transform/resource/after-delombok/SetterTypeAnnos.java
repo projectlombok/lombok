@@ -12,6 +12,7 @@ class SetterTypeAnnos {
 	@TB
 	List<String> foo;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void setFoo(@TA final List<String> foo) {
 		this.foo = foo;
 	}

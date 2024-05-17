@@ -7,7 +7,6 @@ class JavadocMultiline {
      * This is a list of booleans.
      */
     private java.util.List<Boolean> booleans2;
-
     /**
      * This is a list of booleans.
      *
@@ -15,18 +14,18 @@ class JavadocMultiline {
      *         enough to wrap to multiple lines.
      */
     @java.lang.SuppressWarnings("all")
+    @lombok.Generated
     public java.util.List<Boolean> getBooleans() {
         return this.booleans;
     }
-
     /**
      * This is a list of booleans.
      */
     @java.lang.SuppressWarnings("all")
+    @lombok.Generated
     public java.util.List<Boolean> getBooleans2() {
         return this.booleans2;
     }
-
     /**
      * This is a list of booleans.
      *
@@ -34,10 +33,10 @@ class JavadocMultiline {
      *        long enough to wrap to multiple lines.
      */
     @java.lang.SuppressWarnings("all")
+    @lombok.Generated
     public void setBooleans(final java.util.List<Boolean> booleans) {
         this.booleans = booleans;
     }
-
     /**
      * This is a list of booleans.
      *
@@ -45,6 +44,7 @@ class JavadocMultiline {
      *        long enough to wrap to multiple lines.
      */
     @java.lang.SuppressWarnings("all")
+    @lombok.Generated
     public void setBooleans2(final java.util.List<Boolean> booleans2) {
         this.booleans2 = booleans2;
     }

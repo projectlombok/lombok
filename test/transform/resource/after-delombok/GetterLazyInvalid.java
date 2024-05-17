@@ -13,6 +13,7 @@ class GetterLazyInvalidNone {
 class GetterLazyInvalidClass {
 	private final String fieldName = "";
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public String getFieldName() {
 		return this.fieldName;
 	}

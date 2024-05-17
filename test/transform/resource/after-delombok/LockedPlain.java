@@ -1,5 +1,6 @@
 class LockedPlain {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private final java.util.concurrent.locks.Lock $lock = new java.util.concurrent.locks.ReentrantLock();
 	void test() {
 		this.$lock.lock();
@@ -20,6 +21,7 @@ class LockedPlain {
 }
 class LockedPlainStatic {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static final java.util.concurrent.locks.Lock $LOCK = new java.util.concurrent.locks.ReentrantLock();
 	static void test() {
 		LockedPlainStatic.$LOCK.lock();
@@ -40,6 +42,7 @@ class LockedPlainStatic {
 }
 class LockedPlainRead {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static final java.util.concurrent.locks.ReadWriteLock $LOCK = new java.util.concurrent.locks.ReentrantReadWriteLock();
 	static void test() {
 		LockedPlainRead.$LOCK.readLock().lock();
@@ -60,6 +63,7 @@ class LockedPlainRead {
 }
 class LockedPlainWrite {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private final java.util.concurrent.locks.ReadWriteLock $lock = new java.util.concurrent.locks.ReentrantReadWriteLock();
 	void test() {
 		this.$lock.writeLock().lock();
