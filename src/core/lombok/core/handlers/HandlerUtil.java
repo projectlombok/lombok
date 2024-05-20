@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2022 The Project Lombok Authors.
+ * Copyright (C) 2013-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -980,5 +980,21 @@ public class HandlerUtil {
 			return matcher.group();
 		}
 		return null;
+	}
+	
+	public static String getConstructorJavadocHeader(String typeName) {
+		return "Creates a new {@code " + typeName + "} instance.\n\n";
+	}
+	
+	public static String getConstructorParameterJavadoc(String paramName, String fieldJavadoc) {
+		String fieldBaseJavadoc = stripSectionsFromJavadoc(fieldJavadoc);
+		
+		String paramJavadoc = getParamJavadoc(fieldBaseJavadoc, paramName);
+		if (paramJavadoc == null) {
+			paramJavadoc = stripLinesWithTagFromJavadoc(fieldBaseJavadoc, JavadocTag.PARAM);
+			paramJavadoc = stripLinesWithTagFromJavadoc(paramJavadoc, JavadocTag.RETURN);
+		}
+		
+		return paramJavadoc;
 	}
 }

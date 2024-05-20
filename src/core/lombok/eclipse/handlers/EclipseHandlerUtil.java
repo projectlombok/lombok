@@ -2815,10 +2815,14 @@ public class EclipseHandlerUtil {
 		return null;
 	}
 	
+	public static void setDocComment(EclipseNode typeNode, EclipseNode eclipseNode, String doc) {
+		setDocComment((CompilationUnitDeclaration) eclipseNode.top().get(), (TypeDeclaration) typeNode.get(), eclipseNode.get(), doc);
+	}
+	
 	public static void setDocComment(CompilationUnitDeclaration cud, EclipseNode eclipseNode, String doc) {
 		setDocComment(cud, (TypeDeclaration) upToTypeNode(eclipseNode).get(), eclipseNode.get(), doc);
 	}
-	 
+	
 	public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
 		if (doc == null) return;
 		

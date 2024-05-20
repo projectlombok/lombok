@@ -46,6 +46,15 @@ import java.util.List;
   private @lombok.Getter @lombok.Setter @lombok.experimental.Wither int getsetwith;
   private final int predef;
   private final int predefWithJavadoc;
+  /**
+   * Creates a new {@code BuilderJavadoc} instance.
+   * 
+   * @param basic basic gets only a builder setter.
+   * @see #getsetwith
+   * @param getsetwith getsetwith gets a builder setter, an instance getter and setter, and a wither.
+   * @param predef Predef has a predefined builder setter with no javadoc, and the builder setter does not get this one.
+   * @param predefWithJavadoc predefWithJavadoc has a predefined builder setter with javadoc, so it keeps that one untouched.
+   */
   @java.lang.SuppressWarnings("all") @lombok.Generated BuilderJavadoc(final int basic, final int getsetwith, final int predef, final int predefWithJavadoc) {
     super();
     this.basic = basic;
