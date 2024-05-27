@@ -321,7 +321,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				bfd.builderFieldName = bfd.name;
 				bfd.annotations = copyAnnotations(fd, findCopyableAnnotations(fieldNode));
 				bfd.type = fd.type;
-				bfd.singularData = getSingularData(fieldNode, ast, annInstance.setterPrefix());
+				bfd.singularData = getSingularData(fieldNode, ast, getBuilderSetterPrefix(annotationNode, annInstance.setterPrefix()));
 				bfd.originalFieldNode = fieldNode;
 				
 				if (bfd.singularData != null && isDefault != null) {
@@ -484,7 +484,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				bfd.builderFieldName = bfd.name;
 				bfd.annotations = copyAnnotations(arg, copyableAnnotations);
 				bfd.type = arg.type;
-				bfd.singularData = getSingularData(param, ast, annInstance.setterPrefix());
+				bfd.singularData = getSingularData(param, ast, getBuilderSetterPrefix(annotationNode, annInstance.setterPrefix()));
 				bfd.originalFieldNode = param;
 				addObtainVia(bfd, param);
 				job.builderFields.add(bfd);
@@ -553,7 +553,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : job.builderFields) {
-			makePrefixedSetterMethodsForBuilder(job, bfd, annInstance.setterPrefix());
+			makePrefixedSetterMethodsForBuilder(job, bfd, getBuilderSetterPrefix(annotationNode, annInstance.setterPrefix()));
 		}
 		
 		{
@@ -600,7 +600,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					tps[i].name = typeArgsForToBuilder.get(i);
 				}
 			}
-			MethodDeclaration md = generateToBuilderMethod(job, tps, annInstance.setterPrefix());
+			MethodDeclaration md = generateToBuilderMethod(job, tps, getBuilderSetterPrefix(annotationNode, annInstance.setterPrefix()));
 			
 			if (md != null) injectMethod(job.parentType, md);
 		}
