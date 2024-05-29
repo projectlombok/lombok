@@ -305,6 +305,11 @@ public abstract class AbstractRunTests {
 		for (int i = 0; i < size; i++) {
 			String expected = trimRight(expectedLines[i]);
 			String actual = trimRight(actualLines[i]);
+			if (!expected.equals(actual)) {
+				Assert.assertEquals(String.format("Difference in %s on line %d:\nexpected: [%s]\nbut was: [%s]", name, i + 1,
+					expected, actual), expectedFile, actualFile);
+			}
+
 			assertEquals(String.format("Difference in %s on line %d", name, i + 1), expected, actual);
 		}
 		if (expectedLines.length > actualLines.length) {
