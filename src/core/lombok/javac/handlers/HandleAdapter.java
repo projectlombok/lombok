@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -96,32 +95,35 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 	public static final int HANDLE_ADAPTER_PRIORITY = 65536;
 	private static final com.sun.tools.javac.util.List<JCExpression> EMPTY_LIST = com.sun.tools.javac.util.List.<JCExpression>nil();
 
-	public static final java.util.Map<String, Function<JavacNode, JCExpression>> DEFAULT_VALUE_MAP;
+	public static final java.util.Map<String, Object> DEFAULT_VALUE_MAP;
+	public static final java.util.Map<String, String> DEFAULT_COLLECTIONS_METHOD;
 	static {
-		Map<String, Function<JavacNode, JCExpression>> m = new HashMap<>();
-		m.put("boolean", node -> HandleAdapter.createLiteral(node, false));
-		m.put("byte", node -> HandleAdapter.createLiteral(node, 0));
-		m.put("char", node -> HandleAdapter.createLiteral(node, (char)0x0));
-		m.put("character", node -> HandleAdapter.createLiteral(node, (char)0x0));
-		m.put("double", node -> HandleAdapter.createLiteral(node, 0d));
-		m.put("float", node -> HandleAdapter.createLiteral(node, 0f));
-		m.put("int", node -> HandleAdapter.createLiteral(node, 0));
-		m.put("integer", node -> HandleAdapter.createLiteral(node, 0));
-		m.put("long", node -> HandleAdapter.createLiteral(node, 0L));
-		m.put("short", node -> HandleAdapter.createLiteral(node, 0));
-		m.put("string", node -> node.getTreeMaker().Literal(CTC_BOT, null));
-		m.put("java.util.collection", node -> HandleAdapter.callCollectionsMethod(node, "emptyList"));
-		m.put("java.util.list", node -> HandleAdapter.callCollectionsMethod(node, "emptyList"));
-		m.put("java.util.set", node -> HandleAdapter.callCollectionsMethod(node, "emptySet"));
-		m.put("java.util.navigableset", node -> HandleAdapter.callCollectionsMethod(node, "emptyNavigableSet"));
-		m.put("java.util.sortedset", node -> HandleAdapter.callCollectionsMethod(node, "emptySortedSet"));
-		m.put("java.util.map", node -> HandleAdapter.callCollectionsMethod(node, "emptyMap"));
-		m.put("java.util.navigablemap", node -> HandleAdapter.callCollectionsMethod(node, "emptyNavigableMap"));
-		m.put("java.util.sortedmap", node -> HandleAdapter.callCollectionsMethod(node, "emptySortedMap"));
-		m.put("java.util.iterator", node -> HandleAdapter.callCollectionsMethod(node, "emptyIterator"));
-		m.put("java.util.listiterator", node -> HandleAdapter.callCollectionsMethod(node, "emptyListIterator"));
-		m.put("java.util.optional", node -> node.getTreeMaker().Apply(EMPTY_LIST, chainDots(node, "java", "util", "Optional", "empty"), EMPTY_LIST));
+		Map<String, Object> m = new HashMap<String, Object>();
+		m.put("boolean", false);
+		m.put("byte", 0);
+		m.put("char", (char)0x0);
+		m.put("character", (char)0x0);
+		m.put("double", 0d);
+		m.put("float", 0f);
+		m.put("int", 0);
+		m.put("integer", 0);
+		m.put("long", 0L);
+		m.put("short", 0);
 		DEFAULT_VALUE_MAP = Collections.unmodifiableMap(m);
+	}
+	static {
+		Map<String, String> m = new HashMap<String, String>();
+		m.put("java.util.Collection", "emptyList");
+		m.put("java.util.List", "emptyList");
+		m.put("java.util.Set", "emptySet");
+		m.put("java.util.NavigableSet", "emptyNavigableSet");
+		m.put("java.util.SortedSet", "emptySortedSet");
+		m.put("java.util.Map", "emptyMap");
+		m.put("java.util.NavigableMap", "emptyNavigableMap");
+		m.put("java.util.SortedMap", "emptySortedMap");
+		m.put("java.util.Iterator", "emptyIterator");
+		m.put("java.util.ListIterator", "emptyListIterator");
+		DEFAULT_COLLECTIONS_METHOD = Collections.unmodifiableMap(m);
 	}
 	
 	private static JCExpression createLiteral(JavacNode node, Object value) {
@@ -359,24 +361,35 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		String typeString = sig.type.getReturnType().toString()
 			.replace("java.lang.", "")
 			.replaceFirst("<.*>", "");
-		Function<JavacNode, JCExpression> function = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
-		if (function == null) {
-			// create an empty array
-			if (typeString.endsWith("[]")) {
-				return annotation.getTreeMaker().NewArray(
-					chainDotsString(annotation.up(), sig.type.getReturnType().toString().replace("[]", "")),
-					com.sun.tools.javac.util.List.<JCExpression>of(annotation.getTreeMaker().Literal(CTC_INT, 0)), null);
-			}
-			// if it's a non-abstract class that extends AbstractMap or AbstractCollection, then create a new instance of it
-			if (isMapOrCollectionClass(sig.type.getReturnType(), annotation)) {
-				return annotation.getTreeMaker().NewClass(null, EMPTY_LIST, 
-					chainDotsString(annotation, sig.type.getReturnType().toString().replaceFirst("<.*>", "")),
-					EMPTY_LIST, null);
-			}
+		Object defaultValue = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
+		if (defaultValue != null) {
+			return createLiteral(annotation, defaultValue);
 		}
-		return function == null? 
-			annotation.getTreeMaker().Literal(CTC_BOT, null) :
-			function.apply(annotation);
+		if ("string".equals(typeString)) {
+			return annotation.getTreeMaker().Literal(CTC_BOT, null);
+		}
+		// some array -> create an empty array
+		if (typeString.endsWith("[]")) {
+			return annotation.getTreeMaker().NewArray(
+				chainDotsString(annotation.up(), sig.type.getReturnType().toString().replace("[]", "")),
+				com.sun.tools.javac.util.List.<JCExpression>of(annotation.getTreeMaker().Literal(CTC_INT, 0)), null);
+		}
+		// some collection interface -> use Collections.empty... 
+		String collectionsMethod = DEFAULT_COLLECTIONS_METHOD.get(typeString);
+		if (collectionsMethod != null) {
+			return callCollectionsMethod(annotation, collectionsMethod);
+		}
+		// Optional<T> -> Optional.empty()
+		if ("java.util.Optional".equals(typeString)) {
+			return annotation.getTreeMaker().Apply(EMPTY_LIST, chainDots(annotation, "java", "util", "Optional", "empty"), EMPTY_LIST);
+		}
+		// if it's a non-abstract class that extends AbstractMap or AbstractCollection, then create a new instance of it
+		if (isMapOrCollectionClass(sig.type.getReturnType(), annotation)) {
+			return annotation.getTreeMaker().NewClass(null, EMPTY_LIST, 
+				chainDotsString(annotation, sig.type.getReturnType().toString().replaceFirst("<.*>", "")),
+				EMPTY_LIST, null);
+		}
+		return annotation.getTreeMaker().Literal(CTC_BOT, null);
 	}
 	
 	private boolean isMapOrCollectionClass(TypeMirror typeMirror, JavacNode annotation) {
