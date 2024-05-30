@@ -22,14 +22,19 @@
 package lombok.javac.handlers;
 
 import static com.sun.tools.javac.code.Flags.*;
-import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
+import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -42,28 +47,41 @@ import javax.lang.model.type.TypeMirror;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.*;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.*;
+import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.*;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 import lombok.ConfigurationKeys;
+import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.core.AST.Kind;
 import lombok.experimental.Adapter;
 import lombok.javac.FindTypeVarScanner;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
+import lombok.javac.JavacResolution.TypeNotConvertibleException;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.ResolutionResetNeeded;
-import lombok.javac.JavacResolution.TypeNotConvertibleException;
 import lombok.permit.Permit;
 import lombok.spi.Provides;
 
@@ -76,7 +94,43 @@ import lombok.spi.Provides;
 public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 	
 	public static final int HANDLE_ADAPTER_PRIORITY = 65536;
+	private static final com.sun.tools.javac.util.List<JCExpression> EMPTY_LIST = com.sun.tools.javac.util.List.<JCExpression>nil();
 
+	public static final java.util.Map<String, Function<JavacNode, JCExpression>> DEFAULT_VALUE_MAP;
+	static {
+		Map<String, Function<JavacNode, JCExpression>> m = new HashMap<>();
+		m.put("boolean", node -> HandleAdapter.createLiteral(node, false));
+		m.put("byte", node -> HandleAdapter.createLiteral(node, 0));
+		m.put("char", node -> HandleAdapter.createLiteral(node, (char)0x0));
+		m.put("character", node -> HandleAdapter.createLiteral(node, (char)0x0));
+		m.put("double", node -> HandleAdapter.createLiteral(node, 0d));
+		m.put("float", node -> HandleAdapter.createLiteral(node, 0f));
+		m.put("int", node -> HandleAdapter.createLiteral(node, 0));
+		m.put("integer", node -> HandleAdapter.createLiteral(node, 0));
+		m.put("long", node -> HandleAdapter.createLiteral(node, 0L));
+		m.put("short", node -> HandleAdapter.createLiteral(node, 0));
+		m.put("string", node -> node.getTreeMaker().Literal(CTC_BOT, null));
+		m.put("java.util.collection", node -> HandleAdapter.callCollectionsMethod(node, "emptyList"));
+		m.put("java.util.list", node -> HandleAdapter.callCollectionsMethod(node, "emptyList"));
+		m.put("java.util.set", node -> HandleAdapter.callCollectionsMethod(node, "emptySet"));
+		m.put("java.util.navigableset", node -> HandleAdapter.callCollectionsMethod(node, "emptyNavigableSet"));
+		m.put("java.util.sortedset", node -> HandleAdapter.callCollectionsMethod(node, "emptySortedSet"));
+		m.put("java.util.map", node -> HandleAdapter.callCollectionsMethod(node, "emptyMap"));
+		m.put("java.util.navigablemap", node -> HandleAdapter.callCollectionsMethod(node, "emptyNavigableMap"));
+		m.put("java.util.sortedmap", node -> HandleAdapter.callCollectionsMethod(node, "emptySortedMap"));
+		m.put("java.util.iterator", node -> HandleAdapter.callCollectionsMethod(node, "emptyIterator"));
+		m.put("java.util.listiterator", node -> HandleAdapter.callCollectionsMethod(node, "emptyListIterator"));
+		m.put("java.util.optional", node -> node.getTreeMaker().Apply(EMPTY_LIST, chainDots(node, "java", "util", "Optional", "empty"), EMPTY_LIST));
+		DEFAULT_VALUE_MAP = Collections.unmodifiableMap(m);
+	}
+	
+	private static JCExpression createLiteral(JavacNode node, Object value) {
+		return node.getTreeMaker().Literal(value);
+	}
+
+	private static JCExpression callCollectionsMethod(JavacNode node, String methodName) {
+		return node.getTreeMaker().Apply(EMPTY_LIST, chainDots(node, "java", "util", "Collections", methodName), EMPTY_LIST);
+	}
 	
 	@Override
 	public void handle(AnnotationValues<Adapter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -228,17 +282,17 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		
 		com.sun.tools.javac.util.List<JCAnnotation> annotations = com.sun.tools.javac.util.List.of(maker.Annotation(
 			genJavaLangTypeRef(annotation, "Override"),
-			com.sun.tools.javac.util.List.<JCExpression>nil()));
+			EMPTY_LIST));
 		if (sig.isDeprecated) {
 			annotations = annotations.append(maker.Annotation(
 					genJavaLangTypeRef(annotation, "Deprecated"),
-					com.sun.tools.javac.util.List.<JCExpression>nil()));
+					EMPTY_LIST));
 		}
 		
 		JCModifiers mods = maker.Modifiers(PUBLIC, annotations);
 		JCExpression returnType = JavacResolution.typeToJCTree((Type) sig.type.getReturnType(), annotation.getAst(), true);
 		boolean useReturn = sig.type.getReturnType().getKind() != TypeKind.VOID;
-		boolean throwError = true;
+		boolean throwError = !options.silentMode;
 		ListBuffer<JCVariableDecl> params = sig.type.getParameterTypes().isEmpty() ? null : new ListBuffer<JCVariableDecl>();
 		ListBuffer<JCExpression> args = sig.type.getParameterTypes().isEmpty() ? null : new ListBuffer<JCExpression>();
 		ListBuffer<JCExpression> thrown = sig.type.getThrownTypes().isEmpty() ? null : new ListBuffer<JCExpression>();
@@ -281,25 +335,73 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		com.sun.tools.javac.util.List<JCStatement> bodyExpressions = com.sun.tools.javac.util.List.nil();
 		if (throwError) {
 			JCExpression exType = genTypeRef(annotation, options.exceptionClass.getName());
-			com.sun.tools.javac.util.List<JCExpression> parameters = com.sun.tools.javac.util.List.<JCExpression>nil();
+			com.sun.tools.javac.util.List<JCExpression> parameters = EMPTY_LIST;
 			if (options.exceptionMsg != null && !options.exceptionMsg.isEmpty()) {
 				JCLiteral message = maker.Literal(options.exceptionMsg);
 				parameters = parameters.append(message);
 			}
-			JCExpression exception = maker.NewClass(null, com.sun.tools.javac.util.List.<JCExpression>nil(), exType, 
+			JCExpression exception = maker.NewClass(null, EMPTY_LIST, exType, 
 				parameters, null);
 			JCStatement body = maker.Throw(exception);
 			bodyExpressions = bodyExpressions.append(body);
 		} else if (useReturn) {
-			// TODO create null or default value to be returned
-			JCStatement body = maker.Return(null);
+			// create null or default value to be returned
+			JCExpression returnValue = findExpressionForReturnType(sig, annotation);
+			JCStatement body = maker.Return(returnValue);
 			bodyExpressions = bodyExpressions.append(body);
 		}
 		JCBlock bodyBlock = maker.Block(0, bodyExpressions);
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null), annotation);
 	}
+
+	private JCExpression findExpressionForReturnType(MethodSig sig, JavacNode annotation) {
+		String typeString = sig.type.getReturnType().toString()
+			.replace("java.lang.", "")
+			.replaceFirst("<.*>", "");
+		Function<JavacNode, JCExpression> function = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
+		if (function == null) {
+			// create an empty array
+			if (typeString.endsWith("[]")) {
+				return annotation.getTreeMaker().NewArray(
+					chainDotsString(annotation.up(), sig.type.getReturnType().toString().replace("[]", "")),
+					com.sun.tools.javac.util.List.<JCExpression>of(annotation.getTreeMaker().Literal(CTC_INT, 0)), null);
+			}
+			// if it's a non-abstract class that extends AbstractMap or AbstractCollection, then create a new instance of it
+			if (isMapOrCollectionClass(sig.type.getReturnType(), annotation)) {
+				return annotation.getTreeMaker().NewClass(null, EMPTY_LIST, 
+					chainDotsString(annotation, sig.type.getReturnType().toString().replaceFirst("<.*>", "")),
+					EMPTY_LIST, null);
+			}
+		}
+		return function == null? 
+			annotation.getTreeMaker().Literal(CTC_BOT, null) :
+			function.apply(annotation);
+	}
 	
+	private boolean isMapOrCollectionClass(TypeMirror typeMirror, JavacNode annotation) {
+		// check if given type is non-abstract class that extends AbstractMap or AbstractCollection
+		ClassSymbol csym = getClassSymbol(typeMirror);
+		if (csym != null && csym.getModifiers().contains(Modifier.ABSTRACT))
+			return false;
+		while (csym != null) {
+			String className = csym.getQualifiedName().toString();
+			if ("java.util.AbstractCollection".equals(className) || "java.util.AbstractMap".equals(className)) {
+				return true;
+			}
+			csym = getClassSymbol(csym.getSuperclass());
+		}
+		return false;
+	}
+
+	private ClassSymbol getClassSymbol(TypeMirror typeMirror) {
+		if (!(typeMirror instanceof ClassType))
+			return null;
+		TypeSymbol tsym = ((ClassType) typeMirror).tsym;
+		ClassSymbol csym = (ClassSymbol)tsym;
+		return csym;
+	}
+
 	public static <T> com.sun.tools.javac.util.List<T> toList(ListBuffer<T> collection) {
 		return collection == null ? com.sun.tools.javac.util.List.<T>nil() : collection.toList();
 	}
@@ -401,11 +503,13 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		private Class<? extends RuntimeException> exceptionClass;
 		private String exceptionMsg;
 		private boolean suppressThrows;
+		private boolean silentMode;
 		public static GeneratorOptions from(Adapter annotation) {
 			GeneratorOptions ret = new GeneratorOptions();
 			ret.exceptionClass = annotation.throwException();
 			ret.exceptionMsg = annotation.message();
 			ret.suppressThrows = annotation.suppressThrows();
+			ret.silentMode = annotation.silent();
 			return ret;
 		}
 	}
