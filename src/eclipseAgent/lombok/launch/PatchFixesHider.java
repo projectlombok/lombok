@@ -305,7 +305,40 @@ final class PatchFixesHider {
 			return Util.invokeMethod(RETURN_ELEMENT_INFO, delegateSourceMethod);
 		}
 	}
-	
+
+	/** Contains patch code to support {@code @Adapter} */
+	public static final class Adapter {
+		private static final Method HANDLE_ADAPTER_FOR_TYPE;
+		private static final Method ADD_GENERATED_ADAPTER_METHODS;
+		public static final Method IS_ADAPTER_SOURCE_METHOD;
+		public static final Method RETURN_ELEMENT_INFO;
+		
+		static {
+			Class<?> shadowedPortal = Util.shadowLoadClass("lombok.eclipse.agent.PatchAdapterPortal");
+			HANDLE_ADAPTER_FOR_TYPE = Util.findMethod(shadowedPortal, "handleAdapterForType", Object.class);
+			ADD_GENERATED_ADAPTER_METHODS = Util.findMethod(shadowedPortal, "addGeneratedAdapterMethods", Object.class, Object.class);
+			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchAdapter");
+			IS_ADAPTER_SOURCE_METHOD = Util.findMethod(shadowed, "isAdapterSourceMethod", Object.class);
+			RETURN_ELEMENT_INFO = Util.findMethod(shadowed, "returnElementInfo", Object.class);
+		}
+		
+		public static boolean handleAdapterForType(Object classScope) {
+			return (Boolean) Util.invokeMethod(HANDLE_ADAPTER_FOR_TYPE, classScope);
+		}
+		
+		public static Object[] addGeneratedAdapterMethods(Object returnValue, Object javaElement) {
+			return (Object[]) Util.invokeMethod(ADD_GENERATED_ADAPTER_METHODS, returnValue, javaElement);
+		}
+		
+		public static boolean isAdapterSourceMethod(Object sourceMethod) {
+			return (Boolean) Util.invokeMethod(IS_ADAPTER_SOURCE_METHOD, sourceMethod);
+		}
+		
+		public static Object returnElementInfo(Object adapterSourceMethod) {
+			return Util.invokeMethod(RETURN_ELEMENT_INFO, adapterSourceMethod);
+		}
+	}
+
 	/** Contains patch code to support {@code val} (eclipse specific) */
 	public static final class ValPortal {
 		private static final Method COPY_INITIALIZATION_OF_FOR_EACH_ITERABLE;

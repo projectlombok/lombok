@@ -53,5 +53,6 @@ public final class EcjAugments {
 		}
 		
 		public static final FieldAugment<CompilationUnit, ConcurrentMap<String, List<SourceMethod>>> CompilationUnit_delegateMethods = FieldAugment.augment(CompilationUnit.class, ConcurrentMap.class, "$delegateMethods");
+		public static final FieldAugment<CompilationUnit, ConcurrentMap<String, List<SourceMethod>>> CompilationUnit_adapterMethods = FieldAugment.augment(CompilationUnit.class, ConcurrentMap.class, "$adapterMethods");
 	}
 }

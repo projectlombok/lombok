@@ -741,6 +741,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		addPatchesForDelegate(sm);
 		addPatchesForVal(sm);
 		addPatchesForValEclipse(sm);
+		addPatchesForAdapter(sm);
 	}
 	
 	private static void addPatchesForDelegate(ScriptManager sm) {
@@ -779,7 +780,44 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.valueMethod(new Hook("lombok.launch.PatchFixesHider$Delegate", "returnElementInfo", "java.lang.Object", "java.lang.Object"))
 				.build());
 	}
-	
+
+	private static void addPatchesForAdapter(ScriptManager sm) {
+		final String CLASSSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.ClassScope";
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(CLASSSCOPE_SIG, "buildFieldsAndMethods", "void"))
+				.request(StackRequest.THIS)
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Adapter", "handleAdapterForType", "boolean", "java.lang.Object"))
+				.build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.setSymbolDuringMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.SelectionRequestor", "acceptSourceMethod"))
+				.callToWrap(new Hook("org.eclipse.jdt.core.IType", "getMethods", "org.eclipse.jdt.core.IMethod[]"))
+				.symbol("lombok.skipadapters")
+				.build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.addField()
+				.fieldName("$adapterMethods")
+				.fieldType("Ljava/util/Map;")
+				.setPublic()
+				.setTransient()
+				.targetClass("org.eclipse.jdt.internal.core.CompilationUnit")
+				.build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.SourceTypeElementInfo", "getChildren", "org.eclipse.jdt.core.IJavaElement[]"))
+				.request(StackRequest.RETURN_VALUE, StackRequest.THIS)
+				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$Adapter", "addGeneratedAdapterMethods", "java.lang.Object[]", "java.lang.Object", "java.lang.Object"))
+				.build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.JavaElement", "getElementInfo", "org.eclipse.jdt.internal.compiler.env.IElementInfo"))
+				.request(StackRequest.THIS)
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Adapter", "isAdapterSourceMethod", "boolean", "java.lang.Object"))
+				.valueMethod(new Hook("lombok.launch.PatchFixesHider$Adapter", "returnElementInfo", "java.lang.Object", "java.lang.Object"))
+				.build());
+	}
+
 	private static void addPatchesForValEclipse(ScriptManager sm) {
 		final String LOCALDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";
 		final String PARSER_SIG = "org.eclipse.jdt.internal.compiler.parser.Parser";

@@ -477,11 +477,11 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 	public static String printSig(ExecutableType method, Name name, JavacTypes types) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name.toString()).append("(");
-		boolean first = true;
+		String sep = "";
 		for (TypeMirror param : method.getParameterTypes()) {
-			if (!first) sb.append(", ");
-			first = false;
+			sb.append(sep);
 			sb.append(typeBindingToSignature(param, types));
+			sep = ", ";
 		}
 		return sb.append(")").toString();
 	}
