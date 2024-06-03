@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.agent;
 
-import static lombok.eclipse.EcjAugments.*;
+import static lombok.eclipse.EcjAugments.Annotation_applied;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,33 +49,45 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.ArrayAllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
+import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.CharLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.DoubleLiteral;
+import org.eclipse.jdt.internal.compiler.ast.EmptyStatement;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
-import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
+import org.eclipse.jdt.internal.compiler.ast.FloatLiteral;
+import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
+import org.eclipse.jdt.internal.compiler.ast.Literal;
+import org.eclipse.jdt.internal.compiler.ast.LongLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedAllocationExpression;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
-import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
+import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
-import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -96,6 +109,7 @@ import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 
 import lombok.core.AST.Kind;
+import lombok.eclipse.EcjAugments.EclipseAugments;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
@@ -106,42 +120,20 @@ import lombok.permit.Permit;
 
 public class PatchAdapter {
 
-	private static class ClassScopeEntry {
-		ClassScopeEntry(ClassScope scope) {
-			this.scope = scope;
-		}
-		
-		final ClassScope scope;
-		String corruptedPath;
-	}
-	
-	private static ThreadLocal<List<ClassScopeEntry>> visited = new ThreadLocal<List<ClassScopeEntry>>() {
-		protected List<ClassScopeEntry> initialValue() {
-			return new ArrayList<ClassScopeEntry>();
-		}
+	private static final char[][] JAVA_UTIL_COLLECTIONS = {
+		{'j', 'a', 'v', 'a'}, {'u', 't', 'i', 'l'}, {'C', 'o', 'l', 'l', 'e', 'c', 't', 'i', 'o', 'n', 's'}
 	};
-	
-	private static String nameOfScope(ClassScope scope) {
-		TypeDeclaration decl = scope.referenceContext;
-		if (decl == null) return "(unknown)";
-		if (decl.name == null || decl.name.length == 0) return "(unknown)";
-		return new String(decl.name);
-	}
-	
-	private static boolean hasAdapterMarkedFieldsOrMethods(TypeDeclaration decl) {
-		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
-			if (field.annotations == null) continue;
-			for (Annotation ann : field.annotations) {
-				if (isAdapter(ann, decl)) return true;
+	private static final char[][] JAVA_UTIL_OPTIONAL = {
+		{'j', 'a', 'v', 'a'}, {'u', 't', 'i', 'l'}, {'O', 'p', 't', 'i', 'o', 'n', 'a', 'l'}
+	};
+
+	private static Annotation findAdapterAnnotation(TypeDeclaration decl) {
+		if (decl != null && decl.annotations != null) {
+			for (Annotation ann : decl.annotations) {
+				if (isAdapter(ann, decl)) return ann;
 			}
 		}
-		if (decl.methods != null) for (AbstractMethodDeclaration method : decl.methods) {
-			if (method.annotations == null) continue;
-			for (Annotation ann : method.annotations) {
-				if (isAdapter(ann, decl)) return true;
-			}
-		}
-		return false;
+		return null;
 	}
 	
 	public static boolean handleAdapterForType(ClassScope scope) {
@@ -154,57 +146,22 @@ public class PatchAdapter {
 			}
 		}
 		
-		if (!hasAdapterMarkedFieldsOrMethods(scope.referenceContext)) return false;
+		Annotation annotation = findAdapterAnnotation(scope.referenceContext);
+		if (annotation == null) return false;
 		System.out.println("*** PatchAdapter.handleAdapterForType: scope = " + scope);
 		
-		List<ClassScopeEntry> stack = visited.get();
-		StringBuilder corrupted = null;
-		for (ClassScopeEntry entry : stack) {
-			if (corrupted != null) {
-				corrupted.append(" -> ").append(nameOfScope(entry.scope));
-			} else if (entry.scope == scope) {
-				corrupted = new StringBuilder().append(nameOfScope(scope));
-			}
-		}
+		GeneratorOptions options = GeneratorOptions.from(annotation);
 		
-		if (corrupted != null) {
-			boolean found = false;
-			String path = corrupted.toString();
-			for (ClassScopeEntry entry : stack) {
-				if (!found && entry.scope == scope) found = true;
-				if (found) entry.corruptedPath = path;
-			}
-		} else {
-			ClassScopeEntry entry = new ClassScopeEntry(scope);
-			stack.add(entry);
+		List<BindingTuple> methodsToOverride = fillMethodBindings(cud, scope, annotation, options);
+
+		if (!methodsToOverride.isEmpty()) {
+			TypeDeclaration decl = scope.referenceContext;
+			EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+			generateOverriddenMethods(eclipseAst.get(decl), scope, methodsToOverride, options);
 			
-			try {
-				TypeDeclaration decl = scope.referenceContext;
-				if (decl != null) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					List<BindingTuple> methodsToOverride = new ArrayList<BindingTuple>();
-					fillMethodBindingsForFields(cud, scope, methodsToOverride);
-					if (entry.corruptedPath != null) {
-						eclipseAst.get(scope.referenceContext).addError("No @Adapter methods created because there's a loop: " + entry.corruptedPath);
-					} else {
-						generateOverriddenMethods(eclipseAst.get(decl), methodsToOverride, DelegateReceiver.FIELD);
-					}
-					methodsToOverride.clear();
-					fillMethodBindingsForMethods(cud, scope, methodsToOverride);
-					if (entry.corruptedPath != null) {
-						eclipseAst.get(scope.referenceContext).addError("No @Adapter methods created because there's a loop: " + entry.corruptedPath);
-					} else {
-						generateOverriddenMethods(eclipseAst.get(decl), methodsToOverride, DelegateReceiver.METHOD);
-					}
-				}
-			} finally {
-				stack.remove(stack.size() - 1);
-				if (stack.isEmpty() && eclipseAvailable) {
-					EclipseOnlyMethods.notifyAdapterMethodsAdded(cud);
-				}
-			}
+			EclipseOnlyMethods.notifyAdapterMethodsAdded(cud);
 		}
-		
+
 		return false;
 	}
 	
@@ -225,146 +182,48 @@ public class PatchAdapter {
 		Annotation_applied.set(annotation, true);
 	}
 	
-	private static void fillMethodBindingsForFields(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
+	private static List<BindingTuple> fillMethodBindings(CompilationUnitDeclaration cud, ClassScope scope,  
+		Annotation annotation, GeneratorOptions options) {
+		List<BindingTuple> methodsToOverride = new LinkedList<BindingTuple>();
 		TypeDeclaration decl = scope.referenceContext;
-		if (decl == null) return;
 		
-		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
-			if (field.annotations == null) continue;
-			for (Annotation ann : field.annotations) {
-				if (!isAdapter(ann, decl)) continue;
-				if (Annotation_applied.getAndSet(ann, true)) continue;
-				
-				if ((field.modifiers & ClassFileConstants.AccStatic) != 0) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
-					break;
-				}
-				
-				List<ClassLiteralAccess> rawTypes = rawTypes(ann, "types");
-				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
-				
-				List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
-				List<BindingTuple> methodsToDelegateForThisAnn = new ArrayList<BindingTuple>();
-				
-				try {
-					for (ClassLiteralAccess cla : excludedRawTypes) {
-						addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), field.name, ann);
-					}
-					
-					Set<String> banList = findAlreadyImplementedMethods(decl);
-					for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
-					
-					if (rawTypes.isEmpty()) {
-						addAllMethodBindings(methodsToDelegateForThisAnn, field.type.resolveType(decl.initializerScope), banList, field.name, ann);
-					} else {
-						for (ClassLiteralAccess cla : rawTypes) {
-							addAllMethodBindings(methodsToDelegateForThisAnn, cla.type.resolveType(decl.initializerScope), banList, field.name, ann);
-						}
-					}
-				} catch (DelegateRecursion e) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError(String.format(RECURSION_NOT_ALLOWED, new String(e.member), new String(e.type)));
-					break;
-				}
-				
-				// Not doing this right now because of problems - see commented-out-method for info.
-				// removeExistingMethods(methodsToDelegate, decl, scope);
-				
-				String dupe = containsDuplicates(methodsToDelegateForThisAnn);
-				if (dupe != null) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError("The method '" + dupe + "' is being delegated by more than one specified type.");
-				} else {
-					methodsToDelegate.addAll(methodsToDelegateForThisAnn);
-				}
-			}
-		}
-	}
-	
-	private static final String LEGALITY_OF_DELEGATE = "@Delegate is legal only on instance fields or no-argument instance methods.";
-	private static final String RECURSION_NOT_ALLOWED = "@Delegate does not support recursion (delegating to a type that itself has @Delegate members). Member \"%s\" is @Delegate in type \"%s\"";
-	
-	private static void fillMethodBindingsForMethods(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
-		TypeDeclaration decl = scope.referenceContext;
-		if (decl == null) return;
-		
-		if (decl.methods != null) for (AbstractMethodDeclaration methodDecl : decl.methods) {
-			if (methodDecl.annotations == null) continue;
-			for (Annotation ann : methodDecl.annotations) {
-				if (!isAdapter(ann, decl)) continue;
-				if (Annotation_applied.getAndSet(ann, true)) continue;
-				if (!(methodDecl instanceof MethodDeclaration)) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
-					break;
-				}
-				if (methodDecl.arguments != null) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
-					break;
-				}
-				if ((methodDecl.modifiers & ClassFileConstants.AccStatic) != 0) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
-					break;
-				}
-				MethodDeclaration method = (MethodDeclaration) methodDecl;
-				
-				List<ClassLiteralAccess> rawTypes = rawTypes(ann, "types");
-				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
-				
-				List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
-				List<BindingTuple> methodsToDelegateForThisAnn = new ArrayList<BindingTuple>();
-				
-				try {
-					for (ClassLiteralAccess cla : excludedRawTypes) {
-						addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), method.selector, ann);
-					}
+		Set<String> banList = findAlreadyImplementedMethods(decl);
+		List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
+		for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
 
-					Set<String> banList = findAlreadyImplementedMethods(decl);
-					for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
-					
-					if (rawTypes.isEmpty()) {
-						if (method.returnType == null) continue;
-						addAllMethodBindings(methodsToDelegateForThisAnn, method.returnType.resolveType(decl.initializerScope), banList, method.selector, ann);
-					} else {
-						for (ClassLiteralAccess cla : rawTypes) {
-							addAllMethodBindings(methodsToDelegateForThisAnn, cla.type.resolveType(decl.initializerScope), banList, method.selector, ann);
-						}
-					}
-				} catch (DelegateRecursion e) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError(String.format(RECURSION_NOT_ALLOWED, new String(e.member), new String(e.type)));
-					break;
-				}
-				
-				// Not doing this right now because of problems - see commented-out-method for info.
-				// removeExistingMethods(methodsToDelegate, decl, scope);
-				
-				String dupe = containsDuplicates(methodsToDelegateForThisAnn);
-				if (dupe != null) {
-					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError("The method '" + dupe + "' is being delegated by more than one specified type.");
-				} else {
-					methodsToDelegate.addAll(methodsToDelegateForThisAnn);
-				}
+		List<BindingTuple> methodsToOverrideForThisAnn = new ArrayList<BindingTuple>();
+		if (options.overrideTypes.isEmpty()) {
+			for (TypeReference ofType : decl.superInterfaces) {
+				addAllMethodBindings(methodsToOverrideForThisAnn, ofType.resolveType(decl.initializerScope), banList);
+			}
+		} else {
+			for (ClassLiteralAccess ofType : options.overrideTypes) {
+				addAllMethodBindings(methodsToOverrideForThisAnn, ofType.type.resolveType(decl.initializerScope), banList);
 			}
 		}
+		
+		String dupe = containsDuplicates(methodsToOverrideForThisAnn);
+		if (dupe != null) {
+			EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+			eclipseAst.get(annotation).addError("The method '" + dupe + "' is being implemented by more than one specified type.");
+		} else {
+			methodsToOverride.addAll(methodsToOverrideForThisAnn);
+		}
+		return methodsToOverride;
 	}
 	
 	private static boolean isAdapter(Annotation ann, TypeDeclaration decl) {
 		if (ann.type == null) return false;
-		if (!charArrayEquals("Delegate", ann.type.getLastToken())) return false;
+		if (!charArrayEquals("Adapter", ann.type.getLastToken())) return false;
 		
 		TypeBinding tb = ann.type.resolveType(decl.initializerScope);
 		if (tb == null) return false;
 		if (!charArrayEquals("lombok", tb.qualifiedPackageName()) && !charArrayEquals("lombok.experimental", tb.qualifiedPackageName())) return false;
-		if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) return false;
+		if (!charArrayEquals("Adapter", tb.qualifiedSourceName())) return false;
 		return true;
 	}
 	
-	private static List<ClassLiteralAccess> rawTypes(Annotation ann, String name) {
+	private static List<ClassLiteralAccess> getTypes(Annotation ann, String name) {
 		List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
 		for (MemberValuePair pair : ann.memberValuePairs()) {
 			if (charArrayEquals(name, pair.name)) {
@@ -380,85 +239,35 @@ public class PatchAdapter {
 		}
 		return rawTypes;
 	}
-	
-	/*
-	 * We may someday finish this method. Steps to be completed:
-	 * 
-	 * (A) Turn any Parameterized anythings into non-parameterized versions. Resolving parameterized stuff will definitely not work safely.
-	 * (B) scope.problemReporter() will need to return a noop reporter as various errors are marked off.
-	 * (C) Find a way to do _something_ for references to typevars (i.e. 'T') which are declared on the method itself.
-	 * (D) getTypeBinding isn't public, so call it via reflection.
-	 */
-//	private static TypeBinding safeResolveAndErase(TypeReference ref, Scope scope) {
-//		if (ref.resolvedType != null) {
-//			return ref.resolvedType.isValidBinding() ? ref.resolvedType : null;
-//		}
-//		
-//		try {
-//			TypeBinding bind = ref.getTypeBinding(scope);
-//			if (!bind.isValidBinding()) return null;
-//		} catch (AbortCompilation e) {
-//			return null;
-//		}
-//		return bind.erasure();
-//	}
-	
-	/*
-	 * Not using this because calling clone.resolveType() taints a bunch of caches and reports erroneous errors.
-	 */
-//	private static void removeExistingMethods(List<BindingTuple> list, TypeDeclaration decl, ClassScope scope) {
-//		for (AbstractMethodDeclaration methodDecl : decl.methods) {
-//			if (!(methodDecl instanceof MethodDeclaration)) continue;
-//			MethodDeclaration md = (MethodDeclaration) methodDecl;
-//			char[] name = md.selector;
-//			TypeBinding[] args = md.arguments == null ? new TypeBinding[0] : new TypeBinding[md.arguments.length];
-//			for (int i = 0; i < args.length; i++) {
-//				TypeReference clone = Eclipse.copyType(md.arguments[i].type, md.arguments[i]);
-//				args[i] = clone.resolveType(scope).erasure(); // This is the problematic line
-//			}
-//			Iterator<BindingTuple> it = list.iterator();
-//			methods:
-//			while (it.hasNext()) {
-//				MethodBinding mb = it.next().parameterized;
-//				if (!Arrays.equals(mb.selector, name)) continue;
-//				int paramLen = mb.parameters == null ? 0 : mb.parameters.length;
-//				if (paramLen != args.length) continue;
-//				if (md.typeParameters == null || md.typeParameters.length == 0) {
-//					for (int i = 0; i < paramLen; i++) {
-//						if (!mb.parameters[i].erasure().isEquivalentTo(args[i])) continue methods;
-//					}
-//				} else {
-//					for (int i = 0; i < paramLen; i++) {
-//						if (!mb.parameters[i].erasure().isEquivalentTo(args[i])) ;
-//					}
-//					//BUG #???: We erase the method's parameter types using  the class scope, but we should be using the method scope.
-//					// In practice this is no problem UNLESS the method has type parameters, such as <T> T[] toArray(T[] in).
-//					// In this case the class scope cannot resolve the T[] parameter and erase it to Object[], which is a big problem because
-//					// it would mean manually writing <X> X[] toArray(X[] in) does NOT stop lombok from ALSO trying to make the delegated toArray method,
-//					// thus causing an error (2 methods with post-erasure duplicate signatures). Our 'fix' for this is to treat any method with type parameters
-//					// as if each parameter's type matches anything else; so, if the name matches and the parameter count, we DONT generate it, even if its just
-//					// an overloaded method.
-//					//
-//					// The reason we do this now is because making that MethodScope properly is effectively impossible at this step, so we need to do the resolving
-//					// ourselves, which involves chasing down array bindings (T[]), following the path down type variables, i.e. <X extends Y, Y extends T>, and then
-//					// resolving the final result of this exercise against the class scope.
-//					
-//					// When this crappy incomplete workaround of ours occurs, we end up in this else block, which does nothing and thus we fall through and remove
-//					// the method.
-//				}
-//				it.remove(); // Method already exists in this class - don't create a delegating implementation.
-//			}
-//		}
-//	}
-	
-	private static void generateOverriddenMethods(EclipseNode typeNode, List<BindingTuple> methods, DelegateReceiver delegateReceiver) {
+
+	private static String getStringValue(Annotation ann, String name) {
+		for (MemberValuePair pair : ann.memberValuePairs()) {
+			if (charArrayEquals(name, pair.name)) {
+				if (pair.value instanceof StringLiteral) {
+					return ((StringLiteral)pair.value).constant.stringValue();
+				}
+			}
+		}
+		return "";
+	}
+
+	private static boolean getBooleanValue(Annotation ann, String name) {
+		for (MemberValuePair pair : ann.memberValuePairs()) {
+			if (charArrayEquals(name, pair.name)) {
+				return pair.value instanceof TrueLiteral;
+			}
+		}
+		return false;
+	}
+
+	private static void generateOverriddenMethods(EclipseNode typeNode, ClassScope scope, List<BindingTuple> methods, GeneratorOptions options) {
 		CompilationUnitDeclaration top = (CompilationUnitDeclaration) typeNode.top().get();
 		List<MethodDeclaration> addedMethods = new ArrayList<MethodDeclaration>();
 		for (BindingTuple pair : methods) {
-			EclipseNode annNode = typeNode.getAst().get(pair.responsible);
-			MethodDeclaration method = createDelegateMethod(pair.fieldName, typeNode, pair, top.compilationResult, annNode, delegateReceiver);
-			if (method != null) { 
-				SetGeneratedByVisitor visitor = new SetGeneratedByVisitor(annNode.get());
+			MethodDeclaration method = createOverriddenMethod(typeNode, scope, pair, top.compilationResult, options);
+			if (method != null) {
+				System.out.println("Generated method: "+method);
+				SetGeneratedByVisitor visitor = new SetGeneratedByVisitor(typeNode.get());
 				method.traverse(visitor, ((TypeDeclaration)typeNode.get()).scope);
 				injectMethod(typeNode, method);
 				addedMethods.add(method);
@@ -469,7 +278,7 @@ public class PatchAdapter {
 		}
 	}
 	
-	public static void checkConflictOfTypeVarNames(BindingTuple binding, EclipseNode typeNode) throws CantMakeDelegates {
+	public static void checkConflictOfTypeVarNames(BindingTuple binding, EclipseNode typeNode) throws CantMakeAdapter {
 		TypeVariableBinding[] typeVars = binding.parameterized.typeVariables();
 		if (typeVars == null || typeVars.length == 0) return;
 		
@@ -496,9 +305,12 @@ public class PatchAdapter {
 		usedInMethodSig.retainAll(usedInOurType);
 		if (usedInMethodSig.isEmpty()) return;
 		
-		// We might be delegating a List<T>, and we are making method <T> toArray(). A conflict is possible.
+		// We might be overriding a List<T>, and we are making method <T> toArray(). A conflict is possible.
 		// But only if the toArray method also uses type vars from its class, otherwise we're only shadowing,
 		// which is okay as we'll add a @SuppressWarnings.
+
+		// is this relevant for the Adapter? even if an inner method is repeating an outer type parameter
+		// that is causing a warning that the inner one is hiding the other (shadowing)
 		
 		TypeVarFinder finder = new TypeVarFinder();
 		finder.visitRaw(binding.base);
@@ -507,13 +319,13 @@ public class PatchAdapter {
 		names.removeAll(usedInMethodSig);
 		if (!names.isEmpty()) {
 			// We have a confirmed conflict. We could dig deeper as this may still be a false alarm, but its already an exceedingly rare case.
-			CantMakeDelegates cmd = new CantMakeDelegates();
+			CantMakeAdapter cmd = new CantMakeAdapter();
 			cmd.conflicted = usedInMethodSig;
 			throw cmd;
 		}
 	}
 	
-	public static class CantMakeDelegates extends Exception {
+	public static class CantMakeAdapter extends Exception {
 		public Set<String> conflicted;
 	}
 	
@@ -595,22 +407,29 @@ public class PatchAdapter {
 		}
 	}
 	
-	private static MethodDeclaration createDelegateMethod(char[] name, EclipseNode typeNode, BindingTuple pair, CompilationResult compilationResult, EclipseNode annNode, DelegateReceiver delegateReceiver) {
-		/* public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
-		 *      (return) delegate.<T, U>methodName(name1, name2);
-		 *  }
+	private static MethodDeclaration createOverriddenMethod(EclipseNode typeNode, ClassScope scope, BindingTuple pair, 
+		CompilationResult compilationResult, GeneratorOptions options) {
+		/* 
+		 * public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
+		 *      return null; // or return default value based upon the return type
+		 * }
+		 *  
+		 *  or
+		 * public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
+		 *      throw new UnsupportedOperationException(); // or the exception specified by the annotation attribute
+		 * }
 		 */
 		
 		boolean isVarargs = (pair.base.modifiers & ClassFileConstants.AccVarargs) != 0;
 		
 		try {
 			checkConflictOfTypeVarNames(pair, typeNode);
-		} catch (CantMakeDelegates e) {
-			annNode.addError("There's a conflict in the names of type parameters. Fix it by renaming the following type parameters of your class: " + e.conflicted);
+		} catch (CantMakeAdapter e) {
+			typeNode.addError("There's a conflict in the names of type parameters. Fix it by renaming the following type parameters of your class: " + e.conflicted);
 			return null;
 		}
 		
-		ASTNode source = annNode.get();
+		ASTNode source = typeNode.get();
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
@@ -625,30 +444,20 @@ public class PatchAdapter {
 		
 		method.selector = binding.selector;
 		
-		if (binding.thrownExceptions != null && binding.thrownExceptions.length > 0) {
+		if (!options.suppressThrows && binding.thrownExceptions != null && binding.thrownExceptions.length > 0) {
 			method.thrownExceptions = new TypeReference[binding.thrownExceptions.length];
 			for (int i = 0; i < method.thrownExceptions.length; i++) {
 				method.thrownExceptions[i] = makeType(binding.thrownExceptions[i], source, false);
 			}
 		}
 		
-		MessageSend call = new MessageSend();
-		call.sourceStart = pS; call.sourceEnd = pE;
-		call.nameSourcePosition = pos(source);
-		setGeneratedBy(call, source);
-		call.receiver = delegateReceiver.get(source, name);
-		call.selector = binding.selector;
-		
 		if (binding.typeVariables != null && binding.typeVariables.length > 0) {
 			method.typeParameters = new TypeParameter[binding.typeVariables.length];
-			call.typeArguments = new TypeReference[binding.typeVariables.length];
 			for (int i = 0; i < method.typeParameters.length; i++) {
 				method.typeParameters[i] = new TypeParameter();
 				method.typeParameters[i].sourceStart = pS; method.typeParameters[i].sourceEnd = pE;
 				setGeneratedBy(method.typeParameters[i], source);
 				method.typeParameters[i].name = binding.typeVariables[i].sourceName;
-				call.typeArguments[i] = new SingleTypeReference(binding.typeVariables[i].sourceName, pos(source));
-				setGeneratedBy(call.typeArguments[i], source);
 				ReferenceBinding super1 = binding.typeVariables[i].superclass;
 				ReferenceBinding[] super2 = binding.typeVariables[i].superInterfaces;
 				if (super2 == null) super2 = new ReferenceBinding[0];
@@ -674,7 +483,6 @@ public class PatchAdapter {
 		
 		if (binding.parameters != null && binding.parameters.length > 0) {
 			method.arguments = new Argument[binding.parameters.length];
-			call.arguments = new Expression[method.arguments.length];
 			for (int i = 0; i < method.arguments.length; i++) {
 				AbstractMethodDeclaration sourceElem;
 				try {
@@ -692,8 +500,6 @@ public class PatchAdapter {
 						makeType(binding.parameters[i], source, false),
 						ClassFileConstants.AccFinal);
 				setGeneratedBy(method.arguments[i], source);
-				call.arguments[i] = new SingleNameReference(argName, pos(source));
-				setGeneratedBy(call.arguments[i], source);
 			}
 			if (isVarargs) {
 				method.arguments[method.arguments.length - 1].type.bits |= ASTNode.IsVarArgs;
@@ -701,17 +507,119 @@ public class PatchAdapter {
 		}
 		
 		Statement body;
-		if (method.returnType instanceof SingleTypeReference && ((SingleTypeReference)method.returnType).token == TypeConstants.VOID) {
-			body = call;
-		} else {
-			body = new ReturnStatement(call, source.sourceStart, source.sourceEnd);
+		// determine default value for silentMode
+		if (options.silentMode) {
+			if (method.returnType instanceof SingleTypeReference && ((SingleTypeReference)method.returnType).token == TypeConstants.VOID) {
+				body = new EmptyStatement(source.sourceStart, source.sourceEnd);
+			} else {
+				// determine default value to be returned
+				Expression returnValue = findExpressionForReturnType(method.returnType, scope, typeNode);
+				body = new ReturnStatement(returnValue, source.sourceStart, source.sourceEnd);
+			}
+		} else { // create a throwExpression for the specified or default exception type with or without message
+			String exceptionTypeStr;
+			ClassLiteralAccess exceptionClass = options.exceptionClass;
+			if (exceptionClass == null) {
+				exceptionTypeStr = UnsupportedOperationException.class.getCanonicalName();
+			} else {
+				exceptionTypeStr = getQualifiedName(exceptionClass.type.resolveType(scope));
+					// options.exceptionClass.type.resolveType(method.scope);
+			}
+			int partCount = 1;
+			for (int i = 0; i < exceptionTypeStr.length(); i++) if (exceptionTypeStr.charAt(i) == '.') partCount++;
+			long[] ps = new long[partCount];
+			Arrays.fill(ps, 0L);
+			AllocationExpression exception = new AllocationExpression();
+			setGeneratedBy(exception, source);
+			exception.type = new QualifiedTypeReference(fromQualifiedName(exceptionTypeStr), ps);
+			setGeneratedBy(exception.type, source);
+			if (options.exceptionMsg != null && !options.exceptionMsg.isEmpty()) {
+				StringLiteral message = new StringLiteral(options.exceptionMsg.toCharArray(), pS, pE, 0);
+				setGeneratedBy(message, source);
+				exception.arguments = new Expression[] {message};
+			}
+			
+			body = new ThrowStatement(exception, pS, pE);
+			
 			setGeneratedBy(body, source);
 		}
 		
 		method.statements = new Statement[] {body};
 		return method;
 	}
+
+	private static String getQualifiedName(TypeBinding typeBinding) {
+		return new String(typeBinding.readableName()).replaceFirst("<.*>", "");
+	}
 	
+	private static Expression findExpressionForReturnType(TypeReference returnType, ClassScope scope, EclipseNode typeNode) {
+		ASTNode source = typeNode.get();
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		// create null or default value to be returned
+		String typeString = returnType.toString()
+			.replace("java.lang.", "")
+			.replaceFirst("<.*>", "");
+		Literal defaultPrimitiveValue = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
+		if (defaultPrimitiveValue != null) {
+			defaultPrimitiveValue.sourceStart = pS;
+			defaultPrimitiveValue.sourceEnd = pE;
+			return defaultPrimitiveValue;
+		}
+		if ("String".equals(typeString)) {
+			return new NullLiteral(pS, pE);
+		}
+		// some array -> create an empty array
+		if (returnType instanceof ArrayTypeReference || typeString.endsWith("[]")) {
+			ArrayAllocationExpression ret = new ArrayAllocationExpression();
+			ret.dimensions = new Expression[] { IntLiteral.buildIntLiteral(new char[] {'0'}, pS, pE)};
+			ret.sourceStart = pS;
+			ret.sourceEnd = pE;
+			ret.type = new QualifiedTypeReference(fromQualifiedName(returnType.toString().replace("[]", "")), new long[] {0L});
+			return ret;
+		}
+		// some collection interface -> use Collections.empty... 
+		String collectionsMethod = DEFAULT_COLLECTIONS_METHOD.get(typeString);
+		if (collectionsMethod != null) {
+			MessageSend invoke = new MessageSend();
+			invoke.receiver = new QualifiedNameReference(JAVA_UTIL_COLLECTIONS, new long[]{0L}, pS, pE);
+			invoke.selector = collectionsMethod.toCharArray();
+			return invoke;
+		}
+		// Optional<T> -> Optional.empty()
+		if ("java.util.Optional".equals(typeString)) {
+			MessageSend invoke = new MessageSend();
+			invoke.receiver = new QualifiedNameReference(JAVA_UTIL_OPTIONAL, new long[]{0L}, pS, pE);
+			invoke.selector = "empty".toCharArray();
+			return invoke;
+		}
+		// if it's a non-abstract class that extends AbstractMap or AbstractCollection, then create a new instance of it
+		if (isMapOrCollectionClass(returnType.resolveType(scope))) {
+			QualifiedAllocationExpression ret = new QualifiedAllocationExpression();
+			ret.sourceStart = pS;
+			ret.sourceEnd = pE;
+			ret.type = new QualifiedTypeReference(fromQualifiedName(returnType.toString().replaceFirst("<.*>", "")), new long[] {0L});
+			System.out.println("new collection expression: "+ret); // should we keep the type arguments for java6?
+			return ret;
+		}
+		
+		return new NullLiteral(pS, pE);
+	}
+
+	private static boolean isMapOrCollectionClass(TypeBinding typeBinding) {
+		// check if given type is non-abstract class that extends AbstractMap or AbstractCollection
+		ReferenceBinding actualType = typeBinding.actualType();
+		if (actualType != null && actualType.isAbstract())
+			return false;
+		while (actualType != null) {
+			String className = getQualifiedName(actualType);
+			if ("java.util.AbstractCollection".equals(className) || "java.util.AbstractMap".equals(className)) {
+				return true;
+			}
+			actualType = actualType.superclass();
+		}
+		return false;
+	}
+
 	private static boolean eclipseAvailable = true;
 	static {
 		try {
@@ -895,22 +803,7 @@ public class PatchAdapter {
 		}
 	}
 	
-	private static void addAllMethodBindings(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
-		banList.addAll(METHODS_IN_OBJECT);
-		addAllMethodBindings0(list, binding, banList, fieldName, responsible);
-	}
-
-	// TODO remove, not needed
-	private static class DelegateRecursion extends Throwable {
-		final char[] type, member;
-		
-		public DelegateRecursion(char[] type, char[] member) {
-			this.type = type;
-			this.member = member;
-		}
-	}
-	
-	private static void addAllMethodBindings0(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
+	private static void addAllMethodBindings(List<BindingTuple> list, TypeBinding binding, Set<String> banList)  {
 		if (binding instanceof SourceTypeBinding) {
 			ClassScope scope = ((SourceTypeBinding) binding).scope;
 			if (scope != null) scope.environment().globalOptions.storeAnnotations = true;
@@ -939,12 +832,8 @@ public class PatchAdapter {
 		if (!(binding instanceof ReferenceBinding)) return;
 		
 		ReferenceBinding rb = (ReferenceBinding) binding;
-		MethodBinding[] availableMethods = rb.availableMethods();
-		FieldBinding[] availableFields = rb.availableFields();
-		failIfContainsAnnotation(binding, availableMethods);
-		failIfContainsAnnotation(binding, availableFields);
 		
-		MethodBinding[] parameterizedSigs = availableMethods;
+		MethodBinding[] parameterizedSigs = rb.availableMethods();
 		MethodBinding[] baseSigs = parameterizedSigs;
 		if (binding instanceof ParameterizedTypeBinding) {
 			baseSigs = ((ParameterizedTypeBinding)binding).genericType().availableMethods();
@@ -960,17 +849,18 @@ public class PatchAdapter {
 			if (mb.isStatic()) continue;
 			if (mb.isBridge()) continue;
 			if (mb.isConstructor()) continue;
+			if (!mb.isAbstract()) continue; // only the abstract methods are relevant for the Adapter
 			if (mb.isDefaultAbstract()) continue;
 			if (!mb.isPublic()) continue;
 			if (mb.isSynthetic()) continue;
 			if (!banList.add(sig)) continue; // If add returns false, it was already in there.
-			BindingTuple pair = new BindingTuple(mb, baseSigs[i], fieldName, responsible);
+			BindingTuple pair = new BindingTuple(mb, baseSigs[i]);
 			list.add(pair);
 		}
-		addAllMethodBindings0(list, rb.superclass(), banList, fieldName, responsible);
+		addAllMethodBindings(list, rb.superclass(), banList);
 		ReferenceBinding[] interfaces = rb.superInterfaces();
 		if (interfaces != null) {
-			for (ReferenceBinding iface : interfaces) addAllMethodBindings0(list, iface, banList, fieldName, responsible);
+			for (ReferenceBinding iface : interfaces) addAllMethodBindings(list, iface, banList);
 		}
 	}
 	
@@ -989,64 +879,18 @@ public class PatchAdapter {
 		return sigs;
 	}
 	
-	private static final char[] STRING_LOMBOK = new char[] {'l', 'o', 'm', 'b', 'o', 'k'};
-	private static final char[] STRING_EXPERIMENTAL = new char[] {'e', 'x', 'p', 'e', 'r', 'i', 'm', 'e', 'n', 't', 'a', 'l'};
-	private static final char[] STRING_ADAPTER = new char[] {'A', 'd', 'a', 'p', 't', 'e', 'r'};
-	private static void failIfContainsAnnotation(TypeBinding parent, Binding[] bindings) throws DelegateRecursion {
-		if (bindings == null) return;
-		
-		for (Binding b : bindings) {
-			AnnotationBinding[] anns = null;
-			if (b instanceof MethodBinding) anns = ((MethodBinding) b).getAnnotations();
-			if (b instanceof FieldBinding) anns = ((FieldBinding) b).getAnnotations();
-			// anns = b.getAnnotations() would make a heck of a lot more sense, but that is a late addition to ecj, so would cause NoSuchMethodErrors! Don't use that!
-			if (anns == null) continue;
-			for (AnnotationBinding ann : anns) {
-				char[][] name = null;
-				try {
-					name = ann.getAnnotationType().compoundName;
-				} catch (Exception ignore) {}
-				
-				if (name == null || name.length < 2 || name.length > 3) continue;
-				if (!Arrays.equals(STRING_LOMBOK, name[0])) continue;
-				if (!Arrays.equals(STRING_ADAPTER, name[name.length - 1])) continue;
-				if (name.length == 3 && !Arrays.equals(STRING_EXPERIMENTAL, name[1])) continue;
-				
-				throw new DelegateRecursion(parent.readableName(), b.readableName());
-			}
-		}
-	}
-	
 	private static final class BindingTuple {
-		BindingTuple(MethodBinding parameterized, MethodBinding base, char[] fieldName, ASTNode responsible) {
+		BindingTuple(MethodBinding parameterized, MethodBinding base) {
 			this.parameterized = parameterized;
 			this.base = base;
-			this.fieldName = fieldName;
-			this.responsible = responsible;
 		}
 		
 		final MethodBinding parameterized, base;
-		final char[] fieldName;
-		final ASTNode responsible;
 		
 		@Override public String toString() {
-			return String.format("{param: %s, base: %s, fieldName: %s}", parameterized == null ? "(null)" : printSig(parameterized), base == null ? "(null)" : printSig(base), new String(fieldName));
+			return String.format("{param: %s, base: %s}", parameterized == null ? "(null)" : printSig(parameterized), base == null ? "(null)" : printSig(base));
 		}
 	}
-	
-	private static final List<String> METHODS_IN_OBJECT = Collections.unmodifiableList(Arrays.asList(
-			"hashCode()",
-			"canEqual(java.lang.Object)",  //Not in j.l.Object, but it goes with hashCode and equals so if we ignore those two, we should ignore this one.
-			"equals(java.lang.Object)",
-			"wait()",
-			"wait(long)",
-			"wait(long, int)",
-			"notify()",
-			"notifyAll()",
-			"toString()",
-			"getClass()",
-			"clone()",
-			"finalize()"));
 	
 	private static String printSig(MethodBinding binding) {
 		StringBuilder signature = new StringBuilder();
@@ -1139,30 +983,55 @@ public class PatchAdapter {
 		return true;
 	}
 	
-	// TODO remove
-	private enum DelegateReceiver {
-		METHOD {
-			public Expression get(final ASTNode source, char[] name) {
-				MessageSend call = new MessageSend();
-				call.sourceStart = source.sourceStart; call.sourceEnd = source.sourceEnd;
-				call.nameSourcePosition = pos(source);
-				setGeneratedBy(call, source);
-				call.selector = name;
-				call.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
-				setGeneratedBy(call.receiver, source);
-				return call;
-			}
-		},
-		FIELD {
-			public Expression get(final ASTNode source, char[] name) {
-				FieldReference fieldRef = new FieldReference(name, pos(source));
-				setGeneratedBy(fieldRef, source);
-				fieldRef.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
-				setGeneratedBy(fieldRef.receiver, source);
-				return fieldRef;
-			}
-		};
-		
-		public abstract Expression get(final ASTNode source, char[] name);
+	private static class GeneratorOptions {
+		private List<ClassLiteralAccess> overrideTypes;
+		private ClassLiteralAccess exceptionClass;
+		private String exceptionMsg;
+		private boolean suppressThrows;
+		private boolean silentMode;
+		public static GeneratorOptions from(Annotation annotation) {
+			GeneratorOptions ret = new GeneratorOptions();
+			ret.overrideTypes = getTypes(annotation, "of");
+			List<ClassLiteralAccess> throwExceptions = getTypes(annotation, "throwException");
+			ret.exceptionClass = throwExceptions.isEmpty() ? null : throwExceptions.get(0);
+			ret.exceptionMsg = getStringValue(annotation, "message");
+			ret.suppressThrows = getBooleanValue(annotation, "suppressThrows");
+			ret.silentMode = getBooleanValue(annotation, "silent");
+			return ret;
+		}
 	}
+
+	// how to share this configuration with HandleAdapter to reduce duplication
+	public static final java.util.Map<String, Literal> DEFAULT_VALUE_MAP;
+	public static final java.util.Map<String, String> DEFAULT_COLLECTIONS_METHOD;
+	static {
+		Map<String, Literal> m = new HashMap<String, Literal>();
+		m.put("boolean", new FalseLiteral(0, 0));
+		m.put("byte", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
+		m.put("char", new CharLiteral("'\0'".toCharArray(), 0, 0));
+		m.put("character", new CharLiteral("'\0'".toCharArray(), 0, 0));
+		m.put("double", new DoubleLiteral("0D".toCharArray(), 0, 0));
+		m.put("float", new FloatLiteral("0F".toCharArray(), 0, 0));
+		m.put("int", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
+		m.put("integer", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
+		m.put("long", LongLiteral.buildLongLiteral("0L".toCharArray(), 0, 0));
+		m.put("short", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
+		m.put("string", new NullLiteral(0, 0));
+		DEFAULT_VALUE_MAP = Collections.unmodifiableMap(m);
+	}
+	static {
+		Map<String, String> m = new HashMap<String, String>();
+		m.put("java.util.Collection", "emptyList");
+		m.put("java.util.List", "emptyList");
+		m.put("java.util.Set", "emptySet");
+		m.put("java.util.NavigableSet", "emptyNavigableSet");
+		m.put("java.util.SortedSet", "emptySortedSet");
+		m.put("java.util.Map", "emptyMap");
+		m.put("java.util.NavigableMap", "emptyNavigableMap");
+		m.put("java.util.SortedMap", "emptySortedMap");
+		m.put("java.util.Iterator", "emptyIterator");
+		m.put("java.util.ListIterator", "emptyListIterator");
+		DEFAULT_COLLECTIONS_METHOD = Collections.unmodifiableMap(m);
+	}
+
 }

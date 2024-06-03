@@ -384,7 +384,7 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 			return annotation.getTreeMaker().Apply(EMPTY_LIST, chainDots(annotation, "java", "util", "Optional", "empty"), EMPTY_LIST);
 		}
 		// if it's a non-abstract class that extends AbstractMap or AbstractCollection, then create a new instance of it
-		if (isMapOrCollectionClass(sig.type.getReturnType(), annotation)) {
+		if (isMapOrCollectionClass(sig.type.getReturnType())) {
 			return annotation.getTreeMaker().NewClass(null, EMPTY_LIST, 
 				chainDotsString(annotation, sig.type.getReturnType().toString().replaceFirst("<.*>", "")),
 				EMPTY_LIST, null);
@@ -392,7 +392,7 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		return annotation.getTreeMaker().Literal(CTC_BOT, null);
 	}
 	
-	private boolean isMapOrCollectionClass(TypeMirror typeMirror, JavacNode annotation) {
+	private boolean isMapOrCollectionClass(TypeMirror typeMirror) {
 		// check if given type is non-abstract class that extends AbstractMap or AbstractCollection
 		ClassSymbol csym = getClassSymbol(typeMirror);
 		if (csym != null && csym.getModifiers().contains(Modifier.ABSTRACT))
