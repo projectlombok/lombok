@@ -84,8 +84,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
-import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
-import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -95,8 +93,6 @@ import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
-import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
-import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.DeltaProcessor;
 import org.eclipse.jdt.internal.core.JavaElement;
@@ -127,15 +123,15 @@ public class PatchAdapter {
 		{'j', 'a', 'v', 'a'}, {'u', 't', 'i', 'l'}, {'O', 'p', 't', 'i', 'o', 'n', 'a', 'l'}
 	};
 
-	private static Annotation findAdapterAnnotation(TypeDeclaration decl) {
-		if (decl != null && decl.annotations != null) {
-			for (Annotation ann : decl.annotations) {
-				if (isAdapter(ann, decl)) return ann;
-			}
+	private static boolean eclipseAvailable = true;
+	static {
+		try {
+			CompilationUnit.class.getName();
+		} catch (Throwable t) {
+			eclipseAvailable = false;
 		}
-		return null;
 	}
-	
+
 	public static boolean handleAdapterForType(ClassScope scope) {
 		if (TransformEclipseAST.disableLombok) return false;
 		
@@ -148,7 +144,6 @@ public class PatchAdapter {
 		
 		Annotation annotation = findAdapterAnnotation(scope.referenceContext);
 		if (annotation == null) return false;
-		System.out.println("*** PatchAdapter.handleAdapterForType: scope = " + scope);
 		
 		GeneratorOptions options = GeneratorOptions.from(annotation);
 		
@@ -212,6 +207,15 @@ public class PatchAdapter {
 		return methodsToOverride;
 	}
 	
+	private static Annotation findAdapterAnnotation(TypeDeclaration decl) {
+		if (decl != null && decl.annotations != null) {
+			for (Annotation ann : decl.annotations) {
+				if (isAdapter(ann, decl)) return ann;
+			}
+		}
+		return null;
+	}
+	
 	private static boolean isAdapter(Annotation ann, TypeDeclaration decl) {
 		if (ann.type == null) return false;
 		if (!charArrayEquals("Adapter", ann.type.getLastToken())) return false;
@@ -223,50 +227,12 @@ public class PatchAdapter {
 		return true;
 	}
 	
-	private static List<ClassLiteralAccess> getTypes(Annotation ann, String name) {
-		List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
-		for (MemberValuePair pair : ann.memberValuePairs()) {
-			if (charArrayEquals(name, pair.name)) {
-				if (pair.value instanceof ArrayInitializer) {
-					for (Expression expr : ((ArrayInitializer)pair.value).expressions) {
-						if (expr instanceof ClassLiteralAccess) rawTypes.add((ClassLiteralAccess) expr);
-					}
-				}
-				if (pair.value instanceof ClassLiteralAccess) {
-					rawTypes.add((ClassLiteralAccess) pair.value);
-				}
-			}
-		}
-		return rawTypes;
-	}
-
-	private static String getStringValue(Annotation ann, String name) {
-		for (MemberValuePair pair : ann.memberValuePairs()) {
-			if (charArrayEquals(name, pair.name)) {
-				if (pair.value instanceof StringLiteral) {
-					return ((StringLiteral)pair.value).constant.stringValue();
-				}
-			}
-		}
-		return "";
-	}
-
-	private static boolean getBooleanValue(Annotation ann, String name) {
-		for (MemberValuePair pair : ann.memberValuePairs()) {
-			if (charArrayEquals(name, pair.name)) {
-				return pair.value instanceof TrueLiteral;
-			}
-		}
-		return false;
-	}
-
 	private static void generateOverriddenMethods(EclipseNode typeNode, ClassScope scope, List<BindingTuple> methods, GeneratorOptions options) {
 		CompilationUnitDeclaration top = (CompilationUnitDeclaration) typeNode.top().get();
 		List<MethodDeclaration> addedMethods = new ArrayList<MethodDeclaration>();
 		for (BindingTuple pair : methods) {
 			MethodDeclaration method = createOverriddenMethod(typeNode, scope, pair, top.compilationResult, options);
 			if (method != null) {
-				System.out.println("Generated method: "+method);
 				SetGeneratedByVisitor visitor = new SetGeneratedByVisitor(typeNode.get());
 				method.traverse(visitor, ((TypeDeclaration)typeNode.get()).scope);
 				injectMethod(typeNode, method);
@@ -278,7 +244,7 @@ public class PatchAdapter {
 		}
 	}
 	
-	public static void checkConflictOfTypeVarNames(BindingTuple binding, EclipseNode typeNode) throws CantMakeAdapter {
+	private static void checkConflictOfTypeVarNames(BindingTuple binding, EclipseNode typeNode) throws CantMakeAdapter {
 		TypeVariableBinding[] typeVars = binding.parameterized.typeVariables();
 		if (typeVars == null || typeVars.length == 0) return;
 		
@@ -312,7 +278,7 @@ public class PatchAdapter {
 		// is this relevant for the Adapter? even if an inner method is repeating an outer type parameter
 		// that is causing a warning that the inner one is hiding the other (shadowing)
 		
-		TypeVarFinder finder = new TypeVarFinder();
+		PatchDelegate.TypeVarFinder finder = new PatchDelegate.TypeVarFinder();
 		finder.visitRaw(binding.base);
 		
 		Set<String> names = new HashSet<String>(finder.getTypeVariables());
@@ -325,86 +291,8 @@ public class PatchAdapter {
 		}
 	}
 	
-	public static class CantMakeAdapter extends Exception {
+	private static class CantMakeAdapter extends Exception {
 		public Set<String> conflicted;
-	}
-	
-	public static class TypeVarFinder extends EclipseTypeBindingScanner {
-		private Set<String> typeVars = new HashSet<String>();
-		
-		public Set<String> getTypeVariables() {
-			return typeVars;
-		}
-		
-		@Override public void visitTypeVariable(TypeVariableBinding binding) {
-			if (binding.sourceName != null) typeVars.add(new String(binding.sourceName));
-			super.visitTypeVariable(binding);
-		}
-	}
-	
-	public abstract static class EclipseTypeBindingScanner {
-		public void visitRaw(Binding binding) {
-			if (binding == null) return;
-			if (binding instanceof MethodBinding) visitMethod((MethodBinding) binding);
-			if (binding instanceof BaseTypeBinding) visitBase((BaseTypeBinding) binding);
-			if (binding instanceof ArrayBinding) visitArray((ArrayBinding) binding);
-			if (binding instanceof UnresolvedReferenceBinding) visitUnresolved((UnresolvedReferenceBinding) binding);
-			if (binding instanceof WildcardBinding) visitWildcard((WildcardBinding) binding);
-			if (binding instanceof TypeVariableBinding) visitTypeVariable((TypeVariableBinding) binding);
-			if (binding instanceof ParameterizedTypeBinding) visitParameterized((ParameterizedTypeBinding) binding);
-			if (binding instanceof ReferenceBinding) visitReference((ReferenceBinding) binding);
-		}
-		
-		public void visitReference(ReferenceBinding binding) {
-		}
-		
-		public void visitParameterized(ParameterizedTypeBinding binding) {
-			visitRaw(binding.genericType());
-			TypeVariableBinding[] typeVars = binding.typeVariables();
-			if (typeVars != null) for (TypeVariableBinding child : typeVars) {
-				visitRaw(child);
-			}
-		}
-		
-		public void visitTypeVariable(TypeVariableBinding binding) {
-			visitRaw(binding.superclass);
-			ReferenceBinding[] supers = binding.superInterfaces();
-			if (supers != null) for (ReferenceBinding child : supers) {
-				visitRaw(child);
-			}
-		}
-		
-		public void visitWildcard(WildcardBinding binding) {
-			visitRaw(binding.bound);
-		}
-		
-		public void visitUnresolved(UnresolvedReferenceBinding binding) {
-		}
-		
-		public void visitArray(ArrayBinding binding) {
-			visitRaw(binding.leafComponentType());
-		}
-		
-		public void visitBase(BaseTypeBinding binding) {
-		}
-		
-		public void visitMethod(MethodBinding binding) {
-			if (binding.parameters != null) for (TypeBinding child : binding.parameters) {
-				visitRaw(child);
-			}
-			visitRaw(binding.returnType);
-			if (binding.thrownExceptions != null) for (TypeBinding child : binding.thrownExceptions) {
-				visitRaw(child);
-			}
-			TypeVariableBinding[] typeVars = binding.typeVariables();
-			if (typeVars != null) for (TypeVariableBinding child : typeVars) {
-				visitRaw(child.superclass);
-				ReferenceBinding[] supers = child.superInterfaces();
-				if (supers != null) for (ReferenceBinding child2 : supers) {
-					visitRaw(child2);
-				}
-			}
-		}
 	}
 	
 	private static MethodDeclaration createOverriddenMethod(EclipseNode typeNode, ClassScope scope, BindingTuple pair, 
@@ -522,7 +410,7 @@ public class PatchAdapter {
 			if (exceptionClass == null) {
 				exceptionTypeStr = UnsupportedOperationException.class.getCanonicalName();
 			} else {
-				exceptionTypeStr = getQualifiedName(exceptionClass.type.resolveType(scope));
+				exceptionTypeStr = getNonGenericQualifiedName(exceptionClass.type.resolveType(scope));
 					// options.exceptionClass.type.resolveType(method.scope);
 			}
 			int partCount = 1;
@@ -548,7 +436,7 @@ public class PatchAdapter {
 		return method;
 	}
 
-	private static String getQualifiedName(TypeBinding typeBinding) {
+	private static String getNonGenericQualifiedName(TypeBinding typeBinding) {
 		return new String(typeBinding.readableName()).replaceFirst("<.*>", "");
 	}
 	
@@ -564,9 +452,6 @@ public class PatchAdapter {
 			defaultPrimitiveValue.sourceStart = pS;
 			defaultPrimitiveValue.sourceEnd = pE;
 			return defaultPrimitiveValue;
-		}
-		if ("String".equals(typeString)) {
-			return new NullLiteral(pS, pE);
 		}
 		// some array -> create an empty array
 		if (returnType instanceof ArrayTypeReference || typeString.endsWith("[]")) {
@@ -598,7 +483,7 @@ public class PatchAdapter {
 			ret.sourceStart = pS;
 			ret.sourceEnd = pE;
 			ret.type = new QualifiedTypeReference(fromQualifiedName(returnType.toString().replaceFirst("<.*>", "")), new long[] {0L});
-			System.out.println("new collection expression: "+ret); // should we keep the type arguments for java6?
+			// should we keep the type arguments for java6?
 			return ret;
 		}
 		
@@ -611,7 +496,7 @@ public class PatchAdapter {
 		if (actualType != null && actualType.isAbstract())
 			return false;
 		while (actualType != null) {
-			String className = getQualifiedName(actualType);
+			String className = getNonGenericQualifiedName(actualType);
 			if ("java.util.AbstractCollection".equals(className) || "java.util.AbstractMap".equals(className)) {
 				return true;
 			}
@@ -620,15 +505,6 @@ public class PatchAdapter {
 		return false;
 	}
 
-	private static boolean eclipseAvailable = true;
-	static {
-		try {
-			CompilationUnit.class.getName();
-		} catch (Throwable t) {
-			eclipseAvailable = false;
-		}
-	}
-	
 	public static Object[] addGeneratedAdapterMethods(Object[] returnValue, Object javaElement) {
 		if (Symbols.hasSymbol("lombok.skipadapters")) return returnValue;
 		if (!eclipseAvailable) return returnValue;
@@ -642,7 +518,7 @@ public class PatchAdapter {
 	}
 	
 	public static boolean isAdapterSourceMethod(Object sourceMethod) {
-		return sourceMethod.getClass().getName().equals("lombok.eclipse.agent.PatchDelegate$EclipseOnlyMethods$AdapterSourceMethod");
+		return sourceMethod.getClass().getName().equals("lombok.eclipse.agent.PatchAdapter$EclipseOnlyMethods$AdapterSourceMethod");
 	}
 	
 	public static class EclipseOnlyMethods {
@@ -999,6 +875,44 @@ public class PatchAdapter {
 			ret.silentMode = getBooleanValue(annotation, "silent");
 			return ret;
 		}
+
+		private static List<ClassLiteralAccess> getTypes(Annotation ann, String name) {
+			List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
+			for (MemberValuePair pair : ann.memberValuePairs()) {
+				if (charArrayEquals(name, pair.name)) {
+					if (pair.value instanceof ArrayInitializer) {
+						for (Expression expr : ((ArrayInitializer)pair.value).expressions) {
+							if (expr instanceof ClassLiteralAccess) rawTypes.add((ClassLiteralAccess) expr);
+						}
+					}
+					if (pair.value instanceof ClassLiteralAccess) {
+						rawTypes.add((ClassLiteralAccess) pair.value);
+					}
+				}
+			}
+			return rawTypes;
+		}
+
+		private static String getStringValue(Annotation ann, String name) {
+			for (MemberValuePair pair : ann.memberValuePairs()) {
+				if (charArrayEquals(name, pair.name)) {
+					if (pair.value instanceof StringLiteral) {
+						return ((StringLiteral)pair.value).constant.stringValue();
+					}
+				}
+			}
+			return "";
+		}
+
+		private static boolean getBooleanValue(Annotation ann, String name) {
+			for (MemberValuePair pair : ann.memberValuePairs()) {
+				if (charArrayEquals(name, pair.name)) {
+					return pair.value instanceof TrueLiteral;
+				}
+			}
+			return false;
+		}
+
 	}
 
 	// how to share this configuration with HandleAdapter to reduce duplication
