@@ -452,6 +452,10 @@ public class PatchAdapter {
 		if (defaultPrimitiveValue != null) {
 			defaultPrimitiveValue.sourceStart = pS;
 			defaultPrimitiveValue.sourceEnd = pE;
+			if (defaultPrimitiveValue instanceof CastExpression) {
+				((CastExpression)defaultPrimitiveValue).expression.sourceStart = pS;
+				((CastExpression)defaultPrimitiveValue).expression.sourceEnd = pE;
+			}
 			return defaultPrimitiveValue;
 		}
 		// some array -> create an empty array
@@ -498,6 +502,7 @@ public class PatchAdapter {
 
 	private static boolean isMapOrCollectionClass(TypeBinding typeBinding) {
 		// check if given type is non-abstract class that extends AbstractMap or AbstractCollection
+		if (typeBinding == null) return false;
 		ReferenceBinding actualType = typeBinding.actualType();
 		if (actualType != null && actualType.isAbstract())
 			return false;
@@ -928,7 +933,7 @@ public class PatchAdapter {
 	static {
 		Map<String, Expression> m = new HashMap<String, Expression>();
 		m.put("boolean", new FalseLiteral(0, 0));
-		m.put("byte", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), getQualifiedTypeReference("byte")));
+		m.put("byte", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.BYTE, 0L)));
 		m.put("char", new CharLiteral("'\0'".toCharArray(), 0, 0));
 		m.put("character", new CharLiteral("'\0'".toCharArray(), 0, 0));
 		m.put("double", new DoubleLiteral("0D".toCharArray(), 0, 0));
@@ -936,7 +941,7 @@ public class PatchAdapter {
 		m.put("int", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
 		m.put("integer", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
 		m.put("long", LongLiteral.buildLongLiteral("0L".toCharArray(), 0, 0));
-		m.put("short", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), getQualifiedTypeReference("short")));
+		m.put("short", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.SHORT, 0L)));
 		m.put("string", new NullLiteral(0, 0));
 		DEFAULT_VALUE_MAP = Collections.unmodifiableMap(m);
 	}

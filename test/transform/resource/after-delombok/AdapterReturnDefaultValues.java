@@ -15,7 +15,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public byte getPrimitiveByte() {
-			return 0;
+			return (byte) 0;
 		}
 
 		@java.lang.Override
@@ -36,7 +36,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public short getPrimitiveShort() {
-			return 0;
+			return (short) 0;
 		}
 
 		@java.lang.Override
@@ -71,7 +71,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public java.lang.Byte getByte() {
-			return 0;
+			return (byte) 0;
 		}
 
 		@java.lang.Override
@@ -92,7 +92,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public java.lang.Short getShort() {
-			return 0;
+			return (short) 0;
 		}
 
 		@java.lang.Override

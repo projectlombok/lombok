@@ -1,6 +1,8 @@
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import AdapterReturnDefaultValues.FooInterface;
+
 public class AdapterReturnDefaultValues {
 
 	public static class AdapterClass implements FooInterface {
@@ -15,7 +17,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public byte getPrimitiveByte() {
-			return 0;
+			return (byte) 0;
 		}
 
 		@java.lang.Override
@@ -36,7 +38,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public short getPrimitiveShort() {
-			return 0;
+			return (short) 0;
 		}
 
 		@java.lang.Override
@@ -71,7 +73,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public java.lang.Byte getByte() {
-			return 0;
+			return (byte) 0;
 		}
 
 		@java.lang.Override
@@ -92,7 +94,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public java.lang.Short getShort() {
-			return 0;
+			return (short) 0;
 		}
 
 		@java.lang.Override
@@ -245,6 +247,13 @@ public class AdapterReturnDefaultValues {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
+		public AdapterReturnDefaultValues.FooInterface fluentMethod(final java.lang.String input) {
+			return this;
+		}
+
+		@java.lang.Override
+		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public void doNothing() {
 		}
 	}
@@ -318,6 +327,8 @@ public class AdapterReturnDefaultValues {
 		String getStatusString();
 
 		CompoundValue getCompoundValue();
+
+		FooInterface fluentMethod(String input);
 
 		void doNothing();
 	}

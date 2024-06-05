@@ -81,6 +81,7 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
 import lombok.javac.JavacResolution.TypeNotConvertibleException;
+import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.ResolutionResetNeeded;
 import lombok.permit.Permit;
@@ -97,20 +98,20 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 	public static final int HANDLE_ADAPTER_PRIORITY = 65536;
 	private static final com.sun.tools.javac.util.List<JCExpression> EMPTY_LIST = com.sun.tools.javac.util.List.<JCExpression>nil();
 
-	public static final java.util.Map<String, Object> DEFAULT_VALUE_MAP;
+	public static final java.util.Map<String, DefaultValue> DEFAULT_VALUE_MAP;
 	public static final java.util.Map<String, String> DEFAULT_COLLECTIONS_METHOD;
 	static {
-		Map<String, Object> m = new HashMap<String, Object>();
-		m.put("boolean", false);
-		m.put("byte", 0);
-		m.put("char", (char)0x0);
-		m.put("character", (char)0x0);
-		m.put("double", 0d);
-		m.put("float", 0f);
-		m.put("int", 0);
-		m.put("integer", 0);
-		m.put("long", 0L);
-		m.put("short", 0);
+		Map<String, DefaultValue> m = new HashMap<String, DefaultValue>();
+		m.put("boolean", new DefaultValue(false));
+		m.put("byte", new DefaultValue(0, CTC_BYTE));
+		m.put("char", new DefaultValue((char)0x0));
+		m.put("character", new DefaultValue((char)0x0));
+		m.put("double", new DefaultValue(0d));
+		m.put("float", new DefaultValue(0f));
+		m.put("int", new DefaultValue(0));
+		m.put("integer", new DefaultValue(0));
+		m.put("long", new DefaultValue(0L));
+		m.put("short", new DefaultValue(0, CTC_SHORT));
 		DEFAULT_VALUE_MAP = Collections.unmodifiableMap(m);
 	}
 	static {
@@ -128,8 +129,11 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		DEFAULT_COLLECTIONS_METHOD = Collections.unmodifiableMap(m);
 	}
 	
-	private static JCExpression createLiteral(JavacNode node, Object value) {
-		return node.getTreeMaker().Literal(value);
+	private static JCExpression createLiteral(JavacNode node, DefaultValue value) {
+		JavacTreeMaker treeMaker = node.getTreeMaker();
+		if (value.explicitCast == null)
+			return treeMaker.Literal(value.value);
+		return treeMaker.TypeCast(treeMaker.TypeIdent(value.explicitCast), treeMaker.Literal(value.value));
 	}
 
 	private static JCExpression callCollectionsMethod(JavacNode node, String methodName) {
@@ -367,7 +371,7 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		String typeString = sig.type.getReturnType().toString()
 			.replace("java.lang.", "")
 			.replaceFirst("<.*>", "");
-		Object defaultValue = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
+		DefaultValue defaultValue = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
 		if (defaultValue != null) {
 			return createLiteral(annotation, defaultValue);
 		}
@@ -518,6 +522,21 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 				return t;
 			}
 		}
+	}
+	
+	private static class DefaultValue {
+		private final Object value;
+		private final TypeTag explicitCast;
+		
+		public DefaultValue(Object value) {
+			this(value, null);
+		}
+		
+		public DefaultValue(Object value, TypeTag explicitCast) {
+			this.value = value;
+			this.explicitCast = explicitCast;
+		}
+		
 	}
 	
 	private static class GeneratorOptions {
