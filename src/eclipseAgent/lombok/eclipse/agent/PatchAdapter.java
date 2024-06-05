@@ -78,6 +78,7 @@ import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -396,6 +397,9 @@ public class PatchAdapter {
 		if (options.silentMode) {
 			if (method.returnType instanceof SingleTypeReference && ((SingleTypeReference)method.returnType).token == TypeConstants.VOID) {
 				body = new EmptyStatement(source.sourceStart, source.sourceEnd);
+			} else if (method.returnType instanceof QualifiedTypeReference && Eclipse.nameEquals(((QualifiedTypeReference)method.returnType).getTypeName(), new String(binding.declaringClass.readableName(false)))) {
+				// if returnType is same as the interface, then return 'this' (most likely it's some kind of fluent API)
+				body = new ReturnStatement(new NullLiteral(source.sourceStart, source.sourceEnd), source.sourceStart, source.sourceEnd);
 			} else {
 				// determine default value to be returned
 				Expression returnValue = findExpressionForReturnType(method.returnType, scope, typeNode);

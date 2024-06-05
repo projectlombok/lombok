@@ -53,6 +53,7 @@ public class AdapterReturnDefaultValues {
 
 		String getStatusString();
 		CompoundValue getCompoundValue();
+		FooInterface fluentMethod(String input);
 
 		void doNothing();
     }

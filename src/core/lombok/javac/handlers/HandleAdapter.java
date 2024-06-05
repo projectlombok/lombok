@@ -44,6 +44,8 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import org.eclipse.jdt.core.dom.ThisExpression;
+
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -358,6 +360,10 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 	}
 
 	private JCExpression findExpressionForReturnType(MethodSig sig, JavacNode annotation) {
+		// if returnType is same as the declaring interface, then return 'this' (most likely it's some kind of fluent API)
+		if (sig.type.getReturnType().equals(sig.classType)) {
+			return annotation.getTreeMaker().Ident(annotation.toName("this"));
+		}
 		String typeString = sig.type.getReturnType().toString()
 			.replace("java.lang.", "")
 			.replaceFirst("<.*>", "");
@@ -437,7 +443,7 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 			String sig = printSig(methodType, member.name, types);
 			if (!banList.add(sig)) continue; //If add returns false, it was already in there
 			boolean isDeprecated = (member.flags() & DEPRECATED) != 0;
-			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem));
+			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem, ct));
 		}
 
 		for (Type type : types.directSupertypes(ct)) {
@@ -452,12 +458,14 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		final ExecutableType type;
 		final boolean isDeprecated;
 		final ExecutableElement elem;
+		final ClassType classType;
 		
-		MethodSig(Name name, ExecutableType type, boolean isDeprecated, ExecutableElement elem) {
+		MethodSig(Name name, ExecutableType type, boolean isDeprecated, ExecutableElement elem, ClassType ct) {
 			this.name = name;
 			this.type = type;
 			this.isDeprecated = isDeprecated;
 			this.elem = elem;
+			this.classType = ct;
 		}
 		
 		String[] getParameterNames() {

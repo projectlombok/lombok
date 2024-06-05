@@ -245,6 +245,13 @@ public class AdapterReturnDefaultValues {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
+		public AdapterReturnDefaultValues.FooInterface fluentMethod(final java.lang.String input) {
+			return this;
+		}
+
+		@java.lang.Override
+		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public void doNothing() {
 		}
 	}
@@ -318,6 +325,8 @@ public class AdapterReturnDefaultValues {
 		String getStatusString();
 
 		CompoundValue getCompoundValue();
+
+		FooInterface fluentMethod(String input);
 
 		void doNothing();
 	}
