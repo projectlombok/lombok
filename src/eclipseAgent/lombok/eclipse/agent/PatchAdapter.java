@@ -55,6 +55,7 @@ import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.ArrayAllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.CharLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -171,10 +172,6 @@ public class PatchAdapter {
 		}
 		
 		return null;
-	}
-	
-	public static void markHandled(Annotation annotation) {
-		Annotation_applied.set(annotation, true);
 	}
 	
 	private static List<BindingTuple> fillMethodBindings(CompilationUnitDeclaration cud, ClassScope scope,  
@@ -447,7 +444,7 @@ public class PatchAdapter {
 		String typeString = returnType.toString()
 			.replace("java.lang.", "")
 			.replaceFirst("<.*>", "");
-		Literal defaultPrimitiveValue = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
+		Expression defaultPrimitiveValue = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
 		if (defaultPrimitiveValue != null) {
 			defaultPrimitiveValue.sourceStart = pS;
 			defaultPrimitiveValue.sourceEnd = pE;
@@ -459,7 +456,8 @@ public class PatchAdapter {
 			ret.dimensions = new Expression[] { IntLiteral.buildIntLiteral(new char[] {'0'}, pS, pE)};
 			ret.sourceStart = pS;
 			ret.sourceEnd = pE;
-			ret.type = new QualifiedTypeReference(fromQualifiedName(returnType.toString().replace("[]", "")), new long[] {0L});
+			String typeName = returnType.toString().replace("[]", "");
+			ret.type = getQualifiedTypeReference(typeName);
 			return ret;
 		}
 		// some collection interface -> use Collections.empty... 
@@ -488,6 +486,10 @@ public class PatchAdapter {
 		}
 		
 		return new NullLiteral(pS, pE);
+	}
+
+	private static QualifiedTypeReference getQualifiedTypeReference(String typeName) {
+		return new QualifiedTypeReference(fromQualifiedName(typeName), new long[] {0L});
 	}
 
 	private static boolean isMapOrCollectionClass(TypeBinding typeBinding) {
@@ -542,7 +544,7 @@ public class PatchAdapter {
 		
 		public static Object[] addGeneratedAdapterMethodsToChildren(Object[] returnValue, Object javaElement) {
 			List<SourceMethod> adapterMethods = getGeneratedMethods((SourceType) ((SourceTypeElementInfo) javaElement).getHandle());
-			if (adapterMethods != null) {
+			if (adapterMethods != null && !adapterMethods.isEmpty()) {
 				return concat((IJavaElement[]) returnValue, adapterMethods.toArray(new IJavaElement[0]), IJavaElement.class);
 			}
 			return returnValue;
@@ -897,7 +899,9 @@ public class PatchAdapter {
 			for (MemberValuePair pair : ann.memberValuePairs()) {
 				if (charArrayEquals(name, pair.name)) {
 					if (pair.value instanceof StringLiteral) {
-						return ((StringLiteral)pair.value).constant.stringValue();
+						if (((StringLiteral)pair.value).constant != null)
+							return ((StringLiteral)pair.value).constant.stringValue();
+						return new String(((StringLiteral)pair.value).source());
 					}
 				}
 			}
@@ -915,13 +919,12 @@ public class PatchAdapter {
 
 	}
 
-	// how to share this configuration with HandleAdapter to reduce duplication
-	public static final java.util.Map<String, Literal> DEFAULT_VALUE_MAP;
-	public static final java.util.Map<String, String> DEFAULT_COLLECTIONS_METHOD;
+	// how to share this configuration with HandleAdapter to reduce duplication?
+	public static final java.util.Map<String, Expression> DEFAULT_VALUE_MAP;
 	static {
-		Map<String, Literal> m = new HashMap<String, Literal>();
+		Map<String, Expression> m = new HashMap<String, Expression>();
 		m.put("boolean", new FalseLiteral(0, 0));
-		m.put("byte", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
+		m.put("byte", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), getQualifiedTypeReference("byte")));
 		m.put("char", new CharLiteral("'\0'".toCharArray(), 0, 0));
 		m.put("character", new CharLiteral("'\0'".toCharArray(), 0, 0));
 		m.put("double", new DoubleLiteral("0D".toCharArray(), 0, 0));
@@ -929,10 +932,11 @@ public class PatchAdapter {
 		m.put("int", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
 		m.put("integer", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
 		m.put("long", LongLiteral.buildLongLiteral("0L".toCharArray(), 0, 0));
-		m.put("short", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
+		m.put("short", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), getQualifiedTypeReference("short")));
 		m.put("string", new NullLiteral(0, 0));
 		DEFAULT_VALUE_MAP = Collections.unmodifiableMap(m);
 	}
+	public static final java.util.Map<String, String> DEFAULT_COLLECTIONS_METHOD;
 	static {
 		Map<String, String> m = new HashMap<String, String>();
 		m.put("java.util.Collection", "emptyList");

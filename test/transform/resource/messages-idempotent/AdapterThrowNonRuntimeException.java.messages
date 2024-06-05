@@ -1,2 +1,2 @@
-6 incompatible types: java.lang.Class<java.lang.NoSuchMethodException> cannot be converted to java.lang.Class<? extends java.lang.RuntimeException>
+5 incompatible types: java.lang.Class<java.lang.NoSuchMethodException> cannot be converted to java.lang.Class<? extends java.lang.RuntimeException>
 6 AdapterThrowNonRuntimeException.AdapterClass is not abstract and does not override abstract method countMyObjects(java.lang.String) in AdapterThrowNonRuntimeException.FooInterface

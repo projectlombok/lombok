@@ -1,7 +1,6 @@
-public class AdapterDefaultSettings {
+public class AdapterSupressThrows {
 
 	public static class AdapterClass implements FooInterface {
-
 		@Override
 		public String getStatus() {
 			return "TestStatus";
@@ -17,16 +16,17 @@ public class AdapterDefaultSettings {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
-		public int countMyObjects(final java.lang.String userName) throws java.lang.IllegalArgumentException {
+		public int countMyObjects(final java.lang.String userName) {
 			throw new java.lang.UnsupportedOperationException();
 		}
 	}
 
+
 	public static interface FooInterface {
 		void doStuff();
-	
+
 		int countMyObjects(String userName) throws IllegalArgumentException;
-	
+
 		String getStatus() throws IllegalStateException;
 	}
 }
