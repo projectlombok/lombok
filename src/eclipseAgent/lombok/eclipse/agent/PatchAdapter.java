@@ -76,6 +76,7 @@ import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -396,7 +397,7 @@ public class PatchAdapter {
 				body = new EmptyStatement(source.sourceStart, source.sourceEnd);
 			} else if (method.returnType instanceof QualifiedTypeReference && Eclipse.nameEquals(((QualifiedTypeReference)method.returnType).getTypeName(), new String(binding.declaringClass.readableName(false)))) {
 				// if returnType is same as the interface, then return 'this' (most likely it's some kind of fluent API)
-				body = new ReturnStatement(new NullLiteral(source.sourceStart, source.sourceEnd), source.sourceStart, source.sourceEnd);
+				body = new ReturnStatement(new ThisReference(source.sourceStart, source.sourceEnd), source.sourceStart, source.sourceEnd);
 			} else {
 				// determine default value to be returned
 				Expression returnValue = findExpressionForReturnType(method.returnType, scope, typeNode);
@@ -443,9 +444,8 @@ public class PatchAdapter {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		// create null or default value to be returned
 		String typeString = returnType.toString()
-			.replace("java.lang.", "")
 			.replaceFirst("<.*>", "");
-		Expression defaultPrimitiveValue = DEFAULT_VALUE_MAP.get(typeString.toLowerCase());
+		Expression defaultPrimitiveValue = DEFAULT_VALUE_MAP.get(typeString);
 		if (defaultPrimitiveValue != null) {
 			defaultPrimitiveValue.sourceStart = pS;
 			defaultPrimitiveValue.sourceEnd = pE;
@@ -929,17 +929,23 @@ public class PatchAdapter {
 	public static final java.util.Map<String, Expression> DEFAULT_VALUE_MAP;
 	static {
 		Map<String, Expression> m = new HashMap<String, Expression>();
-		m.put("boolean", new FalseLiteral(0, 0));
+		m.put("boolean", new CastExpression(new FalseLiteral(0, 0), new SingleTypeReference(TypeConstants.BOOLEAN, 0L)));
+		m.put("java.lang.Boolean", new FalseLiteral(0, 0));
 		m.put("byte", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.BYTE, 0L)));
+		m.put("java.lang.Byte", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.BYTE, 0L)));
 		m.put("char", new CharLiteral("'\0'".toCharArray(), 0, 0));
-		m.put("character", new CharLiteral("'\0'".toCharArray(), 0, 0));
-		m.put("double", new DoubleLiteral("0D".toCharArray(), 0, 0));
-		m.put("float", new FloatLiteral("0F".toCharArray(), 0, 0));
+		m.put("java.lang.Character", new CharLiteral("'\0'".toCharArray(), 0, 0));
+		m.put("double", new CastExpression(new DoubleLiteral("0D".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.DOUBLE, 0L)));
+		m.put("java.lang.Double", new DoubleLiteral("0D".toCharArray(), 0, 0));
+		m.put("float", new CastExpression(new FloatLiteral("0F".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.FLOAT, 0L)));
+		m.put("java.lang.Float", new FloatLiteral("0F".toCharArray(), 0, 0));
 		m.put("int", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
-		m.put("integer", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
-		m.put("long", LongLiteral.buildLongLiteral("0L".toCharArray(), 0, 0));
+		m.put("java.lang.Integer", IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0));
+		m.put("long", new CastExpression(LongLiteral.buildLongLiteral("0L".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.LONG, 0L)));
+		m.put("java.lang.Long", LongLiteral.buildLongLiteral("0L".toCharArray(), 0, 0));
 		m.put("short", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.SHORT, 0L)));
-		m.put("string", new NullLiteral(0, 0));
+		m.put("java.lang.Short", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.SHORT, 0L)));
+		m.put("java.lang.String", new NullLiteral(0, 0));
 		DEFAULT_VALUE_MAP = Collections.unmodifiableMap(m);
 	}
 	public static final java.util.Map<String, String> DEFAULT_COLLECTIONS_METHOD;
