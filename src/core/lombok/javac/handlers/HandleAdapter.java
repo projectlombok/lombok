@@ -44,8 +44,6 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import org.eclipse.jdt.core.dom.ThisExpression;
-
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -81,8 +79,8 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
 import lombok.javac.JavacResolution.TypeNotConvertibleException;
-import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.javac.ResolutionResetNeeded;
 import lombok.permit.Permit;
 import lombok.spi.Provides;

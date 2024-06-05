@@ -21,7 +21,6 @@
  */
 package lombok.eclipse.agent;
 
-import static lombok.eclipse.EcjAugments.Annotation_applied;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
@@ -65,7 +64,6 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FloatLiteral;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
-import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.LongLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -78,7 +76,6 @@ import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -185,13 +182,13 @@ public class PatchAdapter {
 		for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
 
 		List<BindingTuple> methodsToOverrideForThisAnn = new ArrayList<BindingTuple>();
-		if (options.overrideTypes.isEmpty()) {
-			for (TypeReference ofType : decl.superInterfaces) {
-				addAllMethodBindings(methodsToOverrideForThisAnn, ofType.resolveType(decl.initializerScope), banList);
-			}
-		} else {
+		if (!options.overrideTypes.isEmpty()) {
 			for (ClassLiteralAccess ofType : options.overrideTypes) {
 				addAllMethodBindings(methodsToOverrideForThisAnn, ofType.type.resolveType(decl.initializerScope), banList);
+			}
+		} else if (decl.superInterfaces != null) {
+			for (TypeReference ofType : decl.superInterfaces) {
+				addAllMethodBindings(methodsToOverrideForThisAnn, ofType.resolveType(decl.initializerScope), banList);
 			}
 		}
 		
