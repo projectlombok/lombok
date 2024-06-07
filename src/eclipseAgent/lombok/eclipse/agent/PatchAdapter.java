@@ -933,8 +933,8 @@ public class PatchAdapter {
 		m.put("java.lang.Boolean", new FalseLiteral(0, 0));
 		m.put("byte", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.BYTE, 0L)));
 		m.put("java.lang.Byte", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.BYTE, 0L)));
-		m.put("char", new CharLiteral("'\0'".toCharArray(), 0, 0));
-		m.put("java.lang.Character", new CharLiteral("'\0'".toCharArray(), 0, 0));
+		m.put("char", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.CHAR, 0L)));// new CharLiteral("'0'".toCharArray(), 0, 0));
+		m.put("java.lang.Character", new CastExpression(IntLiteral.buildIntLiteral("0".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.CHAR, 0L))); //new CharLiteral("'0'".toCharArray(), 0, 0));
 		m.put("double", new CastExpression(new DoubleLiteral("0D".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.DOUBLE, 0L)));
 		m.put("java.lang.Double", new DoubleLiteral("0D".toCharArray(), 0, 0));
 		m.put("float", new CastExpression(new FloatLiteral("0F".toCharArray(), 0, 0), new SingleTypeReference(TypeConstants.FLOAT, 0L)));

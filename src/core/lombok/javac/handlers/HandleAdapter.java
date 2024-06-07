@@ -102,8 +102,8 @@ public class HandleAdapter extends JavacAnnotationHandler<Adapter> {
 		Map<String, DefaultValue> m = new HashMap<String, DefaultValue>();
 		m.put("boolean", new DefaultValue(false));
 		m.put("byte", new DefaultValue(0, CTC_BYTE));
-		m.put("char", new DefaultValue((char)0x0));
-		m.put("character", new DefaultValue((char)0x0));
+		m.put("char", new DefaultValue(0, CTC_CHAR));
+		m.put("character", new DefaultValue(0, CTC_CHAR));
 		m.put("double", new DefaultValue(0d));
 		m.put("float", new DefaultValue(0f));
 		m.put("int", new DefaultValue(0));

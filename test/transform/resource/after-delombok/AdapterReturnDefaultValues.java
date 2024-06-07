@@ -22,7 +22,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public char getPrimitiveChar() {
-			return '\000';
+			return (char) 0;
 		}
 
 		@java.lang.Override
@@ -78,7 +78,7 @@ public class AdapterReturnDefaultValues {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public java.lang.Character getChar() {
-			return '\000';
+			return (char) 0;
 		}
 
 		@java.lang.Override
