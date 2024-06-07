@@ -660,7 +660,7 @@ public class PatchAdapter {
 							return (SourceType) type;
 						}
 					}
-				} catch (JavaModelException e) {
+				} catch (Exception e) {
 					// Ignore
 				}
 			}

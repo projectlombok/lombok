@@ -1,0 +1,1 @@
+5 ERROR Type mismatch: cannot convert from Class<NoSuchMethodException> to Class<? extends RuntimeException>
