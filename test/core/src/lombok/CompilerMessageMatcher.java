@@ -65,12 +65,14 @@ public class CompilerMessageMatcher {
 	}
 	
 	public boolean matches(CompilerMessage message) {
+		String msgWithLevel;
 		outer:
 		for (int i = 0; i < lineNumbers.size(); i++) {
 			//Allow an off-by-1 in line numbers; when running tests that sometimes happens for as yet unknown reasons.
 			if (message.getLine() != lineNumbers.get(i) && message.getLine() -1 != lineNumbers.get(i)) continue;
+			msgWithLevel = (message.isError() ? "ERROR " : "WARNING ") + message.getMessage();
 			for (String token : messages.get(i)) {
-				if (!message.getMessage().contains(token)) continue outer;
+				if (!msgWithLevel.contains(token)) continue outer;
 			}
 			return true;
 		}
