@@ -16,7 +16,7 @@ public class ConstructorJavadoc {
 	/**
 	 * Creates a new {@code ConstructorJavadoc} instance.
 	 *
-	 * @param fieldName Some text
+	 * @param fieldName Hello, World1
 	 * @param fieldName2 Sky is blue
 	 */
 	@java.lang.SuppressWarnings("all")

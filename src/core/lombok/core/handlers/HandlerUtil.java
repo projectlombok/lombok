@@ -910,9 +910,13 @@ public class HandlerUtil {
 		}
 	}
 	
-	public static String stripLinesWithTagFromJavadoc(String javadoc, JavadocTag tag) {
+	public static String stripLinesWithTagFromJavadoc(String javadoc, JavadocTag... tags) {
 		if (javadoc == null || javadoc.isEmpty()) return javadoc;
-		return tag.pattern.matcher(javadoc).replaceAll("").trim();
+		String result = javadoc;
+		for (JavadocTag tag : tags) {
+			result = tag.pattern.matcher(result).replaceAll("").trim();
+		}
+		return result;
 	}
 	
 	public static String stripSectionsFromJavadoc(String javadoc) {
@@ -968,7 +972,7 @@ public class HandlerUtil {
 	
 	public static String addJavadocLine(String in, String line) {
 		if (in == null) return line;
-		if (in.endsWith("\n")) return in + line + "\n";
+		if (in.endsWith("\n")) return in + line;
 		return in + "\n" + line;
 	}
 
@@ -990,11 +994,14 @@ public class HandlerUtil {
 		String fieldBaseJavadoc = stripSectionsFromJavadoc(fieldJavadoc);
 		
 		String paramJavadoc = getParamJavadoc(fieldBaseJavadoc, paramName);
-		if (paramJavadoc == null) {
-			paramJavadoc = stripLinesWithTagFromJavadoc(fieldBaseJavadoc, JavadocTag.PARAM);
-			paramJavadoc = stripLinesWithTagFromJavadoc(paramJavadoc, JavadocTag.RETURN);
+		if (paramJavadoc != null) {
+			return paramJavadoc;
 		}
 		
-		return paramJavadoc;
+		String javadocWithoutTags = stripLinesWithTagFromJavadoc(fieldBaseJavadoc, JavadocTag.PARAM, JavadocTag.RETURN);
+		if (javadocWithoutTags != null) {
+			return "@param " + paramName + " " + javadocWithoutTags;
+		}
+		return null;
 	}
 }

@@ -598,12 +598,12 @@ public class HandleConstructor {
 			String paramJavadoc = getConstructorParameterJavadoc(paramName, fieldJavadoc);
 			
 			if (paramJavadoc == null) {
-				paramJavadoc = "";
+				paramJavadoc = "@param " + paramName;
 			} else {
 				fieldDescriptionAdded = true;
 			}
 			
-			constructorJavadoc = addJavadocLine(constructorJavadoc, "@param " + paramName + " " + paramJavadoc);
+			constructorJavadoc = addJavadocLine(constructorJavadoc, paramJavadoc);
 		}
 		if (fieldDescriptionAdded) {
 			setDocComment(typeNode, constructorNode, constructorJavadoc);

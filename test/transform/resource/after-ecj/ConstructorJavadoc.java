@@ -5,7 +5,7 @@ public @AllArgsConstructor class ConstructorJavadoc {
   /**
    * Creates a new {@code ConstructorJavadoc} instance.
    * 
-   * @param fieldName Some text
+   * @param fieldName Hello, World1
    * @param fieldName2 Sky is blue
    */
   public @java.lang.SuppressWarnings("all") @lombok.Generated ConstructorJavadoc(final int fieldName, final int fieldName2) {
