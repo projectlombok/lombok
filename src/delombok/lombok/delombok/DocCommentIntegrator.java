@@ -80,7 +80,7 @@ public class DocCommentIntegrator {
 	}
 
 	private NavigableMap<Integer, JCTree> buildNodePositionMap(JCCompilationUnit unit) {
-		NavigableMap<Integer, JCTree> positionMap = new TreeMap<>();
+		final NavigableMap<Integer, JCTree> positionMap = new TreeMap<Integer, JCTree>();
 		unit.accept(new TreeScanner() {
 			@Override
 			public void visitClassDef(JCClassDecl tree) {
