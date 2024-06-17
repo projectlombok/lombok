@@ -1361,7 +1361,7 @@ public class JavacHandlerUtil {
 			} catch (Exception e) {}
 		}
 	}
-	
+
 	/**
 	 * Adds the given new method declaration to the provided type AST Node.
 	 * Can also inject constructors.
@@ -2481,5 +2481,16 @@ public class JavacHandlerUtil {
 		} else {
 			arg.mods.annotations = arg.mods.annotations == null ? List.of(m) : arg.mods.annotations.prepend(m);
 		}
+	}
+
+	public static List<JCIdent> getGenericTypes(JCTypeApply fieldType) {
+		ListBuffer<JCIdent> result = new ListBuffer<JCIdent>();
+
+		List<JCExpression> typeArguments = fieldType.arguments;
+		for (JCExpression arg : typeArguments) {
+			result.append((JCIdent) arg);
+		}
+
+		return result.toList();
 	}
 }

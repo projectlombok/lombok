@@ -883,7 +883,47 @@ public class HandlerUtil {
 		}
 		return b.toString();
 	}
-	
+
+	/**
+	 * @param node Any node (used to fetch config of capitalization strategy).
+	 * @param str any string.
+	 * @return string with uppercased first char.
+	 */
+	public static String capitalize(LombokNode<?, ?, ?> node, String str) {
+		CapitalizationStrategy capitalizationStrategy = node.getAst().readConfigurationOr(ConfigurationKeys.ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION, CapitalizationStrategy.defaultValue());
+		return capitalize(str, capitalizationStrategy);
+	}
+
+	/**
+	 * @param str any string.
+	 * @return string with uppercased first char.
+	 */
+	public static String capitalize(String str, CapitalizationStrategy capitalizationStrategy) {
+		if (str == null || str.isEmpty()) return str;
+
+		return capitalizationStrategy.capitalize(str);
+	}
+
+	/**
+	 * @param node Any node (used to fetch config of capitalization strategy).
+	 * @param str any string.
+	 * @return string with lowercased first char.
+	 */
+	public static String uncapitalize(LombokNode<?, ?, ?> node, String str) {
+		CapitalizationStrategy capitalizationStrategy = node.getAst().readConfigurationOr(ConfigurationKeys.ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION, CapitalizationStrategy.defaultValue());
+		return uncapitalize(str, capitalizationStrategy);
+	}
+
+	/**
+	 * @param str any string.
+	 * @return string with lowercased first char.
+	 */
+	public static String uncapitalize(String str, CapitalizationStrategy capitalizationStrategy) {
+		if (str == null || str.isEmpty()) return str;
+
+		return capitalizationStrategy.uncapitalize(str);
+	}
+
 	/** Matches any of the 8 primitive wrapper names, such as {@code Boolean}. */
 	private static final Pattern PRIMITIVE_WRAPPER_TYPE_NAME_PATTERN = Pattern.compile("^(?:java\\.lang\\.)?(?:Boolean|Byte|Short|Integer|Long|Float|Double|Character)$");
 

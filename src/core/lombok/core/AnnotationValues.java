@@ -571,4 +571,8 @@ public class AnnotationValues<A extends Annotation> {
 		for (AnnotationValue v : values.values()) if (v.isExplicit) return false;
 		return true;
 	}
+
+	public Class<A> getType() {
+		return this.type;
+	}
 }

@@ -809,6 +809,9 @@ public class JavacTreeMaker {
 	public JCLiteral Literal(TypeTag tag, Object value) {
 		return invoke(Literal, tag.value, value);
 	}
+	public JCLiteral NullLiteral() {
+		return Literal(Javac.CTC_BOT, null);
+	}
 	
 	//javac versions: 6-8
 	//typetag = [6-7] int  [8] TypeTag

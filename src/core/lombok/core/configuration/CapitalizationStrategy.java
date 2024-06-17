@@ -25,21 +25,38 @@ package lombok.core.configuration;
 public enum CapitalizationStrategy {
 	BASIC {
 		@Override public String capitalize(String in) {
-			if (in.length() == 0) return in;
+			if (in.isEmpty()) return in;
 			char first = in.charAt(0);
 			if (!Character.isLowerCase(first)) return in;
 			boolean useUpperCase = in.length() > 2 &&
 				(Character.isTitleCase(in.charAt(1)) || Character.isUpperCase(in.charAt(1)));
 			return (useUpperCase ? Character.toUpperCase(first) : Character.toTitleCase(first)) + in.substring(1);
 		}
+
+		@Override public String uncapitalize(String in) {
+			if (in.isEmpty()) return in;
+			char first = in.charAt(0);
+			if (!Character.isUpperCase(first)) return in;
+			boolean useLowerCase = in.length() > 2 &&
+					(Character.isTitleCase(in.charAt(1)) || Character.isLowerCase(in.charAt(1)));
+			return (useLowerCase ? Character.toLowerCase(first) : Character.toTitleCase(first)) + in.substring(1);
+		}
 	},
 	BEANSPEC {
 		@Override public String capitalize(String in) {
-			if (in.length() == 0) return in;
+			if (in.isEmpty()) return in;
 			char first = in.charAt(0);
 			if (!Character.isLowerCase(first) || (in.length() > 1 && Character.isUpperCase(in.charAt(1)))) return in;
 			boolean useUpperCase = in.length() > 2 && Character.isTitleCase(in.charAt(1));
 			return (useUpperCase ? Character.toUpperCase(first) : Character.toTitleCase(first)) + in.substring(1);
+		}
+
+		@Override public String uncapitalize(String in) {
+			if (in.isEmpty()) return in;
+			char first = in.charAt(0);
+			if (!Character.isUpperCase(first) || (in.length() > 1 && Character.isLowerCase(in.charAt(1)))) return in;
+			boolean useLowerCase = in.length() > 2 && Character.isTitleCase(in.charAt(1));
+			return (useLowerCase ? Character.isLowerCase(first) : Character.toTitleCase(first)) + in.substring(1);
 		}
 	},
 	;
@@ -47,6 +64,8 @@ public enum CapitalizationStrategy {
 	public static CapitalizationStrategy defaultValue() {
 		return BASIC;
 	}
-	
+
 	public abstract String capitalize(String in);
+
+	public abstract String uncapitalize(String in);
 }
