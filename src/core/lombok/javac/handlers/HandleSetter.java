@@ -21,23 +21,12 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.Javac.*;
-import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.handlers.JavacHandlerUtil.isFieldDeprecated;
 
 import java.util.Collection;
-
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.Setter;
-import lombok.core.AST.Kind;
-import lombok.experimental.Accessors;
-import lombok.core.AnnotationValues;
-import lombok.javac.Javac;
-import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
-import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -52,6 +41,20 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.Setter;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.experimental.Accessors;
+import lombok.javac.Javac;
+import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
+import lombok.spi.Provides;
 
 /**
  * Handles the {@code lombok.Setter} annotation for javac.

@@ -425,18 +425,14 @@ public class HandlerUtil {
 			"org.checkerframework.framework.qual.PurityUnqualified",
 		}));
 		COPY_TO_GETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
-			"com.fasterxml.jackson.annotation.JacksonInject",
-			"com.fasterxml.jackson.annotation.JsonAlias",
 			"com.fasterxml.jackson.annotation.JsonFormat",
 			"com.fasterxml.jackson.annotation.JsonIgnore",
 			"com.fasterxml.jackson.annotation.JsonIgnoreProperties",
 			"com.fasterxml.jackson.annotation.JsonProperty",
-			"com.fasterxml.jackson.annotation.JsonSetter",
 			"com.fasterxml.jackson.annotation.JsonSubTypes",
 			"com.fasterxml.jackson.annotation.JsonTypeInfo",
 			"com.fasterxml.jackson.annotation.JsonUnwrapped",
 			"com.fasterxml.jackson.annotation.JsonView",
-			"com.fasterxml.jackson.databind.annotation.JsonDeserialize",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText",

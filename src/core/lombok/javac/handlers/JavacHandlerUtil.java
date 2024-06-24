@@ -24,8 +24,7 @@ package lombok.javac.handlers;
 import static com.sun.tools.javac.code.Flags.GENERATEDCONSTR;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
-import static lombok.javac.JavacAugments.JCTree_generatedNode;
-import static lombok.javac.JavacAugments.JCTree_keepPosition;
+import static lombok.javac.JavacAugments.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -100,6 +99,7 @@ import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
 import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.core.handlers.HandlerUtil.JavadocTag;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
 import lombok.experimental.Tolerate;
@@ -1735,6 +1735,13 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Searches the given field node for annotations that are specifically intentioned to be copied to the getter.
+	 */
+	public static List<JCAnnotation> findCopyableToGetterAnnotations(JavacNode node) {
+		return findAnnotationsInList(node, COPY_TO_GETTER_ANNOTATIONS);
+	}
+
+	/**
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
 	 */
 	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node) {
@@ -1769,7 +1776,7 @@ public class JavacHandlerUtil {
 		if (annoName == null) return List.nil();
 		
 		if (!annoName.isEmpty()) {
-			for (String bn : annotationsToFind) if (typeMatches(bn, node, annoName)) return List.of(anno);
+			for (String bn : annotationsToFind) if (typeMatches(bn, node, annoName)) return copyAnnotations(List.of(anno));
 		}
 		
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();

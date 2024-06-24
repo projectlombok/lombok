@@ -820,6 +820,13 @@ public class EclipseHandlerUtil {
 	/**
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
 	 */
+	public static Annotation[] findCopyableToGetterAnnotations(EclipseNode node) {
+		return findAnnotationsInList(node, COPY_TO_GETTER_ANNOTATIONS);
+	}
+
+	/**
+	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 */
 	public static Annotation[] findCopyableToSetterAnnotations(EclipseNode node) {
 		return findAnnotationsInList(node, COPY_TO_SETTER_ANNOTATIONS);
 	}
