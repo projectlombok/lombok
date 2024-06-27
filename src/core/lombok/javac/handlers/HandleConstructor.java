@@ -30,6 +30,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -251,6 +252,7 @@ public class HandleConstructor {
 		
 		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
 			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
+			generateConstructorJavadoc(constr, typeNode, fields);
 			injectMethod(typeNode, constr);
 		}
 		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source);
@@ -259,6 +261,7 @@ public class HandleConstructor {
 	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, JavacNode source) {
 		if (staticConstrRequired) {
 			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source);
+			generateConstructorJavadoc(staticConstr, typeNode, fields);
 			injectMethod(typeNode, staticConstr);
 		}
 	}
@@ -473,5 +476,29 @@ public class HandleConstructor {
 		JCMethodDecl methodDef = maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(typeNode, methodDef);
 		return recursiveSetGeneratedBy(methodDef, source);
+	}
+	
+	private void generateConstructorJavadoc(JCMethodDecl constructor, JavacNode typeNode, List<JavacNode> fields) {
+		if (fields.isEmpty()) return;
+		
+		JCCompilationUnit cu = ((JCCompilationUnit) typeNode.top().get());
+		String constructorJavadoc = getConstructorJavadocHeader(typeNode.getName());
+		boolean fieldDescriptionAdded = false;
+		for (JavacNode fieldNode : fields) {
+			String paramName = removePrefixFromField(fieldNode).toString();
+			String fieldJavadoc = getDocComment(cu, fieldNode.get());
+			String paramJavadoc = getConstructorParameterJavadoc(paramName, fieldJavadoc);
+			
+			if (paramJavadoc == null) {
+				paramJavadoc = "@param " + paramName;
+			} else {
+				fieldDescriptionAdded = true;
+			}
+			
+			constructorJavadoc = addJavadocLine(constructorJavadoc, paramJavadoc);
+		}
+		if (fieldDescriptionAdded) {
+			setDocComment(cu, constructor, constructorJavadoc);
+		}
 	}
 }

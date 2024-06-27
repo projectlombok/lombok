@@ -10,6 +10,14 @@ public class BuilderWithDeprecated {
 	java.util.List<String> strings;
 	@Deprecated
 	ImmutableList<Integer> numbers;
+	/**
+	 * Creates a new {@code BuilderWithDeprecated} instance.
+	 *
+	 * @param dep1 @deprecated since always
+	 * @param dep2 
+	 * @param strings 
+	 * @param numbers 
+	 */
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	BuilderWithDeprecated(final String dep1, final int dep2, final java.util.List<String> strings, final ImmutableList<Integer> numbers) {

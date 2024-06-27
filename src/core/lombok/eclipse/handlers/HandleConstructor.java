@@ -22,7 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
-import static lombok.eclipse.Eclipse.*;
+import static lombok.eclipse.Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
@@ -286,7 +286,8 @@ public class HandleConstructor {
 			ConstructorDeclaration constr = createConstructor(
 				staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fieldsToParam, forceDefaults,
 				sourceNode, onConstructor);
-			injectMethod(typeNode, constr);
+			EclipseNode constructorNode = injectMethod(typeNode, constr);
+			generateConstructorJavadoc(typeNode, constructorNode, fieldsToParam);
 		}
 		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, fieldsToParam, source);
 	}
@@ -294,7 +295,8 @@ public class HandleConstructor {
 	private void generateStaticConstructor(boolean staticConstrRequired, EclipseNode typeNode, String staticName, AccessLevel level, Collection<EclipseNode> fields, ASTNode source) {
 		if (staticConstrRequired) {
 			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
-			injectMethod(typeNode, staticConstr);
+			EclipseNode constructorNode = injectMethod(typeNode, staticConstr);
+			generateConstructorJavadoc(typeNode, constructorNode, fields);
 		}
 	}
 	
@@ -583,5 +585,28 @@ public class HandleConstructor {
 		createRelevantNonNullAnnotation(type, constructor);
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDecl.scope);
 		return constructor;
+	}
+	
+	private void generateConstructorJavadoc(EclipseNode typeNode, EclipseNode constructorNode, Collection<EclipseNode> fields) {
+		if (fields.isEmpty()) return;
+		
+		String constructorJavadoc = getConstructorJavadocHeader(typeNode.getName());
+		boolean fieldDescriptionAdded = false;
+		for (EclipseNode fieldNode : fields) {
+			String paramName = String.valueOf(removePrefixFromField(fieldNode));
+			String fieldJavadoc = getDocComment(fieldNode);
+			String paramJavadoc = getConstructorParameterJavadoc(paramName, fieldJavadoc);
+			
+			if (paramJavadoc == null) {
+				paramJavadoc = "@param " + paramName;
+			} else {
+				fieldDescriptionAdded = true;
+			}
+			
+			constructorJavadoc = addJavadocLine(constructorJavadoc, paramJavadoc);
+		}
+		if (fieldDescriptionAdded) {
+			setDocComment(typeNode, constructorNode, constructorJavadoc);
+		}
 	}
 }

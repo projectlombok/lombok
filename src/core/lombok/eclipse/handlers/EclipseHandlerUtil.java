@@ -2800,10 +2800,21 @@ public class EclipseHandlerUtil {
 	public static String getDocComment(EclipseNode eclipseNode) {
 		if (eclipseNode.getAst().getSource() == null) return null;
 		
+		int start = -1;
+		int end = -1;
+		
 		final ASTNode node = eclipseNode.get();
 		if (node instanceof FieldDeclaration) {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration) node;
-			char[] rawContent = CharOperation.subarray(eclipseNode.getAst().getSource(), fieldDeclaration.declarationSourceStart, fieldDeclaration.declarationSourceEnd);
+			start = fieldDeclaration.declarationSourceStart;
+			end = fieldDeclaration.declarationSourceEnd;
+		} else if (node instanceof AbstractMethodDeclaration) {
+			AbstractMethodDeclaration abstractMethodDeclaration = (AbstractMethodDeclaration) node;
+			start = abstractMethodDeclaration.declarationSourceStart;
+			end = abstractMethodDeclaration.declarationSourceEnd;
+		}
+		if (start != -1 && end != -1) {
+			char[] rawContent = CharOperation.subarray(eclipseNode.getAst().getSource(), start, end);
 			String rawContentString = new String(rawContent);
 			int startIndex = rawContentString.indexOf("/**");
 			int endIndex = rawContentString.indexOf("*/");
@@ -2815,10 +2826,14 @@ public class EclipseHandlerUtil {
 		return null;
 	}
 	
+	public static void setDocComment(EclipseNode typeNode, EclipseNode eclipseNode, String doc) {
+		setDocComment((CompilationUnitDeclaration) eclipseNode.top().get(), (TypeDeclaration) typeNode.get(), eclipseNode.get(), doc);
+	}
+	
 	public static void setDocComment(CompilationUnitDeclaration cud, EclipseNode eclipseNode, String doc) {
 		setDocComment(cud, (TypeDeclaration) upToTypeNode(eclipseNode).get(), eclipseNode.get(), doc);
 	}
-	 
+	
 	public static void setDocComment(CompilationUnitDeclaration cud, TypeDeclaration type, ASTNode node, String doc) {
 		if (doc == null) return;
 		
