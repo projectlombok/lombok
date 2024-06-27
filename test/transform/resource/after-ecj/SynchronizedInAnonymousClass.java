@@ -2,7 +2,7 @@ import lombok.Synchronized;
 public class SynchronizedInAnonymousClass {
   Object annonymous = new Object() {
     class Inner {
-      private final java.lang.Object $lock = new java.lang.Object[0];
+      private final @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.Object $lock = new java.lang.Object[0];
       Inner() {
         super();
       }

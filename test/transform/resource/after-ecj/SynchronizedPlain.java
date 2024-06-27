@@ -1,6 +1,6 @@
 import lombok.Synchronized;
 class SynchronizedPlain1 {
-  private final java.lang.Object $lock = new java.lang.Object[0];
+  private final @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.Object $lock = new java.lang.Object[0];
   SynchronizedPlain1() {
     super();
   }
@@ -18,7 +18,7 @@ class SynchronizedPlain1 {
   }
 }
 class SynchronizedPlain2 {
-  private static final java.lang.Object $LOCK = new java.lang.Object[0];
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.Object $LOCK = new java.lang.Object[0];
   <clinit>() {
   }
   SynchronizedPlain2() {
