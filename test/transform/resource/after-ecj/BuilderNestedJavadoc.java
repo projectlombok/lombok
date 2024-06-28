@@ -21,6 +21,11 @@ public @lombok.Builder class BuilderNestedJavadoc {
       }
     }
     String name;
+    /**
+     * Creates a new {@code NestedClass} instance.
+     *
+     * @param name Example javadoc
+     */
     @java.lang.SuppressWarnings("all") @lombok.Generated NestedClass(final String name) {
       super();
       this.name = name;
