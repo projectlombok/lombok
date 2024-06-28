@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,12 @@
 package lombok.delombok;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
-
-import lombok.javac.CommentInfo;
-import lombok.javac.Javac;
-import lombok.javac.PackageName;
-import lombok.javac.handlers.JavacHandlerUtil;
 
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.DocCommentTable;
@@ -39,6 +36,11 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeScanner;
+
+import lombok.javac.CommentInfo;
+import lombok.javac.Javac;
+import lombok.javac.handlers.JavacHandlerUtil;
 
 public class DocCommentIntegrator {
 	/**
@@ -49,18 +51,21 @@ public class DocCommentIntegrator {
 		CommentInfo lastExcisedComment = null;
 		JCTree lastNode = null;
 		
+		NavigableMap<Integer, JCTree> positionMap = buildNodePositionMap(unit);
+		
 		for (CommentInfo cmt : comments) {
 			if (!cmt.isJavadoc()) {
 				out.add(cmt);
 				continue;
 			}
 			
-			JCTree node = findJavadocableNodeOnOrAfter(unit, cmt.endPos);
-			if (node == null) {
+			Entry<Integer, JCTree> entry = positionMap.ceilingEntry(cmt.endPos);
+			if (entry == null) {
 				out.add(cmt);
 				continue;
 			}
 			
+			JCTree node = entry.getValue();
 			if (node == lastNode) {
 				out.add(lastExcisedComment);
 			}
@@ -72,6 +77,28 @@ public class DocCommentIntegrator {
 			}
 		}
 		return out;
+	}
+
+	private NavigableMap<Integer, JCTree> buildNodePositionMap(JCCompilationUnit unit) {
+		final NavigableMap<Integer, JCTree> positionMap = new TreeMap<Integer, JCTree>();
+		unit.accept(new TreeScanner() {
+			@Override
+			public void visitClassDef(JCClassDecl tree) {
+				positionMap.put(tree.pos, tree);
+				super.visitClassDef(tree);
+			}
+			@Override
+			public void visitMethodDef(JCMethodDecl tree) {
+				positionMap.put(tree.pos, tree);
+				super.visitMethodDef(tree);
+			}
+			@Override
+			public void visitVarDef(JCVariableDecl tree) {
+				positionMap.put(tree.pos, tree);
+				super.visitVarDef(tree);
+			}
+		});
+		return positionMap;
 	}
 	
 	private static final Pattern CONTENT_STRIPPER = Pattern.compile("^(?:\\s*\\*)?(.*?)$", Pattern.MULTILINE);
@@ -118,33 +145,5 @@ public class DocCommentIntegrator {
 				}
 			});
 		}
-	}
-	
-	private JCTree findJavadocableNodeOnOrAfter(JCCompilationUnit unit, int endPos) {
-		JCTree pid = PackageName.getPackageNode(unit);
-		if (pid != null && endPos <= pid.pos) return null;
-		Iterator<JCTree> it = unit.defs.iterator();
-		
-		while (it.hasNext()) {
-			JCTree node = it.next();
-			if (node.pos < endPos) {
-				if (node instanceof JCClassDecl) {
-					com.sun.tools.javac.util.List<JCTree> defs = ((JCClassDecl) node).defs;
-					if (!defs.isEmpty()) while (!defs.tail.isEmpty()) defs = defs.tail;
-					if (defs.head != null && defs.head.pos >= endPos) {
-						// The associated node is IN this class declaration, so, replace the iterator.
-						// There's no point looking beyond this member in the current iteration 'context'
-						// so we don't need to save the old ref. Just start over inside this type declaration.
-						it = ((JCClassDecl) node).defs.iterator();
-					}
-				}
-				continue;
-			}
-			
-			if (node instanceof JCMethodDecl || node instanceof JCClassDecl || node instanceof JCVariableDecl) return node;
-			return null;
-		}
-		
-		return null;
 	}
 }
