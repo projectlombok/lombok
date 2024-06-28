@@ -743,4 +743,11 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @StandardException} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> STANDARD_EXCEPTION_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.standardException.flagUsage", "Emit a warning or error if @StandardException is used.") {};
+
+	/**
+	 * lombok configuration: {@code lombok.jpaAssociationSync.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 *
+	 * If set, <em>any</em> usage of {@code @JpaAssociationSync} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> JPA_ASSOCIATION_SYNC_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.jpaAssociationSync.flagUsage", "Emit a warning or error if @JpaAssociationSync is used.") {};
 }
