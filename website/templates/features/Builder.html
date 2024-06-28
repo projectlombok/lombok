@@ -103,6 +103,14 @@
 			<code>@Builder.Default private final long created = System.currentTimeMillis();</code><br/>
 			Calling Lombok-generated constructors such as <code>@NoArgsConstructor</code> will also make use of the defaults specified using <code>@Builder.Default</code> however explicit constructors will no longer use the default values and will need to be set manually or call a Lombok-generated constructor such as <code>this();</code> to set the defaults.
 		</p>
+		<p>
+			<code>@Builder.Default</code> is not supported with <code>records</code>. Instead, you can customize the builder class to set the default value
+		</p>
+		<ol class="snippet example">
+			<li>public static class PersonBuilder {</li>
+			<li class="continued">private String city = "San Francisco";</li>
+			<li>}</li>
+		</ol>
 	</@f.featureSection>
 	
 	<@f.featureSection>
