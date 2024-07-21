@@ -32,12 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -2838,6 +2833,8 @@ public class EclipseHandlerUtil {
 		if (doc == null) return;
 		
 		ICompilationUnit compilationUnit = cud.compilationResult.compilationUnit;
+		if(compilationUnit == null)
+			return;
 		if (compilationUnit.getClass().equals(COMPILATION_UNIT)) {
 			try {
 				compilationUnit = (ICompilationUnit) Permit.invoke(COMPILATION_UNIT_ORIGINAL_FROM_CLONE, compilationUnit);
