@@ -252,6 +252,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
+				JavacNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode, false);
+				if (isExcluded != null) {
+					continue;
+				}
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
 				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, false);
 				boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));

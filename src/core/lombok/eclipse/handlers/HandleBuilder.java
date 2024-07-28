@@ -311,6 +311,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			List<EclipseNode> allFields = new ArrayList<EclipseNode>();
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (EclipseNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
+				EclipseNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode);
+				if (isExcluded != null) {
+					continue;
+				}
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 				boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
