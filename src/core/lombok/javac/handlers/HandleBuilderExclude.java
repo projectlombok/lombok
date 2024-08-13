@@ -14,7 +14,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.deleteAnnotationIfNeccessar
 import static lombok.javac.handlers.JavacHandlerUtil.hasAnnotation;
 
 @Provides
-@HandlerPriority(-1025) //HandleBuilder's level, minus one.
+@HandlerPriority(-1026) //HandleBuilder's level, minus one.
 public class HandleBuilderExclude extends JavacAnnotationHandler<Builder.Exclude> {
     @Override public void handle(AnnotationValues<Builder.Exclude> annotation, JCTree.JCAnnotation ast, JavacNode annotationNode) {
         JavacNode annotatedField = annotationNode.up();

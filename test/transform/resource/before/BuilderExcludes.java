@@ -2,7 +2,7 @@ import lombok.Builder;
 
 @Builder
 public class BuilderExcludes {
-    long x = System.currentTimeMillis();
-    final int y = 5;
+    long x;
+    int y;
     @Builder.Exclude int z;
 }
