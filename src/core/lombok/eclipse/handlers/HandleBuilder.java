@@ -313,6 +313,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			for (EclipseNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
 				EclipseNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode);
 				if (isExcluded != null) {
+					//if the field is excluded, it will not be in the generated constructor used for the builder
 					continue;
 				}
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();

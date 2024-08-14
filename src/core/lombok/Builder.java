@@ -121,7 +121,7 @@ public @interface Builder {
 	public @interface Default {}
 
 	/**
-	 * The field annotated with {@code @Exclude} will be excluded from the builder;
+	 * The field annotated with {@code @Exclude} will be excluded from the builder.
 	 */
 	@Target(FIELD)
 	@Retention(SOURCE)

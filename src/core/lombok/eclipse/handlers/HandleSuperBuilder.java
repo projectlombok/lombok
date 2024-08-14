@@ -198,6 +198,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 		for (EclipseNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
+			EclipseNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode);
+			if (isExcluded != null) {
+				//if the field is excluded, it will not be in the generated constructor used for the builder
+				continue;
+			}
 			FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 			EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 			boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));

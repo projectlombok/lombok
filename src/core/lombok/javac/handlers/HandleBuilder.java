@@ -254,7 +254,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
 				JavacNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode, false);
 				if (isExcluded != null) {
-					continue; // skip field if marked with exclude
+					//if the field is excluded, it will not be in the generated constructor used for the builder
+					continue;
 				}
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
 				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, false);
