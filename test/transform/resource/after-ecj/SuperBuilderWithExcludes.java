@@ -1,6 +1,7 @@
 public class SuperBuilderWithExcludes {
   public static @lombok.experimental.SuperBuilder class Parent<N extends Number> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<N extends Number, C extends SuperBuilderWithExcludes.Parent<N>, B extends SuperBuilderWithExcludes.Parent.ParentBuilder<N, C, B>> {
+      private @java.lang.SuppressWarnings("all") @lombok.Generated long excludedParentField;
       private @java.lang.SuppressWarnings("all") @lombok.Generated N numberField;
       private @java.lang.SuppressWarnings("all") @lombok.Generated long randomFieldP;
 
@@ -29,7 +30,7 @@ public class SuperBuilderWithExcludes {
       public abstract @java.lang.SuppressWarnings("all") @lombok.Generated C build();
 
       public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
-        return (((("SuperBuilderWithExcludes.Parent.ParentBuilder(numberField=" + this.numberField) + ", randomFieldP=") + this.randomFieldP) + ")");
+        return (((((("SuperBuilderWithExcludes.Parent.ParentBuilder(excludedParentField=" + this.excludedParentField) + ", numberField=") + this.numberField) + ", randomFieldP=") + this.randomFieldP) + ")");
       }
     }
 
@@ -53,6 +54,7 @@ public class SuperBuilderWithExcludes {
 
     protected @java.lang.SuppressWarnings("all") @lombok.Generated Parent(final SuperBuilderWithExcludes.Parent.ParentBuilder<N, ?, ?> b) {
       super();
+      this.excludedParentField = b.excludedParentField;
       this.numberField = b.numberField;
       this.randomFieldP = b.randomFieldP;
     }
@@ -65,6 +67,7 @@ public class SuperBuilderWithExcludes {
   public static @lombok.experimental.SuperBuilder class Child extends Parent<Integer> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderWithExcludes.Child, B extends SuperBuilderWithExcludes.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<Integer, C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double doubleField;
+      private @java.lang.SuppressWarnings("all") @lombok.Generated long excludedChildField;
       private @java.lang.SuppressWarnings("all") @lombok.Generated long randomFieldC;
 
       public ChildBuilder() {
@@ -92,7 +95,7 @@ public class SuperBuilderWithExcludes {
       public abstract @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated C build();
 
       public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
-        return (((((("SuperBuilderWithExcludes.Child.ChildBuilder(super=" + super.toString()) + ", doubleField=") + this.doubleField) + ", randomFieldC=") + this.randomFieldC) + ")");
+        return (((((((("SuperBuilderWithExcludes.Child.ChildBuilder(super=" + super.toString()) + ", doubleField=") + this.doubleField) + ", excludedChildField=") + this.excludedChildField) + ", randomFieldC=") + this.randomFieldC) + ")");
       }
     }
 
@@ -117,6 +120,7 @@ public class SuperBuilderWithExcludes {
     protected @java.lang.SuppressWarnings("all") @lombok.Generated Child(final SuperBuilderWithExcludes.Child.ChildBuilder<?, ?> b) {
       super(b);
       this.doubleField = b.doubleField;
+      this.excludedChildField = b.excludedChildField;
       this.randomFieldC = b.randomFieldC;
     }
 

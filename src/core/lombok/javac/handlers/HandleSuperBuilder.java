@@ -179,11 +179,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 		for (JavacNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
-			JavacNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode, false);
-			if (isExcluded != null) {
-				//if the field is excluded, it will not be in the generated constructor used for the builder
-				continue;
-			}
 			JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
 			JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, false);
 			boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
@@ -195,6 +190,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			bfd.type = fd.vartype;
 			bfd.singularData = getSingularData(fieldNode, annInstance.setterPrefix());
 			bfd.originalFieldNode = fieldNode;
+			JavacNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode, false);
+			if (isExcluded != null) {
+				bfd.toExclude = true;
+			}
 			
 			if (bfd.singularData != null && isDefault != null) {
 				isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
@@ -346,7 +345,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : job.builderFields) {
-			generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
+			if (!bfd.toExclude) {
+				generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
+			}
 		}
 		
 		// Generate abstract self() and build() methods in the abstract builder.

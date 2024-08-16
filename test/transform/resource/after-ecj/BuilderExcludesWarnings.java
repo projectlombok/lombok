@@ -4,6 +4,7 @@ public @Builder class BuilderExcludesWarnings {
   public static @java.lang.SuppressWarnings("all") @lombok.Generated class BuilderExcludesWarningsBuilder {
     private @java.lang.SuppressWarnings("all") @lombok.Generated long x;
     private @java.lang.SuppressWarnings("all") @lombok.Generated int y;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated int z;
 
     @java.lang.SuppressWarnings("all") @lombok.Generated BuilderExcludesWarningsBuilder() {
       super();
@@ -26,11 +27,11 @@ public @Builder class BuilderExcludesWarnings {
     }
 
     public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderExcludesWarnings build() {
-      return new BuilderExcludesWarnings(this.x, this.y);
+      return new BuilderExcludesWarnings(this.x, this.y, this.z);
     }
 
     public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
-      return (((("BuilderExcludesWarnings.BuilderExcludesWarningsBuilder(x=" + this.x) + ", y=") + this.y) + ")");
+      return (((((("BuilderExcludesWarnings.BuilderExcludesWarningsBuilder(x=" + this.x) + ", y=") + this.y) + ", z=") + this.z) + ")");
     }
   }
 
@@ -38,10 +39,11 @@ public @Builder class BuilderExcludesWarnings {
   int y;
   @Builder.Exclude int z;
 
-  @java.lang.SuppressWarnings("all") @lombok.Generated BuilderExcludesWarnings(final long x, final int y) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated BuilderExcludesWarnings(final long x, final int y, final int z) {
     super();
     this.x = x;
     this.y = y;
+    this.z = z;
   }
 
   public static @java.lang.SuppressWarnings("all") @lombok.Generated BuilderExcludesWarnings.BuilderExcludesWarningsBuilder builder() {

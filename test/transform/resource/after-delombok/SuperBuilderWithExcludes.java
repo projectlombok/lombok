@@ -11,6 +11,9 @@ public class SuperBuilderWithExcludes {
         public static abstract class ParentBuilder<N extends Number, C extends SuperBuilderWithExcludes.Parent<N>, B extends SuperBuilderWithExcludes.Parent.ParentBuilder<N, C, B>> {
             @java.lang.SuppressWarnings("all")
             @lombok.Generated
+            private long excludedParentField;
+            @java.lang.SuppressWarnings("all")
+            @lombok.Generated
             private N numberField;
             @java.lang.SuppressWarnings("all")
             @lombok.Generated
@@ -48,7 +51,7 @@ public class SuperBuilderWithExcludes {
             @java.lang.SuppressWarnings("all")
             @lombok.Generated
             public java.lang.String toString() {
-                return "SuperBuilderWithExcludes.Parent.ParentBuilder(numberField=" + this.numberField + ", randomFieldP=" + this.randomFieldP + ")";
+                return "SuperBuilderWithExcludes.Parent.ParentBuilder(excludedParentField=" + this.excludedParentField + ", numberField=" + this.numberField + ", randomFieldP=" + this.randomFieldP + ")";
             }
         }
 
@@ -79,6 +82,7 @@ public class SuperBuilderWithExcludes {
         @java.lang.SuppressWarnings("all")
         @lombok.Generated
         protected Parent(final SuperBuilderWithExcludes.Parent.ParentBuilder<N, ?, ?> b) {
+            this.excludedParentField = b.excludedParentField;
             this.numberField = b.numberField;
             this.randomFieldP = b.randomFieldP;
         }
@@ -103,6 +107,9 @@ public class SuperBuilderWithExcludes {
             @java.lang.SuppressWarnings("all")
             @lombok.Generated
             private double doubleField;
+            @java.lang.SuppressWarnings("all")
+            @lombok.Generated
+            private long excludedChildField;
             @java.lang.SuppressWarnings("all")
             @lombok.Generated
             private long randomFieldC;
@@ -141,7 +148,7 @@ public class SuperBuilderWithExcludes {
             @java.lang.SuppressWarnings("all")
             @lombok.Generated
             public java.lang.String toString() {
-                return "SuperBuilderWithExcludes.Child.ChildBuilder(super=" + super.toString() + ", doubleField=" + this.doubleField + ", randomFieldC=" + this.randomFieldC + ")";
+                return "SuperBuilderWithExcludes.Child.ChildBuilder(super=" + super.toString() + ", doubleField=" + this.doubleField + ", excludedChildField=" + this.excludedChildField + ", randomFieldC=" + this.randomFieldC + ")";
             }
         }
 
@@ -174,6 +181,7 @@ public class SuperBuilderWithExcludes {
         protected Child(final SuperBuilderWithExcludes.Child.ChildBuilder<?, ?> b) {
             super(b);
             this.doubleField = b.doubleField;
+            this.excludedChildField = b.excludedChildField;
             this.randomFieldC = b.randomFieldC;
         }
 

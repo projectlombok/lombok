@@ -25,6 +25,7 @@ import static lombok.eclipse.handlers.HandleBuilder.*;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+import static lombok.javac.handlers.JavacHandlerUtil.findAnnotation;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import lombok.javac.JavacNode;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -198,11 +200,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 		for (EclipseNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
-			EclipseNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode);
-			if (isExcluded != null) {
-				//if the field is excluded, it will not be in the generated constructor used for the builder
-				continue;
-			}
+
 			FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 			EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 			boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
@@ -217,6 +215,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			bfd.type = fd.type;
 			bfd.singularData = getSingularData(fieldNode, ast, annInstance.setterPrefix());
 			bfd.originalFieldNode = fieldNode;
+			EclipseNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode);
+			if (isExcluded != null) {
+				bfd.toExclude = true;
+			}
 			
 			if (bfd.singularData != null && isDefault != null) {
 				isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
@@ -394,7 +396,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : job.builderFields) {
-			generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
+			if (!bfd.toExclude) {
+				generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
+			}
 		}
 		
 		// Generate abstract self() and build() methods in the abstract builder.
