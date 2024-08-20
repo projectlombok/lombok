@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IProblemRequestor;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.junit.Rule;
@@ -47,6 +48,19 @@ public class NoErrorsTest {
 	public void fieldNameConstantsInAnnotation() throws Exception {
 		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("Usage.java");
 		
+		List<IProblem> problems = collectProblems(cu);
+		assertTrue(problems.isEmpty());
+	}
+	
+	@Test
+	public void builderJavadoc() throws Exception {
+		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("Usage.java");
+		
+		List<IProblem> problems = collectProblems(cu);
+		assertTrue(problems.isEmpty());
+	}
+	
+	private List<IProblem> collectProblems(ICompilationUnit cu) throws JavaModelException {
 		final List<IProblem> problems = new ArrayList<IProblem>();
 		final IProblemRequestor requestor = new IProblemRequestor() {
 			@Override
@@ -83,7 +97,6 @@ public class NoErrorsTest {
 			workingCopy.discardWorkingCopy();
 		}
 		
-		System.out.println(problems);
-		assertTrue(problems.isEmpty());
+		return problems;
 	}
 }

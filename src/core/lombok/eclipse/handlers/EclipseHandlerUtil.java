@@ -2838,6 +2838,7 @@ public class EclipseHandlerUtil {
 		if (doc == null) return;
 		
 		ICompilationUnit compilationUnit = cud.compilationResult.compilationUnit;
+		if (compilationUnit == null) return;
 		if (compilationUnit.getClass().equals(COMPILATION_UNIT)) {
 			try {
 				compilationUnit = (ICompilationUnit) Permit.invoke(COMPILATION_UNIT_ORIGINAL_FROM_CLONE, compilationUnit);
