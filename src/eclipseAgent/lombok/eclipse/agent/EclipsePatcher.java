@@ -63,6 +63,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 					if (loader.getClass().getName().startsWith("org.sonar.classloader.")) return false; // Relevant to bug #2351
 					if (loader.toString().contains("com.alexnederlof:jasperreports-plugin")) return false; //Relevant to bug #1036
 					if (loader.toString().contains("com.pro-crafting.tools:jasperreports-plugin")) return false; //Relevant to bug #1036
+					if (loader.toString().contains("com.pro-crafting.tools:jasperreports-maven-plugin")) return false; //Relevant to bug #1036
 				}
 				if (!(loader instanceof URLClassLoader)) return true;
 				ClassLoader parent = loader.getParent();
