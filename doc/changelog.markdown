@@ -3,6 +3,8 @@ Lombok Changelog
 
 ### v1.18.35 "Edgy Guinea Pig"
 * We recently released v1.18.34; there is no edge release since then.
+* BUGFIX: Eclipse projects using the `com.pro-crafting.tools:jasperreports-maven-plugin` will now compile.
+
 
 ### v1.18.34 (June 28th, 2024)
 * PLATFORM: Added support for Eclipse 2024-06; you'd get some `NoSuchMethodError` traces in your logs if using `@Builder` or `@Singular` prior to this fix. [Issue #3638](https://github.com/projectlombok/lombok/issues/3638).
