@@ -38,6 +38,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -2797,6 +2799,9 @@ public class EclipseHandlerUtil {
 		return annotations;
 	}
 	
+	private static final Pattern JAVADOC_PATTERN = Pattern.compile("^\\s*\\/\\*\\*((?:\\S|\\s)*?)\\*\\/", Pattern.MULTILINE);
+	private static final Pattern LEADING_ASTERISKS_PATTERN = Pattern.compile("(?m)^\\s*\\* ?");
+
 	public static String getDocComment(EclipseNode eclipseNode) {
 		if (eclipseNode.getAst().getSource() == null) return null;
 		
@@ -2816,11 +2821,11 @@ public class EclipseHandlerUtil {
 		if (start != -1 && end != -1) {
 			char[] rawContent = CharOperation.subarray(eclipseNode.getAst().getSource(), start, end);
 			String rawContentString = new String(rawContent);
-			int startIndex = rawContentString.indexOf("/**");
-			int endIndex = rawContentString.indexOf("*/");
-			if (startIndex != -1 && endIndex != -1) {
+			Matcher javadocMatcher = JAVADOC_PATTERN.matcher(rawContentString);
+			if (javadocMatcher.find()) {
+				String javadoc = javadocMatcher.group(1);
 				/* Remove all leading asterisks */
-				return rawContentString.substring(startIndex + 3, endIndex).replaceAll("(?m)^\\s*\\* ?", "").trim();
+				return LEADING_ASTERISKS_PATTERN.matcher(javadoc).replaceAll("").trim();
 			}
 		}
 		return null;

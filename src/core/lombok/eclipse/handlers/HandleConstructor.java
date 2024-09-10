@@ -588,25 +588,27 @@ public class HandleConstructor {
 	}
 	
 	private void generateConstructorJavadoc(EclipseNode typeNode, EclipseNode constructorNode, Collection<EclipseNode> fields) {
-		if (fields.isEmpty()) return;
+		try {
+			if (fields.isEmpty()) return;
 		
-		String constructorJavadoc = getConstructorJavadocHeader(typeNode.getName());
-		boolean fieldDescriptionAdded = false;
-		for (EclipseNode fieldNode : fields) {
-			String paramName = String.valueOf(removePrefixFromField(fieldNode));
-			String fieldJavadoc = getDocComment(fieldNode);
-			String paramJavadoc = getConstructorParameterJavadoc(paramName, fieldJavadoc);
-			
-			if (paramJavadoc == null) {
-				paramJavadoc = "@param " + paramName;
-			} else {
-				fieldDescriptionAdded = true;
+			String constructorJavadoc = getConstructorJavadocHeader(typeNode.getName());
+			boolean fieldDescriptionAdded = false;
+			for (EclipseNode fieldNode : fields) {
+				String paramName = String.valueOf(removePrefixFromField(fieldNode));
+				String fieldJavadoc = getDocComment(fieldNode);
+				String paramJavadoc = getConstructorParameterJavadoc(paramName, fieldJavadoc);
+				
+				if (paramJavadoc == null) {
+					paramJavadoc = "@param " + paramName;
+				} else {
+					fieldDescriptionAdded = true;
+				}
+				
+				constructorJavadoc = addJavadocLine(constructorJavadoc, paramJavadoc);
 			}
-			
-			constructorJavadoc = addJavadocLine(constructorJavadoc, paramJavadoc);
-		}
-		if (fieldDescriptionAdded) {
-			setDocComment(typeNode, constructorNode, constructorJavadoc);
-		}
+			if (fieldDescriptionAdded) {
+				setDocComment(typeNode, constructorNode, constructorJavadoc);
+			}
+		} catch (Exception ignore) {}
 	}
 }
