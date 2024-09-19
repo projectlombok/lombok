@@ -21,9 +21,10 @@
  */
 package lombok.eclipse.compile;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -49,7 +50,7 @@ public class NoErrorsTest {
 		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("Usage.java");
 		
 		List<IProblem> problems = collectProblems(cu);
-		assertTrue(problems.isEmpty());
+		assertEquals(Collections.emptyList(), problems);
 	}
 	
 	@Test
@@ -57,7 +58,15 @@ public class NoErrorsTest {
 		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("Usage.java");
 		
 		List<IProblem> problems = collectProblems(cu);
-		assertTrue(problems.isEmpty());
+		assertEquals(Collections.emptyList(), problems);
+	}
+	
+	@Test
+	public void synchronizedUsage() throws Exception {
+		ICompilationUnit cu = setup.getPackageFragment().getCompilationUnit("Usage.java");
+		
+		List<IProblem> problems = collectProblems(cu);
+		assertEquals(Collections.emptyList(), problems);
 	}
 	
 	private List<IProblem> collectProblems(ICompilationUnit cu) throws JavaModelException {
