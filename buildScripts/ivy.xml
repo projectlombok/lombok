@@ -35,6 +35,7 @@
 		<conf name="eclipse-202312" />
 		<conf name="eclipse-202403" />
 		<conf name="eclipse-202406" />
+		<conf name="eclipse-202409" />
 		
 		<conf name="mapstruct" />
 	</configurations>
@@ -148,7 +149,7 @@
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.15.100" conf="eclipse-202312->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.18.600" conf="eclipse-202312->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.13.100" conf="eclipse-202312->default" transitive="false" />
-			
+		
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.31.0" conf="eclipse-202403->default" transitive="false" />
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.37.0" conf="eclipse-202403->default" transitive="false" />
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.32.0" conf="eclipse-202403->default" transitive="false" />
@@ -161,7 +162,7 @@
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.15.200" conf="eclipse-202403->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.19.0" conf="eclipse-202403->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.14.0" conf="eclipse-202403->default" transitive="false" />
-			
+		
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.31.100" conf="eclipse-202406->default" transitive="false" />
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.38.0" conf="eclipse-202406->default" transitive="false" />
 		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.32.100" conf="eclipse-202406->default" transitive="false" />
@@ -174,6 +175,19 @@
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.15.300" conf="eclipse-202406->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.20.0" conf="eclipse-202406->default" transitive="false" />
 		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.14.100" conf="eclipse-202406->default" transitive="false" />
+		
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.31.100" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.39.0" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="org.eclipse.jdt.ui" rev="3.33.0" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.jdt" name="ecj" rev="3.39.0" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.common" rev="3.19.100" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.registry" rev="3.12.100" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.equinox.app" rev="1.7.200" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.resources" rev="3.21.0" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.contenttype" rev="3.9.500" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.core.jobs" rev="3.15.400" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.osgi" rev="3.21.0" conf="eclipse-202409->default" transitive="false" />
+		<dependency org="org.eclipse.platform" name="org.eclipse.text" rev="3.14.100" conf="eclipse-202409->default" transitive="false" />
 		
 		<!-- integration with other libraries -->
 		<dependency org="org.mapstruct" name="mapstruct-processor" rev="1.3.1.Final" conf="mapstruct->default" transitive="false" />
