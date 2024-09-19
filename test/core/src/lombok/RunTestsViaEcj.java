@@ -79,7 +79,6 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		options.targetJDK = ecjCompilerVersionConstant;
 		options.docCommentSupport = false;
 		options.parseLiteralExpressionsAsConstants = true;
-		options.inlineJsrBytecode = true;
 		options.reportUnusedDeclaredThrownExceptionExemptExceptionAndThrowable = false;
 		options.reportUnusedDeclaredThrownExceptionIncludeDocCommentReference = false;
 		options.reportUnusedDeclaredThrownExceptionWhenOverriding = false;
