@@ -40,7 +40,7 @@
 	</configurations>
 	<dependencies>
 		
-		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.50" conf="build,stripe->default" />
+		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.52" conf="build,stripe->default" />
 		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build,stripe->runtime" />
 		<dependency org="org.apache.ant" name="ant" rev="1.10.5" conf="build->default" />
 		<dependency org="org.apache.ant" name="ant-junit" rev="1.10.5" conf="build->default" />
