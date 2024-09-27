@@ -504,3 +504,10 @@ body {
 a:not([role=button]):focus {
 	outline-offset: 2px;
 }
+
+.sbCnt {
+	height: 90px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
