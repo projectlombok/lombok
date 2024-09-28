@@ -513,7 +513,7 @@ a:not([role=button]):focus {
 }
 
 .sponsored {
-	margin-top: 1em;
+	margin: 1em 0;
 }
 
 .sponsored::before {
