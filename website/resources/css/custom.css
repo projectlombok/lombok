@@ -511,3 +511,19 @@ a:not([role=button]):focus {
 	justify-content: space-between;
 	align-items: center;
 }
+
+.sponsored {
+	margin-top: 1em;
+}
+
+.sponsored::before {
+	content: "Sponsored Content";
+	color: #AAAAAA;
+    font-size: 0.8em;
+    font-style: italic;
+	margin-bottom: 0.4em;
+}
+
+.sponsored blockquote {
+	padding: 0 1em;
+}
