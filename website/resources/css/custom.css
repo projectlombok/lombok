@@ -527,3 +527,7 @@ a:not([role=button]):focus {
 .sponsored blockquote {
 	padding: 0 1em;
 }
+
+.sponsored a {
+	color: #1DA32B;
+}
