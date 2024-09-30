@@ -7,31 +7,40 @@ class BuilderSingularSequencedCollections<T, K, V> {
 	private SequencedMap<K, V> sequencedMap;
 	private SequencedSet<T> sequencedSet;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	BuilderSingularSequencedCollections(final SequencedCollection<T> sequencedCollection, final SequencedMap<K, V> sequencedMap, final SequencedSet<T> sequencedSet) {
 		this.sequencedCollection = sequencedCollection;
 		this.sequencedMap = sequencedMap;
 		this.sequencedSet = sequencedSet;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static class BuilderSingularSequencedCollectionsBuilder<T, K, V> {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<T> sequencedCollection;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<K> sequencedMap$key;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<V> sequencedMap$value;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<T> sequencedSet;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		BuilderSingularSequencedCollectionsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> col(final T col) {
 			if (this.sequencedCollection == null) this.sequencedCollection = new java.util.ArrayList<T>();
 			this.sequencedCollection.add(col);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> sequencedCollection(final java.util.Collection<? extends T> sequencedCollection) {
 			if (sequencedCollection == null) {
 				throw new java.lang.NullPointerException("sequencedCollection cannot be null");
@@ -41,11 +50,13 @@ class BuilderSingularSequencedCollections<T, K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> clearSequencedCollection() {
 			if (this.sequencedCollection != null) this.sequencedCollection.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> map(final K mapKey, final V mapValue) {
 			if (this.sequencedMap$key == null) {
 				this.sequencedMap$key = new java.util.ArrayList<K>();
@@ -56,6 +67,7 @@ class BuilderSingularSequencedCollections<T, K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> sequencedMap(final java.util.Map<? extends K, ? extends V> sequencedMap) {
 			if (sequencedMap == null) {
 				throw new java.lang.NullPointerException("sequencedMap cannot be null");
@@ -71,6 +83,7 @@ class BuilderSingularSequencedCollections<T, K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> clearSequencedMap() {
 			if (this.sequencedMap$key != null) {
 				this.sequencedMap$key.clear();
@@ -79,12 +92,14 @@ class BuilderSingularSequencedCollections<T, K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> set(final T set) {
 			if (this.sequencedSet == null) this.sequencedSet = new java.util.ArrayList<T>();
 			this.sequencedSet.add(set);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> sequencedSet(final java.util.Collection<? extends T> sequencedSet) {
 			if (sequencedSet == null) {
 				throw new java.lang.NullPointerException("sequencedSet cannot be null");
@@ -94,11 +109,13 @@ class BuilderSingularSequencedCollections<T, K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> clearSequencedSet() {
 			if (this.sequencedSet != null) this.sequencedSet.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSequencedCollections<T, K, V> build() {
 			java.util.SequencedCollection<T> sequencedCollection;
 			switch (this.sequencedCollection == null ? 0 : this.sequencedCollection.size()) {
@@ -121,11 +138,13 @@ class BuilderSingularSequencedCollections<T, K, V> {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder(sequencedCollection=" + this.sequencedCollection + ", sequencedMap$key=" + this.sequencedMap$key + ", sequencedMap$value=" + this.sequencedMap$value + ", sequencedSet=" + this.sequencedSet + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static <T, K, V> BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V> builder() {
 		return new BuilderSingularSequencedCollections.BuilderSingularSequencedCollectionsBuilder<T, K, V>();
 	}
