@@ -166,14 +166,12 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [8, 11, 17, 21, 22]
+        jdk: [8, 11, 17, 21, 23]
         tool: 
           - {name: "maven",  cmd: "mvn compile"}
           - {name: "gradle", cmd: "gradle assemble"}
           - {name: "ant",    cmd: "ant dist"}
           - {name: "bazel",  cmd: "bazel build //:ProjectRunner"}
-        exclude:
-          - {tool: {name: "gradle", cmd: "gradle assemble"}, jdk: 22}
       fail-fast: false
     env:
       IMAGE_NAME: lombok-${{ matrix.tool.name }}-jdk${{ matrix.jdk }}
