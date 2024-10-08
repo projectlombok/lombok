@@ -20,6 +20,7 @@
 			<compilerarg value="-J--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED"/>
 			<compilerarg value="-J--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED"/>
 			<compilerarg value="-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"/>
+			<compilerarg value="-proc:full"/>
 		</javac>
 	</target>
 	
