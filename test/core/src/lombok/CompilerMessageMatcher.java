@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +67,7 @@ public class CompilerMessageMatcher {
 	public boolean matches(CompilerMessage message) {
 		outer:
 		for (int i = 0; i < lineNumbers.size(); i++) {
-			//Allow an off-by-1 in line numbers; when running tests that sometimes happens for as yet unknown reasons.
-			if (message.getLine() != lineNumbers.get(i) && message.getLine() -1 != lineNumbers.get(i)) continue;
+			if (message.getLine() != lineNumbers.get(i)) continue;
 			for (String token : messages.get(i)) {
 				if (!message.getMessage().contains(token)) continue outer;
 			}
