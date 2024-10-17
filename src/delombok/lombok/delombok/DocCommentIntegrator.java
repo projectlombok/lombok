@@ -137,7 +137,7 @@ public class DocCommentIntegrator {
 				}
 				
 				@Override public CommentStyle getStyle() {
-					return CommentStyle.JAVADOC;
+					return (CommentStyle) Javac.getCommentStyle();
 				}
 				
 				@Override public boolean isDeprecated() {

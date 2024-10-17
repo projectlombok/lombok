@@ -7,7 +7,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>22</java.version>
+        <java.version>23</java.version>
     </properties>
 
     <build>
@@ -22,6 +22,7 @@
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings> 
                     <fork>true</fork>
+                    <proc>full</proc>
                     <compilerargs>
                         <arg>-Werror</arg>
                         <arg>-Xlint:all</arg>
