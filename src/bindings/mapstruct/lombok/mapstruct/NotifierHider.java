@@ -15,6 +15,7 @@ class NotifierHider {
 	public static class AstModificationNotifier implements AstModifyingAnnotationProcessor {
 		@Override
 		public boolean isTypeComplete(TypeMirror typeMirror) {
+			if (System.getProperty("lombok.disable") != null) return true;
 			List<? extends AnnotationMirror> annotationMirrors = typeMirror.getAnnotationMirrors();
 			if (annotationMirrors == null || annotationMirrors.isEmpty()) return true;
 			
