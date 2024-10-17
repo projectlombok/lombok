@@ -39,10 +39,6 @@ import sun.misc.Unsafe;
 
 class AnnotationProcessorHider {
 
-	public static class AstModificationNotifierData {
-		public volatile static boolean lombokInvoked = false;
-	}
-	
 	public static class AnnotationProcessor extends AbstractProcessor {
 		private final AbstractProcessor instance = createWrappedInstance();
 		
@@ -60,7 +56,6 @@ class AnnotationProcessorHider {
 		
 		@Override public void init(ProcessingEnvironment processingEnv) {
 			disableJava9SillyWarning();
-			AstModificationNotifierData.lombokInvoked = true;
 			instance.init(processingEnv);
 			super.init(processingEnv);
 		}
