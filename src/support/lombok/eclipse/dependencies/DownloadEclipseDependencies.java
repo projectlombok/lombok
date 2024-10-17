@@ -90,22 +90,14 @@ public class DownloadEclipseDependencies {
 			return;
 		}
 		System.out.print("Downloading '" + filename + "'... ");
-		ZipInputStream in = null;
-		ZipOutputStream out = null;
+		
+		InputStream in = null;
+		OutputStream out = null;
 		try {
-			in = new ZipInputStream(getStreamForUrl(repositoryUrl + filename));
-			out = new ZipOutputStream(new FileOutputStream(targetFile));
+			in = getStreamForUrl(repositoryUrl + filename);
+			out = new FileOutputStream(targetFile);
 			
-			ZipEntry zipEntry;
-			while ((zipEntry = in.getNextEntry()) != null) {
-				String name = zipEntry.getName();
-				
-				// Remove signature files
-				if (name.matches("META-INF/.*\\.(SF|RSA)")) continue;
-				
-				out.putNextEntry(new ZipEntry(name));
-				copy(in, out);
-			}
+			copyZipButStripSignatures(in, out);
 			System.out.println("[done]");
 		} catch (IOException e) {
 			System.out.println("[error]");
@@ -115,6 +107,18 @@ public class DownloadEclipseDependencies {
 			} catch (Exception ignore) {
 			}
 			if (out != null) out.close();
+		}
+	}
+	
+	private static void copyZipButStripSignatures(InputStream rawIn, OutputStream rawOut) throws IOException {
+		ZipInputStream in = new ZipInputStream(rawIn);
+		ZipOutputStream out = new ZipOutputStream(rawOut);
+		
+		ZipEntry zipEntry;
+		while ((zipEntry = in.getNextEntry()) != null) {
+			if (zipEntry.getName().matches("META-INF/.*\\.(SF|RSA)")) continue;
+			out.putNextEntry(zipEntry);
+			copy(in, out);
 		}
 	}
 	
