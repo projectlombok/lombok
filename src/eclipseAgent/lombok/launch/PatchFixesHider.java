@@ -896,7 +896,7 @@ final class PatchFixesHider {
 			return array.length == 0;
 		}
 		
-		public static Expression returnNullExpression(Object string) {
+		public static Expression returnNullExpression(Object arg0) {
 			return null;
 		}
 		
