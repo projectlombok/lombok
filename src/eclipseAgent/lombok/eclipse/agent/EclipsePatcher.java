@@ -875,6 +875,14 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.target(new MethodTarget(SOURCE_TYPE_CONVERTER_SIG, "convertAnnotations", ANNOTATION_SIG + "[]", I_ANNOTATABLE_SIG))
 				.wrapMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "convertAnnotations", ANNOTATION_SIG + "[]", ANNOTATION_SIG + "[]", I_ANNOTATABLE_SIG))
 				.request(StackRequest.PARAM1, StackRequest.RETURN_VALUE).build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
+				.target(new MethodTarget(SOURCE_TYPE_CONVERTER_SIG, "parseMemberValue", "org.eclipse.jdt.internal.compiler.ast.Expression", "char[]"))
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isEmpty", "boolean", "char[]"))
+				.valueMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "returnNullExpression", "org.eclipse.jdt.internal.compiler.ast.Expression", "java.lang.Object"))
+				.request(StackRequest.PARAM1)
+				.transplant()
+				.build());
 	}
 	
 	private static void patchEclipseDebugPatches(ScriptManager sm) {

@@ -892,6 +892,14 @@ final class PatchFixesHider {
 			return replace;
 		}
 		
+		public static boolean isEmpty(char[] array) {
+			return array.length == 0;
+		}
+		
+		public static Expression returnNullExpression(Object string) {
+			return null;
+		}
+		
 		public static String getRealNodeSource(String original, org.eclipse.jdt.internal.compiler.ast.ASTNode node) {
 			if (!isGenerated(node)) return original;
 			
