@@ -36,6 +36,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Download eclipse bundles.
@@ -87,12 +90,14 @@ public class DownloadEclipseDependencies {
 			return;
 		}
 		System.out.print("Downloading '" + filename + "'... ");
+		
 		InputStream in = null;
 		OutputStream out = null;
 		try {
 			in = getStreamForUrl(repositoryUrl + filename);
 			out = new FileOutputStream(targetFile);
-			copy(in, out);
+			
+			copyZipButStripSignatures(in, out);
 			System.out.println("[done]");
 		} catch (IOException e) {
 			System.out.println("[error]");
@@ -102,6 +107,18 @@ public class DownloadEclipseDependencies {
 			} catch (Exception ignore) {
 			}
 			if (out != null) out.close();
+		}
+	}
+	
+	private static void copyZipButStripSignatures(InputStream rawIn, OutputStream rawOut) throws IOException {
+		ZipInputStream in = new ZipInputStream(rawIn);
+		ZipOutputStream out = new ZipOutputStream(rawOut);
+		
+		ZipEntry zipEntry;
+		while ((zipEntry = in.getNextEntry()) != null) {
+			if (zipEntry.getName().matches("META-INF/.*\\.(SF|RSA)")) continue;
+			out.putNextEntry(zipEntry);
+			copy(in, out);
 		}
 	}
 	
