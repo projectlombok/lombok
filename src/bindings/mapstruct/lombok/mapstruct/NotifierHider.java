@@ -12,26 +12,18 @@ import java.util.List;
  * correctly handled, and MapStruct processing will be delayed until Lombok completely finishes processing required types.
  */
 class NotifierHider {
-	
 	public static class AstModificationNotifier implements AstModifyingAnnotationProcessor {
-
 		@Override
-		public boolean isTypeComplete(final TypeMirror typeMirror) {
-			final List<? extends AnnotationMirror> annotationMirrors = typeMirror.getAnnotationMirrors();
-			if (annotationMirrors == null || annotationMirrors.isEmpty()) {
-				return true;
+		public boolean isTypeComplete(TypeMirror typeMirror) {
+			List<? extends AnnotationMirror> annotationMirrors = typeMirror.getAnnotationMirrors();
+			if (annotationMirrors == null || annotationMirrors.isEmpty()) return true;
+			
+			for (AnnotationMirror annotationMirror : annotationMirrors) {
+				String annotationName = String.valueOf(annotationMirror);
+				if (annotationName.startsWith("@lombok.")) return false;
 			}
-
-			for (final AnnotationMirror annotationMirror : annotationMirrors) {
-				final String annotationName = String.valueOf(annotationMirror);
-				// check for ClaimingProcessor's SupportedAnnotationTypes
-				if (annotationName.startsWith("@lombok.")) {
-					return false;
-				}
-			}
-
+			
 			return true;
-
 		}
 	}
 }
