@@ -192,3 +192,42 @@ jobs:
         
       - name: Compile in container
         run: docker run --entrypoint="" -v $(pwd)/lombok.jar:/workspace/lombok.jar $IMAGE_NAME /bin/bash -c "cd classpath; ${{ matrix.tool.cmd }}"
+
+  module-tests:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy: 
+      matrix: 
+        jdk: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+        dir: [multiReleaseJar, moduleBasedMultiProject]
+      fail-fast: false
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.jdk }}
+          distribution: 'zulu'
+        
+      - uses: actions/download-artifact@v3
+        with:
+          name: lombok.jar
+          path: dist
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ivyCache
+            lib
+          key: ${{ runner.os }}-${{ hashFiles('**/ivy.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+        
+      - name: Run tests
+        working-directory: ./test/manual/${{ matrix.dir }}/
+        run: ./runTests
+
