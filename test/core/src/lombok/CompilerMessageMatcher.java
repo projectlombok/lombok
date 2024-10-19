@@ -36,6 +36,7 @@ import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 public class CompilerMessageMatcher {
 	/** Line Number (starting at 1) */
 	private final List<Integer> lineNumbers = new ArrayList<Integer>();
+	private final List<Long> positions = new ArrayList<Long>();
 	private final List<List<String>> messages = new ArrayList<List<String>>();
 	private boolean optional;
 	
@@ -48,6 +49,7 @@ public class CompilerMessageMatcher {
 	public static CompilerMessageMatcher asCompilerMessageMatcher(CompilerMessage message) {
 		CompilerMessageMatcher cmm = new CompilerMessageMatcher();
 		cmm.lineNumbers.add((int) message.getLine());
+		cmm.positions.add(message.getPosition());
 		cmm.messages.add(Arrays.asList(message.getMessage().split("\\s+")));
 		return cmm;
 	}
@@ -55,7 +57,9 @@ public class CompilerMessageMatcher {
 	@Override public String toString() {
 		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < lineNumbers.size(); i++) {
-			out.append(lineNumbers.get(i)).append(" ");
+			out.append(lineNumbers.get(i));
+			if (positions.get(i) != null) out.append(":").append(positions.get(i));
+			out.append(" ");
 			for (String part : messages.get(i)) out.append(part).append(" ");
 			if (out.length() > 0) out.setLength(out.length() - 1);
 			out.append(" |||| ");
@@ -68,6 +72,7 @@ public class CompilerMessageMatcher {
 		outer:
 		for (int i = 0; i < lineNumbers.size(); i++) {
 			if (message.getLine() != lineNumbers.get(i)) continue;
+			if (positions.get(i) != null && !positions.get(i).equals(message.getPosition())) continue;
 			for (String token : messages.get(i)) {
 				if (!message.getMessage().contains(token)) continue outer;
 			}
@@ -87,7 +92,7 @@ public class CompilerMessageMatcher {
 		return out;
 	}
 	
-	private static final Pattern PATTERN = Pattern.compile("^(-?\\d+) (.*)$");
+	private static final Pattern PATTERN = Pattern.compile("^(-?\\d+)(?::(\\d+))? (.*)$");
 	
 	private static CompilerMessageMatcher read(String line) {
 		line = line.trim();
@@ -107,7 +112,8 @@ public class CompilerMessageMatcher {
 			Matcher m = PATTERN.matcher(part);
 			if (!m.matches()) throw new IllegalArgumentException("Typo in test file: " + line);
 			cmm.lineNumbers.add(Integer.parseInt(m.group(1)));
-			cmm.messages.add(Arrays.asList(m.group(2).split("\\s+")));
+			cmm.positions.add(m.group(2) != null ? Long.parseLong(m.group(2)) : null);
+			cmm.messages.add(Arrays.asList(m.group(3).split("\\s+")));
 		}
 		
 		return cmm;
