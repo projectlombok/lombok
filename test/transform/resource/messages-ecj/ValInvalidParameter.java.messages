@@ -1,9 +1,9 @@
-5 NonExistingClass cannot be resolved to a type
 6 NonExistingClass cannot be resolved to a type
-7 The method nonExisitingMethod(Integer) is undefined for the type ValInvalidParameter
-8 nonExistingObject cannot be resolved
-9 The method nonExistingMethod() is undefined for the type Integer
-10 NonExistingClass cannot be resolved to a type
-11 The method b2(int, int) in the type ValInvalidParameter is not applicable for the arguments (int)
-12 The method a(String) is ambiguous for the type ValInvalidParameter
+7 NonExistingClass cannot be resolved to a type
+8 The method nonExisitingMethod(Integer) is undefined for the type ValInvalidParameter
+9 nonExistingObject cannot be resolved
+10 The method nonExistingMethod() is undefined for the type Integer
+11 NonExistingClass cannot be resolved to a type
+12 The method b2(int, int) in the type ValInvalidParameter is not applicable for the arguments (int)
 13 The method a(String) is ambiguous for the type ValInvalidParameter
+14 The method a(String) is ambiguous for the type ValInvalidParameter

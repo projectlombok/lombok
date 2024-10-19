@@ -1,1 +1,1 @@
-5 @Synchronized is legal only on methods in classes and enums.
+6 @Synchronized is legal only on methods in classes and enums.

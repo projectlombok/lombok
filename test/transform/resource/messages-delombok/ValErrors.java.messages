@@ -1,2 +1,2 @@
-6 Cannot use 'val' here because initializer expression does not have a representable type: Type cannot be resolved
-10 'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })
+7 Cannot use 'val' here because initializer expression does not have a representable type: Type cannot be resolved
+11 'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })

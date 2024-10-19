@@ -1,1 +1,1 @@
-4 @Delegate does not support recursion (delegating to a type that itself has @Delegate members). Member "inner" is @Delegate in type "DelegateRecursionCenter"
+5 @Delegate does not support recursion (delegating to a type that itself has @Delegate members). Member "inner" is @Delegate in type "DelegateRecursionCenter"

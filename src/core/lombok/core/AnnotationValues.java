@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2022 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -182,6 +182,7 @@ public class AnnotationValues<A extends Annotation> {
 					"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
 			}
 			out.add((String) result);
+			idx++;
 		}
 		
 		return Collections.unmodifiableList(out);

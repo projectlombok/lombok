@@ -1,9 +1,9 @@
-3 cannot find symbol
-4 cannot find symbol
-5 cannot find symbol
-6 cannot find symbol
-7 cannot find symbol
-8 cannot find symbol
-9 method b2 in class ValInvalidParameter cannot be applied to given types;
-10 reference to a is ambiguous
-11 reference to a is ambiguous
+4 cannot find symbol symbol: class NonExistingClass location: class ValInvalidParameter
+5 cannot find symbol symbol: class NonExistingClass location: class ValInvalidParameter
+6 cannot find symbol symbol: method nonExisitingMethod(java.lang.Integer) location: class ValInvalidParameter
+7 cannot find symbol symbol: variable nonExistingObject location: class ValInvalidParameter
+8 cannot find symbol symbol: method nonExistingMethod() location: class java.lang.Integer
+9 cannot find symbol symbol: class NonExistingClass location: class ValInvalidParameter
+10 method b2 in class ValInvalidParameter cannot be applied to given types; required: int,int found: int reason: actual and formal argument lists differ in length
+11 reference to a is ambiguous both method a(java.lang.String) in ValInvalidParameter and method a(java.lang.Integer) in ValInvalidParameter match
+12 reference to a is ambiguous both method a(java.lang.String) in ValInvalidParameter and method a(java.lang.Integer) in ValInvalidParameter match
