@@ -23,6 +23,7 @@ package lombok.eclipse.dependencies;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -66,17 +67,12 @@ public class DownloadEclipseDependencies {
 		String pluginSource = updateSite.getResolvedUrl() + "/plugins/";
 		
 		for (String artifact : artifacts) {
-			try {
-				downloadFile(artifact, pluginSource, pluginTarget);
-			} catch (Exception e) {
-			}
-			
+			// Download artifact
+			downloadFile(artifact, pluginSource, pluginTarget);
+			// Download artifact source
 			int index = artifact.lastIndexOf("_");
 			String source = artifact.substring(0, index) + ".source" + artifact.substring(index);
-			try {
-				downloadFile(source, pluginSource, pluginTarget);
-			} catch (Exception e) {
-			}
+			downloadFile(source, pluginSource, pluginTarget);
 		}
 		
 		writeEclipseLibrary(target, eclipseVersion);
@@ -102,23 +98,27 @@ public class DownloadEclipseDependencies {
 		} catch (IOException e) {
 			System.out.println("[error]");
 		} finally {
-			if (in != null) try {
-				in.close();
-			} catch (Exception ignore) {
-			}
-			if (out != null) out.close();
+			closeQuietly(in);
+			closeQuietly(out);
 		}
 	}
 	
 	private static void copyZipButStripSignatures(InputStream rawIn, OutputStream rawOut) throws IOException {
-		ZipInputStream in = new ZipInputStream(rawIn);
-		ZipOutputStream out = new ZipOutputStream(rawOut);
-		
-		ZipEntry zipEntry;
-		while ((zipEntry = in.getNextEntry()) != null) {
-			if (zipEntry.getName().matches("META-INF/.*\\.(SF|RSA)")) continue;
-			out.putNextEntry(zipEntry);
-			copy(in, out);
+		ZipInputStream in = null;
+		ZipOutputStream out = null;
+		try {
+			in = new ZipInputStream(rawIn);
+			out = new ZipOutputStream(rawOut);
+			
+			ZipEntry zipEntry;
+			while ((zipEntry = in.getNextEntry()) != null) {
+				if (zipEntry.getName().matches("META-INF/.*\\.(SF|RSA)")) continue;
+				out.putNextEntry(zipEntry);
+				copy(in, out);
+			}
+		} finally {
+			closeQuietly(in);
+			closeQuietly(out);
 		}
 	}
 	
@@ -128,6 +128,15 @@ public class DownloadEclipseDependencies {
 			int r = from.read(b);
 			if (r == -1) return;
 			to.write(b, 0, r);
+		}
+	}
+	
+	private static void closeQuietly(Closeable closeable) {
+		if (closeable != null) {
+			try {
+				 closeable.close();
+			} catch (IOException ignore) {
+			}
 		}
 	}
 	
