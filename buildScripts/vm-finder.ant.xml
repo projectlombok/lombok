@@ -143,7 +143,7 @@ and rerun the build; this build is capable of finding VMs automatically on many 
 			<matches pattern="^\s*$" string="${jvm.loc}" />
 		</condition>
 		<fail if="jvm.loc.aborted">aborted</fail>
-		<fail if="jvm.loc.invalid">.
+		<fail>.
 
 ERROR: That does not appear to be a valid location; ${jvm.loc}/bin/${exe.java} should exist.
 			<condition>
