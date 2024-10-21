@@ -80,6 +80,29 @@ public enum JavacResolver {
 			}
 			return true;
 		}
+	},
+	EXTENDS_RECORD {
+		@Override
+		public Type resolveMember(JavacNode node, JCExpression expr) {
+			Type type = CLASS_AND_METHOD.resolveMember(node, expr);
+			if (type == null) {
+				JavacNode classNode = node;
+				while (classNode != null && noneOf(classNode.get(), JCBlock.class, JCMethodDecl.class, JCVariableDecl.class)) {
+					classNode = classNode.up();
+				}
+				if (classNode != null) {
+					type = CLASS.resolveMember(classNode, expr);
+				}
+			}
+			return type;
+		}
+		
+		private boolean noneOf(Object o, Class<?>... clazzes) {
+			for (Class<?> clazz : clazzes) {
+				if (clazz.isInstance(o)) return false;
+			}
+			return true;
+		}
 	};
 	
 	
