@@ -69,6 +69,7 @@ public class DownloadEclipseDependencies {
 		for (String artifact : artifacts) {
 			// Download artifact
 			downloadFile(artifact, pluginSource, pluginTarget);
+			
 			// Download artifact source
 			int index = artifact.lastIndexOf("_");
 			String source = artifact.substring(0, index) + ".source" + artifact.substring(index);
@@ -95,31 +96,29 @@ public class DownloadEclipseDependencies {
 			
 			copyZipButStripSignatures(in, out);
 			System.out.println("[done]");
-		} catch (IOException e) {
-			System.out.println("[error]");
 		} finally {
-			closeQuietly(in);
-			closeQuietly(out);
+			try {
+				if (in != null) in.close();
+			} finally {
+				if (out != null) out.close();
+			}
 		}
 	}
 	
 	private static void copyZipButStripSignatures(InputStream rawIn, OutputStream rawOut) throws IOException {
 		ZipInputStream in = null;
 		ZipOutputStream out = null;
-		try {
-			in = new ZipInputStream(rawIn);
-			out = new ZipOutputStream(rawOut);
-			
-			ZipEntry zipEntry;
-			while ((zipEntry = in.getNextEntry()) != null) {
-				if (zipEntry.getName().matches("META-INF/.*\\.(SF|RSA)")) continue;
-				out.putNextEntry(zipEntry);
-				copy(in, out);
-			}
-		} finally {
-			closeQuietly(in);
-			closeQuietly(out);
+		
+		in = new ZipInputStream(rawIn);
+		out = new ZipOutputStream(rawOut);
+		
+		ZipEntry zipEntry;
+		while ((zipEntry = in.getNextEntry()) != null) {
+			if (zipEntry.getName().matches("META-INF/.*\\.(SF|RSA)")) continue;
+			out.putNextEntry(zipEntry);
+			copy(in, out);
 		}
+		out.close(); // zip streams buffer.
 	}
 	
 	private static void copy(InputStream from, OutputStream to) throws IOException {
@@ -131,21 +130,11 @@ public class DownloadEclipseDependencies {
 		}
 	}
 	
-	private static void closeQuietly(Closeable closeable) {
-		if (closeable != null) {
-			try {
-				 closeable.close();
-			} catch (IOException ignore) {
-			}
-		}
-	}
-	
 	private static InputStream getStreamForUrl(String url) throws IOException, MalformedURLException {
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setRequestProperty("User-Agent", "lombok");
 		connection.setRequestProperty("Accept", "*/*");
-		InputStream in = new BufferedInputStream(connection.getInputStream());
-		return in;
+		return new BufferedInputStream(connection.getInputStream());
 	}
 	
 	private static void writeEclipseLibrary(String target, String eclipseVersion) throws IOException {
