@@ -32,6 +32,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.spi.Provides;
+import lombok.ExtendsRecord;
 
 @Provides
 @HandlerPriority(32768)
@@ -39,5 +40,14 @@ import lombok.spi.Provides;
 public class HandleSuperBuilderRemove extends JavacAnnotationHandler<SuperBuilder> {
 	@Override public void handle(AnnotationValues<SuperBuilder> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, SuperBuilder.class);
+	}
+}
+
+@Provides
+@HandlerPriority(32768)
+@AlreadyHandledAnnotations
+public class HandleExtendsRecordRemove extends JavacAnnotationHandler<ExtendsRecord> {
+	@Override public void handle(AnnotationValues<ExtendsRecord> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, ExtendsRecord.class);
 	}
 }

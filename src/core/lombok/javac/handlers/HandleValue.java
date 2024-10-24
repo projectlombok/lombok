@@ -52,6 +52,7 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 	private HandleGetter handleGetter = new HandleGetter();
 	private HandleEqualsAndHashCode handleEqualsAndHashCode = new HandleEqualsAndHashCode();
 	private HandleToString handleToString = new HandleToString();
+	private HandleExtendsRecord handleExtendsRecord = new HandleExtendsRecord();
 	
 	@Override public void handle(AnnotationValues<Value> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.VALUE_FLAG_USAGE, "@Value");
@@ -79,5 +80,6 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCAnnotation>nil());
 		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		handleToString.generateToStringForType(typeNode, annotationNode);
+		handleExtendsRecord.handle(annotation, ast, annotationNode);
 	}
 }
