@@ -23,6 +23,7 @@ package lombok.eclipse.dependencies;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -66,17 +67,13 @@ public class DownloadEclipseDependencies {
 		String pluginSource = updateSite.getResolvedUrl() + "/plugins/";
 		
 		for (String artifact : artifacts) {
-			try {
-				downloadFile(artifact, pluginSource, pluginTarget);
-			} catch (Exception e) {
-			}
+			// Download artifact
+			downloadFile(artifact, pluginSource, pluginTarget);
 			
+			// Download artifact source
 			int index = artifact.lastIndexOf("_");
 			String source = artifact.substring(0, index) + ".source" + artifact.substring(index);
-			try {
-				downloadFile(source, pluginSource, pluginTarget);
-			} catch (Exception e) {
-			}
+			downloadFile(source, pluginSource, pluginTarget);
 		}
 		
 		writeEclipseLibrary(target, eclipseVersion);
@@ -99,20 +96,21 @@ public class DownloadEclipseDependencies {
 			
 			copyZipButStripSignatures(in, out);
 			System.out.println("[done]");
-		} catch (IOException e) {
-			System.out.println("[error]");
 		} finally {
-			if (in != null) try {
-				in.close();
-			} catch (Exception ignore) {
+			try {
+				if (in != null) in.close();
+			} finally {
+				if (out != null) out.close();
 			}
-			if (out != null) out.close();
 		}
 	}
 	
 	private static void copyZipButStripSignatures(InputStream rawIn, OutputStream rawOut) throws IOException {
-		ZipInputStream in = new ZipInputStream(rawIn);
-		ZipOutputStream out = new ZipOutputStream(rawOut);
+		ZipInputStream in = null;
+		ZipOutputStream out = null;
+		
+		in = new ZipInputStream(rawIn);
+		out = new ZipOutputStream(rawOut);
 		
 		ZipEntry zipEntry;
 		while ((zipEntry = in.getNextEntry()) != null) {
@@ -120,6 +118,7 @@ public class DownloadEclipseDependencies {
 			out.putNextEntry(zipEntry);
 			copy(in, out);
 		}
+		out.close(); // zip streams buffer.
 	}
 	
 	private static void copy(InputStream from, OutputStream to) throws IOException {
@@ -135,8 +134,7 @@ public class DownloadEclipseDependencies {
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setRequestProperty("User-Agent", "lombok");
 		connection.setRequestProperty("Accept", "*/*");
-		InputStream in = new BufferedInputStream(connection.getInputStream());
-		return in;
+		return new BufferedInputStream(connection.getInputStream());
 	}
 	
 	private static void writeEclipseLibrary(String target, String eclipseVersion) throws IOException {
