@@ -1,1 +1,1 @@
-9 reference to ambiguous is ambiguous both method <T,R>ambiguous(T,java.util.function.Function<T,R>) in ExtensionMethodAmbiguousFunctional.Extensions and method <T>ambiguous(T,java.util.function.Consumer<T>) in ExtensionMethodAmbiguousFunctional.Extensions match
+10 reference to ambiguous is ambiguous both method <T,R>ambiguous(T,java.util.function.Function<T,R>) in ExtensionMethodAmbiguousFunctional.Extensions and method <T>ambiguous(T,java.util.function.Consumer<T>) in ExtensionMethodAmbiguousFunctional.Extensions match
