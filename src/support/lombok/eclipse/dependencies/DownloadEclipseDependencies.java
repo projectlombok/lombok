@@ -23,7 +23,6 @@ package lombok.eclipse.dependencies;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -73,7 +72,12 @@ public class DownloadEclipseDependencies {
 			// Download artifact source
 			int index = artifact.lastIndexOf("_");
 			String source = artifact.substring(0, index) + ".source" + artifact.substring(index);
-			downloadFile(source, pluginSource, pluginTarget);
+			try {
+				downloadFile(source, pluginSource, pluginTarget);
+			} catch (Exception e) {
+				// It's just the source; sometimes these aren't present (specifically, `org.eclipse.swt` doesn't currently appear to have the sources, at least not using the `_sources` naming scheme). Don't fail, just skip them.
+				System.out.println("[failed]");
+			}
 		}
 		
 		writeEclipseLibrary(target, eclipseVersion);
