@@ -1,0 +1,2 @@
+2:60 You must use constant literals in lombok annotations; they cannot be references to (static) fields.
+7:160 You must use constant literals in lombok annotations; they cannot be references to (static) fields.

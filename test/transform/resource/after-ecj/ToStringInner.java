@@ -5,7 +5,7 @@ import lombok.ToString;
     ToStringInner() {
       super();
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (("ToStringOuter.ToStringInner(y=" + this.y) + ")");
     }
   }
@@ -14,7 +14,7 @@ import lombok.ToString;
     ToStringStaticInner() {
       super();
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (("ToStringOuter.ToStringStaticInner(y=" + this.y) + ")");
     }
   }
@@ -24,7 +24,7 @@ import lombok.ToString;
       ToStringMoreInner() {
         super();
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
         return (("ToStringOuter.ToStringMiddle.ToStringMoreInner(name=" + this.name) + ")");
       }
     }
@@ -37,7 +37,7 @@ import lombok.ToString;
   ToStringOuter() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("ToStringOuter(x=" + this.x) + ", name=") + this.name) + ")");
   }
 }

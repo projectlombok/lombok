@@ -10,7 +10,16 @@ public class BuilderWithDeprecated {
 	java.util.List<String> strings;
 	@Deprecated
 	ImmutableList<Integer> numbers;
+	/**
+	 * Creates a new {@code BuilderWithDeprecated} instance.
+	 *
+	 * @param dep1 @deprecated since always
+	 * @param dep2 
+	 * @param strings 
+	 * @param numbers 
+	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	BuilderWithDeprecated(final String dep1, final int dep2, final java.util.List<String> strings, final ImmutableList<Integer> numbers) {
 		this.dep1 = dep1;
 		this.dep2 = dep2;
@@ -18,16 +27,22 @@ public class BuilderWithDeprecated {
 		this.numbers = numbers;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static class BuilderWithDeprecatedBuilder {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private String dep1;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private int dep2;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<String> strings;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private com.google.common.collect.ImmutableList.Builder<Integer> numbers;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		BuilderWithDeprecatedBuilder() {
 		}
 		/**
@@ -36,6 +51,7 @@ public class BuilderWithDeprecated {
 		 */
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated.BuilderWithDeprecatedBuilder dep1(final String dep1) {
 			this.dep1 = dep1;
 			return this;
@@ -45,12 +61,14 @@ public class BuilderWithDeprecated {
 		 */
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated.BuilderWithDeprecatedBuilder dep2(final int dep2) {
 			this.dep2 = dep2;
 			return this;
 		}
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated.BuilderWithDeprecatedBuilder string(final String string) {
 			if (this.strings == null) this.strings = new java.util.ArrayList<String>();
 			this.strings.add(string);
@@ -58,6 +76,7 @@ public class BuilderWithDeprecated {
 		}
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated.BuilderWithDeprecatedBuilder strings(final java.util.Collection<? extends String> strings) {
 			if (strings == null) {
 				throw new java.lang.NullPointerException("strings cannot be null");
@@ -68,12 +87,14 @@ public class BuilderWithDeprecated {
 		}
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated.BuilderWithDeprecatedBuilder clearStrings() {
 			if (this.strings != null) this.strings.clear();
 			return this;
 		}
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated.BuilderWithDeprecatedBuilder number(final Integer number) {
 			if (this.numbers == null) this.numbers = com.google.common.collect.ImmutableList.builder();
 			this.numbers.add(number);
@@ -81,6 +102,7 @@ public class BuilderWithDeprecated {
 		}
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated.BuilderWithDeprecatedBuilder numbers(final java.lang.Iterable<? extends Integer> numbers) {
 			if (numbers == null) {
 				throw new java.lang.NullPointerException("numbers cannot be null");
@@ -91,11 +113,13 @@ public class BuilderWithDeprecated {
 		}
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated.BuilderWithDeprecatedBuilder clearNumbers() {
 			this.numbers = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderWithDeprecated build() {
 			java.util.List<String> strings;
 			switch (this.strings == null ? 0 : this.strings.size()) {
@@ -113,11 +137,13 @@ public class BuilderWithDeprecated {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "BuilderWithDeprecated.BuilderWithDeprecatedBuilder(dep1=" + this.dep1 + ", dep2=" + this.dep2 + ", strings=" + this.strings + ", numbers=" + this.numbers + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static BuilderWithDeprecated.BuilderWithDeprecatedBuilder builder() {
 		return new BuilderWithDeprecated.BuilderWithDeprecatedBuilder();
 	}

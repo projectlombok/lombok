@@ -2,7 +2,7 @@
   ToStringAutoSuperWithNoParent() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return "ToStringAutoSuperWithNoParent()";
   }
 }
@@ -10,7 +10,7 @@
   ToStringAutoSuperWithParent() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("ToStringAutoSuperWithParent(super=" + super.toString()) + ")");
   }
 }

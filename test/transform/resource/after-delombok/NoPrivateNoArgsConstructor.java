@@ -2,15 +2,18 @@ public class NoPrivateNoArgsConstructor {
 	public static class NoPrivateNoArgsConstructorData {
 		private final int i;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public NoPrivateNoArgsConstructorData(final int i) {
 			this.i = i;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int getI() {
 			return this.i;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorData)) return false;
@@ -20,11 +23,13 @@ public class NoPrivateNoArgsConstructor {
 			return true;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		protected boolean canEqual(final java.lang.Object other) {
 			return other instanceof NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorData;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -33,6 +38,7 @@ public class NoPrivateNoArgsConstructor {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorData(i=" + this.getI() + ")";
 		}
@@ -40,15 +46,18 @@ public class NoPrivateNoArgsConstructor {
 	public static final class NoPrivateNoArgsConstructorValue {
 		private final int i;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public NoPrivateNoArgsConstructorValue(final int i) {
 			this.i = i;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int getI() {
 			return this.i;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorValue)) return false;
@@ -58,6 +67,7 @@ public class NoPrivateNoArgsConstructor {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -66,6 +76,7 @@ public class NoPrivateNoArgsConstructor {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "NoPrivateNoArgsConstructor.NoPrivateNoArgsConstructorValue(i=" + this.getI() + ")";
 		}

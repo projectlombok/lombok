@@ -6,7 +6,7 @@ class Getter1 {
   boolean hasFoo() {
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean isFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isFoo() {
     return this.foo;
   }
 }
@@ -36,7 +36,7 @@ class Getter4 {
   String hasFoo() {
     return null;
   }
-  public @java.lang.SuppressWarnings("all") String getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFoo() {
     return this.foo;
   }
 }
@@ -48,7 +48,7 @@ class Getter5 {
   String isFoo() {
     return null;
   }
-  public @java.lang.SuppressWarnings("all") String getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFoo() {
     return this.foo;
   }
 }
@@ -69,7 +69,7 @@ class Getter7 {
   boolean hasFoo() {
     return false;
   }
-  public @java.lang.SuppressWarnings("all") String getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFoo() {
     return this.foo;
   }
 }
@@ -81,7 +81,7 @@ class Getter8 {
   boolean isFoo() {
     return false;
   }
-  public @java.lang.SuppressWarnings("all") String getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFoo() {
     return this.foo;
   }
 }
@@ -102,7 +102,7 @@ class Getter10 {
   static boolean hasFoo() {
     return false;
   }
-  public @java.lang.SuppressWarnings("all") boolean isFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isFoo() {
     return this.foo;
   }
 }
@@ -132,7 +132,7 @@ class Getter13 {
   static boolean hasFoo() {
     return false;
   }
-  public @java.lang.SuppressWarnings("all") String getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFoo() {
     return this.foo;
   }
 }
@@ -144,7 +144,7 @@ class Getter14 {
   static boolean isFoo() {
     return false;
   }
-  public @java.lang.SuppressWarnings("all") String getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFoo() {
     return this.foo;
   }
 }
@@ -165,7 +165,7 @@ class Getter16 {
   static String hasFoo() {
     return "";
   }
-  public @java.lang.SuppressWarnings("all") String getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFoo() {
     return this.foo;
   }
 }
@@ -177,7 +177,7 @@ class Getter17 {
   static String isFoo() {
     return "";
   }
-  public @java.lang.SuppressWarnings("all") String getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getFoo() {
     return this.foo;
   }
 }

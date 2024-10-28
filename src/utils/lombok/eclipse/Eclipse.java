@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.eclipse;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -279,22 +280,50 @@ public class Eclipse {
 		}
 	}
 	
-	private static boolean caseStatementInit = false;
-	private static Field caseStatementConstantExpressions = null;
-	public static CaseStatement createCaseStatement(Expression expr) {
-		CaseStatement stat = new CaseStatement(expr, 0, 0);
-		if (expr == null) return stat;
-		if (!caseStatementInit) {
-			try {
-				caseStatementConstantExpressions = Permit.getField(CaseStatement.class, "constantExpressions");
-				caseStatementConstantExpressions.setAccessible(true);
-			} catch (NoSuchFieldException ignore) {}
-			caseStatementInit = true;
+	private static final Field CASE_STATEMENT_CONSTANT_EXPRESSIONS = Permit.permissiveGetField(CaseStatement.class, "constantExpressions");
+	private static final Constructor<CaseStatement> CASE_STATEMENT_CONSTRUCTOR_SINGLE;
+	private static final Constructor<CaseStatement> CASE_STATEMENT_CONSTRUCTOR_ARRAY;
+	private static final Expression[] EMPTY_EXPRESSIONS;
+	static {
+		Constructor<CaseStatement> constructorSingle = null, constructorArray = null;
+		Expression[] emptyExpressions = new Expression[0];
+		
+		try {
+			constructorSingle = Permit.getConstructor(CaseStatement.class, Expression.class, int.class, int.class);
+		} catch (NoSuchMethodException ignore) {
 		}
-		if (caseStatementConstantExpressions != null) try {
-			caseStatementConstantExpressions.set(stat, new Expression[] {expr});
-		} catch (IllegalArgumentException ignore) {
-		} catch (IllegalAccessException ignore) {}
+		
+		try {
+			constructorArray = Permit.getConstructor(CaseStatement.class, Expression[].class, int.class, int.class);
+		} catch (NoSuchMethodException ignore) {
+		}
+		
+		try {
+			emptyExpressions = Permit.get(Permit.permissiveGetField(Expression.class, "NO_EXPRESSIONS"), null);
+		} catch (Throwable ignore) {
+		}
+		
+		CASE_STATEMENT_CONSTRUCTOR_SINGLE = constructorSingle;
+		CASE_STATEMENT_CONSTRUCTOR_ARRAY = constructorArray;
+		EMPTY_EXPRESSIONS = emptyExpressions;
+	}
+	public static CaseStatement createCaseStatement(Expression expr) {
+		final CaseStatement stat;
+		if (CASE_STATEMENT_CONSTRUCTOR_SINGLE != null) {
+			stat = Permit.newInstanceSneaky(CASE_STATEMENT_CONSTRUCTOR_SINGLE, expr, 0, 0);
+			if (stat != null && expr != null && CASE_STATEMENT_CONSTANT_EXPRESSIONS != null) {
+				try {
+					Permit.set(CASE_STATEMENT_CONSTANT_EXPRESSIONS, stat, new Expression[] {expr});
+				} catch (IllegalAccessException ignore) {
+				}
+			}
+		} else {
+			Expression[] expressions = EMPTY_EXPRESSIONS;
+			if (expr != null) {
+				expressions = new Expression[] {expr};
+			}
+			stat = Permit.newInstanceSneaky(CASE_STATEMENT_CONSTRUCTOR_ARRAY, expressions, 0, 0);
+		}
 		return stat;
 	}
 }

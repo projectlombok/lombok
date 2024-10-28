@@ -4,6 +4,7 @@ class EqualsAndHashCodeAutoExclude {
 	transient String b;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeAutoExclude)) return false;
@@ -13,11 +14,13 @@ class EqualsAndHashCodeAutoExclude {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCodeAutoExclude;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -31,6 +34,7 @@ class EqualsAndHashCodeAutoExclude2 {
 	transient String b;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeAutoExclude2)) return false;
@@ -46,11 +50,13 @@ class EqualsAndHashCodeAutoExclude2 {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCodeAutoExclude2;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;

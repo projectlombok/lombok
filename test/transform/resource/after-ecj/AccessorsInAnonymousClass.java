@@ -8,13 +8,13 @@ public class AccessorsInAnonymousClass {
       Inner() {
         super();
       }
-      public @java.lang.SuppressWarnings("all") String string() {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated String string() {
         return this.string;
       }
       /**
        * @return {@code this}.
        */
-      public @java.lang.SuppressWarnings("all") Inner string(final String string) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated Inner string(final String string) {
         this.string = string;
         return this;
       }

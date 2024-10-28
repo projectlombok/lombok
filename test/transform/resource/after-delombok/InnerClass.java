@@ -3,6 +3,7 @@ class A {
 	class B {
 		String s;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public B(final String s) {
 			this.s = s;
 		}
@@ -16,15 +17,18 @@ class C {
 			};
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public D(final A a) {
 			this.a = a;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public A getA() {
 			return this.a;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof C.D)) return false;
@@ -36,6 +40,7 @@ class C {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -45,6 +50,7 @@ class C {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "C.D(a=" + this.getA() + ")";
 		}

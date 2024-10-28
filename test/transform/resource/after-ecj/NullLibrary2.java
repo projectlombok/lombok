@@ -3,10 +3,10 @@ public @lombok.EqualsAndHashCode @lombok.ToString @lombok.AllArgsConstructor cla
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") NullLibrary2 withFoo(final String foo) {
+  public @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") @lombok.Generated NullLibrary2 withFoo(final String foo) {
     return ((this.foo == foo) ? this : new NullLibrary2(foo));
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final @org.springframework.lang.Nullable java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final @org.springframework.lang.Nullable java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof NullLibrary2)))
@@ -20,20 +20,20 @@ public @lombok.EqualsAndHashCode @lombok.ToString @lombok.AllArgsConstructor cla
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final @org.springframework.lang.Nullable java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final @org.springframework.lang.Nullable java.lang.Object other) {
     return (other instanceof NullLibrary2);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     final java.lang.Object $foo = this.foo;
     result = ((result * PRIME) + (($foo == null) ? 43 : $foo.hashCode()));
     return result;
   }
-  public @java.lang.Override @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @org.springframework.lang.NonNull @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("NullLibrary2(foo=" + this.foo) + ")");
   }
-  public @java.lang.SuppressWarnings("all") NullLibrary2(final String foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NullLibrary2(final String foo) {
     super();
     this.foo = foo;
   }

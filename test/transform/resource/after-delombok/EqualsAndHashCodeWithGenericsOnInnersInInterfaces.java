@@ -3,6 +3,7 @@ public interface EqualsAndHashCodeWithGenericsOnInnersInInterfaces<A> {
 		int x;
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof EqualsAndHashCodeWithGenericsOnInnersInInterfaces.Inner)) return false;
@@ -12,11 +13,13 @@ public interface EqualsAndHashCodeWithGenericsOnInnersInInterfaces<A> {
 			return true;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		protected boolean canEqual(final java.lang.Object other) {
 			return other instanceof EqualsAndHashCodeWithGenericsOnInnersInInterfaces.Inner;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;

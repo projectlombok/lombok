@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2022 The Project Lombok Authors.
+ * Copyright (C) 2013-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -923,9 +923,13 @@ public class HandlerUtil {
 		}
 	}
 	
-	public static String stripLinesWithTagFromJavadoc(String javadoc, JavadocTag tag) {
+	public static String stripLinesWithTagFromJavadoc(String javadoc, JavadocTag... tags) {
 		if (javadoc == null || javadoc.isEmpty()) return javadoc;
-		return tag.pattern.matcher(javadoc).replaceAll("").trim();
+		String result = javadoc;
+		for (JavadocTag tag : tags) {
+			result = tag.pattern.matcher(result).replaceAll("").trim();
+		}
+		return result;
 	}
 	
 	public static String stripSectionsFromJavadoc(String javadoc) {
@@ -981,16 +985,35 @@ public class HandlerUtil {
 	
 	public static String addJavadocLine(String in, String line) {
 		if (in == null) return line;
-		if (in.endsWith("\n")) return in + line + "\n";
+		if (in.endsWith("\n")) return in + line;
 		return in + "\n" + line;
 	}
 
 	public static String getParamJavadoc(String methodComment, String param) {
 		if (methodComment == null || methodComment.isEmpty()) return methodComment;
-		Pattern pattern = Pattern.compile("@param " + param + " (\\S|\\s)+?(?=^ ?@)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile("@param " + param + " (\\S|\\s)+?(?=^ ?@|\\z)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(methodComment);
 		if (matcher.find()) {
 			return matcher.group();
+		}
+		return null;
+	}
+	
+	public static String getConstructorJavadocHeader(String typeName) {
+		return "Creates a new {@code " + typeName + "} instance.\n\n";
+	}
+	
+	public static String getConstructorParameterJavadoc(String paramName, String fieldJavadoc) {
+		String fieldBaseJavadoc = stripSectionsFromJavadoc(fieldJavadoc);
+		
+		String paramJavadoc = getParamJavadoc(fieldBaseJavadoc, paramName);
+		if (paramJavadoc != null) {
+			return paramJavadoc;
+		}
+		
+		String javadocWithoutTags = stripLinesWithTagFromJavadoc(fieldBaseJavadoc, JavadocTag.PARAM, JavadocTag.RETURN);
+		if (javadocWithoutTags != null) {
+			return "@param " + paramName + " " + javadocWithoutTags;
 		}
 		return null;
 	}

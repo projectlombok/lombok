@@ -4,7 +4,7 @@ public @NoArgsConstructor(force = true) class NoArgsConstructorForce {
   private final Object[] o;
   private final java.util.List<?>[] fullQualifiedList;
   private final String alreadyInitialized = "yes";
-  public @java.lang.SuppressWarnings("all") NoArgsConstructorForce() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NoArgsConstructorForce() {
     super();
     this.i = null;
     this.o = null;

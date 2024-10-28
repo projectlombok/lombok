@@ -6,10 +6,10 @@ class Setter {
   Setter() {
     super();
   }
-  public static @java.lang.SuppressWarnings("all") void setFoo(final boolean foo) {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated void setFoo(final boolean foo) {
     Setter.foo = foo;
   }
-  public static @java.lang.SuppressWarnings("all") void setBar(final int bar) {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated void setBar(final int bar) {
     Setter.bar = bar;
   }
 }

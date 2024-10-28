@@ -3,10 +3,10 @@ public @lombok.EqualsAndHashCode @lombok.ToString @lombok.AllArgsConstructor cla
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @org.eclipse.jdt.annotation.NonNull @java.lang.SuppressWarnings("all") NullLibrary1 withFoo(final String foo) {
+  public @org.eclipse.jdt.annotation.NonNull @java.lang.SuppressWarnings("all") @lombok.Generated NullLibrary1 withFoo(final String foo) {
     return ((this.foo == foo) ? this : new NullLibrary1(foo));
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.@org.eclipse.jdt.annotation.Nullable Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.@org.eclipse.jdt.annotation.Nullable Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof NullLibrary1)))
@@ -20,20 +20,20 @@ public @lombok.EqualsAndHashCode @lombok.ToString @lombok.AllArgsConstructor cla
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.@org.eclipse.jdt.annotation.Nullable Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.@org.eclipse.jdt.annotation.Nullable Object other) {
     return (other instanceof NullLibrary1);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     final java.lang.Object $foo = this.foo;
     result = ((result * PRIME) + (($foo == null) ? 43 : $foo.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.@org.eclipse.jdt.annotation.NonNull String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.@org.eclipse.jdt.annotation.NonNull String toString() {
     return (("NullLibrary1(foo=" + this.foo) + ")");
   }
-  public @java.lang.SuppressWarnings("all") NullLibrary1(final String foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NullLibrary1(final String foo) {
     super();
     this.foo = foo;
   }

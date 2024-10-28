@@ -28,7 +28,8 @@ import java.lang.annotation.Target;
 
 /**
  * Generates getters for all fields, a useful toString method, and hashCode and equals implementations that check
- * all non-transient fields. Will also generate setters for all non-final fields, as well as a constructor.
+ * all non-transient fields. Will also generate setters for all non-final fields, as well as a constructor
+ * (except that no constructor will be generated if any explicitly written constructors already exist).
  * <p>
  * Equivalent to {@code @Getter @Setter @RequiredArgsConstructor @ToString @EqualsAndHashCode}.
  * <p>

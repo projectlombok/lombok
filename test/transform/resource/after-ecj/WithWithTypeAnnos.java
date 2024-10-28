@@ -15,7 +15,7 @@ class WithWithTypeAnnos {
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") WithWithTypeAnnos withFoo(final @TA List<String> foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated WithWithTypeAnnos withFoo(final @TA List<String> foo) {
     return ((this.foo == foo) ? this : new WithWithTypeAnnos(foo));
   }
 }

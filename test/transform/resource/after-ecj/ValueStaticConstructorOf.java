@@ -7,13 +7,13 @@ public final @Value(staticConstructor = "of") class ValueStaticConstructorOf {
     this.name = name;
     this.price = price;
   }
-  public @java.lang.SuppressWarnings("all") String getName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getName() {
     return this.name;
   }
-  public @java.lang.SuppressWarnings("all") Double getPrice() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated Double getPrice() {
     return this.price;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof ValueStaticConstructorOf)))
@@ -29,7 +29,7 @@ public final @Value(staticConstructor = "of") class ValueStaticConstructorOf {
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     final java.lang.Object $price = this.getPrice();
@@ -38,10 +38,10 @@ public final @Value(staticConstructor = "of") class ValueStaticConstructorOf {
     result = ((result * PRIME) + (($name == null) ? 43 : $name.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("ValueStaticConstructorOf(name=" + this.getName()) + ", price=") + this.getPrice()) + ")");
   }
-  public static @java.lang.SuppressWarnings("all") ValueStaticConstructorOf of(final String name, final Double price) {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated ValueStaticConstructorOf of(final String name, final Double price) {
     return new ValueStaticConstructorOf(name, price);
   }
 }

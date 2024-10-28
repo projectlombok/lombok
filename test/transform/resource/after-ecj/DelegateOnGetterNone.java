@@ -10,10 +10,10 @@ import lombok.Getter;
   DelegateOnGetterNone() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") int getInt() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getInt() {
     return this.bar.getInt();
   }
-  public @java.lang.SuppressWarnings("all") void setList(final java.util.ArrayList<java.lang.String> list) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setList(final java.util.ArrayList<java.lang.String> list) {
     this.bar.setList(list);
   }
 }

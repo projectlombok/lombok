@@ -1369,6 +1369,21 @@ public class JavacHandlerUtil {
 	 * Also takes care of updating the JavacAST.
 	 */
 	public static void injectMethod(JavacNode typeNode, JCMethodDecl method) {
+		JavacNode source = typeNode.getNodeFor(getGeneratedBy(method));
+		injectMethod(typeNode, source, method);
+	}
+	
+	/**
+	 * Adds the given new method declaration to the provided type AST Node.
+	 * Can also inject constructors.
+	 * 
+	 * Also takes care of updating the JavacAST.
+	 * 
+	 * Ordinarily the 'source' is determined automatically. In rare cases generally involving combinations between
+	 * annotations, some of which require re-attribution such as {@code @Delegate}, that doesn't work. This method
+	 * exists if you explicitly have the source.
+	 */
+	public static void injectMethod(JavacNode typeNode, JavacNode source, JCMethodDecl method) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		if (method.getName().contentEquals("<init>")) {
@@ -1389,7 +1404,7 @@ public class JavacHandlerUtil {
 		}
 		
 		addSuppressWarningsAll(method.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(method)), typeNode.getContext());
-		addGenerated(method.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(method)), typeNode.getContext());
+		addGenerated(method.mods, typeNode, source, typeNode.getContext());
 		type.defs = type.defs.append(method);
 		
 		EnterReflect.memberEnter(method, typeNode);
@@ -1527,7 +1542,7 @@ public class JavacHandlerUtil {
 		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_JAKARTA_GENERATED_ANNOTATIONS))) {
 			addAnnotation(mods, node, source, "jakarta.annotation.Generated", node.getTreeMaker().Literal("lombok"));
 		}
-		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
+		if (!Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
 			addAnnotation(mods, node, source, "lombok.Generated", null);
 		}
 	}

@@ -16,6 +16,7 @@ class SetterAndWithMethodJavadoc {
 	 * @param the new value
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void setI(final int i) {
 		this.i = i;
 	}
@@ -25,6 +26,7 @@ class SetterAndWithMethodJavadoc {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public SetterAndWithMethodJavadoc withI(final int i) {
 		return this.i == i ? this : new SetterAndWithMethodJavadoc(i, this.j);
 	}
@@ -33,6 +35,7 @@ class SetterAndWithMethodJavadoc {
 	 * @param the new other value
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void setJ(final int j) {
 		this.j = j;
 	}
@@ -42,6 +45,7 @@ class SetterAndWithMethodJavadoc {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public SetterAndWithMethodJavadoc withJ(final int j) {
 		return this.j == j ? this : new SetterAndWithMethodJavadoc(this.i, j);
 	}

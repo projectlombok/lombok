@@ -7,6 +7,7 @@ class BuilderSingularSets<T> {
 	private Set rawSet;
 	private Set<String> stringSet;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	BuilderSingularSets(final Set<T> dangerMice, final SortedSet<? extends Number> octopodes, final Set rawSet, final Set<String> stringSet) {
 		this.dangerMice = dangerMice;
 		this.octopodes = octopodes;
@@ -14,25 +15,33 @@ class BuilderSingularSets<T> {
 		this.stringSet = stringSet;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static class BuilderSingularSetsBuilder<T> {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<T> dangerMice;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<Number> octopodes;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<java.lang.Object> rawSet;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private java.util.ArrayList<String> stringSet;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		BuilderSingularSetsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> dangerMouse(final T dangerMouse) {
 			if (this.dangerMice == null) this.dangerMice = new java.util.ArrayList<T>();
 			this.dangerMice.add(dangerMouse);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> dangerMice(final java.util.Collection<? extends T> dangerMice) {
 			if (dangerMice == null) {
 				throw new java.lang.NullPointerException("dangerMice cannot be null");
@@ -42,17 +51,20 @@ class BuilderSingularSets<T> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> clearDangerMice() {
 			if (this.dangerMice != null) this.dangerMice.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> octopus(final Number octopus) {
 			if (this.octopodes == null) this.octopodes = new java.util.ArrayList<Number>();
 			this.octopodes.add(octopus);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> octopodes(final java.util.Collection<? extends Number> octopodes) {
 			if (octopodes == null) {
 				throw new java.lang.NullPointerException("octopodes cannot be null");
@@ -62,17 +74,20 @@ class BuilderSingularSets<T> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> clearOctopodes() {
 			if (this.octopodes != null) this.octopodes.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> rawSet(final java.lang.Object rawSet) {
 			if (this.rawSet == null) this.rawSet = new java.util.ArrayList<java.lang.Object>();
 			this.rawSet.add(rawSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> rawSet(final java.util.Collection<?> rawSet) {
 			if (rawSet == null) {
 				throw new java.lang.NullPointerException("rawSet cannot be null");
@@ -82,17 +97,20 @@ class BuilderSingularSets<T> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> clearRawSet() {
 			if (this.rawSet != null) this.rawSet.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> stringSet(final String stringSet) {
 			if (this.stringSet == null) this.stringSet = new java.util.ArrayList<String>();
 			this.stringSet.add(stringSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> stringSet(final java.util.Collection<? extends String> stringSet) {
 			if (stringSet == null) {
 				throw new java.lang.NullPointerException("stringSet cannot be null");
@@ -102,11 +120,13 @@ class BuilderSingularSets<T> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets.BuilderSingularSetsBuilder<T> clearStringSet() {
 			if (this.stringSet != null) this.stringSet.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderSingularSets<T> build() {
 			java.util.Set<T> dangerMice;
 			switch (this.dangerMice == null ? 0 : this.dangerMice.size()) {
@@ -154,11 +174,13 @@ class BuilderSingularSets<T> {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "BuilderSingularSets.BuilderSingularSetsBuilder(dangerMice=" + this.dangerMice + ", octopodes=" + this.octopodes + ", rawSet=" + this.rawSet + ", stringSet=" + this.stringSet + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static <T> BuilderSingularSets.BuilderSingularSetsBuilder<T> builder() {
 		return new BuilderSingularSets.BuilderSingularSetsBuilder<T>();
 	}

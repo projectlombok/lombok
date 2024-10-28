@@ -1,3 +1,17 @@
+.main-section a,
+.footer a {
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	text-decoration-color: #d9230f20;
+}
+
+.main-section a:hover,
+.main-section a:focus,
+.footer a:hover,
+.footer a:focus {
+	text-decoration-color: #91170A;
+}
+
 .importantNotification {
 	background-color: #FFEBCD;
 	border-radius: 20px;
@@ -5,7 +19,7 @@
 	margin: 10px;
 }
 
-.tidelift-link-inline {
+.main-section .tidelift-link-inline {
 	border-radius: 18px;
 	background-color: #626980;
 	background-color: #626980;
@@ -15,9 +29,10 @@
 	background-size: 12px;
 	padding: 2px 8px 2px 26px;
 	color: white;
+	text-decoration-color: #ffffff20;
 }
 
-.tidelift-link {
+.main-section .tidelift-link {
 	border-bottom-left-radius: 18px;
 	border-top-left-radius: 18px;
 	background-color: #626980;
@@ -32,13 +47,15 @@
 	background-position: 10px;
 	background-size: 12px;
 	padding: 6px 12px 6px 28px;
+	text-decoration-color: #ffffff20;
 }
 
-.tidelift-link:focus,
-.tidelift-link-inline:focus,
-.tidelift-link:hover,
-.tidelift-link-inline:hover {
+.main-section .tidelift-link:focus,
+.main-section .tidelift-link-inline:focus,
+.main-section .tidelift-link:hover,
+.main-section .tidelift-link-inline:hover {
 	color: white;
+	text-decoration-color: white;
 }
 
 #tideliftlink {
@@ -68,6 +85,10 @@ pre {
 	display: inline-block;
 	margin: 16px 0;
 	text-align: center;
+}
+
+.main-section a.tideliftb {
+	text-decoration: none;
 }
 
 .tideliftb1 {
@@ -503,4 +524,41 @@ body {
 
 a:not([role=button]):focus {
 	outline-offset: 2px;
+}
+
+.sbCnt {
+	min-height: 120px;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+
+.sbCnt img {
+	object-fit: contain;
+}
+
+.sponsored {
+	margin: 1em 0;
+}
+
+.sponsored::before {
+	content: "Sponsored Content";
+	color: #AAAAAA;
+    font-size: 0.8em;
+    font-style: italic;
+	margin-bottom: 0.4em;
+}
+
+.sponsored blockquote {
+	padding: 0 1em;
+}
+
+.main-section .sponsored a {
+	color: #008800;
+	text-decoration-color: currentcolor;
+}
+
+.main-section .sponsored a:hover {
+	color: #008800;
+	text-decoration-color: currentcolor;
 }

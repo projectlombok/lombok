@@ -3,6 +3,7 @@ final class EqualsAndHashCodeOf {
 	int y;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeOf)) return false;
@@ -12,6 +13,7 @@ final class EqualsAndHashCodeOf {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -24,6 +26,7 @@ final class EqualsAndHashCodeExclude {
 	int y;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeExclude)) return false;
@@ -33,6 +36,7 @@ final class EqualsAndHashCodeExclude {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;

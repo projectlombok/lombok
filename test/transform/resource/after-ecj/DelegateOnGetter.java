@@ -9,7 +9,7 @@ class DelegateOnGetter {
   DelegateOnGetter() {
     super();
   }
-  public @Delegate @java.lang.SuppressWarnings({"all", "unchecked"}) Bar getBar() {
+  public @Delegate @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated Bar getBar() {
     java.lang.Object $value = this.bar.get();
     if (($value == null))
         {
@@ -35,10 +35,10 @@ class DelegateOnGetter {
         }
     return (Bar) (($value == this.bar) ? null : $value);
   }
-  public @java.lang.SuppressWarnings("all") int getInt() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getInt() {
     return this.getBar().getInt();
   }
-  public @java.lang.SuppressWarnings("all") void setList(final java.util.ArrayList<java.lang.String> list) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setList(final java.util.ArrayList<java.lang.String> list) {
     this.getBar().setList(list);
   }
 }

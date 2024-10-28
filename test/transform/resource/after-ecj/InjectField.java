@@ -4,9 +4,9 @@ import lombok.Synchronized;
 @Log enum InjectField1 {
   A(),
   B(),
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField1.class.getName());
-  private final java.lang.Object $lock = new java.lang.Object[0];
-  private static final java.lang.Object $LOCK = new java.lang.Object[0];
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField1.class.getName());
+  private final @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.Object $lock = new java.lang.Object[0];
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.Object $LOCK = new java.lang.Object[0];
   private static final String LOG_MESSAGE = "static initializer";
   private String fieldA;
   static {
@@ -32,8 +32,8 @@ import lombok.Synchronized;
   }
 }
 @Log class InjectField2 {
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField2.class.getName());
-  private final java.lang.Object $lock = new java.lang.Object[0];
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField2.class.getName());
+  private final @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.Object $lock = new java.lang.Object[0];
   private static final String LOG_MESSAGE = "static initializer";
   static {
     log.log(Level.FINE, LOG_MESSAGE);
@@ -51,7 +51,7 @@ import lombok.Synchronized;
   }
 }
 @Log class InjectField3 {
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField3.class.getName());
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField3.class.getName());
   static {
     log.log(Level.FINE, "static initializer");
   }

@@ -4,7 +4,7 @@
   SetterOnClass1() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void setPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setPublic(final boolean isPublic) {
     this.isPublic = isPublic;
   }
 }
@@ -15,10 +15,10 @@
   SetterOnClass2() {
     super();
   }
-  @java.lang.SuppressWarnings("all") void setPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated void setPackage(final boolean isPackage) {
     this.isPackage = isPackage;
   }
-  protected @java.lang.SuppressWarnings("all") void setProtected(final boolean isProtected) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated void setProtected(final boolean isProtected) {
     this.isProtected = isProtected;
   }
 }
@@ -28,7 +28,7 @@
   SetterOnClass3() {
     super();
   }
-  @java.lang.SuppressWarnings("all") void setPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated void setPackage(final boolean isPackage) {
     this.isPackage = isPackage;
   }
 }
@@ -38,7 +38,7 @@
   SetterOnClass4() {
     super();
   }
-  private @java.lang.SuppressWarnings("all") void setPrivate(final boolean isPrivate) {
+  private @java.lang.SuppressWarnings("all") @lombok.Generated void setPrivate(final boolean isPrivate) {
     this.isPrivate = isPrivate;
   }
 }
@@ -48,7 +48,7 @@
   SetterOnClass5() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void setPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setPublic(final boolean isPublic) {
     this.isPublic = isPublic;
   }
 }
@@ -58,10 +58,10 @@
   SetterOnClass6() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void setCouldBeNull(final String couldBeNull) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setCouldBeNull(final String couldBeNull) {
     this.couldBeNull = couldBeNull;
   }
-  public @java.lang.SuppressWarnings("all") void setNonNull(final @lombok.NonNull String nonNull) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setNonNull(final @lombok.NonNull String nonNull) {
     if ((nonNull == null))
         {
           throw new java.lang.NullPointerException("nonNull is marked non-null but is null");

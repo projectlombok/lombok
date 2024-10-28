@@ -5,13 +5,13 @@ class GetterDeprecated {
   GetterDeprecated() {
     super();
   }
-  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") int getAnnotation() {
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @lombok.Generated int getAnnotation() {
     return this.annotation;
   }
   /**
    * @deprecated
    */
-  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") int getJavadoc() {
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @lombok.Generated int getJavadoc() {
     return this.javadoc;
   }
 }
