@@ -129,7 +129,7 @@
 		updateSupporterBar();
 	}
 	
-	var supPerBar = 4;
+	var supPerBar = 3;
 	function updateSupporterBar() {
 		var s = $(".supporterBar");
 		if (s.length === 0) return;
