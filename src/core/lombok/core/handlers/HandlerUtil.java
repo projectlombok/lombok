@@ -431,14 +431,16 @@ public class HandlerUtil {
 		// builds a triple of the Java field and the corresponding setter and getter methods. It is sufficient for an annotation
 		// to be present on one of those to become effective. E.g., a @JsonIgnore on a setter completely ignores the JSON property, 
 		// not only during deserialization, but also when serializing. Therefore, in most cases it is _not_ necessary to copy the 
-		// annotations.
-		// However, there are two exceptions:
-		// 1. When using a builder to deserialize, Jackson does _not_ consider the setter methods of the builder, i.e. annotations
-		//    like @JsonIgnore on the field will not be respected. Thus, those annotations should be copied to the builder's setters.
+		// annotations. It may even harm, as Jackson considers some annotations inheritable, and this "virtual inheritance" only
+		// affects annotations on setter/getter, but not on private fields. 
+		// However, there are two exceptions where we need it:
+		// 1. When using a builder to deserialize, Jackson does _not_ "propagate" the annotations to the setter methods of the 
+		//    builder, i.e. annotations like @JsonIgnore on the field will not be respected when deserializing with a builder.
+		//    Thus, those annotations should be copied to the builder's setters.
 		// 2. If the getter/setter methods to not follow the exact beanspec naming strategy, Jackson will not correctly detect the 
 		//    field-getter-setter triple, and annotations may not work as intended.
-		//    However, we cannot know what the user's intention is. Thus, lombok should only fix those cases where it is obvious
-		//    what the user wants. That is the case for a @Jacksonized @Accessors(fluent=true).
+		//    However, we cannot always know what the user's intention is. Thus, lombok should only fix those cases where it is 
+		//    obvious what the user wants. That is the case for a @Jacksonized @Accessors(fluent=true).
 		JACKSON_COPY_TO_GETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JsonFormat",
 			"com.fasterxml.jackson.annotation.JsonIgnore",
