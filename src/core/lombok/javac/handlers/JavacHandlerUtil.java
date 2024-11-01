@@ -1759,7 +1759,11 @@ public class JavacHandlerUtil {
 	/**
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
 	 */
-	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node) {
+	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node, boolean forceCopy) {
+		if (!forceCopy) {
+			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_SETTERS);
+			if (copyAnnotations == null || !copyAnnotations) return List.nil();
+		}
 		return findAnnotationsInList(node, JACKSON_COPY_TO_SETTER_ANNOTATIONS);
 	}
 

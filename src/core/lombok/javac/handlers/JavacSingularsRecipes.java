@@ -362,7 +362,7 @@ public class JavacSingularsRecipes {
 				statements.prepend(JavacHandlerUtil.generateNullCheck(maker, null, data.getPluralName(), builderType, "%s cannot be null"));
 			}
 
-			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToSetterAnnotations(data.annotation.up()));
+			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToSetterAnnotations(data.annotation.up(), true));
 			
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, List.of(param), methodAnnotations, access, ignoreNullCollections);
 		}

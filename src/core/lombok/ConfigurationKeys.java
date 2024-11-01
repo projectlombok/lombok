@@ -743,4 +743,12 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @StandardException} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> STANDARD_EXCEPTION_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.standardException.flagUsage", "Emit a warning or error if @StandardException is used.") {};
+
+	/**
+	 * lombok configuration: {@code lombok.copyJacksonAnnotationsToSetters} = {@code true} | {@code false}.
+	 *
+	 * If <code>true</code>, copy certain Jackson annotations from a field to its corresponding getter. This was the behavior from lombok 1.18.16 to 1.18.34.
+	 * However, it turned out to be harmful in certain situations. Thus, the default is now <code>false</code>.
+	 */
+	public static final ConfigurationKey<Boolean> COPY_JACKSON_ANNOTATIONS_TO_SETTERS = new ConfigurationKey<Boolean>("lombok.copyJacksonAnnotationsToSetters", "Copy these annotations to getters, setters, with methods, builder-setters, etc.") {};
 }
