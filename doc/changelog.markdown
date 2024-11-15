@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.35 "Edgy Guinea Pig"
+### v1.18.36 (November 15th, 2024)
 * PLATFORM: JDK23 support added.
 * BUGFIX: Eclipse projects using the `com.pro-crafting.tools:jasperreports-maven-plugin` will now compile.
 
