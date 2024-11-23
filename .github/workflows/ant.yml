@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -38,7 +38,7 @@ jobs:
     
   
   test-javac:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
     env:
       EA_JDK: 23
@@ -71,15 +71,6 @@ jobs:
           website: jdk.java.net
           release: ${{ matrix.jdk }}
           version: latest
-          
-      - name: Install Ant
-        env:
-          ANT_VERSION: 1.10.14
-        run: |
-          wget https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.zip
-          unzip apache-ant-$ANT_VERSION-bin.zip -d "${HOME}"
-          echo "ANT_HOME=${HOME}/apache-ant-$ANT_VERSION" >> $GITHUB_ENV
-          echo "${HOME}/apache-ant-$ANT_VERSION/bin" >> $GITHUB_PATH
       
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -95,7 +86,7 @@ jobs:
         run: ant -noinput test.${{ matrix.goal }}
   
   test-eclipse:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
     strategy: 
       matrix: 
@@ -164,7 +155,7 @@ jobs:
         run: xvfb-run ant -noinput dist test.${{ matrix.version }}
         
   docker-integration-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
     strategy: 
       matrix: 
