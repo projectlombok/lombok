@@ -24,12 +24,14 @@ package lombok.eclipse.handlers;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+import static lombok.javac.handlers.JavacHandlerUtil.findAnnotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.javac.JavacNode;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -228,6 +230,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		ObtainVia obtainVia;
 		EclipseNode obtainViaNode;
 		EclipseNode originalFieldNode;
+		boolean toExclude = false;
 		
 		List<EclipseNode> createdFields = new ArrayList<EclipseNode>();
 	}
@@ -323,6 +326,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				bfd.type = fd.type;
 				bfd.singularData = getSingularData(fieldNode, ast, annInstance.setterPrefix());
 				bfd.originalFieldNode = fieldNode;
+				EclipseNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode);
+				if (isExcluded != null) {
+					bfd.toExclude = true;
+				}
 				
 				if (bfd.singularData != null && isDefault != null) {
 					isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
@@ -553,7 +560,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : job.builderFields) {
-			makePrefixedSetterMethodsForBuilder(job, bfd, annInstance.setterPrefix());
+			if (!bfd.toExclude) {
+				makePrefixedSetterMethodsForBuilder(job, bfd, annInstance.setterPrefix());
+			}
 		}
 		
 		{
