@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2021 The Project Lombok Authors.
+ * Copyright (C) 2015-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,7 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 			if ((typeDecl.mods.flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0) markStatic = false;
 		}
 		
-		if (markStatic) classDecl.mods.flags |= Flags.STATIC;
+		if (markStatic) markClassAsStatic(classDecl);
 		
 		for (JavacNode element : typeNode.down()) {
 			if (element.getKind() == Kind.FIELD) {
@@ -125,19 +125,21 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 				
 				methodDecl.mods.flags |= Flags.STATIC;
 			} else if (element.getKind() == Kind.TYPE) {
-				JCClassDecl innerClassDecl = (JCClassDecl) element.get();
-				innerClassDecl.mods.flags |= Flags.STATIC;
-				ClassSymbol innerClassSymbol = innerClassDecl.sym;
-				if (innerClassSymbol != null) {
-					if (innerClassSymbol.type instanceof ClassType) {
-						((ClassType) innerClassSymbol.type).setEnclosingType(Type.noType);
-					}
-					innerClassSymbol.erasure_field = null;
-				}
+				markClassAsStatic((JCClassDecl) element.get());
 			}
 		}
 		
 		if (makeConstructor) createPrivateDefaultConstructor(typeNode);
+	}
+	
+	private void markClassAsStatic(JCClassDecl classDecl) {
+		classDecl.mods.flags |= Flags.STATIC; // maybe Flags.NOOUTERTHIS too?
+		ClassSymbol innerClassSymbol = classDecl.sym;
+		if (innerClassSymbol != null && innerClassSymbol.type instanceof ClassType) {
+			ClassType classType = (ClassType) innerClassSymbol.type;
+			classType.setEnclosingType(Type.noType);
+			innerClassSymbol.erasure_field = null;
+		}
 	}
 	
 	private void createPrivateDefaultConstructor(JavacNode typeNode) {
