@@ -465,5 +465,137 @@ public interface EclipseASTVisitor {
 		}
 	}
 
+	/**
+	 * A default implementation of the {@link EclipseASTVisitor} interface.
+	 * This class provides empty method implementations for all the methods in the {@link EclipseASTVisitor} interface.
+	 * Subclasses can override the methods they are interested in.
+	 */
+	public static abstract class Default implements EclipseASTVisitor {
+		@Override
+		public void visitCompilationUnit(EclipseNode top, CompilationUnitDeclaration unit) {
+
+		}
+
+		@Override
+		public void endVisitCompilationUnit(EclipseNode top, CompilationUnitDeclaration unit) {
+
+		}
+
+		@Override
+		public void visitType(EclipseNode typeNode, TypeDeclaration type) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitType(EclipseNode typeNode, TypeDeclaration type) {
+
+		}
+
+		@Override
+		public void visitField(EclipseNode fieldNode, FieldDeclaration field) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitField(EclipseNode fieldNode, FieldDeclaration field) {
+
+		}
+
+		@Override
+		public void visitInitializer(EclipseNode initializerNode, Initializer initializer) {
+
+		}
+
+		@Override
+		public void endVisitInitializer(EclipseNode initializerNode, Initializer initializer) {
+
+		}
+
+		@Override
+		public void visitMethod(EclipseNode methodNode, AbstractMethodDeclaration method) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitMethod(EclipseNode methodNode, AbstractMethodDeclaration method) {
+
+		}
+
+		@Override
+		public void visitMethodArgument(EclipseNode argNode, Argument arg, AbstractMethodDeclaration method) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitMethodArgument(EclipseNode argNode, Argument arg, AbstractMethodDeclaration method) {
+
+		}
+
+		@Override
+		public void visitLocal(EclipseNode localNode, LocalDeclaration local) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitLocal(EclipseNode localNode, LocalDeclaration local) {
+
+		}
+
+		@Override
+		public void visitTypeUse(EclipseNode typeUseNode, TypeReference typeUse) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnTypeUse(TypeReference typeUse, EclipseNode annotationNode, Annotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitTypeUse(EclipseNode typeUseNode, TypeReference typeUse) {
+
+		}
+
+		@Override
+		public void visitStatement(EclipseNode statementNode, Statement statement) {
+
+		}
+
+		@Override
+		public void endVisitStatement(EclipseNode statementNode, Statement statement) {
+
+		}
+
+		@Override
+		public boolean isDeferUntilPostDiet() {
+			return false;
+		}
+	}
+
 	boolean isDeferUntilPostDiet();
 }
