@@ -226,6 +226,7 @@ public class EclipseSingularsRecipes {
 				}
 				case METHOD: {
 					AbstractMethodDeclaration method = (AbstractMethodDeclaration) child.get();
+					if (isTolerate(child, method)) continue;
 					char[] name = method.selector;
 					if (name == null) continue;
 					if (getGeneratedBy(method) != null) continue;
