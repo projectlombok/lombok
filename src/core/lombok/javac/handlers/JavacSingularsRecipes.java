@@ -315,7 +315,7 @@ public class JavacSingularsRecipes {
 			if (!setterPrefix.isEmpty()) name = builderType.toName(HandlerUtil.buildAccessorName(source, setterPrefix, name.toString()));
 			
 			statements.prepend(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
-			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToBuilderSingularSetterAnnotations(data.annotation.up()));
+			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToBuilderSingularSetterAnnotations(data.annotation.up()), maker);
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, params, methodAnnotations, access, null);
 		}
 		
@@ -362,7 +362,7 @@ public class JavacSingularsRecipes {
 				statements.prepend(JavacHandlerUtil.generateNullCheck(maker, null, data.getPluralName(), builderType, "%s cannot be null"));
 			}
 
-			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToSetterAnnotations(data.annotation.up()));
+			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToSetterAnnotations(data.annotation.up()), maker);
 			
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, List.of(param), methodAnnotations, access, ignoreNullCollections);
 		}
