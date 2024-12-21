@@ -229,7 +229,7 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 		
 		JCBlock methodBody = null;
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
-		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(copyableAnnotations);
+		List<JCAnnotation> annsOnParam = copyAnnotations(onParam, maker).appendList(copyableAnnotations);
 		
 		JCExpression pType = cloneType(maker, fieldDecl.vartype, source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, pType, null);
@@ -278,7 +278,7 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod);
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod, maker);
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(source);
 		if (checkerFramework.generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		

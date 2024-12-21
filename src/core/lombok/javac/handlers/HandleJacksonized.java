@@ -136,7 +136,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		
 		// Copy annotations from the class to the builder class.
 		List<JCAnnotation> copyableAnnotations = findJacksonAnnotationsOnClass(tdNode);
-		List<JCAnnotation> copiedAnnotations = copyAnnotations(copyableAnnotations);
+		List<JCAnnotation> copiedAnnotations = copyAnnotations(copyableAnnotations, maker);
 		for (JCAnnotation anno : copiedAnnotations) {
 			recursiveSetGeneratedBy(anno, annotationNode);
 		}
