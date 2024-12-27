@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -83,7 +85,11 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		
 		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, result.getMessages()));
 		
-		if (parameters.isCheckPositions()) delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor(parameters.getMinVersion()));
+		if (parameters.isCheckPositions()) {
+			NodePositionMapper nodePositionMapper = new NodePositionMapper();
+			delombok.addPreLombokProcessors(nodePositionMapper);
+			delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor(parameters.getMinVersion(), nodePositionMapper));
+		}
 		delombok.addAdditionalAnnotationProcessor(new ValidateTypesProcessor());
 		delombok.addAdditionalAnnotationProcessor(new ValidateNoDuplicateTreeNodeProcessor());
 		
@@ -105,15 +111,35 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		}
 	}
 	
+	public static class NodePositionMapper extends TreeProcessor {
+		Map<JCTree, Integer> nodePositions = new HashMap<>();
+		
+		@Override void processCompilationUnit(final JCCompilationUnit unit) {
+			unit.accept(new TreeScanner() {
+				@Override public void scan(JCTree tree) {
+					if (tree == null) return;
+					if (tree.pos >= 0) {
+						nodePositions.put(tree, tree.pos);
+					}
+					super.scan(tree);
+					
+				}
+			});
+		}
+		
+	}
+	
 	public static class ValidatePositionProcessor extends TreeProcessor {
 		private final int version;
+		private final NodePositionMapper nodePositionMapper;
 		
-		public ValidatePositionProcessor(int version) {
+		public ValidatePositionProcessor(int version, NodePositionMapper nodePositionMapper) {
 			this.version = version;
+			this.nodePositionMapper = nodePositionMapper;
 		}
 		
 		private String craftFailMsg(String problematicNode, Deque<JCTree> astContext) {
-			StringBuilder msg = new StringBuilder(problematicNode).append(" position of node not set: ");
+			StringBuilder msg = new StringBuilder(problematicNode);
 			for (JCTree t : astContext) {
 				msg.append("\n  ").append(t.getClass().getSimpleName());
 				String asStr = t.toString();
@@ -125,12 +151,30 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 			return msg.append("\n-------").toString();
 		}
 		
+		private boolean isLombokGenerated(JCTree tree) {
+			List<JCAnnotation> annotations = com.sun.tools.javac.util.List.nil();
+			if (tree instanceof JCMethodDecl) {
+				annotations = ((JCMethodDecl) tree).mods.annotations;
+			}
+			if (tree instanceof JCVariableDecl) {
+				annotations = ((JCVariableDecl) tree).mods.annotations;
+			}
+			for (JCAnnotation annotation: annotations) {
+				if ("lombok.Generated".equals(annotation.getAnnotationType().toString())) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
 		@Override void processCompilationUnit(final JCCompilationUnit unit) {
 			final Deque<JCTree> astContext = new ArrayDeque<JCTree>();
+			final Deque<JCTree> lombokGeneratedNodes = new ArrayDeque<JCTree>();
 			unit.accept(new TreeScanner() {
 				@Override public void scan(JCTree tree) {
 					if (tree == null) return;
 					if (tree instanceof JCMethodDecl && (((JCMethodDecl) tree).mods.flags & Flags.GENERATEDCONSTR) != 0) return;
+					if (isLombokGenerated(tree)) lombokGeneratedNodes.add(tree);
 					astContext.push(tree);
 					try {
 						if (tree instanceof JCModifiers) return;
@@ -153,16 +197,26 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 						
 						if (tree instanceof JCVariableDecl && (((JCVariableDecl) tree).mods.flags & Javac.GENERATED_MEMBER) != 0) return;
 						
-						if (check && tree.pos == -1) fail(craftFailMsg("Start", astContext));
+						if (check && tree.pos == -1) fail(craftFailMsg("Start position of node not set: ", astContext));
 						
+						// Ignore ast position validation on lombok generated nodes.
+						if (lombokGeneratedNodes.isEmpty()) {
+							Integer expectedPos = nodePositionMapper.nodePositions.get(tree);
+							if (expectedPos != null && !expectedPos.equals(tree.pos)) {
+								fail(craftFailMsg(String.format("Expected node position %d, actual node position %d: ", expectedPos, tree.pos), astContext));
+							}
+						}
 						if (check && Javac.getEndPosition(tree, unit) == -1) {
-							fail(craftFailMsg("End", astContext));
+							fail(craftFailMsg("End position of node not set: ", astContext));
 						}
 					} finally {
 						try {
 							super.scan(tree);
 						} finally {
-							astContext.pop();
+							JCTree _tree = astContext.pop();
+							if (!lombokGeneratedNodes.isEmpty() && lombokGeneratedNodes.peek().equals(_tree)) {
+								lombokGeneratedNodes.pop();
+							}
 						}
 					}
 				}

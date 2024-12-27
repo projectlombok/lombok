@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.sun.source.tree.TreeVisitor;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
@@ -75,6 +76,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
+import com.sun.tools.javac.tree.TreeCopier;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Context;
@@ -2117,9 +2119,10 @@ public class JavacHandlerUtil {
 		}
 		return out.toList();
 	}
-
+	
 	static JCAnnotation copyAnnotation(JCAnnotation annotation, JavacTreeMaker maker) {
-		return maker.Annotation(annotation.annotationType, annotation.args);
+		TreeVisitor<JCTree, Void> visitor = new TreeCopier<Void>(maker.getUnderlyingTreeMaker());
+		return (JCAnnotation) visitor.visitAnnotation(annotation, null);
 	}
 	
 	static List<JCAnnotation> mergeAnnotations(List<JCAnnotation> a, List<JCAnnotation> b) {
