@@ -112,7 +112,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	}
 	
 	public static class NodePositionMapper extends TreeProcessor {
-		Map<JCTree, Integer> nodePositions = new HashMap<>();
+		Map<JCTree, Integer> nodePositions = new HashMap<JCTree, Integer>();
 		
 		@Override void processCompilationUnit(final JCCompilationUnit unit) {
 			unit.accept(new TreeScanner() {
