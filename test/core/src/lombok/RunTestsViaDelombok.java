@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -342,14 +341,6 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 					parents.push(tree);
 					super.scan(tree);
 					parents.pop();
-				}
-				
-				/**
-				 * We always generate shallow copies for annotations
-				 */
-				@Override
-				public void visitAnnotation(JCAnnotation tree) {
-					return;
 				}
 			});
 		}
