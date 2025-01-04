@@ -321,7 +321,7 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod);
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod, maker);
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(source);
 		if (checkerFramework.generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		

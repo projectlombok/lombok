@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.sun.source.tree.TreeVisitor;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
@@ -75,6 +76,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
+import com.sun.tools.javac.tree.TreeCopier;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Context;
@@ -1746,7 +1748,8 @@ public class JavacHandlerUtil {
 				}
 			}
 		}
-		return copyAnnotations(result.toList());
+
+		return copyAnnotations(result.toList(), node.getTreeMaker());
 	}
 	
 	/**
@@ -1784,7 +1787,7 @@ public class JavacHandlerUtil {
 		if (annoName == null) return List.nil();
 		
 		if (!annoName.isEmpty()) {
-			for (String bn : annotationsToFind) if (typeMatches(bn, node, annoName)) return List.of(anno);
+			for (String bn : annotationsToFind) if (typeMatches(bn, node, annoName)) return copyAnnotations(List.of(anno), node.getTreeMaker());
 		}
 		
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
@@ -1799,7 +1802,7 @@ public class JavacHandlerUtil {
 				}
 			}
 		}
-		return copyAnnotations(result.toList());
+		return copyAnnotations(result.toList(), node.getTreeMaker());
 	}
 	
 	/**
@@ -2108,13 +2111,18 @@ public class JavacHandlerUtil {
 		errorNode.addError(out.append(" are not allowed on builder classes.").toString());
 	}
 	
-	static List<JCAnnotation> copyAnnotations(List<? extends JCExpression> in) {
+	static List<JCAnnotation> copyAnnotations(List<? extends JCExpression> in, JavacTreeMaker maker) {
 		ListBuffer<JCAnnotation> out = new ListBuffer<JCAnnotation>();
 		for (JCExpression expr : in) {
 			if (!(expr instanceof JCAnnotation)) continue;
-			out.append((JCAnnotation) expr.clone());
+			out.append(copyAnnotation((JCAnnotation) expr, maker));
 		}
 		return out.toList();
+	}
+	
+	static JCAnnotation copyAnnotation(JCAnnotation annotation, JavacTreeMaker maker) {
+		TreeVisitor<JCTree, Void> visitor = new TreeCopier<Void>(maker.getUnderlyingTreeMaker());
+		return (JCAnnotation) visitor.visitAnnotation(annotation, null);
 	}
 	
 	static List<JCAnnotation> mergeAnnotations(List<JCAnnotation> a, List<JCAnnotation> b) {
@@ -2266,7 +2274,7 @@ public class JavacHandlerUtil {
 		
 		if (JCAnnotatedTypeReflect.is(in)) {
 			JCExpression underlyingType = cloneType0(maker, JCAnnotatedTypeReflect.getUnderlyingType(in));
-			List<JCAnnotation> anns = copyAnnotations(JCAnnotatedTypeReflect.getAnnotations(in));
+			List<JCAnnotation> anns = copyAnnotations(JCAnnotatedTypeReflect.getAnnotations(in), maker);
 			return JCAnnotatedTypeReflect.create(anns, underlyingType);
 		}
 		

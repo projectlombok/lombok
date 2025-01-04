@@ -190,7 +190,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		injectMethod(typeNode, equalsMethod);
 		
 		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source, copyAnnotations(onParam));
+			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source, copyAnnotations(onParam, typeNode.getTreeMaker()));
 			injectMethod(typeNode, canEqualMethod);
 		}
 		
