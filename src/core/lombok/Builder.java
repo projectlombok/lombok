@@ -120,6 +120,14 @@ public @interface Builder {
 	@Retention(SOURCE)
 	public @interface Default {}
 
+	/**
+	 * The field annotated with {@code @Exclude} will be excluded from the builder. Excluded objects will be initialized as null
+	 * and primitives with their default value.
+	 */
+	@Target(FIELD)
+	@Retention(SOURCE)
+	@interface Exclude {}
+
 	/** @return Name of the method that creates a new builder instance. Default: {@code builder}. If the empty string, suppress generating the {@code builder} method. */
 	String builderMethodName() default "builder";
 	
