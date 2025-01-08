@@ -7,7 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.Column;
 import javax.validation.constraints.Max;
 
-@AllArgsConstructor(onConstructor=@__(@Inject))
+// @AllArgsConstructor(onConstructor=@__(@Inject)) //JDK7
+@AllArgsConstructor(onConstructor_=@Inject) //JDK8
 public class OnXExample {
 //	@Getter(onMethod=@__({@Id, @Column(name="unique-id")})) //JDK7
 //	@Setter(onParam=@__(@Max(10000))) //JDK7
