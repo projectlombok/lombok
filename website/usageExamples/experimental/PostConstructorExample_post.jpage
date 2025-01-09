@@ -1,0 +1,16 @@
+class PostConstructorExample {
+	private final Integer start;
+	private final Integer end;
+
+	public PostConstructorTest(final Integer start, final Integer end) {
+		this.start = start;
+		this.end = end;
+		validate();
+	}
+
+	private void validate() {
+		if (start == null || end == null || end < start) {
+			throw new IllegalArgumentException();
+		}
+	}
+}
