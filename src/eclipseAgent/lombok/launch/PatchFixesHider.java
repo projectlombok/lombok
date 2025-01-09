@@ -41,12 +41,16 @@ import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -950,6 +954,16 @@ final class PatchFixesHider {
 			} catch (Throwable e) {
 				return blocks;
 			}
+		}
+		
+		public static ASTNode findGeneratedNode(ASTNode root, ISourceRange sourceRange, IMethodBinding methodBinding) {
+			ASTNode result = NodeFinder.perform(root, sourceRange);
+			if (result instanceof MethodDeclaration){
+				return result;
+			}
+			
+			CompilationUnit cu = (CompilationUnit) root;
+			return cu.findDeclaringNode(methodBinding.getKey());
 		}
 	}
 	
