@@ -23,6 +23,8 @@ package lombok.javac.handlers;
 
 import static com.sun.tools.javac.code.Flags.*;
 import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
+import static lombok.javac.Javac.CTC_EQUAL;
+import static lombok.javac.Javac.CTC_BOT;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.lang.annotation.Annotation;
@@ -346,7 +348,12 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		
 		JCExpression delegateCall = maker.Apply(toList(typeArgs), maker.Select(delegateReceiver.get(annotation, delegateName), sig.name), toList(args));
 		JCStatement body = useReturn ? maker.Return(delegateCall) : maker.Exec(delegateCall);
-		JCBlock bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(body));
+		JCBlock bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(
+				maker.If(maker.Binary(CTC_EQUAL, delegateReceiver.get(annotation, delegateName), maker.Literal(CTC_BOT, null))
+						, maker.Return(useReturn ? maker.Literal(CTC_BOT, null) : null)
+						, null
+				)
+				, body));
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null), annotation);
 	}
