@@ -1159,12 +1159,19 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 					if (matches && md.params != null && md.params.length() == 1) {
 						// Cannot use typeMatches() here, because the parameter could be fully-qualified, partially-qualified, or not qualified.
 						// A string-compare of the last part should work. If it's a false-positive, users could still @Tolerate it.
-						String typeName = md.params.get(0).getType().toString();
+						String typeName;
+						JCTree paramType = md.params.get(0).getType();
+						if (paramType instanceof JCTypeApply) {
+							typeName = ((JCTypeApply)paramType).clazz.toString();
+						} else {
+							typeName = paramType.toString();
+						}
+
 						int lastIndexOfDot = typeName.lastIndexOf('.');
 						if (lastIndexOfDot >= 0) {
 							typeName = typeName.substring(lastIndexOfDot+1);
 						}
-						if (typeName.startsWith(builderClassName) && typeName.endsWith("?, ?>"))
+						if (builderClassName.equals(typeName))
 							return true;
 					}
 				}
