@@ -16,7 +16,7 @@ public class SuperBuilderCustomized {
 		}
 		int field1;
 		
-		protected Parent(ParentBuilder<?, ?, ?> b) {
+		protected Parent(ParentBuilder<T, ?, ?> b) {
 			if (b.field1 == 0)
 				throw new IllegalArgumentException("field1 must be != 0");
 			this.field1 = b.field1;
