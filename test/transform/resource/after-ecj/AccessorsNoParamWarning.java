@@ -3,7 +3,7 @@
   AccessorsNoParams() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") String otherFieldWithOverride() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String otherFieldWithOverride() {
     return this.otherFieldWithOverride;
   }
 }
@@ -12,7 +12,7 @@
   AccessorsNoParams2() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") void setFoo(final boolean foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setFoo(final boolean foo) {
     this.foo = foo;
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2024 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.parser.Tokens.Comment;
+import com.sun.tools.javac.parser.Tokens.Comment.CommentStyle;
 import com.sun.tools.javac.tree.DocCommentTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -330,6 +331,10 @@ public class Javac {
 		}
 	}
 	
+	public static Object getCommentStyle() {
+		return JavadocOps_8.COMMENT_STYLE;
+	}
+	
 	private static class JavadocOps_8 {
 		static String getJavadoc(Object dc, JCTree node) {
 			DocCommentTable dct = (DocCommentTable) dc;
@@ -350,6 +355,15 @@ public class Javac {
 			dct.putComment(node, newCmt);
 		}
 		
+		private static final CommentStyle COMMENT_STYLE = getCommentStyle();
+		private static CommentStyle getCommentStyle() {
+			try {
+				return CommentStyle.valueOf("JAVADOC");
+			} catch (IllegalArgumentException e) {
+				return CommentStyle.valueOf("JAVADOC_BLOCK");
+			}
+		}
+		
 		private static Comment createJavadocComment(final String text, final JCTree field) {
 			return new Comment() {
 				@Override public String getText() {
@@ -361,7 +375,7 @@ public class Javac {
 				}
 				
 				@Override public CommentStyle getStyle() {
-					return CommentStyle.JAVADOC;
+					return COMMENT_STYLE;
 				}
 				
 				@Override public boolean isDeprecated() {

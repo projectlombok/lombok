@@ -24,16 +24,16 @@ class Entity {
   Entity() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") java.lang.Boolean getABoolean() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.Boolean getABoolean() {
     return this.innerDelegate.getABoolean();
   }
-  public @java.lang.SuppressWarnings("all") java.lang.String getValue() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String getValue() {
     return this.innerDelegate.getValue();
   }
-  public @java.lang.SuppressWarnings("all") void setABoolean(final java.lang.Boolean aBoolean) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setABoolean(final java.lang.Boolean aBoolean) {
     this.innerDelegate.setABoolean(aBoolean);
   }
-  public @java.lang.SuppressWarnings("all") void setValue(final java.lang.String value) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setValue(final java.lang.String value) {
     this.innerDelegate.setValue(value);
   }
 }
@@ -43,16 +43,16 @@ class Entity {
   MyDelegate() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") String getValue() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getValue() {
     return this.value;
   }
-  public @java.lang.SuppressWarnings("all") Boolean getABoolean() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated Boolean getABoolean() {
     return this.aBoolean;
   }
-  public @java.lang.SuppressWarnings("all") void setValue(final String value) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setValue(final String value) {
     this.value = value;
   }
-  public @java.lang.SuppressWarnings("all") void setABoolean(final Boolean aBoolean) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setABoolean(final Boolean aBoolean) {
     this.aBoolean = aBoolean;
   }
 }

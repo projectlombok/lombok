@@ -8,6 +8,7 @@ class WithMethodMarkedDeprecatedAnnOnly {
 	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public WithMethodMarkedDeprecatedAnnOnly withAnnotation(final int annotation) {
 		return this.annotation == annotation ? this : new WithMethodMarkedDeprecatedAnnOnly(annotation);
 	}

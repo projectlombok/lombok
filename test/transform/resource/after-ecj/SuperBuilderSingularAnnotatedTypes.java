@@ -7,14 +7,14 @@ import lombok.Singular;
 @Target(ElementType.TYPE_USE) @interface MyAnnotation {
 }
 @lombok.experimental.SuperBuilder class SuperBuilderSingularAnnotatedTypes {
-  public static abstract @java.lang.SuppressWarnings("all") class SuperBuilderSingularAnnotatedTypesBuilder<C extends SuperBuilderSingularAnnotatedTypes, B extends SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<C, B>> {
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull String> foos;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull String> bars$key;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull Integer> bars$value;
+  public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class SuperBuilderSingularAnnotatedTypesBuilder<C extends SuperBuilderSingularAnnotatedTypes, B extends SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<C, B>> {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<@MyAnnotation @NonNull String> foos;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<@MyAnnotation @NonNull String> bars$key;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<@MyAnnotation @NonNull Integer> bars$value;
     public SuperBuilderSingularAnnotatedTypesBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") B foo(final @MyAnnotation @NonNull String foo) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B foo(final @MyAnnotation @NonNull String foo) {
       if ((foo == null))
           {
             throw new java.lang.NullPointerException("foo is marked non-null but is null");
@@ -24,7 +24,7 @@ import lombok.Singular;
       this.foos.add(foo);
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B foos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B foos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
       if ((foos == null))
           {
             throw new java.lang.NullPointerException("foos cannot be null");
@@ -34,12 +34,12 @@ import lombok.Singular;
       this.foos.addAll(foos);
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B clearFoos() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B clearFoos() {
       if ((this.foos != null))
           this.foos.clear();
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B bar(final @MyAnnotation @NonNull String barKey, final @MyAnnotation @NonNull Integer barValue) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B bar(final @MyAnnotation @NonNull String barKey, final @MyAnnotation @NonNull Integer barValue) {
       if ((barKey == null))
           {
             throw new java.lang.NullPointerException("barKey is marked non-null but is null");
@@ -57,7 +57,7 @@ import lombok.Singular;
       this.bars$value.add(barValue);
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B bars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B bars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
       if ((bars == null))
           {
             throw new java.lang.NullPointerException("bars cannot be null");
@@ -74,7 +74,7 @@ import lombok.Singular;
         }
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B clearBars() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated B clearBars() {
       if ((this.bars$key != null))
           {
             this.bars$key.clear();
@@ -82,26 +82,26 @@ import lombok.Singular;
           }
       return self();
     }
-    protected abstract @java.lang.SuppressWarnings("all") B self();
-    public abstract @java.lang.SuppressWarnings("all") C build();
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    protected abstract @java.lang.SuppressWarnings("all") @lombok.Generated B self();
+    public abstract @java.lang.SuppressWarnings("all") @lombok.Generated C build();
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (((((("SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder(foos=" + this.foos) + ", bars$key=") + this.bars$key) + ", bars$value=") + this.bars$value) + ")");
     }
   }
-  private static final @java.lang.SuppressWarnings("all") class SuperBuilderSingularAnnotatedTypesBuilderImpl extends SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<SuperBuilderSingularAnnotatedTypes, SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilderImpl> {
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated class SuperBuilderSingularAnnotatedTypesBuilderImpl extends SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<SuperBuilderSingularAnnotatedTypes, SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilderImpl> {
     private SuperBuilderSingularAnnotatedTypesBuilderImpl() {
       super();
     }
-    protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilderImpl self() {
+    protected @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilderImpl self() {
       return this;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes build() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderSingularAnnotatedTypes build() {
       return new SuperBuilderSingularAnnotatedTypes(this);
     }
   }
   private @Singular Set<@MyAnnotation @NonNull String> foos;
   private @Singular Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars;
-  protected @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes(final SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<?, ?> b) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderSingularAnnotatedTypes(final SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<?, ?> b) {
     super();
     java.util.Set<@MyAnnotation @NonNull String> foos;
     switch (((b.foos == null) ? 0 : b.foos.size())) {
@@ -133,7 +133,7 @@ import lombok.Singular;
     }
     this.bars = bars;
   }
-  public static @java.lang.SuppressWarnings("all") SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<?, ?> builder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<?, ?> builder() {
     return new SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilderImpl();
   }
 }

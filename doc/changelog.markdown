@@ -1,8 +1,19 @@
 Lombok Changelog
 ----------------
 
-### v1.18.33 "Edgy Guinea Pig"
-* We recently released v1.18.32; there is no edge release since then.
+### v1.18.37 "Edgy Guinea Pig"
+* We recently released v1.18.36; there is no edge release since then.
+
+### v1.18.36 (November 15th, 2024)
+* PLATFORM: JDK23 support added.
+* BUGFIX: Eclipse projects using the `com.pro-crafting.tools:jasperreports-maven-plugin` will now compile.
+
+### v1.18.34 (June 28th, 2024)
+* PLATFORM: Added support for Eclipse 2024-06; you'd get some `NoSuchMethodError` traces in your logs if using `@Builder` or `@Singular` prior to this fix. [Issue #3638](https://github.com/projectlombok/lombok/issues/3638).
+* IMPROBABLE BREAKING CHANGE: Lombok now adds `@lombok.Generated` by default to methods and types it generates. This may result in accidentally increasing your test coverage percentage. [Issue #3667](https://github.com/projectlombok/lombok/issues/3667).
+* IMPROBABLE BREAKING CHANGE: When `lombok.config` contains `lombok.onX.flagUsage = WARNING`, from now on warnings will actually be generated if onX is used.[Issue #2848](https://github.com/projectlombok/lombok/issues/2848)
+* BUGFIX: When `@SuperBuilder` was used on a type with an generic array type, it would error `wrong number of type arguments`.  [Issue #3694](https://github.com/projectlombok/lombok/issues/3694).
+* FEATURE: Lombok generates javadoc for you for most of the methods it adds; with this release, javadoc is also added to generated constructors. [Issue #933](https://github.com/projectlombok/lombok/issues/933).
 
 ### v1.18.32 (March 20th, 2024)
 * PLATFORM: Initial JDK22 support added.

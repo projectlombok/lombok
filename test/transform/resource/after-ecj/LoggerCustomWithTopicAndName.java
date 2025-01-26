@@ -1,5 +1,5 @@
 @lombok.CustomLog(topic = "t") class LoggerCustomLog {
-  private static final MyLoggerFactory log = MyLoggerFactory.create(LoggerCustomLog.class.getName(), "t", null, LoggerCustomLog.class, "t");
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated MyLoggerFactory log = MyLoggerFactory.create(LoggerCustomLog.class.getName(), "t", null, LoggerCustomLog.class, "t");
   <clinit>() {
   }
   LoggerCustomLog() {
@@ -7,7 +7,7 @@
   }
 }
 @lombok.CustomLog(topic = LoggerCustomLogWithStaticField.TOPIC) class LoggerCustomLogWithStaticField {
-  private static final MyLoggerFactory log = MyLoggerFactory.create(LoggerCustomLogWithStaticField.class.getName(), LoggerCustomLogWithStaticField.TOPIC, null, LoggerCustomLogWithStaticField.class, LoggerCustomLogWithStaticField.TOPIC);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated MyLoggerFactory log = MyLoggerFactory.create(LoggerCustomLogWithStaticField.class.getName(), LoggerCustomLogWithStaticField.TOPIC, null, LoggerCustomLogWithStaticField.class, LoggerCustomLogWithStaticField.TOPIC);
   static final String TOPIC = "StaticField";
   <clinit>() {
   }

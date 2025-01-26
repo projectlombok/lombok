@@ -4,7 +4,7 @@
   GetterLazyEahcToString() {
     super();
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) String getValue() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated String getValue() {
     java.lang.Object $value = this.value.get();
     if (($value == null))
         {
@@ -21,10 +21,10 @@
         }
     return (String) (($value == this.value) ? null : $value);
   }
-  public @java.lang.SuppressWarnings("all") String getValue2() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated String getValue2() {
     return this.value2;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof GetterLazyEahcToString)))
@@ -42,10 +42,10 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof GetterLazyEahcToString);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     final java.lang.Object $value = this.getValue();
@@ -54,7 +54,7 @@
     result = ((result * PRIME) + (($value2 == null) ? 43 : $value2.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((("GetterLazyEahcToString(value=" + this.getValue()) + ", value2=") + this.value2) + ")");
   }
 }

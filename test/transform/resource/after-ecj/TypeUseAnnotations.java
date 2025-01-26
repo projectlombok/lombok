@@ -15,10 +15,10 @@ class TypeUseAnnotations {
   TypeUseAnnotations() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") List<@TA(x = 5) String> getFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated List<@TA(x = 5) String> getFoo() {
     return this.foo;
   }
-  public @java.lang.SuppressWarnings("all") List<TypeUseAnnotations.@TA(x = 5) Inner> getBar() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated List<TypeUseAnnotations.@TA(x = 5) Inner> getBar() {
     return this.bar;
   }
 }

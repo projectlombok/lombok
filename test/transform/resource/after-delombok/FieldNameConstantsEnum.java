@@ -4,6 +4,7 @@ public class FieldNameConstantsEnum {
 	static double alsoDontSkipMe;
 	int butSkipMe;
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public enum TypeTest {
 		iAmADvdPlayer, $dontSkipMe, alsoDontSkipMe;
 	}

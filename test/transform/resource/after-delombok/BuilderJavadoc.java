@@ -24,12 +24,16 @@ class BuilderJavadoc<T> {
 	private final int predefWithJavadoc;
 	public static class BuilderJavadocBuilder<T> {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private int basic;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private int getsetwith;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private int predef;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private int predefWithJavadoc;
 		public BuilderJavadocBuilder<T> predef(final int x) {
 			this.predef = x * 10;
@@ -45,6 +49,7 @@ class BuilderJavadoc<T> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		BuilderJavadocBuilder() {
 		}
 		/**
@@ -54,6 +59,7 @@ class BuilderJavadoc<T> {
 		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderJavadoc.BuilderJavadocBuilder<T> basic(final int basic) {
 			this.basic = basic;
 			return this;
@@ -64,21 +70,34 @@ class BuilderJavadoc<T> {
 		 * @return {@code this}.
 		 */
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderJavadoc.BuilderJavadocBuilder<T> getsetwith(final int getsetwith) {
 			this.getsetwith = getsetwith;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public BuilderJavadoc<T> build() {
 			return new BuilderJavadoc<T>(this.basic, this.getsetwith, this.predef, this.predefWithJavadoc);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "BuilderJavadoc.BuilderJavadocBuilder(basic=" + this.basic + ", getsetwith=" + this.getsetwith + ", predef=" + this.predef + ", predefWithJavadoc=" + this.predefWithJavadoc + ")";
 		}
 	}
+	/**
+	 * Creates a new {@code BuilderJavadoc} instance.
+	 *
+	 * @param basic basic gets only a builder setter.
+	 * @see #getsetwith
+	 * @param getsetwith getsetwith gets a builder setter, an instance getter and setter, and a wither.
+	 * @param predef Predef has a predefined builder setter with no javadoc, and the builder setter does not get this one.
+	 * @param predefWithJavadoc predefWithJavadoc has a predefined builder setter with javadoc, so it keeps that one untouched.
+	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	BuilderJavadoc(final int basic, final int getsetwith, final int predef, final int predefWithJavadoc) {
 		this.basic = basic;
 		this.getsetwith = getsetwith;
@@ -86,6 +105,7 @@ class BuilderJavadoc<T> {
 		this.predefWithJavadoc = predefWithJavadoc;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public static <T> BuilderJavadoc.BuilderJavadocBuilder<T> builder() {
 		return new BuilderJavadoc.BuilderJavadocBuilder<T>();
 	}
@@ -94,6 +114,7 @@ class BuilderJavadoc<T> {
 	 * @return tag is moved to the getter.
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int getGetsetwith() {
 		return this.getsetwith;
 	}
@@ -102,6 +123,7 @@ class BuilderJavadoc<T> {
 	 * @param tag is moved to the setters and wither.
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public void setGetsetwith(final int getsetwith) {
 		this.getsetwith = getsetwith;
 	}
@@ -111,6 +133,7 @@ class BuilderJavadoc<T> {
 	 * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
 	 */
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public BuilderJavadoc<T> withGetsetwith(final int getsetwith) {
 		return this.getsetwith == getsetwith ? this : new BuilderJavadoc<T>(this.basic, getsetwith, this.predef, this.predefWithJavadoc);
 	}

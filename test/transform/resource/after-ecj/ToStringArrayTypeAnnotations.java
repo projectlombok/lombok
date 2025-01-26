@@ -10,7 +10,7 @@ public @lombok.ToString class ToStringArrayTypeAnnotations {
   public ToStringArrayTypeAnnotations() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((((((("ToStringArrayTypeAnnotations(primitiveArray1=" + java.util.Arrays.toString(this.primitiveArray1)) + ", primitiveArray2=") + java.util.Arrays.toString(this.primitiveArray2)) + ", objectArray1=") + java.util.Arrays.deepToString(this.objectArray1)) + ", objectArray2=") + java.util.Arrays.deepToString(this.objectArray2)) + ")");
   }
 }

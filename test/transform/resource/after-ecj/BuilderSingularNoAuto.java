@@ -1,20 +1,20 @@
 import java.util.List;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularNoAuto {
-  public static @java.lang.SuppressWarnings("all") class BuilderSingularNoAutoBuilder {
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> things;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> widgets;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items;
-    @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated class BuilderSingularNoAutoBuilder {
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> things;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> widgets;
+    private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> items;
+    @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAutoBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final String things) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final String things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.add(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
       if ((things == null))
           {
             throw new java.lang.NullPointerException("things cannot be null");
@@ -24,18 +24,18 @@ import lombok.Singular;
       this.things.addAll(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearThings() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearThings() {
       if ((this.things != null))
           this.things.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widget(final String widget) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widget(final String widget) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.add(widget);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
       if ((widgets == null))
           {
             throw new java.lang.NullPointerException("widgets cannot be null");
@@ -45,18 +45,18 @@ import lombok.Singular;
       this.widgets.addAll(widgets);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearWidgets() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearWidgets() {
       if ((this.widgets != null))
           this.widgets.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final String items) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final String items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.add(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
       if ((items == null))
           {
             throw new java.lang.NullPointerException("items cannot be null");
@@ -66,12 +66,12 @@ import lombok.Singular;
       this.items.addAll(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearItems() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearItems() {
       if ((this.items != null))
           this.items.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAuto build() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto build() {
       java.util.List<String> things;
       switch (((this.things == null) ? 0 : this.things.size())) {
       case 0 :
@@ -107,20 +107,20 @@ import lombok.Singular;
       }
       return new BuilderSingularNoAuto(things, widgets, items);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (((((("BuilderSingularNoAuto.BuilderSingularNoAutoBuilder(things=" + this.things) + ", widgets=") + this.widgets) + ", items=") + this.items) + ")");
     }
   }
   private @Singular List<String> things;
   private @Singular("widget") List<String> widgets;
   private @Singular List<String> items;
-  @java.lang.SuppressWarnings("all") BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
+  @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
     super();
     this.things = things;
     this.widgets = widgets;
     this.items = items;
   }
-  public static @java.lang.SuppressWarnings("all") BuilderSingularNoAuto.BuilderSingularNoAutoBuilder builder() {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularNoAuto.BuilderSingularNoAutoBuilder builder() {
     return new BuilderSingularNoAuto.BuilderSingularNoAutoBuilder();
   }
 }

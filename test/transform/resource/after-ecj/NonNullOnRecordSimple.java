@@ -3,7 +3,7 @@ import lombok.NonNull;
 public record NonNullOnRecordSimple(String a, String b) {
 /* Implicit */  private final String a;
 /* Implicit */  private final String b;
-  public @java.lang.SuppressWarnings("all") NonNullOnRecordSimple(@NonNull String a, @NonNull String b) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullOnRecordSimple(@NonNull String a, @NonNull String b) {
     super();
     if ((a == null))
         {

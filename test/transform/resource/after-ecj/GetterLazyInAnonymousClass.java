@@ -6,7 +6,7 @@ public class GetterLazyInAnonymousClass {
       Inner() {
         super();
       }
-      public @java.lang.SuppressWarnings({"all", "unchecked"}) String getString() {
+      public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated String getString() {
         java.lang.Object $value = this.string.get();
         if (($value == null))
             {

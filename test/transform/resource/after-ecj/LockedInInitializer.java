@@ -1,7 +1,7 @@
 import lombok.Locked;
 public class LockedInInitializer {
   public static final Runnable LOCKED = new Runnable() {
-    private final java.util.concurrent.locks.Lock $lock = new java.util.concurrent.locks.ReentrantLock();
+    private final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.concurrent.locks.Lock $lock = new java.util.concurrent.locks.ReentrantLock();
     public @Override @Locked void run() {
       this.$lock.lock();
       try
@@ -15,7 +15,7 @@ public class LockedInInitializer {
     }
   };
   public static final Runnable LOCKED_READ = new Runnable() {
-    private final java.util.concurrent.locks.ReadWriteLock $lock = new java.util.concurrent.locks.ReentrantReadWriteLock();
+    private final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.concurrent.locks.ReadWriteLock $lock = new java.util.concurrent.locks.ReentrantReadWriteLock();
     public @Override @Locked.Read void run() {
       this.$lock.readLock().lock();
       try
@@ -29,7 +29,7 @@ public class LockedInInitializer {
     }
   };
   public static final Runnable LOCKED_WRITE = new Runnable() {
-    private final java.util.concurrent.locks.ReadWriteLock $lock = new java.util.concurrent.locks.ReentrantReadWriteLock();
+    private final @java.lang.SuppressWarnings("all") @lombok.Generated java.util.concurrent.locks.ReadWriteLock $lock = new java.util.concurrent.locks.ReentrantReadWriteLock();
     public @Override @Locked.Write void run() {
       this.$lock.writeLock().lock();
       try

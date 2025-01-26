@@ -1,5 +1,6 @@
 class LockedGeneratedStaticMismatch {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private static final java.util.concurrent.locks.Lock $LOCK = new java.util.concurrent.locks.ReentrantLock();
 	static void test() {
 		LockedGeneratedStaticMismatch.$LOCK.lock();

@@ -1,6 +1,6 @@
 import lombok.extern.apachecommons.CommonsLog;
 @lombok.extern.apachecommons.CommonsLog class LoggerCommons {
-  private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommons.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommons.class);
   <clinit>() {
   }
   LoggerCommons() {
@@ -8,7 +8,7 @@ import lombok.extern.apachecommons.CommonsLog;
   }
 }
 @CommonsLog class LoggerCommonsWithImport {
-  private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommonsWithImport.class);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommonsWithImport.class);
   <clinit>() {
   }
   LoggerCommonsWithImport() {
@@ -16,7 +16,7 @@ import lombok.extern.apachecommons.CommonsLog;
   }
 }
 @CommonsLog(topic = "DifferentName") class LoggerCommonsWithDifferentName {
-  private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog("DifferentName");
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog("DifferentName");
   <clinit>() {
   }
   LoggerCommonsWithDifferentName() {
@@ -24,7 +24,7 @@ import lombok.extern.apachecommons.CommonsLog;
   }
 }
 @CommonsLog(topic = LoggerCommonsWithStaticField.TOPIC) class LoggerCommonsWithStaticField {
-  private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommonsWithStaticField.TOPIC);
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommonsWithStaticField.TOPIC);
   static final String TOPIC = "StaticField";
   <clinit>() {
   }

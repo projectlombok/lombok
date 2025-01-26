@@ -6,10 +6,10 @@ class MultiFieldGetter {
   MultiFieldGetter() {
     super();
   }
-  protected @java.lang.SuppressWarnings("all") int getX() {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
-  protected @java.lang.SuppressWarnings("all") int getY() {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated int getY() {
     return this.y;
   }
 }
@@ -19,10 +19,10 @@ class MultiFieldGetter {
   MultiFieldGetter2() {
     super();
   }
-  @java.lang.SuppressWarnings("all") int getX() {
+  @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
     return this.x;
   }
-  @java.lang.SuppressWarnings("all") int getY() {
+  @java.lang.SuppressWarnings("all") @lombok.Generated int getY() {
     return this.y;
   }
 }

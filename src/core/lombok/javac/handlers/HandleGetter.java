@@ -144,6 +144,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		if (node == null) return;
 		
 		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Getter(onMethod", annotationNode);
+		if (!onMethod.isEmpty()) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.ON_X_FLAG_USAGE, "@Getter(onMethod=...)");
+		}
 		
 		switch (node.getKind()) {
 		case FIELD:
@@ -215,7 +218,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source, lazy, onMethod));
+		injectMethod(fieldNode.up(), source, createGetter(access, fieldNode, fieldNode.getTreeMaker(), source, lazy, onMethod));
 	}
 	
 	public JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, boolean lazy, List<JCAnnotation> onMethod) {
@@ -247,7 +250,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(field);
 		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
-		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod).appendList(copyableAnnotations);
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod, treeMaker).appendList(copyableAnnotations);
 		if (field.isFinal()) {
 			if (getCheckerFrameworkVersion(field).generatePure()) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genTypeRef(field, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()));
 		} else {

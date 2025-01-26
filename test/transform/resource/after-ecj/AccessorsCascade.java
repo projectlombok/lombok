@@ -7,7 +7,7 @@
     /**
      * @return {@code this}.
      */
-    public @java.lang.SuppressWarnings("all") AccessorsOuter.AccessorsInner1 setTest3(final String zTest3) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsOuter.AccessorsInner1 setTest3(final String zTest3) {
       this.zTest3 = zTest3;
       return this;
     }
@@ -17,7 +17,7 @@
     AccessorsInner2() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") void setTest4(final String fTest4) {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated void setTest4(final String fTest4) {
       this.fTest4 = fTest4;
     }
   }
@@ -29,14 +29,14 @@
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") AccessorsOuter setTest(final String fTest) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsOuter setTest(final String fTest) {
     this.fTest = fTest;
     return this;
   }
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") AccessorsOuter setTest2(final String zTest2) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsOuter setTest2(final String zTest2) {
     this.zTest2 = zTest2;
     return this;
   }

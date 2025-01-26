@@ -4,15 +4,18 @@ public class PrivateNoArgsConstructor {
 	public static class PrivateNoArgsConstructorNotOnExtends extends Base {
 		private final int a;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public PrivateNoArgsConstructorNotOnExtends(final int a) {
 			this.a = a;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int getA() {
 			return this.a;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorNotOnExtends)) return false;
@@ -23,11 +26,13 @@ public class PrivateNoArgsConstructor {
 			return true;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		protected boolean canEqual(final java.lang.Object other) {
 			return other instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorNotOnExtends;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = super.hashCode();
@@ -36,6 +41,7 @@ public class PrivateNoArgsConstructor {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "PrivateNoArgsConstructor.PrivateNoArgsConstructorNotOnExtends(a=" + this.getA() + ")";
 		}
@@ -43,19 +49,23 @@ public class PrivateNoArgsConstructor {
 	public static class PrivateNoArgsConstructorOnExtendsObject extends Object {
 		private final int b;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public PrivateNoArgsConstructorOnExtendsObject(final int b) {
 			this.b = b;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		private PrivateNoArgsConstructorOnExtendsObject() {
 			this.b = 0;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int getB() {
 			return this.b;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorOnExtendsObject)) return false;
@@ -65,11 +75,13 @@ public class PrivateNoArgsConstructor {
 			return true;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		protected boolean canEqual(final java.lang.Object other) {
 			return other instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorOnExtendsObject;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -78,6 +90,7 @@ public class PrivateNoArgsConstructor {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "PrivateNoArgsConstructor.PrivateNoArgsConstructorOnExtendsObject(b=" + this.getB() + ")";
 		}
@@ -85,15 +98,18 @@ public class PrivateNoArgsConstructor {
 	public static class PrivateNoArgsConstructorExplicitBefore {
 		private final int c;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public PrivateNoArgsConstructorExplicitBefore() {
 			this.c = 0;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int getC() {
 			return this.c;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitBefore)) return false;
@@ -103,11 +119,13 @@ public class PrivateNoArgsConstructor {
 			return true;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		protected boolean canEqual(final java.lang.Object other) {
 			return other instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitBefore;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -116,10 +134,12 @@ public class PrivateNoArgsConstructor {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitBefore(c=" + this.getC() + ")";
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public PrivateNoArgsConstructorExplicitBefore(final int c) {
 			this.c = c;
 		}
@@ -127,11 +147,13 @@ public class PrivateNoArgsConstructor {
 	public static class PrivateNoArgsConstructorExplicitAfter {
 		private final int d;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int getD() {
 			return this.d;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitAfter)) return false;
@@ -141,11 +163,13 @@ public class PrivateNoArgsConstructor {
 			return true;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		protected boolean canEqual(final java.lang.Object other) {
 			return other instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitAfter;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -154,14 +178,17 @@ public class PrivateNoArgsConstructor {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitAfter(d=" + this.getD() + ")";
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public PrivateNoArgsConstructorExplicitAfter() {
 			this.d = 0;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public PrivateNoArgsConstructorExplicitAfter(final int d) {
 			this.d = d;
 		}
@@ -169,11 +196,13 @@ public class PrivateNoArgsConstructor {
 	public static class PrivateNoArgsConstructorExplicitNone {
 		private final int e;
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int getE() {
 			return this.e;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitNone)) return false;
@@ -183,11 +212,13 @@ public class PrivateNoArgsConstructor {
 			return true;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		protected boolean canEqual(final java.lang.Object other) {
 			return other instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitNone;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -196,20 +227,24 @@ public class PrivateNoArgsConstructor {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "PrivateNoArgsConstructor.PrivateNoArgsConstructorExplicitNone(e=" + this.getE() + ")";
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public PrivateNoArgsConstructorExplicitNone(final int e) {
 			this.e = e;
 		}
 	}
 	public static class PrivateNoArgsConstructorNoFields {
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public PrivateNoArgsConstructorNoFields() {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public boolean equals(final java.lang.Object o) {
 			if (o == this) return true;
 			if (!(o instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorNoFields)) return false;
@@ -218,17 +253,20 @@ public class PrivateNoArgsConstructor {
 			return true;
 		}
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		protected boolean canEqual(final java.lang.Object other) {
 			return other instanceof PrivateNoArgsConstructor.PrivateNoArgsConstructorNoFields;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public int hashCode() {
 			final int result = 1;
 			return result;
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public java.lang.String toString() {
 			return "PrivateNoArgsConstructor.PrivateNoArgsConstructorNoFields()";
 		}

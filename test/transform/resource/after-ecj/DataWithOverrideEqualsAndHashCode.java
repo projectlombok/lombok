@@ -12,10 +12,10 @@ class DataWithOverrideEqualsAndHashCode {
     public boolean equals(Object other) {
       return false;
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return "DataWithOverrideEqualsAndHashCode.Data2()";
     }
-    public @java.lang.SuppressWarnings("all") Data2() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated Data2() {
       super();
     }
   }

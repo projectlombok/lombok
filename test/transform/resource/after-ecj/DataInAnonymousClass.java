@@ -3,13 +3,13 @@ public class DataInAnonymousClass {
   Object annonymous = new Object() {
     @Data class Inner {
       private String string;
-      public @java.lang.SuppressWarnings("all") String getString() {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated String getString() {
         return this.string;
       }
-      public @java.lang.SuppressWarnings("all") void setString(final String string) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated void setString(final String string) {
         this.string = string;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
         if ((o == this))
             return true;
         if ((! (o instanceof Inner)))
@@ -23,20 +23,20 @@ public class DataInAnonymousClass {
             return false;
         return true;
       }
-      protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+      protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
         return (other instanceof Inner);
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
         final int PRIME = 59;
         int result = 1;
         final java.lang.Object $string = this.getString();
         result = ((result * PRIME) + (($string == null) ? 43 : $string.hashCode()));
         return result;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
         return (("Inner(string=" + this.getString()) + ")");
       }
-      public @java.lang.SuppressWarnings("all") Inner() {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated Inner() {
         super();
       }
     }

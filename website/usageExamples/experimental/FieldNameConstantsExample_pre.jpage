@@ -1,5 +1,4 @@
 import lombok.experimental.FieldNameConstants;
-import lombok.AccessLevel;
 
 @FieldNameConstants
 public class FieldNameConstantsExample {

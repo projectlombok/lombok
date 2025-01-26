@@ -1,20 +1,20 @@
 import java.util.List;
 public class SuperBuilderBasicToBuilder {
   public static @lombok.experimental.SuperBuilder(toBuilder = true) class Parent {
-    public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<C extends SuperBuilderBasicToBuilder.Parent, B extends SuperBuilderBasicToBuilder.Parent.ParentBuilder<C, B>> {
-      private @java.lang.SuppressWarnings("all") int field1;
-      private @java.lang.SuppressWarnings("all") int obtainViaField;
-      private @java.lang.SuppressWarnings("all") int obtainViaMethod;
-      private @java.lang.SuppressWarnings("all") String obtainViaStaticMethod;
-      private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items;
+    public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<C extends SuperBuilderBasicToBuilder.Parent, B extends SuperBuilderBasicToBuilder.Parent.ParentBuilder<C, B>> {
+      private @java.lang.SuppressWarnings("all") @lombok.Generated int field1;
+      private @java.lang.SuppressWarnings("all") @lombok.Generated int obtainViaField;
+      private @java.lang.SuppressWarnings("all") @lombok.Generated int obtainViaMethod;
+      private @java.lang.SuppressWarnings("all") @lombok.Generated String obtainViaStaticMethod;
+      private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> items;
       public ParentBuilder() {
         super();
       }
-      protected @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
+      protected @java.lang.SuppressWarnings("all") @lombok.Generated B $fillValuesFrom(final C instance) {
         SuperBuilderBasicToBuilder.Parent.ParentBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
         return self();
       }
-      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final SuperBuilderBasicToBuilder.Parent instance, final SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> b) {
+      private static @java.lang.SuppressWarnings("all") @lombok.Generated void $fillValuesFromInstanceIntoBuilder(final SuperBuilderBasicToBuilder.Parent instance, final SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> b) {
         b.field1(instance.field1);
         b.obtainViaField(instance.field1);
         b.obtainViaMethod(instance.method());
@@ -24,38 +24,38 @@ public class SuperBuilderBasicToBuilder {
       /**
        * @return {@code this}.
        */
-      public @java.lang.SuppressWarnings("all") B field1(final int field1) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated B field1(final int field1) {
         this.field1 = field1;
         return self();
       }
       /**
        * @return {@code this}.
        */
-      public @java.lang.SuppressWarnings("all") B obtainViaField(final int obtainViaField) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated B obtainViaField(final int obtainViaField) {
         this.obtainViaField = obtainViaField;
         return self();
       }
       /**
        * @return {@code this}.
        */
-      public @java.lang.SuppressWarnings("all") B obtainViaMethod(final int obtainViaMethod) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated B obtainViaMethod(final int obtainViaMethod) {
         this.obtainViaMethod = obtainViaMethod;
         return self();
       }
       /**
        * @return {@code this}.
        */
-      public @java.lang.SuppressWarnings("all") B obtainViaStaticMethod(final String obtainViaStaticMethod) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated B obtainViaStaticMethod(final String obtainViaStaticMethod) {
         this.obtainViaStaticMethod = obtainViaStaticMethod;
         return self();
       }
-      public @java.lang.SuppressWarnings("all") B item(final String item) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated B item(final String item) {
         if ((this.items == null))
             this.items = new java.util.ArrayList<String>();
         this.items.add(item);
         return self();
       }
-      public @java.lang.SuppressWarnings("all") B items(final java.util.Collection<? extends String> items) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated B items(final java.util.Collection<? extends String> items) {
         if ((items == null))
             {
               throw new java.lang.NullPointerException("items cannot be null");
@@ -65,25 +65,25 @@ public class SuperBuilderBasicToBuilder {
         this.items.addAll(items);
         return self();
       }
-      public @java.lang.SuppressWarnings("all") B clearItems() {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated B clearItems() {
         if ((this.items != null))
             this.items.clear();
         return self();
       }
-      protected abstract @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.SuppressWarnings("all") C build();
-      public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+      protected abstract @java.lang.SuppressWarnings("all") @lombok.Generated B self();
+      public abstract @java.lang.SuppressWarnings("all") @lombok.Generated C build();
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
         return (((((((((("SuperBuilderBasicToBuilder.Parent.ParentBuilder(field1=" + this.field1) + ", obtainViaField=") + this.obtainViaField) + ", obtainViaMethod=") + this.obtainViaMethod) + ", obtainViaStaticMethod=") + this.obtainViaStaticMethod) + ", items=") + this.items) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends SuperBuilderBasicToBuilder.Parent.ParentBuilder<SuperBuilderBasicToBuilder.Parent, SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl> {
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilderImpl extends SuperBuilderBasicToBuilder.Parent.ParentBuilder<SuperBuilderBasicToBuilder.Parent, SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl> {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderBasicToBuilder.Parent build() {
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderBasicToBuilder.Parent build() {
         return new SuperBuilderBasicToBuilder.Parent(this);
       }
     }
@@ -98,7 +98,7 @@ public class SuperBuilderBasicToBuilder {
     private static String staticMethod(Parent instance) {
       return "staticMethod";
     }
-    protected @java.lang.SuppressWarnings("all") Parent(final SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") @lombok.Generated Parent(final SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> b) {
       super();
       this.field1 = b.field1;
       this.obtainViaField = b.obtainViaField;
@@ -117,60 +117,60 @@ public class SuperBuilderBasicToBuilder {
       }
       this.items = items;
     }
-    public @java.lang.SuppressWarnings("all") SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> toBuilder() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> toBuilder() {
       return new SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl().$fillValuesFrom(this);
     }
-    public static @java.lang.SuppressWarnings("all") SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> builder() {
+    public static @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderBasicToBuilder.Parent.ParentBuilder<?, ?> builder() {
       return new SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl();
     }
   }
   public static @lombok.experimental.SuperBuilder(toBuilder = true) class Child extends Parent {
-    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<C extends SuperBuilderBasicToBuilder.Child, B extends SuperBuilderBasicToBuilder.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
-      private @java.lang.SuppressWarnings("all") double field3;
+    public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderBasicToBuilder.Child, B extends SuperBuilderBasicToBuilder.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
+      private @java.lang.SuppressWarnings("all") @lombok.Generated double field3;
       public ChildBuilder() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated B $fillValuesFrom(final C instance) {
         super.$fillValuesFrom(instance);
         SuperBuilderBasicToBuilder.Child.ChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
         return self();
       }
-      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final SuperBuilderBasicToBuilder.Child instance, final SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> b) {
+      private static @java.lang.SuppressWarnings("all") @lombok.Generated void $fillValuesFromInstanceIntoBuilder(final SuperBuilderBasicToBuilder.Child instance, final SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> b) {
         b.field3(instance.field3);
       }
       /**
        * @return {@code this}.
        */
-      public @java.lang.SuppressWarnings("all") B field3(final double field3) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated B field3(final double field3) {
         this.field3 = field3;
         return self();
       }
-      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
-      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
-      public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated C build();
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
         return (((("SuperBuilderBasicToBuilder.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }
     }
-    private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl extends SuperBuilderBasicToBuilder.Child.ChildBuilder<SuperBuilderBasicToBuilder.Child, SuperBuilderBasicToBuilder.Child.ChildBuilderImpl> {
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilderImpl extends SuperBuilderBasicToBuilder.Child.ChildBuilder<SuperBuilderBasicToBuilder.Child, SuperBuilderBasicToBuilder.Child.ChildBuilderImpl> {
       private ChildBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderBasicToBuilder.Child.ChildBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderBasicToBuilder.Child.ChildBuilderImpl self() {
         return this;
       }
-      public @java.lang.Override @java.lang.SuppressWarnings("all") SuperBuilderBasicToBuilder.Child build() {
+      public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderBasicToBuilder.Child build() {
         return new SuperBuilderBasicToBuilder.Child(this);
       }
     }
     private double field3;
-    protected @java.lang.SuppressWarnings("all") Child(final SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") @lombok.Generated Child(final SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> b) {
       super(b);
       this.field3 = b.field3;
     }
-    public @java.lang.SuppressWarnings("all") SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> toBuilder() {
+    public @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> toBuilder() {
       return new SuperBuilderBasicToBuilder.Child.ChildBuilderImpl().$fillValuesFrom(this);
     }
-    public static @java.lang.SuppressWarnings("all") SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> builder() {
+    public static @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderBasicToBuilder.Child.ChildBuilder<?, ?> builder() {
       return new SuperBuilderBasicToBuilder.Child.ChildBuilderImpl();
     }
   }

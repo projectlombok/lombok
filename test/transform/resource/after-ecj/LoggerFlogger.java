@@ -1,6 +1,6 @@
 import lombok.extern.flogger.Flogger;
 @lombok.extern.flogger.Flogger class LoggerFlogger {
-  private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
   <clinit>() {
   }
   LoggerFlogger() {
@@ -8,7 +8,7 @@ import lombok.extern.flogger.Flogger;
   }
 }
 @Flogger class LoggerFloggerWithImport {
-  private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
   <clinit>() {
   }
   LoggerFloggerWithImport() {
@@ -17,7 +17,7 @@ import lombok.extern.flogger.Flogger;
 }
 class LoggerFloggerOuter {
   static @lombok.extern.flogger.Flogger class Inner {
-    private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
     <clinit>() {
     }
     Inner() {
@@ -30,7 +30,7 @@ class LoggerFloggerOuter {
 }
 @Flogger enum LoggerFloggerWithEnum {
   CONSTANT(),
-  private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+  private static final @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
   <clinit>() {
   }
   LoggerFloggerWithEnum() {
@@ -40,7 +40,7 @@ class LoggerFloggerOuter {
 class LoggerFloggerWithInnerEnum {
   @Flogger enum Inner {
     CONSTANT(),
-    private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+    private static final @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
     <clinit>() {
     }
     Inner() {

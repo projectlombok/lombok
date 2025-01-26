@@ -6,7 +6,7 @@
   /**
    * @return {@code this}.
    */
-  public final @java.lang.SuppressWarnings("all") AccessorsMakeFinal1 test(final String test) {
+  public final @java.lang.SuppressWarnings("all") @lombok.Generated AccessorsMakeFinal1 test(final String test) {
     this.test = test;
     return this;
   }

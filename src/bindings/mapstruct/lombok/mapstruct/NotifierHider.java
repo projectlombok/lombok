@@ -7,7 +7,6 @@ import javax.lang.model.type.TypeMirror;
 import org.mapstruct.ap.spi.AstModifyingAnnotationProcessor;
 
 class NotifierHider {
-	
 	public static class AstModificationNotifier implements AstModifyingAnnotationProcessor {
 		private static Field lombokInvoked;
 		

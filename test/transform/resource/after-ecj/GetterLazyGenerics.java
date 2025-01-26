@@ -7,7 +7,7 @@ class GetterLazyGenerics<E> {
   public static <E>E getAny() {
     return null;
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) E getField() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated E getField() {
     java.lang.Object $value = this.field.get();
     if (($value == null))
         {
@@ -24,7 +24,7 @@ class GetterLazyGenerics<E> {
         }
     return (E) (($value == this.field) ? null : $value);
   }
-  public @java.lang.SuppressWarnings({"all", "unchecked"}) long getField2() {
+  public @java.lang.SuppressWarnings({"all", "unchecked"}) @lombok.Generated long getField2() {
     java.lang.Object $value = this.field2.get();
     if (($value == null))
         {

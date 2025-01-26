@@ -1,6 +1,6 @@
-class GeneratedJavaxOff {
+class GeneratedJavaxOffLombokOff {
   @lombok.Getter int x;
-  GeneratedJavaxOff() {
+  GeneratedJavaxOffLombokOff() {
     super();
   }
   public @java.lang.SuppressWarnings("all") int getX() {

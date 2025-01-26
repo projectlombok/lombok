@@ -5,13 +5,13 @@ class Getter {
   Getter() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") boolean isFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isFoo() {
     return this.foo;
   }
-  public @java.lang.SuppressWarnings("all") boolean isBar() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isBar() {
     return this.isBar;
   }
-  public @java.lang.SuppressWarnings("all") boolean isHasBaz() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isHasBaz() {
     return this.hasBaz;
   }
 }
@@ -23,7 +23,7 @@ class MoreGetter {
   boolean hasFoo() {
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean isFoo() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated boolean isFoo() {
     return this.foo;
   }
 }

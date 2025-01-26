@@ -36,6 +36,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Download eclipse bundles.
@@ -63,16 +66,17 @@ public class DownloadEclipseDependencies {
 		String pluginSource = updateSite.getResolvedUrl() + "/plugins/";
 		
 		for (String artifact : artifacts) {
-			try {
-				downloadFile(artifact, pluginSource, pluginTarget);
-			} catch (Exception e) {
-			}
+			// Download artifact
+			downloadFile(artifact, pluginSource, pluginTarget);
 			
+			// Download artifact source
 			int index = artifact.lastIndexOf("_");
 			String source = artifact.substring(0, index) + ".source" + artifact.substring(index);
 			try {
 				downloadFile(source, pluginSource, pluginTarget);
 			} catch (Exception e) {
+				// It's just the source; sometimes these aren't present (specifically, `org.eclipse.swt` doesn't currently appear to have the sources, at least not using the `_sources` naming scheme). Don't fail, just skip them.
+				System.out.println("[failed]");
 			}
 		}
 		
@@ -87,22 +91,38 @@ public class DownloadEclipseDependencies {
 			return;
 		}
 		System.out.print("Downloading '" + filename + "'... ");
+		
 		InputStream in = null;
 		OutputStream out = null;
 		try {
 			in = getStreamForUrl(repositoryUrl + filename);
 			out = new FileOutputStream(targetFile);
-			copy(in, out);
+			
+			copyZipButStripSignatures(in, out);
 			System.out.println("[done]");
-		} catch (IOException e) {
-			System.out.println("[error]");
 		} finally {
-			if (in != null) try {
-				in.close();
-			} catch (Exception ignore) {
+			try {
+				if (in != null) in.close();
+			} finally {
+				if (out != null) out.close();
 			}
-			if (out != null) out.close();
 		}
+	}
+	
+	private static void copyZipButStripSignatures(InputStream rawIn, OutputStream rawOut) throws IOException {
+		ZipInputStream in = null;
+		ZipOutputStream out = null;
+		
+		in = new ZipInputStream(rawIn);
+		out = new ZipOutputStream(rawOut);
+		
+		ZipEntry zipEntry;
+		while ((zipEntry = in.getNextEntry()) != null) {
+			if (zipEntry.getName().matches("META-INF/.*\\.(SF|RSA)")) continue;
+			out.putNextEntry(zipEntry);
+			copy(in, out);
+		}
+		out.close(); // zip streams buffer.
 	}
 	
 	private static void copy(InputStream from, OutputStream to) throws IOException {
@@ -118,8 +138,7 @@ public class DownloadEclipseDependencies {
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setRequestProperty("User-Agent", "lombok");
 		connection.setRequestProperty("Accept", "*/*");
-		InputStream in = new BufferedInputStream(connection.getInputStream());
-		return in;
+		return new BufferedInputStream(connection.getInputStream());
 	}
 	
 	private static void writeEclipseLibrary(String target, String eclipseVersion) throws IOException {

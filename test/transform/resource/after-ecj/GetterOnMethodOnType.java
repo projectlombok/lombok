@@ -4,10 +4,10 @@
   GetterOnMethodOnType() {
     super();
   }
-  public @Deprecated @java.lang.SuppressWarnings("all") int getTest() {
+  public @Deprecated @java.lang.SuppressWarnings("all") @lombok.Generated int getTest() {
     return this.test;
   }
-  public @Deprecated @java.lang.SuppressWarnings("all") String getName() {
+  public @Deprecated @java.lang.SuppressWarnings("all") @lombok.Generated String getName() {
     return this.name;
   }
 }

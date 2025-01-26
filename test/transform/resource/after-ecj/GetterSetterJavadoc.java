@@ -5,7 +5,7 @@
    * 
    * @return Sky is blue1
    */
-  public @java.lang.SuppressWarnings("all") int getFieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getFieldName() {
     return this.fieldName;
   }
   /**
@@ -13,10 +13,10 @@
    * 
    * @param fieldName Hello, World1
    */
-  public @java.lang.SuppressWarnings("all") void setFieldName(final int fieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setFieldName(final int fieldName) {
     this.fieldName = fieldName;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof GetterSetterJavadoc1)))
@@ -28,19 +28,19 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof GetterSetterJavadoc1);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getFieldName());
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (("GetterSetterJavadoc1(fieldName=" + this.getFieldName()) + ")");
   }
-  public @java.lang.SuppressWarnings("all") GetterSetterJavadoc1() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated GetterSetterJavadoc1() {
     super();
   }
 }
@@ -54,7 +54,7 @@ class GetterSetterJavadoc2 {
    * 
    * @return Sky is blue2
    */
-  public @java.lang.SuppressWarnings("all") int getFieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getFieldName() {
     return this.fieldName;
   }
   /**
@@ -62,7 +62,7 @@ class GetterSetterJavadoc2 {
    * 
    * @param fieldName Hello, World2
    */
-  public @java.lang.SuppressWarnings("all") void setFieldName(final int fieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setFieldName(final int fieldName) {
     this.fieldName = fieldName;
   }
 }
@@ -75,14 +75,14 @@ class GetterSetterJavadoc3 {
    * Getter section
    * @return Sky is blue3
    */
-  public @java.lang.SuppressWarnings("all") int getFieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int getFieldName() {
     return this.fieldName;
   }
   /**
    * Setter section
    * @param fieldName Hello, World3
    */
-  public @java.lang.SuppressWarnings("all") void setFieldName(final int fieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setFieldName(final int fieldName) {
     this.fieldName = fieldName;
   }
 }
@@ -96,7 +96,7 @@ class GetterSetterJavadoc3 {
    * 
    * @return Sky is blue4
    */
-  public @java.lang.SuppressWarnings("all") int fieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int fieldName() {
     return this.fieldName;
   }
   /**
@@ -105,7 +105,7 @@ class GetterSetterJavadoc3 {
    * @param fieldName Hello, World4
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") GetterSetterJavadoc4 fieldName(final int fieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated GetterSetterJavadoc4 fieldName(final int fieldName) {
     this.fieldName = fieldName;
     return this;
   }
@@ -119,7 +119,7 @@ class GetterSetterJavadoc3 {
    * Getter section
    * @return Sky is blue5
    */
-  public @java.lang.SuppressWarnings("all") int fieldName() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated int fieldName() {
     return this.fieldName;
   }
   /**
@@ -127,7 +127,7 @@ class GetterSetterJavadoc3 {
    * @param fieldName Hello, World5
    * @return Sky is blue5
    */
-  public @java.lang.SuppressWarnings("all") GetterSetterJavadoc5 fieldName(final int fieldName) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated GetterSetterJavadoc5 fieldName(final int fieldName) {
     this.fieldName = fieldName;
     return this;
   }

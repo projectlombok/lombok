@@ -1,5 +1,6 @@
 class LockedGeneratedTypeMismatch {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	private final java.util.concurrent.locks.Lock $lock = new java.util.concurrent.locks.ReentrantLock();
 	void test() {
 		this.$lock.lock();

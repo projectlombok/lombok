@@ -7,7 +7,7 @@ import java.util.List;
 }
 @lombok.AllArgsConstructor class ConstructorsTypeAnnos {
   @TA @TB List<String> foo;
-  public @java.lang.SuppressWarnings("all") ConstructorsTypeAnnos(final @TA List<String> foo) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated ConstructorsTypeAnnos(final @TA List<String> foo) {
     super();
     this.foo = foo;
   }

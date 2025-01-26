@@ -131,7 +131,7 @@ public class HandleLog {
 			typeNode.toName(logFieldName), loggerType, factoryMethodCall), source);
 		
 		if (isRecord(typeNode) && Javac.getJavaCompilerVersion() < 16) {
-			// This is a workaround for https://bugs.openjdk.java.net/browse/JDK-8243057
+			// This is a workaround for https://bugs.openjdk.java.net/browse/JDK-8243057 - note that the workaround is only for static fields in records, but our infra _requires_ `static` for logs in records (think about it).
 			
 			injectField(typeNode, fieldDecl);
 		} else {

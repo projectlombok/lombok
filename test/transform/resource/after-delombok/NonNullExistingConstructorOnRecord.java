@@ -2,6 +2,7 @@
 import lombok.NonNull;
 public record NonNullExistingConstructorOnRecord(@NonNull String a, @NonNull String b) {
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public NonNullExistingConstructorOnRecord {
 		if (a == null) {
 			throw new java.lang.NullPointerException("a is marked non-null but is null");

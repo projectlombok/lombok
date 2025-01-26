@@ -3,6 +3,7 @@ public class NullLibrary1 {
 	String foo;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.@org.eclipse.jdt.annotation.Nullable Object o) {
 		if (o == this) return true;
 		if (!(o instanceof NullLibrary1)) return false;
@@ -14,11 +15,13 @@ public class NullLibrary1 {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.@org.eclipse.jdt.annotation.Nullable Object other) {
 		return other instanceof NullLibrary1;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -28,10 +31,12 @@ public class NullLibrary1 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public java.lang.@org.eclipse.jdt.annotation.NonNull String toString() {
 		return "NullLibrary1(foo=" + this.foo + ")";
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public NullLibrary1(final String foo) {
 		this.foo = foo;
 	}
@@ -40,6 +45,7 @@ public class NullLibrary1 {
 	 */
 	@org.eclipse.jdt.annotation.NonNull
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public NullLibrary1 withFoo(final String foo) {
 		return this.foo == foo ? this : new NullLibrary1(foo);
 	}

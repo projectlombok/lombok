@@ -27,7 +27,7 @@
 	<@f.snippets name="With" />
 
 	<@f.confKeys>
-		<><dt>
+		<dt>
 			<code>lombok.accessors.prefix</code> += <em>a field prefix</em> (default: empty list)
 		</dt><dd>
 			This is a list property; entries can be added with the <code>+=</code> operator. Inherited prefixes from parent config files can be removed with the <code>-=</code> operator. Lombok will strip any matching field prefix from the name of a field in order to determine the name of the getter/setter to generate. For example, if <code>m</code> is one of the prefixes listed in this setting, then a field named <code>mFoobar</code> will result in a getter named <code>getFoobar()</code>, not <code>getMFoobar()</code>. An explicitly configured <code>prefix</code> parameter of an <a href="/features/experimental/Accessors"><code>@Accessors</code></a> annotation takes precedence over this setting.

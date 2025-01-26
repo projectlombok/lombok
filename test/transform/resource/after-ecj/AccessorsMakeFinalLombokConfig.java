@@ -3,7 +3,7 @@ class AccessorsMakeFinalLombokConfig {
   AccessorsMakeFinalLombokConfig() {
     super();
   }
-  public final @java.lang.SuppressWarnings("all") void setTest(final String test) {
+  public final @java.lang.SuppressWarnings("all") @lombok.Generated void setTest(final String test) {
     this.test = test;
   }
 }

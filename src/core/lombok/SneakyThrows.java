@@ -27,10 +27,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * &#64;SneakyThrow will avoid javac's insistence that you either catch or throw onward any checked exceptions that
+ * &#64;SneakyThrows will avoid javac's insistence that you either catch or throw onward any checked exceptions that
  * statements in your method body declare they generate.
  * <p>
- * &#64;SneakyThrow does not silently swallow, wrap into RuntimeException, or otherwise modify any exceptions of the listed
+ * &#64;SneakyThrows does not silently swallow, wrap into RuntimeException, or otherwise modify any exceptions of the listed
  * checked exception types. The JVM does not check for the consistency of the checked exception system; javac does,
  * and this annotation lets you opt out of its mechanism.
  * <p>

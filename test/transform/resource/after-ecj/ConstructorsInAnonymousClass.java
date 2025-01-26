@@ -7,7 +7,7 @@ public class ConstructorsInAnonymousClass {
     @AllArgsConstructor @RequiredArgsConstructor @NoArgsConstructor class Inner {
       private String string;
       private @NonNull String string2;
-      public @java.lang.SuppressWarnings("all") Inner(final String string, final @NonNull String string2) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated Inner(final String string, final @NonNull String string2) {
         super();
         if ((string2 == null))
             {
@@ -16,7 +16,7 @@ public class ConstructorsInAnonymousClass {
         this.string = string;
         this.string2 = string2;
       }
-      public @java.lang.SuppressWarnings("all") Inner(final @NonNull String string2) {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated Inner(final @NonNull String string2) {
         super();
         if ((string2 == null))
             {
@@ -24,7 +24,7 @@ public class ConstructorsInAnonymousClass {
             }
         this.string2 = string2;
       }
-      public @java.lang.SuppressWarnings("all") Inner() {
+      public @java.lang.SuppressWarnings("all") @lombok.Generated Inner() {
         super();
       }
     }

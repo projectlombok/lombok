@@ -10,7 +10,7 @@ public record NonNullExistingConstructorOnRecord(String a, String b) {
           throw new java.lang.NullPointerException("b is marked non-null but is null");
         }
   }
-  public @java.lang.SuppressWarnings("all") NonNullExistingConstructorOnRecord(@NonNull String a, @NonNull String b) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullExistingConstructorOnRecord(@NonNull String a, @NonNull String b) {
     super();
     if ((a == null))
         {

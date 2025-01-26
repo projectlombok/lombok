@@ -20,31 +20,31 @@ public class OnXJava7Style {
   public OnXJava7Style() {
     super();
   }
-  public @Foo @java.lang.SuppressWarnings("all") String getA() {
+  public @Foo @java.lang.SuppressWarnings("all") @lombok.Generated String getA() {
     return this.a;
   }
-  public @Foo() @java.lang.SuppressWarnings("all") void setB(final String b) {
+  public @Foo() @java.lang.SuppressWarnings("all") @lombok.Generated void setB(final String b) {
     this.b = b;
   }
-  public @java.lang.SuppressWarnings("all") void setC(final @Foo("a") String c) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setC(final @Foo("a") String c) {
     this.c = c;
   }
-  public @java.lang.SuppressWarnings("all") void setD(final @Bar(stuff = "b") String d) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setD(final @Bar(stuff = "b") String d) {
     this.d = d;
   }
-  public @Foo(value = "c") @Bar(stuff = "d") @java.lang.SuppressWarnings("all") String getE() {
+  public @Foo(value = "c") @Bar(stuff = "d") @java.lang.SuppressWarnings("all") @lombok.Generated String getE() {
     return this.e;
   }
-  public @Array @java.lang.SuppressWarnings("all") String getF() {
+  public @Array @java.lang.SuppressWarnings("all") @lombok.Generated String getF() {
     return this.f;
   }
-  public @Array() @java.lang.SuppressWarnings("all") String getG() {
+  public @Array() @java.lang.SuppressWarnings("all") @lombok.Generated String getG() {
     return this.g;
   }
-  public @Array({}) @java.lang.SuppressWarnings("all") String getH() {
+  public @Array({}) @java.lang.SuppressWarnings("all") @lombok.Generated String getH() {
     return this.h;
   }
-  public @Array({"a", "b"}) @java.lang.SuppressWarnings("all") String getI() {
+  public @Array({"a", "b"}) @java.lang.SuppressWarnings("all") @lombok.Generated String getI() {
     return this.i;
   }
 }

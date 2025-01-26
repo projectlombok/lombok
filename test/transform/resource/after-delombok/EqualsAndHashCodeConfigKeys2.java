@@ -1,6 +1,7 @@
 class EqualsAndHashCodeConfigKeys2Object extends Object {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeConfigKeys2Object)) return false;
@@ -9,11 +10,13 @@ class EqualsAndHashCodeConfigKeys2Object extends Object {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCodeConfigKeys2Object;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int result = 1;
 		return result;
@@ -22,6 +25,7 @@ class EqualsAndHashCodeConfigKeys2Object extends Object {
 class EqualsAndHashCodeConfigKeys2Parent {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeConfigKeys2Parent)) return false;
@@ -30,11 +34,13 @@ class EqualsAndHashCodeConfigKeys2Parent {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCodeConfigKeys2Parent;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int result = 1;
 		return result;
@@ -44,6 +50,7 @@ class EqualsAndHashCodeConfigKeys2 extends EqualsAndHashCodeConfigKeys2Parent {
 	int x;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeConfigKeys2)) return false;
@@ -54,11 +61,13 @@ class EqualsAndHashCodeConfigKeys2 extends EqualsAndHashCodeConfigKeys2Parent {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCodeConfigKeys2;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = super.hashCode();
