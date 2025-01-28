@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2024 The Project Lombok Authors.
+ * Copyright (C) 2013-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -906,7 +906,7 @@ public class HandlerUtil {
 		private Pattern pattern;
 		
 		JavadocTag(String regexpFragment) {
-			pattern = Pattern.compile("\\s?^[ \\t]*\\**[ \\t]*" + regexpFragment + "(\\S|\\s)*?(?=(\\s^\\s*\\**\\s*@|\\Z))", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+			pattern = Pattern.compile("\\s?^[ \\t]*\\**[ \\t]*" + regexpFragment + ".*?(?=(\\s^\\s*\\**\\s*@|\\Z))", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 		}
 	}
 	
@@ -978,7 +978,7 @@ public class HandlerUtil {
 
 	public static String getParamJavadoc(String methodComment, String param) {
 		if (methodComment == null || methodComment.isEmpty()) return methodComment;
-		Pattern pattern = Pattern.compile("@param " + param + " (\\S|\\s)+?(?=^ ?@|\\z)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile("@param " + param + " .+?(?=^ ?@|\\z)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(methodComment);
 		if (matcher.find()) {
 			return matcher.group();
