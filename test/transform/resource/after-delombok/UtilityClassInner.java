@@ -1,5 +1,6 @@
+@java.lang.SuppressWarnings("serial")
 class UtilityClassInner {
-	static final class UtilClass {
+	static final class UtilClass implements java.io.Serializable {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		private UtilClass() {
