@@ -132,7 +132,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			builderMethodName = ann.builderMethodName();
 			buildMethodName = ann.buildMethodName();
 			builderClassName = getBuilderClassNameTemplate(node, ann.builderClassName());
-			toBuilder = ann.toBuilder();
+
+			boolean explicitToBuilder = annValues.isExplicit("toBuilder");
+			boolean configToBuilder = Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.BUILDER_TO_BUILDER));
+			toBuilder = explicitToBuilder ? ann.toBuilder() : configToBuilder;
 			
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
