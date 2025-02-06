@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Project Lombok Authors.
+ * Copyright (C) 2022-2024 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 package lombok.eclipse;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -45,7 +45,7 @@ public class RefactoringUtils {
 		
 		ResourcesPlugin.getWorkspace().run(perform, null);
 		
-		assertTrue("Condition failed", change.getConditionCheckingStatus().isOK());
+		assertEquals("Condition failed", "<OK\n>", change.getConditionCheckingStatus().toString());
 		assertTrue("Perform failed", perform.changeExecuted());
 	}
 }
