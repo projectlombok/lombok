@@ -1,0 +1,44 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="@Generator" logline="Iterate, execute, and yield. Finally creating iterator became easy.">
+	<@f.history>
+		<p>
+			<code>@Generator</code> was introduced as experimental feature in lombok v0.18.27.
+		</p>
+	</@f.history>
+	
+	<@f.experimental>
+		<ul>
+			<li>
+				Unstable feature. This feature is not tested extensively and needs more experiment.
+			</li>
+		</ul>
+	</@f.experimental>
+
+	<@f.overview>
+		<p>
+			Generator, also known as Sequence is a form of iterator which can be yielded and resumed later.  Their context(variable declarations) will be saved for future resumption.
+		</p><p>
+			By default method annotated with <code>@Generator</code> will not be run immediately on called. Instead the method returns <code>Iterator</code>(or <code>Iterable</code>). By calling <code>next</code> method of iterator it will be executed until next <code>yieldThis</code> statement is met, which is the next value of iterator, or with <code>yieldAll</code> statement, delegates to another iterable object. The <code>next</code> or <code>hasNext</code> method will resume iterator and buffer next yielded value if there is no buffered value. Additionally the <code>next</code> method will return buffered value and remove it.
+		</p><p>
+			All statements containing control flow change statements including <code>yieldThis</code>, <code>yieldAll</code>, <code>return</code>, <code>break</code>, <code>continue</code> and <code>throw</code> will be transformed.<br />
+			All local variables will be captured as a field. Captured objects can be garbage collected just like local variables.
+		</p>
+	</@f.overview>
+
+	<@f.snippets name="experimental/Generator" />
+
+	<@f.confKeys>
+		<dt>
+			<code>lombok.generator.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@Generator</code> as a warning or error if configured.
+		</dd>
+	</@f.confKeys>
+
+	<@f.smallPrint>
+		<p>
+			When using <code>yieldAll</code> statement, using primitive type array is impossible to use due to limitation.
+		</p>
+	</@f.smallPrint>
+</@f.scaffold>
