@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2799,8 +2799,8 @@ public class EclipseHandlerUtil {
 		return annotations;
 	}
 	
-	private static final Pattern JAVADOC_PATTERN = Pattern.compile("^\\s*\\/\\*\\*((?:\\S|\\s)*?)\\*\\/", Pattern.MULTILINE);
-	private static final Pattern LEADING_ASTERISKS_PATTERN = Pattern.compile("(?m)^\\s*\\* ?");
+	private static final Pattern JAVADOC_PATTERN = Pattern.compile("^\\s*\\/\\*\\*(.*?)\\*\\/", Pattern.MULTILINE | Pattern.DOTALL);
+	private static final Pattern LEADING_ASTERISKS_PATTERN = Pattern.compile("^\\s*\\* ?", Pattern.MULTILINE);
 
 	public static String getDocComment(EclipseNode eclipseNode) {
 		if (eclipseNode.getAst().getSource() == null) return null;
