@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2022 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -592,38 +592,42 @@ public class JavacHandlerUtil {
 		
 		private static final Field astField;
 		private static final Field originalAnnos;
-		private static final Method findRecordComponentToRemove;
+		private static final Method getRecordComponents = Permit.permissiveGetMethod(ClassSymbol.class, "getRecordComponents");
 		
 		static {
 			Field a = null;
 			Field o = null;
-			Method m = null;
 			try {
 				Class<?> forName = Class.forName("com.sun.tools.javac.code.Symbol$RecordComponent");
 				a = Permit.permissiveGetField(forName, "ast");
 				o = Permit.permissiveGetField(forName, "originalAnnos");
-				m = Permit.permissiveGetMethod(ClassSymbol.class, "findRecordComponentToRemove", JCVariableDecl.class);
 			} catch (Throwable e) {
 				// Ignore
 			}
 			astField = a;
 			originalAnnos = o;
-			findRecordComponentToRemove = m;
 		}
 		
 		static void deleteAnnotation(JCClassDecl record, JCVariableDecl component, JCTree annotation) {
-			if ((astField == null && originalAnnos == null) || findRecordComponentToRemove == null) return;
+			if ((astField == null && originalAnnos == null) || getRecordComponents == null) return;
 			
 			try {
-				Object toRemove = Permit.invokeSneaky(findRecordComponentToRemove, record.sym, component);
-				if (astField != null) {
-					// OpenJDK
-					JCVariableDecl variable = Permit.get(astField, toRemove);
-					variable.mods.annotations =  filterListByPos(variable.mods.annotations, annotation);
-				} else {
-					// Zulu JDK 17
-					List<JCAnnotation> annotations = Permit.get(originalAnnos, toRemove);
-					Permit.set(originalAnnos, toRemove, filterListByPos(annotations, annotation));
+				List<?> recordComponents = (List<?>) Permit.invokeSneaky(getRecordComponents, record.sym);
+				
+				for (Object recordComponent : recordComponents) {
+					Name recordComponentName = ((Symbol) recordComponent).name;
+					if (!recordComponentName.equals(component.name)) continue;
+					
+					if (astField != null) {
+						// OpenJDK
+						JCVariableDecl variable = Permit.get(astField, recordComponent);
+						variable.mods.annotations =  filterListByPos(variable.mods.annotations, annotation);
+					} else {
+						// Zulu JDK 17
+						List<JCAnnotation> annotations = Permit.get(originalAnnos, recordComponent);
+						Permit.set(originalAnnos, recordComponent, filterListByPos(annotations, annotation));
+					}
+					return;
 				}
 			} catch (Throwable e) {
 				// Ignore
