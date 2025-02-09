@@ -237,6 +237,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 				<arg value="osgi.bundle:org.eclipse.core.jobs" />
 				<arg value="osgi.bundle:org.eclipse.osgi" />
 				<arg value="osgi.bundle:org.eclipse.text" />
+				<arg value="osgi.bundle:org.osgi.service.prefs" />
 			</bundles>
 		</fetchdep.eclipse.updatesite>
 		<path id="cp.eclipse-I-build">
