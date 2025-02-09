@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -184,7 +184,16 @@ public class Javac {
 	public static final TypeTag CTC_NONE = typeTag("NONE");
 	public static final TypeTag CTC_BOT = typeTag("BOT");
 	public static final TypeTag CTC_ERROR = typeTag("ERROR");
-	public static final TypeTag CTC_UNKNOWN = typeTag("UNKNOWN");
+	public static final TypeTag CTC_UNKNOWN; // Removed in JDK24
+	static {
+		TypeTag unknonwTypeTag = null;
+		try {
+			unknonwTypeTag = typeTag("UNKNOWN"); 
+		} catch (Exception e) {
+			if (!(e instanceof NoSuchFieldException)) throw Javac.sneakyThrow(e);
+		}
+		CTC_UNKNOWN = unknonwTypeTag;
+	}
 	public static final TypeTag CTC_UNDETVAR = typeTag("UNDETVAR");
 	public static final TypeTag CTC_CLASS = typeTag("CLASS");
 	
