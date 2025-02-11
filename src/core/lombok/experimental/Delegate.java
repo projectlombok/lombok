@@ -65,4 +65,11 @@ public @interface Delegate {
 	 * @return For each method (not already in {@code java.lang.Object}) in these types, skip generating a delegate method (overrides {@code types()}).
 	 */
 	Class<?>[] excludes() default {};
+
+	/**
+	 * If configuration turn to true. When field is null and target type delegate method return as a references type, just return a null instead of throw a NPE
+	 *
+	 * @return Is it needed to avoid NPE make the utmost effort.
+	 */
+	boolean skipAndReturnNullOnNullRef() default false;
 }

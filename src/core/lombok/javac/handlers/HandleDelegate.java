@@ -23,6 +23,8 @@ package lombok.javac.handlers;
 
 import static com.sun.tools.javac.code.Flags.*;
 import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
+import static lombok.javac.Javac.CTC_EQUAL;
+import static lombok.javac.Javac.CTC_BOT;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.lang.annotation.Annotation;
@@ -72,13 +74,8 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.experimental.Delegate;
-import lombok.javac.FindTypeVarScanner;
-import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacResolution;
+import lombok.javac.*;
 import lombok.javac.JavacResolution.TypeNotConvertibleException;
-import lombok.javac.JavacTreeMaker;
-import lombok.javac.ResolutionResetNeeded;
 import lombok.permit.Permit;
 import lombok.spi.Provides;
 
@@ -111,7 +108,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		
 		@SuppressWarnings("deprecation") Class<? extends Annotation> oldDelegate = lombok.Delegate.class;
 		deleteAnnotationIfNeccessary(annotationNode, Delegate.class, oldDelegate);
-		
+
 		Type delegateType;
 		Name delegateName = annotationNode.toName(annotationNode.up().getName());
 		DelegateReceiver delegateReceiver;
@@ -211,16 +208,16 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 				}
 			}
 			
-			for (MethodSig sig : signaturesToDelegate) generateAndAdd(sig, annotationNode, delegateName, delegateReceiver);
+			for (MethodSig sig : signaturesToDelegate) generateAndAdd(sig, annotationNode, delegateName, delegateReceiver, annotation.getInstance().skipAndReturnNullOnNullRef());
 		} catch (DelegateRecursion e) {
 			annotationNode.addError(String.format(RECURSION_NOT_ALLOWED, e.member, e.type));
 		}
 	}
 	
-	public void generateAndAdd(MethodSig sig, JavacNode annotation, Name delegateName, DelegateReceiver delegateReceiver) {
+	public void generateAndAdd(MethodSig sig, JavacNode annotation, Name delegateName, DelegateReceiver delegateReceiver, boolean tryToAvoidNOE) {
 		List<JCMethodDecl> toAdd = new ArrayList<JCMethodDecl>();
 		try {
-			toAdd.add(createDelegateMethod(sig, annotation, delegateName, delegateReceiver));
+			toAdd.add(createDelegateMethod(sig, annotation, delegateName, delegateReceiver, tryToAvoidNOE));
 		} catch (TypeNotConvertibleException e) {
 			annotation.addError("Can't create delegate method for " + sig.name + ": " + e.getMessage());
 			return;
@@ -285,7 +282,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		}
 	}
 	
-	public JCMethodDecl createDelegateMethod(MethodSig sig, JavacNode annotation, Name delegateName, DelegateReceiver delegateReceiver) throws TypeNotConvertibleException, CantMakeDelegates {
+	public JCMethodDecl createDelegateMethod(MethodSig sig, JavacNode annotation, Name delegateName, DelegateReceiver delegateReceiver, boolean tryToAvoidNOE) throws TypeNotConvertibleException, CantMakeDelegates {
 		/* public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
 		 *      (return) delegate.<T, U>methodName(name1, name2);
 		 *  }
@@ -346,7 +343,18 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		
 		JCExpression delegateCall = maker.Apply(toList(typeArgs), maker.Select(delegateReceiver.get(annotation, delegateName), sig.name), toList(args));
 		JCStatement body = useReturn ? maker.Return(delegateCall) : maker.Exec(delegateCall);
-		JCBlock bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(body));
+		JCBlock bodyBlock = null;
+		// only worked when avoid NPE been told and target method not return primitive type
+		if (tryToAvoidNOE && !Javac.isPrimitive(returnType)){
+			bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(
+					maker.If(maker.Binary(CTC_EQUAL, delegateReceiver.get(annotation, delegateName), maker.Literal(CTC_BOT, null))
+							, maker.Return(useReturn ? maker.Literal(CTC_BOT, null) : null)
+							, null
+					)
+					, body));
+		}else{
+			bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(body));
+		}
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null), annotation);
 	}
