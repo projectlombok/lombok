@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2022 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2115,14 +2115,15 @@ public class JavacHandlerUtil {
 		ListBuffer<JCAnnotation> out = new ListBuffer<JCAnnotation>();
 		for (JCExpression expr : in) {
 			if (!(expr instanceof JCAnnotation)) continue;
-			out.append(copyAnnotation((JCAnnotation) expr, maker));
+			out.append(copyExpression((JCAnnotation) expr, maker));
 		}
 		return out.toList();
 	}
 	
-	static JCAnnotation copyAnnotation(JCAnnotation annotation, JavacTreeMaker maker) {
+	@SuppressWarnings("unchecked")
+	static <T extends JCExpression> T copyExpression(T expression, JavacTreeMaker maker) {
 		TreeVisitor<JCTree, Void> visitor = new TreeCopier<Void>(maker.getUnderlyingTreeMaker());
-		return (JCAnnotation) visitor.visitAnnotation(annotation, null);
+		return (T) expression.accept(visitor, null);
 	}
 	
 	static List<JCAnnotation> mergeAnnotations(List<JCAnnotation> a, List<JCAnnotation> b) {
