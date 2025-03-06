@@ -22,7 +22,7 @@
 package lombok.javac;
 
 import static lombok.javac.JavacTreeMaker.TreeTag.treeTag;
-import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -184,16 +184,8 @@ public class Javac {
 	public static final TypeTag CTC_NONE = typeTag("NONE");
 	public static final TypeTag CTC_BOT = typeTag("BOT");
 	public static final TypeTag CTC_ERROR = typeTag("ERROR");
-	public static final TypeTag CTC_UNKNOWN; // Removed in JDK24
-	static {
-		TypeTag unknonwTypeTag = null;
-		try {
-			unknonwTypeTag = typeTag("UNKNOWN"); 
-		} catch (Exception e) {
-			if (!(e instanceof NoSuchFieldException)) throw Javac.sneakyThrow(e);
-		}
-		CTC_UNKNOWN = unknonwTypeTag;
-	}
+	public static final TypeTag CTC_UNKNOWN = typeTagPermissive("UNKNOWN"); // UNKNOWN has been removed in JDK24, hence, we need to look it up permissively (just make it `null` if it does not exist).
+	
 	public static final TypeTag CTC_UNDETVAR = typeTag("UNDETVAR");
 	public static final TypeTag CTC_CLASS = typeTag("CLASS");
 	

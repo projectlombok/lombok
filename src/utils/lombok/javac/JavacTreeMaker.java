@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 The Project Lombok Authors.
+ * Copyright (C) 2013-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -257,6 +257,15 @@ public class JavacTreeMaker {
 		
 		public static TypeTag typeTag(String identifier) {
 			return new TypeTag(getFieldCached(TYPE_TAG_CACHE, Javac.getJavaCompilerVersion() < 8 ? "com.sun.tools.javac.code.TypeTags" : "com.sun.tools.javac.code.TypeTag", identifier));
+		}
+		
+		public static TypeTag typeTagPermissive(String identifier) {
+			try {
+				return typeTag(identifier);
+			} catch (Exception e) {
+				if (e instanceof NoSuchFieldException) return null;
+				throw Javac.sneakyThrow(e);
+			}
 		}
 	}
 	
