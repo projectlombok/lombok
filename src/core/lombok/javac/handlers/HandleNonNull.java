@@ -307,7 +307,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 			if (invocation.args.isEmpty()) return null;
 			JCExpression firstArgument = invocation.args.head;
 			if (!(firstArgument instanceof JCIdent)) return null;
-			return ((JCIdent) firstArgument).toString();
+			return firstArgument.toString();
 		}
 		
 		if (isIf) {
