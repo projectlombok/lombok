@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2020-2023 The Project Lombok Authors.
+ Copyright (C) 2020-2025 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -154,8 +154,8 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	
 	<!-- For non-LTS versions, feel free to aggressively update these to the current non-LTS openjdk version, and delete them once they roll out of the 6 month window. -->
 	
-	<target name="test.javac23" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using javac23 as underlying compiler">
-		<test.javacX version="23" />
+	<target name="test.javac24" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using javac24 as underlying compiler">
+		<test.javacX version="24" />
 	</target>
 	
 	<target name="test.javacCurrent" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using its javac as underlying compiler">
