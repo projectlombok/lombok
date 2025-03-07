@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,6 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -156,11 +155,9 @@ public class HandleLog {
 				expressions[i] = maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
 				break;
 			case TOPIC:
-				if (loggerTopic instanceof JCLiteral) {
-					expressions[i] = maker.Literal(((JCLiteral) loggerTopic).value);
-				} else {
-					expressions[i] = cloneType(maker, loggerTopic, typeNode);
-				}
+				JCExpression topicExpression = copyExpression(loggerTopic, maker);
+				recursiveSetGeneratedBy(topicExpression, typeNode);
+				expressions[i] = topicExpression;
 				break;
 			case NULL:
 				expressions[i] = maker.Literal(CTC_BOT, null);
