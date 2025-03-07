@@ -372,5 +372,5 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 	</target>
 	
 	<target name="test" depends="test.javacCurrent, test.eclipse-202212" description="runs the tests against the default JVM, javac, and eclipse" />
-	<target name="test.broad" depends="test.javac8, test.javac17, test.javac21, test.javac23, test.eclipse-oxygen, test.eclipse-202212, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
+	<target name="test.broad" depends="test.javac8, test.javac17, test.javac21, test.javac24, test.eclipse-oxygen, test.eclipse-202212, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
 </project>
