@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2736,10 +2736,8 @@ public class EclipseHandlerUtil {
 	 * Returns {@code true} if the provided node is a record declaration (so, not an annotation definition, interface, enum, or plain class).
 	 */
 	public static boolean isRecord(EclipseNode typeNode) {
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		return (modifiers & AccRecord) != 0;
+		ASTNode node = typeNode.get();
+		return node instanceof TypeDeclaration && isRecord((TypeDeclaration) node);
 	}
 	
 	/**
@@ -2771,6 +2769,14 @@ public class EclipseHandlerUtil {
 	 */
 	public static boolean isStaticAllowed(EclipseNode typeNode) {
 		return typeNode.isStatic() || typeNode.up() == null || typeNode.up().getKind() == Kind.COMPILATION_UNIT || isRecord(typeNode);
+	}
+	
+	/**
+	 * Returns {@code true} if the provided type declaration is a record declaration (so, not an annotation definition, interface, enum, or plain class).
+	 */
+	public static boolean isRecord(TypeDeclaration typeDecl) {
+		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
+		return (modifiers & AccRecord) != 0;
 	}
 	
 	public static AbstractVariableDeclaration[] getRecordComponents(TypeDeclaration typeDeclaration) {
