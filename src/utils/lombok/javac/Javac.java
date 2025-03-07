@@ -55,6 +55,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 import lombok.core.ClassLiteral;
@@ -382,6 +383,10 @@ public class Javac {
 				@Override public boolean isDeprecated() {
 					return text.contains("@deprecated") && field instanceof JCVariableDecl && isFieldDeprecated(field);
 				}
+
+				@Override public DiagnosticPosition getPos() {
+					return field;
+				}
 			};
 		}
 	}
@@ -417,7 +422,7 @@ public class Javac {
 			throw sneakyThrow(e.getCause());
 		}
 	}
-	
+
 	public static void storeEnd(JCTree tree, int pos, JCCompilationUnit top) {
 		try {
 			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
