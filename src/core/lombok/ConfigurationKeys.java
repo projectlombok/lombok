@@ -106,7 +106,7 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<Boolean> ADD_SUPPRESSWARNINGS_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addSuppressWarnings", "Generate @java.lang.SuppressWarnings(\"all\") on all generated code (default: true).") {};
 	
 	/**
-	 * lombok configuration: {@code lombok.addNullAnnotations = }one of: [{@code none}, {@code javax}, {@code eclipse}, {@code jetbrains}, {@code netbeans}, {@code androidx}, {@code android.support}, {@code checkerframework}, {@code findbugs}, {@code spring}, {@code JML}, or a custom set of fully qualified annotation types].
+	 * lombok configuration: {@code lombok.addNullAnnotations = }one of: [{@code none}, {@code javax}, {@code eclipse}, {@code jetbrains}, {@code netbeans}, {@code androidx}, {@code android.support}, {@code checkerframework}, {@code findbugs}, {@code spring}, {@code JML}, {@code jspecify} or a custom set of fully qualified annotation types].
 	 * 
 	 * Lombok generally copies relevant nullity annotations from your source code to the right places. However, sometimes lombok generates code where the nullability of some node is not dependent on something in your source code. You can configure lombok to add an appropriate nullity annotation in this case.<ul>
 	 * <li>{@code none} (the default) - no annotations are added.</li>
@@ -121,6 +121,7 @@ public class ConfigurationKeys {
 	 * <li>{@code findbugs} - The annotations {@code edu.umd.cs.findbugs.annotations.NonNull} and {@code edu.umd.cs.findbugs.annotations.Nullable} are used.</li>
 	 * <li>{@code spring} - The annotations {@code org.springframework.lang.NonNull} and {@code org.springframework.lang.Nullable} are used.</li>
 	 * <li>{@code jml} - The annotations {@code org.jmlspecs.annotation.NonNull} and {@code org.jmlspecs.annotation.Nullable} are used.</li>
+	 * <li>{@code jspecify} - The annotations {@code org.jspecify.annotations.NonNull} and {@code org.jspecify.annotations.Nullable} are used.</li>
 	 * <li><code>CUSTOM:<em>fully.qualified.nonnull.annotation</em>:<em>fully.qualified.nullable.annotation</em></code> to configure your own types; the nullable annotation (and the colon) are optional.</li>
 	 * </ul>
 	 * <p>
