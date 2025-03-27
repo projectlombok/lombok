@@ -116,7 +116,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		JCExpression jsonPropertyType = chainDots(fieldNode, "com", "fasterxml", "jackson", "annotation", "JsonProperty");
-		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.of(maker.Literal(fieldNode.getName())));
+		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.<JCExpression>of(maker.Literal(fieldNode.getName())));
 		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
 		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
 		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);

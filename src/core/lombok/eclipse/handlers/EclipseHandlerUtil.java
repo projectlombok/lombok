@@ -828,8 +828,14 @@ public class EclipseHandlerUtil {
 
 	/**
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 * 
+	 * @param forceCopy If <code>true</code>, always copy the annotations regardless of the lombok configuration.
 	 */
-	public static Annotation[] findCopyableToSetterAnnotations(EclipseNode node) {
+	public static Annotation[] findCopyableToSetterAnnotations(EclipseNode node, boolean forceCopy) {
+		if (!forceCopy) {
+			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_SETTERS);
+			if (copyAnnotations == null || !copyAnnotations) return EMPTY_ANNOTATIONS_ARRAY;
+		}
 		return findAnnotationsInList(node, JACKSON_COPY_TO_SETTER_ANNOTATIONS);
 	}
 

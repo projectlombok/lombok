@@ -219,7 +219,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		char[] prefixedSelector = data.getSetterPrefix().length == 0 ? data.getPluralName() : HandlerUtil.buildAccessorName(builderType, new String(data.getSetterPrefix()), new String(data.getPluralName())).toCharArray();
 		md.selector = fluent ? prefixedSelector : HandlerUtil.buildAccessorName(builderType, "addAll", new String(data.getPluralName())).toCharArray();
 		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
-		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up()));
+		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up(), false));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 
 		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);

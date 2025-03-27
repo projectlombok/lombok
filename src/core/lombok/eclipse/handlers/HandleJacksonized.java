@@ -31,6 +31,7 @@ import java.util.List;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
@@ -47,6 +48,7 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.spi.Provides;
@@ -62,6 +64,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 
 	private static final char[][] JSON_POJO_BUILDER_ANNOTATION = Eclipse.fromQualifiedName("com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder");
 	private static final char[][] JSON_DESERIALIZE_ANNOTATION = Eclipse.fromQualifiedName("com.fasterxml.jackson.databind.annotation.JsonDeserialize");
+	private static final char[][] JSON_PROPERTY_ANNOTATION = Eclipse.fromQualifiedName("com.fasterxml.jackson.annotation.JsonProperty");
 
 	@Override public void handle(AnnotationValues<Jacksonized> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.JACKSONIZED_FLAG_USAGE, "@Jacksonized");
@@ -77,8 +80,10 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		
 		EclipseNode builderAnnotationNode = findAnnotation(Builder.class, annotatedNode);
 		EclipseNode superBuilderAnnotationNode = findAnnotation(SuperBuilder.class, annotatedNode);
-		if (builderAnnotationNode == null && superBuilderAnnotationNode == null) {
-			annotationNode.addWarning("@Jacksonized requires @Builder or @SuperBuilder for it to mean anything.");
+		EclipseNode accessorsAnnotationNode = (annotatedNode.getKind() == Kind.TYPE) ? findAnnotation(Accessors.class, annotatedNode) : null;
+
+		if (builderAnnotationNode == null && superBuilderAnnotationNode == null && accessorsAnnotationNode == null) {
+			annotationNode.addWarning("@Jacksonized requires @Builder, @SuperBuilder, or @Accessors for it to mean anything.");
 			return;
 		}
 		
@@ -92,7 +97,18 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			annotationNode.addError("Builders on abstract classes cannot be @Jacksonized (the builder would never be used).");
 			return;
 		}
+
+		if (builderAnnotationNode != null || superBuilderAnnotationNode != null) {
+			handleJacksonizedBuilder(ast, annotationNode, annotatedNode, tdNode, td, builderAnnotationNode, superBuilderAnnotationNode);
+		}
+
+		if (accessorsAnnotationNode != null) {
+			handleJacksonizedAccessors(ast, annotationNode, annotatedNode, tdNode, td, accessorsAnnotationNode);
+		}
 		
+	}
+
+	private void handleJacksonizedBuilder(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode builderAnnotationNode, EclipseNode superBuilderAnnotationNode) {
 		AnnotationValues<Builder> builderAnnotation = builderAnnotationNode != null ? createAnnotation(Builder.class, builderAnnotationNode) : null;
 		AnnotationValues<SuperBuilder> superBuilderAnnotation = superBuilderAnnotationNode != null ? createAnnotation(SuperBuilder.class, superBuilderAnnotationNode) : null;
 		
@@ -143,6 +159,38 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		if (superBuilderAnnotationNode != null) 
 			builderClass.modifiers = builderClass.modifiers & ~ClassFileConstants.AccPrivate;
 	}
+	
+	private void handleJacksonizedAccessors(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode accessorsAnnotationNode) {
+		AnnotationValues<Accessors> accessorsAnnotation = accessorsAnnotationNode != null ? 
+			createAnnotation(Accessors.class, accessorsAnnotationNode) :
+				null;
+		boolean fluent = accessorsAnnotation != null && accessorsAnnotation.getInstance().fluent();
+		
+		if (!fluent) {
+			// No changes required for chained-only accessors.
+			return;
+		}
+		
+		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
+		for (EclipseNode eclipseNode : tdNode.down()) {
+			if (eclipseNode.getKind() == Kind.FIELD) {
+				createJsonPropertyForField(eclipseNode, annotationNode);
+			}
+		}
+	}
+
+	private void createJsonPropertyForField(EclipseNode fieldNode, EclipseNode annotationNode) {
+		if (hasAnnotation("com.fasterxml.jackson.annotation.JsonProperty", fieldNode)) {
+			return;
+		}
+		ASTNode astNode = fieldNode.get();
+		if (astNode instanceof FieldDeclaration) {
+			FieldDeclaration fd = (FieldDeclaration)astNode;
+			StringLiteral fieldName = new StringLiteral(fd.name, 0, 0, 0);
+			((FieldDeclaration)astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JSON_PROPERTY_ANNOTATION, fieldName);
+		}
+	}
+
 	
 	private String getBuilderClassName(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, TypeDeclaration td, AnnotationValues<Builder> builderAnnotation) {
 		String builderClassName = builderAnnotation != null ? 

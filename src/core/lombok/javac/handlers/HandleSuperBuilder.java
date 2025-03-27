@@ -21,9 +21,9 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.HandleBuilder.*;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
+import static lombok.javac.handlers.HandleBuilder.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
@@ -968,7 +968,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode, true);
 		returnType = addCheckerFrameworkReturnsReceiver(returnType, maker, job.builderType, job.checkerFramework);
 
-		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, job.sourceNode, methodAnns, annosOnParam, false);
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, job.sourceNode, methodAnns, annosOnParam, true);
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
 			copyJavadocFromParam(originalFieldNode.up(), newMethod, paramName.toString());
 		} else {
