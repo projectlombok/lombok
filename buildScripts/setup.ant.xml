@@ -160,28 +160,16 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<fetchdep.eclipse.osgi name="oxygen" version="4.7" />
 	</target>
 	
-	<target name="deps.eclipse.2022-03" depends="deps.rtstubs18, compile.support">
+	<target name="deps.eclipse.202203" depends="deps.rtstubs18, compile.support">
 		<fetchdep.eclipse.osgi name="2022-03" version="4.23" />
 	</target>
 	
-	<target name="deps.eclipse.2023-09" depends="deps.rtstubs18, compile.support">
-		<fetchdep.eclipse.osgi name="2023-09" version="4.29" />
-	</target>
-	
-	<target name="deps.eclipse.2023-12" depends="deps.rtstubs18, compile.support">
-		<fetchdep.eclipse.osgi name="2023-12" version="4.30" />
-	</target>
-	
-	<target name="deps.eclipse.2024-03" depends="deps.rtstubs18, compile.support">
+	<target name="deps.eclipse.202403" depends="deps.rtstubs18, compile.support">
 		<fetchdep.eclipse.osgi name="2024-03" version="4.31" />
 	</target>
 	
-	<target name="deps.eclipse.2024-06" depends="deps.rtstubs18, compile.support">
-		<fetchdep.eclipse.osgi name="2024-06" version="4.32" />
-	</target>
-	
-	<target name="deps.eclipse.2024-09" depends="deps.rtstubs18, compile.support">
-		<fetchdep.eclipse.osgi name="2024-09" version="4.33" />
+	<target name="deps.eclipse.202503" depends="deps.rtstubs18, compile.support">
+		<fetchdep.eclipse.osgi name="2025-03" version="4.35" />
 	</target>
 	
 	<target name="deps.eclipse.integration" depends="deps.rtstubs18, compile.support">
