@@ -177,6 +177,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 				createJsonPropertyForField(eclipseNode, annotationNode);
 			}
 		}
+		tdNode.rebuild();
 	}
 
 	private void createJsonPropertyForField(EclipseNode fieldNode, EclipseNode annotationNode) {

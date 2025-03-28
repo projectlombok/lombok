@@ -3,13 +3,13 @@ public @lombok.extern.jackson.Jacksonized @lombok.experimental.Accessors(fluent 
   public JacksonizedAccessors() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.annotation.JsonProperty("intValue") int intValue() {
+  public @com.fasterxml.jackson.annotation.JsonProperty("intValue") @java.lang.SuppressWarnings("all") @lombok.Generated int intValue() {
     return this.intValue;
   }
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.annotation.JsonProperty("intValue") JacksonizedAccessors intValue(final int intValue) {
+  public @com.fasterxml.jackson.annotation.JsonProperty("intValue") @java.lang.SuppressWarnings("all") @lombok.Generated JacksonizedAccessors intValue(final int intValue) {
     this.intValue = intValue;
     return this;
   }

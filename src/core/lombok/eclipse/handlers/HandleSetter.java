@@ -27,6 +27,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -58,6 +59,8 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+
+import com.google.common.collect.Lists;
 
 /**
  * Handles the {@code lombok.Setter} annotation for eclipse.
@@ -109,6 +112,13 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
+		
+		// If a fluent setter should be generated, force-copy annotations from the field.
+		AnnotationValues<Accessors> accessorsForField = EclipseHandlerUtil.getAccessorsForField(fieldNode);
+		Annotation[] copyableToSetterAnnotations = findCopyableToSetterAnnotations(fieldNode, accessorsForField.isExplicit("fluent"));
+		onMethod = Lists.newArrayList(onMethod);
+		onMethod.addAll(Arrays.asList(copyableToSetterAnnotations));
+		
 		createSetterForField(level, fieldNode, sourceNode, false, onMethod, onParam);
 	}
 	
