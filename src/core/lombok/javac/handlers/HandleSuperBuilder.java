@@ -190,6 +190,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			bfd.type = fd.vartype;
 			bfd.singularData = getSingularData(fieldNode, annInstance.setterPrefix());
 			bfd.originalFieldNode = fieldNode;
+			JavacNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode, false);
+			if (isExcluded != null) {
+				bfd.toExclude = true;
+			}
 			
 			if (bfd.singularData != null && isDefault != null) {
 				isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
@@ -341,7 +345,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : job.builderFields) {
-			generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
+			if (!bfd.toExclude) {
+				generateSetterMethodsForBuilder(job, bfd, builderGenericName, annInstance.setterPrefix());
+			}
 		}
 		
 		// Generate abstract self() and build() methods in the abstract builder.
