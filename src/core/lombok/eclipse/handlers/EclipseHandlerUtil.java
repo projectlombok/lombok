@@ -3013,4 +3013,18 @@ public class EclipseHandlerUtil {
 		}
 		return false;
 	}
+
+	public static List<TypeReference> getGenericTypes(TypeReference fieldType) {
+		List<TypeReference> result = new ArrayList<TypeReference>();
+
+		TypeReference[][] typeArguments = fieldType.getTypeArguments();
+		if (typeArguments != null) {
+			for (TypeReference[] arg : typeArguments) {
+				if (arg == null) continue;
+				result.addAll(Arrays.asList(arg));
+			}
+		}
+
+		return result;
+	}
 }
