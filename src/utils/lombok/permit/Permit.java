@@ -132,16 +132,15 @@ public class Permit {
 	
 	public static Field getField(Class<?> c, String fName) throws NoSuchFieldException {
 		Field f = null;
-		Class<?> oc = c;
-		while (c != null) {
+		Class<?> d = c;
+		while (d != null) {
 			try {
-				f = c.getDeclaredField(fName);
+				f = d.getDeclaredField(fName);
 				break;
 			} catch (NoSuchFieldException e) {}
-			c = c.getSuperclass();
+			d = d.getSuperclass();
 		}
-		
-		if (f == null) throw new NoSuchFieldException(oc.getName() + " :: " + fName);
+		if (f == null) throw new NoSuchFieldException(c.getName() + " :: " + fName);
 		
 		return setAccessible(f);
 	}
