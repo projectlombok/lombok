@@ -10,7 +10,13 @@
 		</div><div class="row text-center">
 			<h2><a href="/lombok-edge.jar" id="downloadLink">Download edge release now!</a></h2>
 			<p>
-				You can use the edge release from maven using the projectlombok.org repository:<pre>
+				You can use the edge release from maven using the projectlombok.org repository.
+				This requires:<ul>
+					<li>Adding the lombok maven repository to your <code>repositories</code> section</li>
+					<li>Adding lombok as a dependency to your project in the <code>dependencies</code> section, specifying version <code>edge-SNAPSHOT</code>.</li>
+					<li>Adding lombok as an annotation processor in the <code>annotationProcessorPaths</code> section, specifying version <code>edge-SNAPSHOT</code>.</li>
+				</ul>
+				These sections in your pom file should look like this:<pre>
 &lt;repositories&gt;
 	&lt;repository&gt;
 		&lt;id&gt;projectlombok.org&lt;/id&gt;
@@ -26,6 +32,26 @@
 		&lt;scope&gt;provided&lt;/scope&gt;
 	&lt;/dependency&gt;
 &lt;/dependencies&gt;</pre>
+<pre>
+&lt;build&gt;
+	&lt;plugins&gt;
+		&lt;plugin&gt;
+			&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+			&lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+			&lt;configuration&gt;
+				&lt;annotationProcessorPaths&gt;
+					&lt;path&gt;
+						&lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+						&lt;artifactId&gt;lombok&lt;/artifactId&gt;
+						&lt;version&gt;edge-SNAPSHOT&lt;/version&gt;
+					&lt;/path&gt;
+				&lt;/annotationProcessorPaths&gt;
+			&lt;/configuration&gt;
+		&lt;/plugin&gt;
+	&lt;/plugins&gt;
+&lt;/build&gt;
+
+</pre>
 			</p>
 			<p>
 				You can use the edge release from gradle using the projectlombok.org repository:<pre>
