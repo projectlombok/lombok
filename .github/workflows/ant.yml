@@ -183,3 +183,32 @@ jobs:
         
       - name: Compile in container
         run: docker run --entrypoint="" -v $(pwd)/lombok.jar:/workspace/lombok.jar $IMAGE_NAME /bin/bash -c "cd classpath; ${{ matrix.tool.cmd }}"
+  
+  manual-tests:
+    runs-on: ubuntu-24.04
+    needs: build
+    strategy: 
+      matrix: 
+        jdk: [8, 11, 17, 21, 23]
+        dir: [compileTests]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.jdk }}
+          distribution: 'zulu'
+          
+      - uses: actions/download-artifact@v4
+        with:
+          name: lombok.jar
+          path: dist
+          
+      - name: Run tests
+        working-directory: ./test/manual/${{ matrix.dir }}/
+        run: ./runTests.sh
+
