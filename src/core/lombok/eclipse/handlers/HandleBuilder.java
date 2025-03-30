@@ -789,7 +789,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 			memberValue = arr;
 		}
-		ann.declarationSourceEnd = pE;
 		
 		TypeReference typeReference = job.createBuilderTypeReference();
 		int len = typeReference.getTypeName().length;

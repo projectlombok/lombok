@@ -2143,7 +2143,7 @@ public class EclipseHandlerUtil {
 			for (int i = 0; i < args.length; i++) {
 				args[i].sourceStart = pS;
 				args[i].sourceEnd = pE;
-				na.memberValuePairs[i] = (MemberValuePair) args[i];			
+				na.memberValuePairs[i] = (MemberValuePair) args[i];
 			}
 			setGeneratedBy(na.memberValuePairs[0], source);
 			setGeneratedBy(na.memberValuePairs[0].value, source);
