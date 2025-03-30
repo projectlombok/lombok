@@ -15,7 +15,7 @@ public class Tokens {
 		String getText();
 		
 		JCDiagnostic.DiagnosticPosition getPos();
-
+		
 		int getSourcePos(int index);
 		
 		CommentStyle getStyle();
