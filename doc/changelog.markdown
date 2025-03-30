@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.37 "Edgy Guinea Pig"
 * PLATFORM: JDK24 support added.
 * FEATURE: Lombok's nullity annotation now supports [JSpecify](https://jspecify.dev) out of the box, using [config key](https://projectlombok.org/features/configuration) `jspecify`.
+* BUGFIX: Recent eclipse releases would get you 'negative length' error. The bug had always been in lombok but didn't matter until recent releases. [Issue #3823](https://github.com/projectlombok/lombok/issues/3823).
 
 ### v1.18.36 (November 15th, 2024)
 * PLATFORM: JDK23 support added.
