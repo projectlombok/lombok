@@ -198,15 +198,12 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		String setterName = toSetterName(field, accessors);
 		boolean returnThis = shouldReturnThis(field, accessors);
-		boolean fluent = accessors.isExplicit("fluent");
-		Boolean fluentConfig = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT);
-		if (fluentConfig != null && fluentConfig) fluent = fluentConfig;
 
-		JCMethodDecl setter = createSetter(access, false, field, treeMaker, setterName, null, null, returnThis, source, onMethod, onParam, fluent);
+		JCMethodDecl setter = createSetter(access, false, field, treeMaker, setterName, null, null, returnThis, source, onMethod, onParam);
 		return setter;
 	}
 	
-	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean forceAnnotationCopying) {
+	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		JCExpression returnType = null;
 		JCReturn returnStatement = null;
 		if (shouldReturnThis) {
@@ -215,7 +212,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
 		}
 		
-		return createSetter(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam, forceAnnotationCopying);
+		return createSetter(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam);
 	}
 	
 	public static JCMethodDecl createSetterWithRecv(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, JCVariableDecl recv, boolean forceAnnotationCopying) {
@@ -227,15 +224,15 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
 		}
 		
-		JCMethodDecl d = createSetterWithRecv(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam, recv, forceAnnotationCopying);
+		JCMethodDecl d = createSetterWithRecv(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam, recv);
 		return d;
 	}
 	
-	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean forceAnnotationCopying) {
-		return createSetterWithRecv(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, methodType, returnStatement, source, onMethod, onParam, null, forceAnnotationCopying);
+	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+		return createSetterWithRecv(access, deprecate, field, treeMaker, setterName, paramName, booleanFieldToSet, methodType, returnStatement, source, onMethod, onParam, null);
 	}
 	
-	public static JCMethodDecl createSetterWithRecv(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, JCVariableDecl recv, boolean forceAnnotationCopying) {
+	public static JCMethodDecl createSetterWithRecv(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name paramName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, JCVariableDecl recv) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -281,12 +278,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		List<JCAnnotation> annsOnMethod = mergeAnnotations(copyAnnotations(onMethod), findCopyableToSetterAnnotations(field, forceAnnotationCopying));
+		// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		boolean fluent = accessors.isExplicit("fluent");
+		Boolean fluentConfig = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT);
+		if (fluentConfig != null && fluentConfig) fluent = fluentConfig;
+		
+		List<JCAnnotation> annsOnMethod = mergeAnnotations(copyAnnotations(onMethod), findCopyableToSetterAnnotations(field, fluent));
 		if (isFieldDeprecated(field) || deprecate) {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}
-		
-		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+
 		if (shouldMakeFinal(field, accessors)) access |= Flags.FINAL;
 		JCMethodDecl methodDef;
 		if (recv != null && treeMaker.hasMethodDefWithRecvParam()) {

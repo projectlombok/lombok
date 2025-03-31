@@ -968,7 +968,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode, true);
 		returnType = addCheckerFrameworkReturnsReceiver(returnType, maker, job.builderType, job.checkerFramework);
 
-		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, job.sourceNode, methodAnns, annosOnParam, true);
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, paramName, nameOfSetFlag, returnType, returnStatement, job.sourceNode, methodAnns, annosOnParam);
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
 			copyJavadocFromParam(originalFieldNode.up(), newMethod, paramName.toString());
 		} else {

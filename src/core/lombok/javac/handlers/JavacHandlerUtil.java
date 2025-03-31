@@ -1758,9 +1758,11 @@ public class JavacHandlerUtil {
 
 	/**
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 * 
+	 * @param forceCopyJacksonAnnotations If <code>true</code>, always copy the annotations regardless of the lombok configuration.
 	 */
-	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node, boolean forceCopy) {
-		if (!forceCopy) {
+	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node, boolean forceCopyJacksonAnnotations) {
+		if (!forceCopyJacksonAnnotations) {
 			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_SETTERS);
 			if (copyAnnotations == null || !copyAnnotations) return List.nil();
 		}
