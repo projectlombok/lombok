@@ -747,7 +747,7 @@ public class ConfigurationKeys {
 	/**
 	 * lombok configuration: {@code lombok.copyJacksonAnnotationsToSetters} = {@code true} | {@code false}.
 	 *
-	 * If <code>true</code>, copy certain Jackson annotations from a field to its corresponding getter. This was the behavior from lombok 1.18.16 to 1.18.36.
+	 * If <code>true</code>, copy certain Jackson annotations from a field to its corresponding getter. This was the behavior from lombok 1.18.16 to 1.18.38.
 	 * However, it turned out to be harmful in certain situations. Thus, the default is now <code>false</code>.
 	 */
 	public static final ConfigurationKey<Boolean> COPY_JACKSON_ANNOTATIONS_TO_SETTERS = new ConfigurationKey<Boolean>("lombok.copyJacksonAnnotationsToSetters", "Copy these annotations to getters, setters, with methods, builder-setters, etc.") {};

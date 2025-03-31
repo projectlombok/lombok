@@ -113,6 +113,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		// If a fluent setter should be generated, force-copy annotations from the field.
 		AnnotationValues<Accessors> accessorsForField = EclipseHandlerUtil.getAccessorsForField(fieldNode);
+		// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
 		Annotation[] copyableToSetterAnnotations = findCopyableToSetterAnnotations(fieldNode, accessorsForField.isExplicit("fluent"));
 		onMethod = new ArrayList<Annotation>(onMethod);
 		onMethod.addAll(Arrays.asList(copyableToSetterAnnotations));

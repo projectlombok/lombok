@@ -332,7 +332,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		
 		md.selector = setterName.toCharArray();
 		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
-		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up(), false));
+		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up(), true));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 		
 		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
