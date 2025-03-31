@@ -91,24 +91,23 @@ jobs:
     strategy: 
       matrix: 
         version:
-        - eclipse-oxygen
-        - eclipse-202006
-        - eclipse-202006-jdk8
-        - eclipse-202212
-        - eclipse-202403
-		- eclipse-202503
-        - eclipse-I-build
-        - eclipse-oxygen-full
-        - eclipse-2022-03-full
-        - eclipse-2024-03-full
-		- eclipse-2025-03-full
-        - eclipse-I-build-full
-        - ecj11
-        - ecj14
-        - ecj16
-        - ecj19
+          - eclipse-oxygen
+          - eclipse-202006
+          - eclipse-202006-jdk8
+          - eclipse-202212
+          - eclipse-202403
+          - eclipse-202503
+          - eclipse-I-build
+          - eclipse-oxygen-full
+          - eclipse-2022-03-full
+          - eclipse-2024-03-full
+          - eclipse-2025-03-full
+          - eclipse-I-build-full
+          - ecj11
+          - ecj14
+          - ecj16
+          - ecj19
       fail-fast: false
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
