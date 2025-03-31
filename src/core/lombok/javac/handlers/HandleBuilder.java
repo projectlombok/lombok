@@ -192,6 +192,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		ObtainVia obtainVia;
 		JavacNode obtainViaNode;
 		JavacNode originalFieldNode;
+		boolean toExclude = false;
 		
 		java.util.List<JavacNode> createdFields = new ArrayList<JavacNode>();
 	}
@@ -264,6 +265,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.type = fd.vartype;
 				bfd.singularData = getSingularData(fieldNode, annInstance.setterPrefix());
 				bfd.originalFieldNode = fieldNode;
+				JavacNode isExcluded = findAnnotation(Builder.Exclude.class, fieldNode, false);
+				if (isExcluded != null) {
+					bfd.toExclude = true;
+				}
 				
 				if (bfd.singularData != null && isDefault != null) {
 					isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
@@ -489,7 +494,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : job.builderFields) {
-			makePrefixedSetterMethodsForBuilder(job, bfd, annInstance.setterPrefix());
+			if (!bfd.toExclude) {
+				makePrefixedSetterMethodsForBuilder(job, bfd, annInstance.setterPrefix());
+			}
 		}
 		
 		{
