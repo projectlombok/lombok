@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -185,12 +185,12 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
-		JCMethodDecl equalsMethod = createEquals(typeNode, members, callSuper, fieldAccess, needsCanEqual, source, onParam);
+		JCMethodDecl equalsMethod = createEquals(typeNode, members, callSuper, fieldAccess, needsCanEqual, source, copyAnnotations(onParam, typeNode.getTreeMaker()));
 		
 		injectMethod(typeNode, equalsMethod);
 		
 		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source, copyAnnotations(onParam));
+			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source, copyAnnotations(onParam, typeNode.getTreeMaker()));
 			injectMethod(typeNode, canEqualMethod);
 		}
 		

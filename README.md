@@ -1,11 +1,5 @@
 # Project Lombok
 
-<sub>Sponsored Content</sub>
-> [![Sponsor logo Fern](https://projectlombok.org/files/logos/fern.png)](https://form.typeform.com/to/bShdJw7z)
-> Offer API docs that look as good as Stripe's using our sponsor [Fern](https://form.typeform.com/to/bShdJw7z). Request a [preview of your docs](https://form.typeform.com/to/bShdJw7z) on Fern.
-
-<br/>
-
 **Project Lombok** is a java library that automatically plugs into your editor and build tools, spicing up your java.
 Never write another getter or equals method again, with one annotation your class has a fully featured builder, automate your logging variables, and much more.
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2156,7 +2156,7 @@ public class EclipseHandlerUtil {
 			for (int i = 0; i < args.length; i++) {
 				args[i].sourceStart = pS;
 				args[i].sourceEnd = pE;
-				na.memberValuePairs[i] = (MemberValuePair) args[i];			
+				na.memberValuePairs[i] = (MemberValuePair) args[i];
 			}
 			setGeneratedBy(na.memberValuePairs[0], source);
 			setGeneratedBy(na.memberValuePairs[0].value, source);
@@ -2749,10 +2749,8 @@ public class EclipseHandlerUtil {
 	 * Returns {@code true} if the provided node is a record declaration (so, not an annotation definition, interface, enum, or plain class).
 	 */
 	public static boolean isRecord(EclipseNode typeNode) {
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		return (modifiers & AccRecord) != 0;
+		ASTNode node = typeNode.get();
+		return node instanceof TypeDeclaration && isRecord((TypeDeclaration) node);
 	}
 	
 	/**
@@ -2786,6 +2784,14 @@ public class EclipseHandlerUtil {
 		return typeNode.isStatic() || typeNode.up() == null || typeNode.up().getKind() == Kind.COMPILATION_UNIT || isRecord(typeNode);
 	}
 	
+	/**
+	 * Returns {@code true} if the provided type declaration is a record declaration (so, not an annotation definition, interface, enum, or plain class).
+	 */
+	public static boolean isRecord(TypeDeclaration typeDecl) {
+		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
+		return (modifiers & AccRecord) != 0;
+	}
+	
 	public static AbstractVariableDeclaration[] getRecordComponents(TypeDeclaration typeDeclaration) {
 		if (typeDeclaration == null || (typeDeclaration.modifiers & AccRecord) == 0) return null;
 		try {
@@ -2812,8 +2818,8 @@ public class EclipseHandlerUtil {
 		return annotations;
 	}
 	
-	private static final Pattern JAVADOC_PATTERN = Pattern.compile("^\\s*\\/\\*\\*((?:\\S|\\s)*?)\\*\\/", Pattern.MULTILINE);
-	private static final Pattern LEADING_ASTERISKS_PATTERN = Pattern.compile("(?m)^\\s*\\* ?");
+	private static final Pattern JAVADOC_PATTERN = Pattern.compile("^\\s*\\/\\*\\*(.*?)\\*\\/", Pattern.MULTILINE | Pattern.DOTALL);
+	private static final Pattern LEADING_ASTERISKS_PATTERN = Pattern.compile("^\\s*\\* ?", Pattern.MULTILINE);
 
 	public static String getDocComment(EclipseNode eclipseNode) {
 		if (eclipseNode.getAst().getSource() == null) return null;

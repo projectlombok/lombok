@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -83,7 +84,11 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		
 		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, result.getMessages()));
 		
-		if (parameters.isCheckPositions()) delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor(parameters.getMinVersion()));
+		if (parameters.isCheckPositions()) {
+			NodePositionMapper nodePositionMapper = new NodePositionMapper();
+			delombok.addPreLombokProcessors(nodePositionMapper);
+			delombok.addAdditionalAnnotationProcessor(new ValidatePositionProcessor(parameters.getMinVersion(), nodePositionMapper));
+		}
 		delombok.addAdditionalAnnotationProcessor(new ValidateTypesProcessor());
 		delombok.addAdditionalAnnotationProcessor(new ValidateNoDuplicateTreeNodeProcessor());
 		
@@ -105,15 +110,36 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		}
 	}
 	
+	public static class NodePositionMapper extends TreeProcessor {
+		Map<JCTree, Integer> nodePositions = new HashMap<JCTree, Integer>();
+		
+		@Override void processCompilationUnit(final JCCompilationUnit unit) {
+			unit.accept(new TreeScanner() {
+				@Override public void scan(JCTree tree) {
+					if (tree == null) return;
+					if (tree instanceof JCMethodDecl && (((JCMethodDecl) tree).mods.flags & Flags.GENERATEDCONSTR) != 0) return;
+					if (tree.pos >= 0) {
+						nodePositions.put(tree, tree.pos);
+					}
+					super.scan(tree);
+					
+				}
+			});
+		}
+		
+	}
+	
 	public static class ValidatePositionProcessor extends TreeProcessor {
 		private final int version;
+		private final NodePositionMapper nodePositionMapper;
 		
-		public ValidatePositionProcessor(int version) {
+		public ValidatePositionProcessor(int version, NodePositionMapper nodePositionMapper) {
 			this.version = version;
+			this.nodePositionMapper = nodePositionMapper;
 		}
 		
 		private String craftFailMsg(String problematicNode, Deque<JCTree> astContext) {
-			StringBuilder msg = new StringBuilder(problematicNode).append(" position of node not set: ");
+			StringBuilder msg = new StringBuilder(problematicNode);
 			for (JCTree t : astContext) {
 				msg.append("\n  ").append(t.getClass().getSimpleName());
 				String asStr = t.toString();
@@ -153,10 +179,14 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 						
 						if (tree instanceof JCVariableDecl && (((JCVariableDecl) tree).mods.flags & Javac.GENERATED_MEMBER) != 0) return;
 						
-						if (check && tree.pos == -1) fail(craftFailMsg("Start", astContext));
+						if (check && tree.pos == -1) fail(craftFailMsg("Start position of node not set: ", astContext));
 						
+						Integer expectedPos = nodePositionMapper.nodePositions.get(tree);
+						if (expectedPos != null && !expectedPos.equals(tree.pos)) {
+							fail(craftFailMsg(String.format("Expected node position %d, actual node position %d: ", expectedPos, tree.pos), astContext));
+						}
 						if (check && Javac.getEndPosition(tree, unit) == -1) {
-							fail(craftFailMsg("End", astContext));
+							fail(craftFailMsg("End position of node not set: ", astContext));
 						}
 					} finally {
 						try {
@@ -288,14 +318,6 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 					parents.push(tree);
 					super.scan(tree);
 					parents.pop();
-				}
-				
-				/**
-				 * We always generate shallow copies for annotations
-				 */
-				@Override
-				public void visitAnnotation(JCAnnotation tree) {
-					return;
 				}
 			});
 		}

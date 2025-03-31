@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,7 +105,7 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 			boolean wipeSymAndType = copy.type.isErroneous();
 			if (!wipeSymAndType) {
 				TypeTag typeTag = TypeTag.typeTag(copy.type);
-				wipeSymAndType = (CTC_NONE.equals(typeTag) || CTC_ERROR.equals(typeTag) || CTC_UNKNOWN.equals(typeTag) || CTC_UNDETVAR.equals(typeTag));
+				wipeSymAndType = (typeTag.equals(CTC_NONE) || typeTag.equals(CTC_ERROR) || typeTag.equals(CTC_UNKNOWN) || typeTag.equals(CTC_UNDETVAR));
 			}
 			
 			if (wipeSymAndType) {

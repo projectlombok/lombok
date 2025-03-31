@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021 The Project Lombok Authors.
+ * Copyright (C) 2013-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,17 +94,17 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(AccessLevel.PUBLIC) | COMPACT_RECORD_CONSTRUCTOR, List.<JCAnnotation>nil());
 		JCBlock body = maker.Block(0L, List.<JCStatement>nil());
-		if (existingCtr == null) {
-			JCMethodDecl constr = maker.MethodDef(mods, typeNode.toName("<init>"), null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), body, null);
-			return recursiveSetGeneratedBy(constr, source);
+		JCMethodDecl constuctor = existingCtr;
+		if (constuctor == null) {
+			constuctor = maker.MethodDef(mods, typeNode.toName("<init>"), null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), body, null);
 		} else {
-			existingCtr.mods = mods;
-			existingCtr.body = body;
-			existingCtr = recursiveSetGeneratedBy(existingCtr, source);
-			addSuppressWarningsAll(existingCtr.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(existingCtr)), typeNode.getContext());
-			addGenerated(existingCtr.mods, typeNode, typeNode.getNodeFor(getGeneratedBy(existingCtr)), typeNode.getContext());
-			return existingCtr;
+			constuctor.mods = mods;
+			constuctor.body = body;
 		}
+		recursiveSetGeneratedBy(constuctor, source);
+		addSuppressWarningsAll(constuctor.mods, typeNode, source, typeNode.getContext());
+		addGenerated(constuctor.mods, typeNode, source, typeNode.getContext());
+		return constuctor;
 	}
 	
 	/**
@@ -132,7 +132,6 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 				if (md.name.contentEquals("<init>")) {
 					if ((md.mods.flags & Flags.GENERATEDCONSTR) != 0) {
 						existingCtr = md;
-						existingCtr.mods.flags = existingCtr.mods.flags & ~Flags.GENERATEDCONSTR;
 						generateConstructor = true;
 					} else {
 						if (!isTolerate(typeNode, md)) {
@@ -307,7 +306,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 			if (invocation.args.isEmpty()) return null;
 			JCExpression firstArgument = invocation.args.head;
 			if (!(firstArgument instanceof JCIdent)) return null;
-			return ((JCIdent) firstArgument).toString();
+			return firstArgument.toString();
 		}
 		
 		if (isIf) {

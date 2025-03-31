@@ -103,6 +103,7 @@ public class Delombok {
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
 	private Map<String, String> formatPrefs = new HashMap<String, String>();
+	private List<AbstractProcessor> preLombokProcessors = new ArrayList<AbstractProcessor>();
 	private List<AbstractProcessor> additionalAnnotationProcessors = new ArrayList<AbstractProcessor>();
 	
 	/** If null, output to standard out. */
@@ -653,6 +654,10 @@ public class Delombok {
 		fileToBase.put(f, base);
 	}
 	
+	public void addPreLombokProcessors(AbstractProcessor processor) {
+		preLombokProcessors.add(processor);
+	}
+
 	public void addAdditionalAnnotationProcessor(AbstractProcessor processor) {
 		additionalAnnotationProcessors.add(processor);
 	}
@@ -735,6 +740,7 @@ public class Delombok {
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
 		
 		Set<AbstractProcessor> processors = new LinkedHashSet<AbstractProcessor>();
+		processors.addAll(preLombokProcessors);
 		processors.add(new lombok.javac.apt.LombokProcessor());
 		processors.addAll(additionalAnnotationProcessors);
 		

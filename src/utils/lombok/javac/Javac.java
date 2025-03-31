@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 package lombok.javac;
 
 import static lombok.javac.JavacTreeMaker.TreeTag.treeTag;
-import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -55,6 +55,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 import lombok.core.ClassLiteral;
@@ -184,7 +185,8 @@ public class Javac {
 	public static final TypeTag CTC_NONE = typeTag("NONE");
 	public static final TypeTag CTC_BOT = typeTag("BOT");
 	public static final TypeTag CTC_ERROR = typeTag("ERROR");
-	public static final TypeTag CTC_UNKNOWN = typeTag("UNKNOWN");
+	public static final TypeTag CTC_UNKNOWN = typeTagPermissive("UNKNOWN"); // UNKNOWN has been removed in JDK24, hence, we need to look it up permissively (just make it `null` if it does not exist).
+	
 	public static final TypeTag CTC_UNDETVAR = typeTag("UNDETVAR");
 	public static final TypeTag CTC_CLASS = typeTag("CLASS");
 	
@@ -381,6 +383,10 @@ public class Javac {
 				@Override public boolean isDeprecated() {
 					return text.contains("@deprecated") && field instanceof JCVariableDecl && isFieldDeprecated(field);
 				}
+
+				@Override public DiagnosticPosition getPos() {
+					return field;
+				}
 			};
 		}
 	}
@@ -416,7 +422,7 @@ public class Javac {
 			throw sneakyThrow(e.getCause());
 		}
 	}
-	
+
 	public static void storeEnd(JCTree tree, int pos, JCCompilationUnit top) {
 		try {
 			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);

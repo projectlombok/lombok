@@ -252,10 +252,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		JCExpression annotationMethodDefaultValue = null;
 		
 		List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(field);
-		List<JCAnnotation> copyableToGetterAnnotations = copyAnnotations(findCopyableToGetterAnnotations(field));
+		List<JCAnnotation> copyableToGetterAnnotations = copyAnnotations(findCopyableToGetterAnnotations(field), treeMaker);
 
 		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
-		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod).appendList(copyableAnnotations).appendList(copyableToGetterAnnotations);
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod, treeMaker).appendList(copyableAnnotations).appendList(copyableToGetterAnnotations);
 		if (field.isFinal()) {
 			if (getCheckerFrameworkVersion(field).generatePure()) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genTypeRef(field, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()));
 		} else {

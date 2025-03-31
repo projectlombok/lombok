@@ -245,7 +245,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(field);
 		
 		Name methodName = field.toName(setterName);
-		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(copyableAnnotations);
+		List<JCAnnotation> annsOnParam = copyAnnotations(onParam, treeMaker).appendList(copyableAnnotations);
 		
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		JCExpression pType = cloneType(treeMaker, fieldDecl.vartype, source);
@@ -284,7 +284,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		Boolean fluentConfig = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT);
 		if (fluentConfig != null && fluentConfig) fluent = fluentConfig;
 		
-		List<JCAnnotation> annsOnMethod = mergeAnnotations(copyAnnotations(onMethod), findCopyableToSetterAnnotations(field, fluent));
+		List<JCAnnotation> annsOnMethod = mergeAnnotations(copyAnnotations(onMethod, treeMaker), findCopyableToSetterAnnotations(field, fluent));
 		if (isFieldDeprecated(field) || deprecate) {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}

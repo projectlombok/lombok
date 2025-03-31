@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2024 The Project Lombok Authors.
+ * Copyright (C) 2013-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,6 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedThisReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Receiver;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
-import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
@@ -778,27 +777,23 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		if (mandatories.size() == 0) return null;
 		
-		int pS = job.source.sourceStart, pE = job.source.sourceEnd;
-		
 		char[][] nameCalled = fromQualifiedName(CheckerFrameworkVersion.NAME__CALLED);
-		SingleMemberAnnotation ann = new SingleMemberAnnotation(new QualifiedTypeReference(nameCalled, poss(job.source, nameCalled.length)), pS);
+		Expression memberValue;
 		if (mandatories.size() == 1) {
-			ann.memberValue = new StringLiteral(mandatories.get(0), 0, 0, 0);
+			memberValue = new StringLiteral(mandatories.get(0), 0, 0, 0);
 		} else {
 			ArrayInitializer arr = new ArrayInitializer();
-			arr.sourceStart = pS;
-			arr.sourceEnd =  pE;
 			arr.expressions = new Expression[mandatories.size()];
 			for (int i = 0; i < arr.expressions.length; i++) {
-				arr.expressions[i] = new StringLiteral(mandatories.get(i), pS, pE, 0);
+				arr.expressions[i] = new StringLiteral(mandatories.get(i), job.source.sourceStart, job.source.sourceEnd, 0);
 			}
-			ann.memberValue = arr;
+			memberValue = arr;
 		}
 		
 		TypeReference typeReference = job.createBuilderTypeReference();
 		int len = typeReference.getTypeName().length;
 		typeReference.annotations = new Annotation[len][];
-		typeReference.annotations[len - 1] = new Annotation[] {ann};
+		typeReference.annotations[len - 1] = EclipseHandlerUtil.addAnnotation(job.source, null, nameCalled, memberValue);
 		return new Receiver(new char[] { 't', 'h', 'i', 's' }, 0, typeReference, null, 0);
 	}
 	

@@ -22,20 +22,25 @@
 &lt;/dependencies&gt;
 </pre>
 		</p>
-	</@s.section>
-
-	<@s.section title="JDK9+ with module-info.java">
 		<p>
-			The configuration of the compiler plug-in should contain the following:<pre>
-&lt;annotationProcessorPaths&gt;
-	&lt;path&gt;
-		&lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
-		&lt;artifactId&gt;lombok&lt;/artifactId&gt;
-		&lt;version&gt;${version}&lt;/version&gt;
-	&lt;/path&gt;
-&lt;/annotationProcessorPaths&gt;
-</pre>
-		</p>
+		You also need to add lombok as an annotation processor. This is mandatory starting with JDK23, or JDK9+ if compiling as modules (you have <code>module-info.java</code> files in your build):<pre>
+&lt;build&gt;
+	&lt;plugins&gt;
+		&lt;plugin&gt;
+			&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+			&lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+			&lt;configuration&gt;
+				&lt;annotationProcessorPaths&gt;
+					&lt;path&gt;
+						&lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+						&lt;artifactId&gt;lombok&lt;/artifactId&gt;
+						&lt;version&gt;${version}&lt;/version&gt;
+					&lt;/path&gt;
+				&lt;/annotationProcessorPaths&gt;
+			&lt;/configuration&gt;
+		&lt;/plugin&gt;
+	&lt;/plugins&gt;
+&lt;/build&gt;
 	</@s.section>
 	
 	<@s.section title="Eclipse Compiler (ECJ/JDT)">
