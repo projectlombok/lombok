@@ -1599,39 +1599,17 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 	}
 	
-	private static final Method getExtendsClause, getEndPosition, storeEnd;
+	private static final Method getExtendsClause, getEndPosition;
 	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
 		
 		if (getJavaCompilerVersion() < 8) {
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
-			storeEnd = getMethod(java.util.Map.class, "put", Object.class, Object.class);
 		} else {
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", "com.sun.tools.javac.tree.EndPosTable");
-			Method storeEndMethodTemp;
-			Class<?> endPosTable;
-			try {
-				endPosTable = Class.forName("com.sun.tools.javac.tree.EndPosTable");
-			} catch (ClassNotFoundException ex) {
-				throw sneakyThrow(ex);
-			}
-			try {
-				storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
-			} catch (NoSuchMethodException e) {
-				try {
-					endPosTable = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
-					storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
-				} catch (NoSuchMethodException ex) {
-					throw sneakyThrow(ex);
-				} catch (ClassNotFoundException ex) {
-					throw sneakyThrow(ex);
-				}
-			}
-			storeEnd = storeEndMethodTemp;
 		}
 		Permit.setAccessible(getEndPosition);
-		Permit.setAccessible(storeEnd);
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
