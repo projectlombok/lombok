@@ -11,7 +11,9 @@
 
 	<@s.section title="Adding lombok to your pom file">
 		<p>
-			To include lombok as a 'provided' dependency, add it to your <code>&lt;dependencies&gt;</code> block like so:<pre>
+			To include lombok as a 'provided' dependency, add it to your <code>&lt;dependencies&gt;</code> block like so:
+		</p>
+<pre>
 &lt;dependencies&gt;
 	&lt;dependency&gt;
 		&lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
@@ -21,9 +23,10 @@
 	&lt;/dependency&gt;
 &lt;/dependencies&gt;
 </pre>
-		</p>
 		<p>
-		You also need to add lombok as an annotation processor. This is mandatory starting with JDK23, or JDK9+ if compiling as modules (you have <code>module-info.java</code> files in your build):<pre>
+			You also need to add lombok as an annotation processor. This is mandatory starting with JDK23, or JDK9+ if compiling as modules (you have <code>module-info.java</code> files in your build):
+		</p>
+<pre>
 &lt;build&gt;
 	&lt;plugins&gt;
 		&lt;plugin&gt;
@@ -41,6 +44,7 @@
 		&lt;/plugin&gt;
 	&lt;/plugins&gt;
 &lt;/build&gt;
+</pre>
 	</@s.section>
 	
 	<@s.section title="Eclipse Compiler (ECJ/JDT)">
