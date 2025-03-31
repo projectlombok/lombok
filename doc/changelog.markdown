@@ -5,6 +5,7 @@ Lombok Changelog
 * PLATFORM: JDK24 support added.
 * FEATURE: Lombok's nullity annotation now supports [JSpecify](https://jspecify.dev) out of the box, using [config key](https://projectlombok.org/features/configuration) `jspecify`.
 * BUGFIX: Recent eclipse releases would get you 'negative length' error. The bug had always been in lombok but didn't matter until recent releases. [Issue #3823](https://github.com/projectlombok/lombok/issues/3823).
+* BUGFIX: The 'extract local variable' refactor script of VSCode wouldn't replace all occurrences if run on a method call to a lombok generated method. [Issue #3783](https://github.com/projectlombok/lombok/issues/3783).
 
 ### v1.18.36 (November 15th, 2024)
 * PLATFORM: JDK23 support added.
