@@ -252,7 +252,12 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		JCExpression annotationMethodDefaultValue = null;
 		
 		List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(field);
-		List<JCAnnotation> copyableToGetterAnnotations = copyAnnotations(findCopyableToGetterAnnotations(field), treeMaker);
+
+		// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
+		boolean fluent = accessors.isExplicit("fluent");
+		Boolean fluentConfig = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT);
+		if (fluentConfig != null && fluentConfig) fluent = fluentConfig;
+		List<JCAnnotation> copyableToGetterAnnotations = copyAnnotations(findCopyableToGetterAnnotations(field, fluent), treeMaker);
 
 		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
 		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod, treeMaker).appendList(copyableAnnotations).appendList(copyableToGetterAnnotations);

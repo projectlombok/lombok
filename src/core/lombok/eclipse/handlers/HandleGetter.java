@@ -281,10 +281,15 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 				if (getCheckerFrameworkVersion(fieldNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
 			}
 			
+			// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
+			boolean fluent = accessors.isExplicit("fluent");
+			Boolean fluentConfig = fieldNode.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT);
+			if (fluentConfig != null && fluentConfig) fluent = fluentConfig;
+			
 			method.annotations = copyAnnotations(source,
 				onMethod.toArray(new Annotation[0]),
 				findCopyableAnnotations(fieldNode),
-				findCopyableToGetterAnnotations(fieldNode),
+				findCopyableToGetterAnnotations(fieldNode, fluent),
 				findDelegatesAndMarkAsHandled(fieldNode),
 				checkerFramework,
 				deprecated);

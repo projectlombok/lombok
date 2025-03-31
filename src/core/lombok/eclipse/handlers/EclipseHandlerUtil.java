@@ -822,7 +822,11 @@ public class EclipseHandlerUtil {
 	/**
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
 	 */
-	public static Annotation[] findCopyableToGetterAnnotations(EclipseNode node) {
+	public static Annotation[] findCopyableToGetterAnnotations(EclipseNode node, boolean forceCopyJacksonAnnotations) {
+		if (!forceCopyJacksonAnnotations) {
+			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_ACCESSORS);
+			if (copyAnnotations == null || !copyAnnotations) return EMPTY_ANNOTATIONS_ARRAY;
+		}
 		return findAnnotationsInList(node, JACKSON_COPY_TO_GETTER_ANNOTATIONS);
 	}
 
@@ -833,7 +837,7 @@ public class EclipseHandlerUtil {
 	 */
 	public static Annotation[] findCopyableToSetterAnnotations(EclipseNode node, boolean forceCopyJacksonAnnotations) {
 		if (!forceCopyJacksonAnnotations) {
-			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_SETTERS);
+			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_ACCESSORS);
 			if (copyAnnotations == null || !copyAnnotations) return EMPTY_ANNOTATIONS_ARRAY;
 		}
 		return findAnnotationsInList(node, JACKSON_COPY_TO_SETTER_ANNOTATIONS);

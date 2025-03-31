@@ -1759,7 +1759,11 @@ public class JavacHandlerUtil {
 	/**
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the getter.
 	 */
-	public static List<JCAnnotation> findCopyableToGetterAnnotations(JavacNode node) {
+	public static List<JCAnnotation> findCopyableToGetterAnnotations(JavacNode node, boolean forceCopyJacksonAnnotations) {
+		if (!forceCopyJacksonAnnotations) {
+			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_ACCESSORS);
+			if (copyAnnotations == null || !copyAnnotations) return List.nil();
+		}
 		return findAnnotationsInList(node, JACKSON_COPY_TO_GETTER_ANNOTATIONS);
 	}
 
@@ -1770,7 +1774,7 @@ public class JavacHandlerUtil {
 	 */
 	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node, boolean forceCopyJacksonAnnotations) {
 		if (!forceCopyJacksonAnnotations) {
-			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_SETTERS);
+			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_ACCESSORS);
 			if (copyAnnotations == null || !copyAnnotations) return List.nil();
 		}
 		return findAnnotationsInList(node, JACKSON_COPY_TO_SETTER_ANNOTATIONS);
