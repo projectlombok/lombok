@@ -109,7 +109,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			annotationNode.addError("Builders on abstract classes cannot be @Jacksonized (the builder would never be used).");
 			return;
 		}
-
+		
 		AnnotationValues<Builder> builderAnnotation = builderAnnotationNode != null ? createAnnotation(Builder.class, builderAnnotationNode) : null;
 		AnnotationValues<SuperBuilder> superBuilderAnnotation = superBuilderAnnotationNode != null ? createAnnotation(SuperBuilder.class, superBuilderAnnotationNode) : null;
 		

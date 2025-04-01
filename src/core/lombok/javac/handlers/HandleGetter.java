@@ -21,17 +21,31 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacAugments.JCTree_keepPosition;
-import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-import static lombok.javac.handlers.JavacHandlerUtil.isFieldDeprecated;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.experimental.Accessors;
+import lombok.experimental.Delegate;
+import lombok.Getter;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.delombok.LombokOptionsFactory;
+import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
+import lombok.javac.JavacTreeMaker.TypeTag;
+import lombok.spi.Provides;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -51,23 +65,6 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
-
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.Getter;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.core.configuration.CheckerFrameworkVersion;
-import lombok.core.handlers.HandlerUtil.FieldAccess;
-import lombok.delombok.LombokOptionsFactory;
-import lombok.experimental.Accessors;
-import lombok.experimental.Delegate;
-import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
-import lombok.javac.JavacTreeMaker.TypeTag;
-import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
-import lombok.spi.Provides;
 
 /**
  * Handles the {@code lombok.Getter} annotation for javac.
