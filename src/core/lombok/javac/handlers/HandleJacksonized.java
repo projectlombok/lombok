@@ -86,11 +86,11 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		
 		if (accessorsAnnotationNode != null) {
-			handleJacksonizedAccessors(annotationNode, annotatedNode, tdNode, td, accessorsAnnotationNode);
+			handleJacksonizedAccessors(annotationNode, annotatedNode, tdNode, td, accessorsAnnotationNode, builderAnnotationNode != null || superBuilderAnnotationNode != null);
 		}
  	}
 
-	private void handleJacksonizedAccessors(JavacNode annotationNode, JavacNode annotatedNode, JavacNode tdNode, JCClassDecl td, JavacNode accessorsAnnotationNode) {
+	private void handleJacksonizedAccessors(JavacNode annotationNode, JavacNode annotatedNode, JavacNode tdNode, JCClassDecl td, JavacNode accessorsAnnotationNode, boolean jacksonizedBuilder) {
 		AnnotationValues<Accessors> accessorsAnnotation = accessorsAnnotationNode != null ? 
 			createAnnotation(Accessors.class, accessorsAnnotationNode) :
 				null;
@@ -98,6 +98,8 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		
 		if (!fluent) {
 			// No changes required for chained-only accessors.
+			if (!jacksonizedBuilder)
+				annotationNode.addWarning("@Jacksonized only affects fluent accessors (@Accessors(fluent=true)).");
 			return;
 		}
 		

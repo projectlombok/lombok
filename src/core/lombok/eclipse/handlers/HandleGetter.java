@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
@@ -31,6 +31,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.experimental.Accessors;
+import lombok.experimental.Delegate;
+import lombok.spi.Provides;
+import lombok.Getter;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.configuration.CheckerFrameworkVersion;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
+import lombok.eclipse.agent.PatchDelegate;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -62,21 +75,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.Getter;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.core.configuration.CheckerFrameworkVersion;
-import lombok.core.handlers.HandlerUtil.FieldAccess;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseNode;
-import lombok.eclipse.agent.PatchDelegate;
-import lombok.eclipse.handlers.EclipseHandlerUtil.CopyJavadoc;
-import lombok.experimental.Accessors;
-import lombok.experimental.Delegate;
-import lombok.spi.Provides;
 
 /**
  * Handles the {@code lombok.Getter} annotation for eclipse.

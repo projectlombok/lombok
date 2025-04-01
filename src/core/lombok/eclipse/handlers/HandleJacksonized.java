@@ -92,23 +92,24 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			return;
 		}
 		
+		boolean jacksonizedBuilder = builderAnnotationNode != null || superBuilderAnnotationNode != null;
+		if (jacksonizedBuilder) {
+			handleJacksonizedBuilder(ast, annotationNode, annotatedNode, tdNode, td, builderAnnotationNode, superBuilderAnnotationNode);
+		}
+
+		if (accessorsAnnotationNode != null) {
+			handleJacksonizedAccessors(ast, annotationNode, annotatedNode, tdNode, td, accessorsAnnotationNode, jacksonizedBuilder);
+		}
+		
+	}
+
+	private void handleJacksonizedBuilder(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode builderAnnotationNode, EclipseNode superBuilderAnnotationNode) {
 		boolean isAbstract = (td.modifiers & ClassFileConstants.AccAbstract) != 0;
 		if (isAbstract) {
 			annotationNode.addError("Builders on abstract classes cannot be @Jacksonized (the builder would never be used).");
 			return;
 		}
 
-		if (builderAnnotationNode != null || superBuilderAnnotationNode != null) {
-			handleJacksonizedBuilder(ast, annotationNode, annotatedNode, tdNode, td, builderAnnotationNode, superBuilderAnnotationNode);
-		}
-
-		if (accessorsAnnotationNode != null) {
-			handleJacksonizedAccessors(ast, annotationNode, annotatedNode, tdNode, td, accessorsAnnotationNode);
-		}
-		
-	}
-
-	private void handleJacksonizedBuilder(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode builderAnnotationNode, EclipseNode superBuilderAnnotationNode) {
 		AnnotationValues<Builder> builderAnnotation = builderAnnotationNode != null ? createAnnotation(Builder.class, builderAnnotationNode) : null;
 		AnnotationValues<SuperBuilder> superBuilderAnnotation = superBuilderAnnotationNode != null ? createAnnotation(SuperBuilder.class, superBuilderAnnotationNode) : null;
 		
@@ -160,7 +161,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			builderClass.modifiers = builderClass.modifiers & ~ClassFileConstants.AccPrivate;
 	}
 	
-	private void handleJacksonizedAccessors(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode accessorsAnnotationNode) {
+	private void handleJacksonizedAccessors(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode accessorsAnnotationNode, boolean jacksonizedBuilder) {
 		AnnotationValues<Accessors> accessorsAnnotation = accessorsAnnotationNode != null ? 
 			createAnnotation(Accessors.class, accessorsAnnotationNode) :
 				null;
@@ -168,6 +169,9 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		
 		if (!fluent) {
 			// No changes required for chained-only accessors.
+			if (!jacksonizedBuilder) {
+				annotationNode.addWarning("@Jacksonized only affects fluent accessors (@Accessors(fluent=true)).");
+			}
 			return;
 		}
 		

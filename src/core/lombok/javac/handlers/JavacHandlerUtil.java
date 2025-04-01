@@ -24,7 +24,8 @@ package lombok.javac.handlers;
 import static com.sun.tools.javac.code.Flags.GENERATEDCONSTR;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
-import static lombok.javac.JavacAugments.*;
+import static lombok.javac.JavacAugments.JCTree_generatedNode;
+import static lombok.javac.JavacAugments.JCTree_keepPosition;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -101,7 +102,6 @@ import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
 import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.HandlerUtil.FieldAccess;
-import lombok.core.handlers.HandlerUtil.JavadocTag;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
 import lombok.experimental.Tolerate;

@@ -21,9 +21,9 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.javac.handlers.HandleBuilder.*;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
-import static lombok.javac.handlers.HandleBuilder.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
