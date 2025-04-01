@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.37 "Edgy Guinea Pig"
+### v1.18.39 "Edgy Guinea Pig"
 * FEATURE: `@Jacksonized @Accessors(fluent=true)` automatically creates the relevant annotations such that Jackson correctly identifies fluent accessors.
 * IMPROBABLE BREAKING CHANGE: From versions 1.18.16 to 1.18.38, lombok automatically copies certain Jackson annotations (e.g., `@JsonProperty`) from fields to their corresponding accessors (getters/setters). However, it turned out to be harmful in certain situations. Thus, Lombok does not automatically copy those annotations any more. You can restore the old behavior using the [config key](https://projectlombok.org/features/configuration) `lombok.copyJacksonAnnotationsToAccessors = true`.
 
