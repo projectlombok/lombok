@@ -1757,17 +1757,34 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
-	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 * Searches the given field node for annotations that are specifically intentioned to be copied to the getter.
 	 */
-	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node) {
-		return findAnnotationsInList(node, COPY_TO_SETTER_ANNOTATIONS);
+	public static List<JCAnnotation> findCopyableToGetterAnnotations(JavacNode node, boolean forceCopyJacksonAnnotations) {
+		if (!forceCopyJacksonAnnotations) {
+			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_ACCESSORS);
+			if (copyAnnotations == null || !copyAnnotations) return List.nil();
+		}
+		return findAnnotationsInList(node, JACKSON_COPY_TO_GETTER_ANNOTATIONS);
+	}
+
+	/**
+	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 * 
+	 * @param forceCopyJacksonAnnotations If <code>true</code>, always copy the annotations regardless of the lombok configuration.
+	 */
+	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node, boolean forceCopyJacksonAnnotations) {
+		if (!forceCopyJacksonAnnotations) {
+			Boolean copyAnnotations = node.getAst().readConfiguration(ConfigurationKeys.COPY_JACKSON_ANNOTATIONS_TO_ACCESSORS);
+			if (copyAnnotations == null || !copyAnnotations) return List.nil();
+		}
+		return findAnnotationsInList(node, JACKSON_COPY_TO_SETTER_ANNOTATIONS);
 	}
 
 	/**
 	 * Searches the given field node for annotations that are specifically intentioned to be copied to the builder's singular method.
 	 */
 	public static List<JCAnnotation> findCopyableToBuilderSingularSetterAnnotations(JavacNode node) {
-		return findAnnotationsInList(node, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS);
+		return findAnnotationsInList(node, JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS);
 	}
 	
 	/**

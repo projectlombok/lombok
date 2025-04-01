@@ -1,3 +1,4 @@
+//CONF: lombok.copyJacksonAnnotationsToAccessors = true
 //version 8: Jackson deps are at least Java7+.
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;

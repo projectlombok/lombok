@@ -13,7 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 
 @Jacksonized
 @Builder
-public class JacksonBuilderSingular {
+public class JacksonizedBuilderSingular {
 	@JsonAnySetter
 	@Singular("any")
 	private Map<String, Object> any;
