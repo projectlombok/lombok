@@ -425,19 +425,19 @@ public class HandlerUtil {
 			"org.checkerframework.framework.qual.PurityUnqualified",
 		}));
 		
-		// The following two lists contain all annotations that (in some cases) should be copied from the field to the getter or
-		// setter. Right now, it only contains Jackson annotations.
+		// The following two lists contain all annotations that can be copied from the field to the getter or setter. 
+		// Right now, it only contains Jackson annotations.
 		// Jackson's annotation processing roughly works as follows: To calculate the annotation for a JSON property, Jackson 
 		// builds a triple of the Java field and the corresponding setter and getter methods. It is sufficient for an annotation
 		// to be present on one of those to become effective. E.g., a @JsonIgnore on a setter completely ignores the JSON property, 
 		// not only during deserialization, but also when serializing. Therefore, in most cases it is _not_ necessary to copy the 
 		// annotations. It may even harm, as Jackson considers some annotations inheritable, and this "virtual inheritance" only
 		// affects annotations on setter/getter, but not on private fields. 
-		// However, there are two exceptions where we need it:
+		// However, there are two exceptions where we have to copy the annotations:
 		// 1. When using a builder to deserialize, Jackson does _not_ "propagate" the annotations to the setter methods of the 
 		//    builder, i.e. annotations like @JsonIgnore on the field will not be respected when deserializing with a builder.
 		//    Thus, those annotations should be copied to the builder's setters.
-		// 2. If the getter/setter methods to not follow the exact beanspec naming strategy, Jackson will not correctly detect the 
+		// 2. If the getter/setter methods do not follow the exact beanspec naming strategy, Jackson will not correctly detect the 
 		//    field-getter-setter triple, and annotations may not work as intended.
 		//    However, we cannot always know what the user's intention is. Thus, lombok should only fix those cases where it is 
 		//    obvious what the user wants. That is the case for a @Jacksonized @Accessors(fluent=true).
