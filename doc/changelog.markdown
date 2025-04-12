@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.39 "Edgy Guinea Pig"
+* No changes since v1.18.38 yet.
+
 ### v1.18.38 (March 31st, 2025)
 * PLATFORM: JDK24 support added.
 * FEATURE: Lombok's nullity annotation now supports [JSpecify](https://jspecify.dev) out of the box, using [config key](https://projectlombok.org/features/configuration) `jspecify`.
