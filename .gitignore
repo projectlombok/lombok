@@ -25,3 +25,13 @@
 /jvm.locations
 /testenv
 /gpg.keyring
+
+
+#eclipse files
+
+org.eclipse.core.resources.prefs
+org.eclipse.jdt.core.prefs
+target/
+.classpath
+.project
+.settings
