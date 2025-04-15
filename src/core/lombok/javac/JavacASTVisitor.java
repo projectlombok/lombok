@@ -316,4 +316,136 @@ public interface JavacASTVisitor {
 			print("</%s>", statement.getClass());
 		}
 	}
+
+	/**
+	 * A default implementation of the {@link JavacASTVisitor} interface.
+	 * This class provides empty method implementations for all the methods in the {@link JavacASTVisitor} interface.
+	 * Subclasses can override the methods they are interested in.
+	 */
+	public static abstract class Default implements JavacASTVisitor {
+		@Override
+		public void setTrees(Trees trees) {
+
+		}
+
+		@Override
+		public void visitCompilationUnit(JavacNode top, JCCompilationUnit unit) {
+
+		}
+
+		@Override
+		public void endVisitCompilationUnit(JavacNode top, JCCompilationUnit unit) {
+
+		}
+
+		@Override
+		public void visitType(JavacNode typeNode, JCClassDecl type) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnType(JCClassDecl type, JavacNode annotationNode, JCAnnotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitType(JavacNode typeNode, JCClassDecl type) {
+
+		}
+
+		@Override
+		public void visitField(JavacNode fieldNode, JCVariableDecl field) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnField(JCVariableDecl field, JavacNode annotationNode, JCAnnotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitField(JavacNode fieldNode, JCVariableDecl field) {
+
+		}
+
+		@Override
+		public void visitInitializer(JavacNode initializerNode, JCBlock initializer) {
+
+		}
+
+		@Override
+		public void endVisitInitializer(JavacNode initializerNode, JCBlock initializer) {
+
+		}
+
+		@Override
+		public void visitMethod(JavacNode methodNode, JCMethodDecl method) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnMethod(JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitMethod(JavacNode methodNode, JCMethodDecl method) {
+
+		}
+
+		@Override
+		public void visitMethodArgument(JavacNode argumentNode, JCVariableDecl argument, JCMethodDecl method) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnMethodArgument(JCVariableDecl argument, JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitMethodArgument(JavacNode argumentNode, JCVariableDecl argument, JCMethodDecl method) {
+
+		}
+
+		@Override
+		public void visitLocal(JavacNode localNode, JCVariableDecl local) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnLocal(JCVariableDecl local, JavacNode annotationNode, JCAnnotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitLocal(JavacNode localNode, JCVariableDecl local) {
+
+		}
+
+		@Override
+		public void visitTypeUse(JavacNode typeUseNode, JCTree typeUse) {
+
+		}
+
+		@Override
+		public void visitAnnotationOnTypeUse(JCTree typeUse, JavacNode annotationNode, JCAnnotation annotation) {
+
+		}
+
+		@Override
+		public void endVisitTypeUse(JavacNode typeUseNode, JCTree typeUse) {
+
+		}
+
+		@Override
+		public void visitStatement(JavacNode statementNode, JCTree statement) {
+
+		}
+
+		@Override
+		public void endVisitStatement(JavacNode statementNode, JCTree statement) {
+
+		}
+	}
 }

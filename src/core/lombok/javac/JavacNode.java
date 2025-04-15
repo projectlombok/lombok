@@ -272,7 +272,11 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	}
 	
 	@Override public <Z extends Annotation> AnnotationValues<Z> findAnnotation(Class<Z> type) {
-		JavacNode annotation = JavacHandlerUtil.findAnnotation(type, this, true);
+		return findAnnotation(type, true);
+	}
+
+	public <Z extends Annotation> AnnotationValues<Z> findAnnotation(Class<Z> type, boolean delete) {
+		JavacNode annotation = JavacHandlerUtil.findAnnotation(type, this, delete);
 		if (annotation == null) return null;
 		return JavacHandlerUtil.createAnnotation(type, annotation);
 	}
