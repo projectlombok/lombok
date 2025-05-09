@@ -141,11 +141,11 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		if (requiresClInit && !alreadyHasClinit) classDecl.addClinit();
 	}
 	
-	private static final char[][] JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION = new char[][] {
-		TypeConstants.JAVA, TypeConstants.LANG, "UnsupportedOperationException".toCharArray()
+	private static final char[][] JAVA_LANG_ASSERTION_ERROR = new char[][] {
+		TypeConstants.JAVA, TypeConstants.LANG, "AssertionError".toCharArray()
 	};
 	
-	private static final char[] UNSUPPORTED_MESSAGE = "This is a utility class and cannot be instantiated".toCharArray();
+	private static final char[] ERROR_MESSAGE = "This is a utility class and cannot be instantiated".toCharArray();
 	
 	private void createPrivateDefaultConstructor(EclipseNode typeNode, EclipseNode sourceNode) {
 		ASTNode source = sourceNode.get();
@@ -162,11 +162,11 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		constructor.arguments = null;
 		
-		long[] ps = new long[JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION.length];
+		long[] ps = new long[JAVA_LANG_ASSERTION_ERROR.length];
 		AllocationExpression exception = new AllocationExpression();
-		exception.type = new QualifiedTypeReference(JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION, ps);
+		exception.type = new QualifiedTypeReference(JAVA_LANG_ASSERTION_ERROR, ps);
 		exception.arguments = new Expression[] {
-				new StringLiteral(UNSUPPORTED_MESSAGE, 0, 0, 0)
+				new StringLiteral(ERROR_MESSAGE, 0, 0, 0)
 		};
 		ThrowStatement throwStatement = new ThrowStatement(exception, 0, 0);
 		
