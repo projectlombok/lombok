@@ -791,7 +791,38 @@ final class PatchFixesHider {
 				// If this fails, better to break some refactor scripts than to crash eclipse.
 			}
 			if (isGenerated) return -1;
-			return scanner.getTokenEndOffset(token, startOffset);
+
+			Object res = -1;
+			try {
+				Method m = Permit.getMethod(TokenScanner.class, "getTokenEndOffset", int.class, int.class);
+				res = Permit.invoke(m, scanner, token, startOffset);
+			} catch (Exception e) {
+				e.printStackTrace();
+				// continue
+			}
+			return (Integer) res;
+		}
+
+		public static int getTokenEndOffsetFixed(TokenScanner scanner, Object token, int startOffset, Object domNode) throws CoreException {
+			boolean isGenerated = false;
+			try {
+				isGenerated = (Boolean) domNode.getClass().getField("$isGenerated").get(domNode);
+			} catch (Exception e) {
+				// If this fails, better to break some refactor scripts than to crash eclipse.
+			}
+			if (isGenerated) return -1;
+
+			Object res = -1;
+			try {
+				// https://github.com/eclipse-jdt/eclipse.jdt.core/issues/3303
+				Class<?> TERMINAL_TOKEN_CLASS = Class.forName("org.eclipse.jdt.internal.compiler.parser.TerminalToken");
+				Method m = Permit.getMethod(TokenScanner.class, "getTokenEndOffset", TERMINAL_TOKEN_CLASS, int.class);
+				res = Permit.invoke(m, scanner, token, startOffset);
+			} catch (Exception e) {
+				e.printStackTrace();
+				// continue
+			}
+			return (Integer) res;
 		}
 		
 		public static IMethod[] removeGeneratedMethods(IMethod[] methods) throws Exception {

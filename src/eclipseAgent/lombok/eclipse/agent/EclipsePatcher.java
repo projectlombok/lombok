@@ -332,7 +332,14 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.requestExtra(StackRequest.PARAM1)
 				.transplant()
 				.build());
-		
+
+		sm.addScriptIfWitness(new String [] {"org/eclipse/jdt/internal/compiler/parser/TerminalToken"}, ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer", "visit"))
+				.methodToReplace(new Hook("org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner", "getTokenEndOffset", "int", "org.eclipse.jdt.internal.compiler.parser.TerminalToken", "int"))
+				.replacementMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "getTokenEndOffsetFixed", "int", "org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner", "java.lang.Object", "int", "java.lang.Object"))
+				.requestExtra(StackRequest.PARAM1)
+				.transplant()
+				.build());
 	}
 	
 	private static void patchPostCompileHookEclipse(ScriptManager sm) {
