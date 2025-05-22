@@ -67,9 +67,9 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 		<maven.make version-name="${lombok.version}" />
 	</target>
 	
-	<target name="maven.publish" depends="maven, -setup.ossrh">
+	<target name="maven.publish" depends="maven, -setup.mavenCentral">
 		<fail>
-			Your lombok clone does not include the OSSRH deployment keys. Contact the core maintainers for these keys;
+			Your lombok clone does not include the central.sonatype.org deployment keys. Contact the core maintainers for these keys;
 			place them in ${gpg.keyrings} to continue.
 			
 			<condition>
@@ -77,8 +77,8 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 			</condition>
 		</fail>
 		
-		<fail unless="ossrh.password">
-			Your lombok clone does not include the OSSRH (sonatype maven central) password, needed to upload and deploy to maven central. Contact the core maintainers.
+		<fail unless="mavencentral.authToken">
+			Your lombok clone does not include an central.sonatype.org authToken, needed to upload and deploy to maven central. Contact the core maintainers.
 		</fail>
 		
 		<delete quiet="true" dir="build/maven-publish" />
@@ -113,13 +113,13 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 		</jar>
 		
 		<exec executable="${exe.curl}" failifexecutionfails="false" resultproperty="curl.result">
-			<arg value="-u" />
-			<arg value="${ossrh.username}:${ossrh.password}" />
+			<arg value="--header" />
+			<arg value="Authorization: Bearer ${mavencentral.authToken}" />
 			<arg value="-F" />
 			<arg value="file=@build/maven-publish/lombok-bundle.jar;type=application/java-archive" />
-			<arg value="https://oss.sonatype.org/service/local/staging/bundle_upload" />
+			<arg value="https://central.sonatype.org/api/v1/publisher/upload" />
 		</exec>
-		<echo>The artifact has been published to staging. Now go to https://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
+		<echo>The artifact has been published to staging. Now go to https://central.sonatype.org/, log in, then doublecheck if all is well and 'release' it.</echo>
 	</target>
 	
 	<target name="maven.edge" depends="version, dist, javadoc.build" description="Create a maven repo for the current snapshot into a build dir. The intent is for you to put that on a server someplace. Will invoke your local mvn installation.">
