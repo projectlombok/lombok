@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Project Lombok Authors.
+ * Copyright (C) 2018-2025 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ import lombok.Singular;
  * <p>
  * The <code><strong>T</strong>Builder</code> class contains 1 method for each parameter of the annotated
  * constructor / method (each field, when annotating a class), which returns the builder itself.
- * The builder also has a <code>build()</code> method which returns a completed instance of the original type.
+ * The builder also has a {@code build()} method which returns a completed instance of the original type.
  * <p>
  * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/SuperBuilder">the project lombok features page for &#64;SuperBuilder</a>.
  *
@@ -56,8 +56,8 @@ public @interface SuperBuilder {
 	String buildMethodName() default "build";
 
 	/**
-	 * If <code>true</code>, generate an instance method to obtain a builder that is initialized with the values of this instance.
-	 * In this case, all superclasses must also have <code>toBuilder=true</code>.
+	 * If {@code true}, generate an instance method to obtain a builder that is initialized with the values of this instance.
+	 * In this case, all superclasses must also have {@code toBuilder=true}.
 	 *
 	 * @return Whether to generate a {@code toBuilder()} method.
 	 */

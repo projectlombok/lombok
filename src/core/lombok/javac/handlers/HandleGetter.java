@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -249,8 +249,15 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		JCExpression annotationMethodDefaultValue = null;
 		
 		List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(field);
+
+		// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
+		boolean fluent = accessors.isExplicit("fluent");
+		Boolean fluentConfig = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_FLUENT);
+		if (fluentConfig != null && fluentConfig) fluent = fluentConfig;
+		List<JCAnnotation> copyableToGetterAnnotations = copyAnnotations(findCopyableToGetterAnnotations(field, fluent), treeMaker);
+
 		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
-		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod, treeMaker).appendList(copyableAnnotations);
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod, treeMaker).appendList(copyableAnnotations).appendList(copyableToGetterAnnotations);
 		if (field.isFinal()) {
 			if (getCheckerFrameworkVersion(field).generatePure()) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genTypeRef(field, CheckerFrameworkVersion.NAME__PURE), List.<JCExpression>nil()));
 		} else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2024 The Project Lombok Authors.
+ * Copyright (C) 2020-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,8 +78,8 @@ public class PatchJavadoc {
 	}
 	
 	/**
-	 * The method <code>javadoc2HTML</code> changed 2014-12 to accept an
-	 * additional IJavaElement parameter. To support older versions, try to
+	 * The method {@code javadoc2HTML} changed 2014-12 to accept an
+	 * additional {@code IJavaElement} parameter. To support older versions, try to
 	 * find that one too.
 	 */
 	private static class Reflection {

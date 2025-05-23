@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2021 The Project Lombok Authors.
+ * Copyright (C) 2015-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -219,7 +219,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		char[] prefixedSelector = data.getSetterPrefix().length == 0 ? data.getPluralName() : HandlerUtil.buildAccessorName(builderType, new String(data.getSetterPrefix()), new String(data.getPluralName())).toCharArray();
 		md.selector = fluent ? prefixedSelector : HandlerUtil.buildAccessorName(builderType, "addAll", new String(data.getPluralName())).toCharArray();
 		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
-		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up()));
+		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up(), true));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 
 		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);

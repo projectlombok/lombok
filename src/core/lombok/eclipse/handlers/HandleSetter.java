@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -109,6 +110,14 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
+		
+		// If a fluent setter should be generated, force-copy annotations from the field.
+		AnnotationValues<Accessors> accessorsForField = EclipseHandlerUtil.getAccessorsForField(fieldNode);
+		// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
+		Annotation[] copyableToSetterAnnotations = findCopyableToSetterAnnotations(fieldNode, accessorsForField.isExplicit("fluent"));
+		onMethod = new ArrayList<Annotation>(onMethod);
+		onMethod.addAll(Arrays.asList(copyableToSetterAnnotations));
+		
 		createSetterForField(level, fieldNode, sourceNode, false, onMethod, onParam);
 	}
 	
@@ -228,7 +237,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		if (isFieldDeprecated(fieldNode) || deprecate) {
 			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
-		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated, findCopyableToSetterAnnotations(fieldNode));
+		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated, findCopyableToSetterAnnotations(fieldNode, false));
 		Argument param = new Argument(paramName, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		method.arguments = new Argument[] { param };

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2023 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -129,14 +129,14 @@ public class TransformEclipseAST {
 	
 	/**
 	 * Check if lombok already handled the given AST. This method will return
-	 * <code>true</code> once for diet mode and once for full mode.
+	 * {@code true} once for diet mode and once for full mode.
 	 * 
 	 * The reason for this is that Eclipse invokes the transform method multiple
 	 * times during compilation and it is enough to transform it once and not
 	 * repeat the whole thing over and over again.
 	 * 
 	 * @param ast The AST node belonging to the compilation unit (java speak for a single source file).
-	 * @return <code>true</code> if this AST was already handled by lombok.
+	 * @return {@code true} if this AST was already handled by lombok.
 	 */
 	public static boolean alreadyTransformed(CompilationUnitDeclaration ast) {
 		TransformationState state = CompilationUnitDeclaration_transformationState.get(ast);
