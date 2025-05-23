@@ -624,7 +624,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	}
 	
 	/**
-	 * Generates a <code>toBuilder()</code> method in the annotated class that looks like this:
+	 * Generates a {@code toBuilder()} method in the annotated class.
+	 * 
+	 * It looks like:
 	 * <pre>
 	 * public ParentBuilder&lt;?, ?&gt; toBuilder() {
 	 *     return new <i>Foobar</i>BuilderImpl().$fillValuesFrom(this);
@@ -659,8 +661,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	}
 
 	/**
-	 * Generates a <code>$fillValuesFrom()</code> method in the abstract builder class that looks
-	 * like this:
+	 * Generates a {@code $fillValuesFrom()} method in the abstract builder class.
+	 * 
+	 * It looks like:
 	 * <pre>
 	 * protected B $fillValuesFrom(final C instance) {
 	 *     super.$fillValuesFrom(instance);
@@ -708,9 +711,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	}
 
 	/**
-	 * Generates a <code>$fillValuesFromInstanceIntoBuilder()</code> method in
+	 * Generates a {@code $fillValuesFromInstanceIntoBuilder()} method in
 	 * the builder implementation class that copies all fields from the instance
-	 * to the builder. It looks like this:
+	 * to the builder.
+	 * It looks like:
 	 * 
 	 * <pre>
 	 * protected B $fillValuesFromInstanceIntoBuilder(Foobar instance, FoobarBuilder&lt;?, ?&gt; b) {

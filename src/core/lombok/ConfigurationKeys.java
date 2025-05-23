@@ -606,14 +606,14 @@ public class ConfigurationKeys {
 	/**
 	 * lombok configuration: {@code lombok.fieldDefaults.defaultPrivate} = {@code true} | {@code false}.
 	 * 
-	 * If set to <code>true</code> <em>any</em> field without an access modifier or {@code @PackagePrivate} is marked as {@code private} by lombok, in all source files compiled.
+	 * If set to {@code true} <em>any</em> field without an access modifier or {@code @PackagePrivate} is marked as {@code private} by lombok, in all source files compiled.
 	 */
 	public static final ConfigurationKey<Boolean> FIELD_DEFAULTS_PRIVATE_EVERYWHERE = new ConfigurationKey<Boolean>("lombok.fieldDefaults.defaultPrivate", "If true, fields without any access modifier, in any file (lombok annotated or not) are marked as private. Use @PackagePrivate or an explicit modifier to override this.") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.fieldDefaults.defaultFinal} = {@code true} | {@code false}.
 	 * 
-	 * If set to <code>true</code> <em>any</em> field without {@code @NonFinal} is marked as {@code final} by lombok, in all source files compiled.
+	 * If set to {@code true} <em>any</em> field without {@code @NonFinal} is marked as {@code final} by lombok, in all source files compiled.
 	 */
 	public static final ConfigurationKey<Boolean> FIELD_DEFAULTS_FINAL_EVERYWHERE = new ConfigurationKey<Boolean>("lombok.fieldDefaults.defaultFinal", "If true, fields, in any file (lombok annotated or not) are marked as final. Use @NonFinal to override this.") {};
 	
@@ -748,8 +748,8 @@ public class ConfigurationKeys {
 	/**
 	 * lombok configuration: {@code lombok.copyJacksonAnnotationsToAccessors} = {@code true} | {@code false}.
 	 *
-	 * If <code>true</code>, copy certain Jackson annotations from a field to its corresponding accessors (getter/setters). This was the behavior from lombok 1.18.16 to 1.18.38.
-	 * However, it turned out to be harmful in certain situations. Thus, the default is now <code>false</code>.
+	 * If {@code true}, copy certain Jackson annotations from a field to its corresponding accessors (getter/setters). This was the behavior from lombok 1.18.16 to 1.18.38.
+	 * However, it turned out to be harmful in certain situations. Thus, the default is now {@code false}.
 	 */
 	public static final ConfigurationKey<Boolean> COPY_JACKSON_ANNOTATIONS_TO_ACCESSORS = new ConfigurationKey<Boolean>("lombok.copyJacksonAnnotationsToAccessors", "Copy Jackson annotations from fields to the corresponding getters and setters.") {};
 }

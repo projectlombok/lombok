@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * <li>If any constructors are declared in it, an error is generated. Otherwise, a private no-args constructor is generated; it throws a {@code UnsupportedOperationException}.</li>
  * <li>All methods, inner classes, and fields in the class are marked static.</li>
  * <li><em>WARNING:</em> Do not use non-star static imports to import these members; javac won't be able to figure it out. Use either:
- *    <code>import static ThisType.*;</code> or don't static-import.</li>
+ *    {@code import static ThisType.*;} or don't static-import.</li>
  * </ul>
  */
 @Target({ElementType.TYPE})

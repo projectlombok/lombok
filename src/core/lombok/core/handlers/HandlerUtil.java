@@ -440,7 +440,7 @@ public class HandlerUtil {
 		// 2. If the getter/setter methods do not follow the exact beanspec naming strategy, Jackson will not correctly detect the 
 		//    field-getter-setter triple, and annotations may not work as intended.
 		//    However, we cannot always know what the user's intention is. Thus, lombok should only fix those cases where it is 
-		//    obvious what the user wants. That is the case for a @Jacksonized @Accessors(fluent=true).
+		//    obvious what the user wants. That is the case for a `@Jacksonized @Accessors(fluent=true)`.
 		JACKSON_COPY_TO_GETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JsonFormat",
 			"com.fasterxml.jackson.annotation.JsonIgnore",

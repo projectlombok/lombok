@@ -422,7 +422,7 @@ public class EclipseSingularsRecipes {
 			return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, NULL_POSS);
 		}
 		
-		/** @return a {@code SingleNameReference} to the builder in the variable <code>builderVariable</code>. If {@ code builderVariable == "this"}, a {@code ThisReference} is returned. */
+		/** @return a {@code SingleNameReference} to the builder in the variable {@code builderVariable}. If {@code builderVariable == "this"}, a {@code ThisReference} is returned. */
 		protected static Reference getBuilderReference(String builderVariable) {
 			if ("this".equals(builderVariable)) {
 				return new ThisReference(0, 0);

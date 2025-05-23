@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * <p>
  * The <code><strong>T</strong>Builder</code> class contains 1 method for each parameter of the annotated
  * constructor / method (each field, when annotating a class), which returns the builder itself.
- * The builder also has a <code>build()</code> method which returns a completed instance of the original type,
+ * The builder also has a {@code build()} method which returns a completed instance of the original type,
  * created by passing all parameters as set via the various other methods in the builder to the constructor
  * or method that was annotated with {@code @Builder}. The return type of this method will be the same
  * as the relevant class, unless a method has been annotated, in which case it'll be equal to the

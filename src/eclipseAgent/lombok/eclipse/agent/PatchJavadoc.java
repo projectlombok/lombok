@@ -78,8 +78,8 @@ public class PatchJavadoc {
 	}
 	
 	/**
-	 * The method <code>javadoc2HTML</code> changed 2014-12 to accept an
-	 * additional IJavaElement parameter. To support older versions, try to
+	 * The method {@code javadoc2HTML} changed 2014-12 to accept an
+	 * additional {@code IJavaElement} parameter. To support older versions, try to
 	 * find that one too.
 	 */
 	private static class Reflection {

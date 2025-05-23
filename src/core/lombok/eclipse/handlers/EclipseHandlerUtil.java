@@ -820,7 +820,9 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
-	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 * Searches the given field node for annotations that are specifically intended to be copied to the getter.
+	 * 
+	 * @param forceCopyJacksonAnnotations If {@code true}, always copy the annotations regardless of regardless of lombok configuration key {@code lombok.copyJacksonAnnotationsToAccessors}.
 	 */
 	public static Annotation[] findCopyableToGetterAnnotations(EclipseNode node, boolean forceCopyJacksonAnnotations) {
 		if (!forceCopyJacksonAnnotations) {
@@ -831,9 +833,9 @@ public class EclipseHandlerUtil {
 	}
 
 	/**
-	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 * Searches the given field node for annotations that are specifically intended to be copied to the setter.
 	 * 
-	 * @param forceCopyJacksonAnnotations If <code>true</code>, always copy the annotations regardless of the lombok configuration.
+	 * @param forceCopyJacksonAnnotations If {@code true}, always copy the annotations regardless of regardless of lombok configuration key {@code lombok.copyJacksonAnnotationsToAccessors}.
 	 */
 	public static Annotation[] findCopyableToSetterAnnotations(EclipseNode node, boolean forceCopyJacksonAnnotations) {
 		if (!forceCopyJacksonAnnotations) {
@@ -844,7 +846,7 @@ public class EclipseHandlerUtil {
 	}
 
 	/**
-	 * Searches the given field node for annotations that are specifically intentioned to be copied to the builder's singular method.
+	 * Searches the given field node for annotations that are specifically intended to be copied to the builder's singular method.
 	 */
 	public static Annotation[] findCopyableToBuilderSingularSetterAnnotations(EclipseNode node) {
 		return findAnnotationsInList(node, JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS);
