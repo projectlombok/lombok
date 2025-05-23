@@ -483,7 +483,7 @@ final class PatchFixesHider {
 			}
 			return result;
 		}
-
+		
 		public static boolean isGenerated(org.eclipse.jdt.internal.compiler.ast.ASTNode node) {
 			boolean result = false;
 			try {
@@ -493,7 +493,7 @@ final class PatchFixesHider {
 			}
 			return result;
 		}
-
+		
 		public static boolean isGenerated(org.eclipse.jdt.core.IMember member) {
 			boolean result = false;
 			try {
@@ -783,6 +783,7 @@ final class PatchFixesHider {
 			return newChildren.toArray(new RewriteEvent[0]);
 		}
 		
+		// Eclipse changed a method. Older versions have `getTokenOffset(int, int)` whereas newer ones have `getTokenOffset(TerminalToken, int)`. See https://github.com/eclipse-jdt/eclipse.jdt.core/issues/3303
 		public static int getTokenEndOffsetFixed(TokenScanner scanner, int token, int startOffset, Object domNode) throws CoreException {
 			boolean isGenerated = false;
 			try {
@@ -791,18 +792,19 @@ final class PatchFixesHider {
 				// If this fails, better to break some refactor scripts than to crash eclipse.
 			}
 			if (isGenerated) return -1;
-
-			Object res = -1;
+			
+			// `scanner.getTokenEndOffset(int, int)` is public so we can just call it directly, except it might not exist (in more recent versions of eclipse).
+			// Ordinarily that means you just write a private static class and shove the code in there to avoid classloader errors, but we're in PatchFixes and we need to be careful about that sort of thing.
 			try {
 				Method m = Permit.getMethod(TokenScanner.class, "getTokenEndOffset", int.class, int.class);
-				res = Permit.invoke(m, scanner, token, startOffset);
+				return (Integer) Permit.invoke(m, scanner, token, startOffset);
 			} catch (Exception e) {
-				e.printStackTrace();
-				// continue
+				// This is bizarre; we replaced a call to this exact method which strongly suggests it should be there. It's not going to be a nice experience in eclipse to 'break' token offsets,
+				// but breaking token offsets is less dire than just hard crashing the entire editor with an exception.
+				return -1;
 			}
-			return (Integer) res;
 		}
-
+		
 		public static int getTokenEndOffsetFixed(TokenScanner scanner, Object token, int startOffset, Object domNode) throws CoreException {
 			boolean isGenerated = false;
 			try {
@@ -811,18 +813,16 @@ final class PatchFixesHider {
 				// If this fails, better to break some refactor scripts than to crash eclipse.
 			}
 			if (isGenerated) return -1;
-
-			Object res = -1;
+			
 			try {
-				// https://github.com/eclipse-jdt/eclipse.jdt.core/issues/3303
-				Class<?> TERMINAL_TOKEN_CLASS = Class.forName("org.eclipse.jdt.internal.compiler.parser.TerminalToken");
-				Method m = Permit.getMethod(TokenScanner.class, "getTokenEndOffset", TERMINAL_TOKEN_CLASS, int.class);
-				res = Permit.invoke(m, scanner, token, startOffset);
+				Class<?> terminalTokenClass = Class.forName("org.eclipse.jdt.internal.compiler.parser.TerminalToken");
+				Method m = Permit.getMethod(TokenScanner.class, "getTokenEndOffset", terminalTokenClass, int.class);
+				return (Integer) Permit.invoke(m, scanner, token, startOffset);
 			} catch (Exception e) {
-				e.printStackTrace();
-				// continue
+				// This is bizarre; we replaced a call to this exact method which strongly suggests it should be there. It's not going to be a nice experience in eclipse to 'break' token offsets,
+				// but breaking token offsets is less dire than just hard crashing the entire editor with an exception.
+				return -1;
 			}
-			return (Integer) res;
 		}
 		
 		public static IMethod[] removeGeneratedMethods(IMethod[] methods) throws Exception {
