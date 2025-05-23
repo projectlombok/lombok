@@ -162,13 +162,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		job.init(annotation, annInstance, annotationNode);
 		
 		boolean generateBuilderMethod;
-		if (job.builderMethodName.isEmpty()) {
-			generateBuilderMethod = false;
-		} else if (!checkName("builderMethodName", job.builderMethodName, annotationNode)) {
-			return;
-		} else {
-			generateBuilderMethod = true;
-		}
+		if (job.builderMethodName.isEmpty()) generateBuilderMethod = false;
+		else if (!checkName("builderMethodName", job.builderMethodName, annotationNode)) return;
+		else generateBuilderMethod = true;
 		
 		if (!checkName("buildMethodName", job.buildMethodName, annotationNode)) return;
 		
@@ -343,9 +339,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				if (sd == null) continue;
 				EclipseSingularizer singularizer = sd.getSingularizer();
 				if (singularizer == null) continue;
-				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(job.builderAbstractType, sd)) {
-					bfd.singularData = null;
-				}
+				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(job.builderAbstractType, sd)) bfd.singularData = null;
 			}
 		}
 		
@@ -407,9 +401,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 			// Let toString() call super.toString() if there is a superclass, so that it also shows fields from the superclass' builder.
 			MethodDeclaration md = HandleToString.createToString(job.builderType, fieldNodes, true, superclassBuilderClass != null, ast, FieldAccess.ALWAYS_FIELD);
-			if (md != null) {
-				injectMethod(job.builderType, md);
-			}
+			if (md != null) injectMethod(job.builderType, md);
 		}
 		
 		if (addCleaning) {
@@ -593,7 +585,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				char[][] setVariableInBuilder = new char[][] {BUILDER_VARIABLE_NAME, fieldNode.nameOfSetFlag};
 				long[] positions = new long[] {p, p};
 				QualifiedNameReference setVariableInBuilderRef = new QualifiedNameReference(setVariableInBuilder, positions, s, e);
-
+				
 				MessageSend defaultMethodCall = new MessageSend();
 				defaultMethodCall.sourceStart = job.source.sourceStart;
 				defaultMethodCall.sourceEnd = job.source.sourceEnd;
@@ -696,7 +688,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.traverse(new SetGeneratedByVisitor(job.source), ((TypeDeclaration) job.parentType.get()).scope);
 		return out;
 	}
-
+	
 	/**
 	 * Generates a {@code $fillValuesFrom()} method in the abstract builder class.
 	 * It looks like:
@@ -718,9 +710,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		TypeReference builderType = new SingleTypeReference(classGenericName.toCharArray(), 0);
 		out.arguments = new Argument[] {new Argument(INSTANCE_VARIABLE_NAME, 0, builderType, Modifier.FINAL)};
-
+		
 		List<Statement> body = new ArrayList<Statement>();
-
+		
 		if (inherited) {
 			// Call super.
 			MessageSend callToSuper = new MessageSend();
@@ -729,14 +721,14 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			callToSuper.arguments = new Expression[] {new SingleNameReference(INSTANCE_VARIABLE_NAME, 0)};
 			body.add(callToSuper);
 		}
-
+		
 		// Call the builder implemention's helper method that actually fills the values from the instance.
 		MessageSend callStaticFillValuesMethod = new MessageSend();
 		callStaticFillValuesMethod.receiver = generateNameReference(job.parentType, job.builderAbstractClassNameArr, 0);
 		callStaticFillValuesMethod.selector = FILL_VALUES_STATIC_METHOD_NAME;
 		callStaticFillValuesMethod.arguments = new Expression[] {new SingleNameReference(INSTANCE_VARIABLE_NAME, 0), new ThisReference(0, 0)};
 		body.add(callStaticFillValuesMethod);
-
+		
 		// Return self().
 		MessageSend returnCall = new MessageSend();
 		returnCall.receiver = ThisReference.implicitThis();
@@ -747,7 +739,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		return out;
 	}
-
+	
 	/**
 	 * Generates a {@code $fillValuesFromInstanceIntoBuilder()} method in
 	 * the builder implementation class that copies all fields from the instance
@@ -1095,8 +1087,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		java.util.HashSet<String> usedNames = new HashSet<String>();
 		
 		// 1. Add type parameter names.
-		for (TypeParameter typeParam : typeParams)
-			usedNames.add(typeParam.toString());
+		for (TypeParameter typeParam : typeParams) usedNames.add(typeParam.toString());
 		
 		// 2. Add class name.
 		usedNames.add(String.valueOf(td.name));
@@ -1119,14 +1110,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		return usedNames;
 	}
-
+	
 	private void addFirstToken(java.util.Set<String> usedNames, TypeReference type) {
-		if (type == null) 
-			return;
+		if (type == null) return;
 		// Add the first token, because only that can collide.
 		char[][] typeName = type.getTypeName();
-		if (typeName != null && typeName.length >= 1)
-			usedNames.add(String.valueOf(typeName[0]));
+		if (typeName != null && typeName.length >= 1) usedNames.add(String.valueOf(typeName[0]));
 	}
 	
 	private String generateNonclashingNameFor(String classGenericName, java.util.Set<String> typeParamStrings) {
@@ -1227,8 +1216,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 					// Cannot use typeMatches() here, because the parameter could be fully-qualified, partially-qualified, or not qualified.
 					// A string-compare of the last part should work. If it's a false-positive, users could still @Tolerate it.
 					char[] typeName = def.arguments[0].type.getLastToken();
-					if (builderClassName.equals(String.valueOf(typeName)))
-						return true;
+					if (builderClassName.equals(String.valueOf(typeName))) return true;
 				}
 			}
 		}

@@ -83,7 +83,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 	private static final String GETTER_NODE_NOT_SUPPORTED_ERR = "@Getter is only supported on a class, an enum, or a field.";
-
+	
 	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter, List<Annotation> onMethod) {
 		if (checkForTypeLevelGetter) {
 			if (hasAnnotation(Getter.class, typeNode)) {

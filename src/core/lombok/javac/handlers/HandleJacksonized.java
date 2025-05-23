@@ -62,17 +62,15 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	
 	@Override public void handle(AnnotationValues<Jacksonized> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.JACKSONIZED_FLAG_USAGE, "@Jacksonized");
-
+		
 		JavacNode annotatedNode = annotationNode.up();
 		deleteAnnotationIfNeccessary(annotationNode, Jacksonized.class);
 		
 		JavacNode tdNode;
-		if (annotatedNode.getKind() != Kind.TYPE)
-			tdNode = annotatedNode.up(); // @Jacksonized on a constructor or a static factory method.
-		else
-			tdNode = annotatedNode; // @Jacksonized on the class.
+		if (annotatedNode.getKind() != Kind.TYPE) tdNode = annotatedNode.up(); // @Jacksonized on a constructor or a static factory method.
+		else tdNode = annotatedNode; // @Jacksonized on the class.
 		JCClassDecl td = (JCClassDecl) tdNode.get();
-
+		
 		JavacNode builderAnnotationNode = findAnnotation(Builder.class, annotatedNode);
 		JavacNode superBuilderAnnotationNode = findAnnotation(SuperBuilder.class, annotatedNode);
 		JavacNode accessorsAnnotationNode = findAnnotation(Accessors.class, annotatedNode);
@@ -88,12 +86,11 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		if (accessorsAnnotationNode != null) {
 			handleJacksonizedAccessors(annotationNode, annotatedNode, tdNode, td, accessorsAnnotationNode, builderAnnotationNode != null || superBuilderAnnotationNode != null);
 		}
- 	}
-
+	}
+	
 	private void handleJacksonizedAccessors(JavacNode annotationNode, JavacNode annotatedNode, JavacNode tdNode, JCClassDecl td, JavacNode accessorsAnnotationNode, boolean jacksonizedBuilder) {
 		AnnotationValues<Accessors> accessorsAnnotation = accessorsAnnotationNode != null ? 
-			createAnnotation(Accessors.class, accessorsAnnotationNode) :
-				null;
+			createAnnotation(Accessors.class, accessorsAnnotationNode) : null;
 		boolean fluent = accessorsAnnotation != null && accessorsAnnotation.getInstance().fluent();
 		
 		if (!fluent) {
@@ -110,7 +107,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			}
 		}
 	}
-
+	
 	private void createJsonPropertyForField(JavacNode fieldNode, JavacNode annotationNode) {
 		if (hasAnnotation("com.fasterxml.jackson.annotation.JsonProperty", fieldNode)) {
 			return;
@@ -123,13 +120,13 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
 		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);
 	}
-
+	
 	private void handleJacksonizedBuilder(JavacNode annotationNode, JavacNode annotatedNode, JavacNode tdNode, JCClassDecl td, JavacNode builderAnnotationNode, JavacNode superBuilderAnnotationNode) {
 		if (builderAnnotationNode != null && superBuilderAnnotationNode != null) {
 			annotationNode.addError("@Jacksonized cannot process both @Builder and @SuperBuilder on the same class.");
 			return;
 		}
-
+		
 		boolean isAbstract = (td.mods.flags & Flags.ABSTRACT) != 0;
 		if (isAbstract) {
 			annotationNode.addError("Builders on abstract classes cannot be @Jacksonized (the builder would never be used).");
@@ -137,24 +134,22 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		
 		AnnotationValues<Builder> builderAnnotation = builderAnnotationNode != null ? 
-			createAnnotation(Builder.class, builderAnnotationNode) :
-				null;
+			createAnnotation(Builder.class, builderAnnotationNode) : null;
 		AnnotationValues<SuperBuilder> superBuilderAnnotation = superBuilderAnnotationNode != null ? 
-			createAnnotation(SuperBuilder.class, superBuilderAnnotationNode) :
-				null;
+			createAnnotation(SuperBuilder.class, superBuilderAnnotationNode) : null;
 		
 		String setPrefix = builderAnnotation != null ? 
 			builderAnnotation.getInstance().setterPrefix() :
-				superBuilderAnnotation.getInstance().setterPrefix();
+			superBuilderAnnotation.getInstance().setterPrefix();
 		String buildMethodName = builderAnnotation != null ? 
 			builderAnnotation.getInstance().buildMethodName() :
-				superBuilderAnnotation.getInstance().buildMethodName();
+			superBuilderAnnotation.getInstance().buildMethodName();
 		
 		JavacTreeMaker maker = annotatedNode.getTreeMaker();
-
+		
 		// Now lets find the generated builder class.
 		String builderClassName = getBuilderClassName(annotationNode, annotatedNode, td, builderAnnotation, maker);
-
+		
 		JCClassDecl builderClass = null;
 		for (JCTree member : td.getMembers()) {
 			if (member instanceof JCClassDecl && ((JCClassDecl) member).getSimpleName().contentEquals(builderClassName)) {
@@ -196,20 +191,17 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		JCAnnotation annotationJsonPOJOBuilder = maker.Annotation(jsonPOJOBuilderType, List.of(withPrefixExpr, buildMethodNameExpr));
 		recursiveSetGeneratedBy(annotationJsonPOJOBuilder, annotatedNode);
 		builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPOJOBuilder);
-
+		
 		// @SuperBuilder? Make it package-private!
-		if (superBuilderAnnotationNode != null)
-			builderClass.mods.flags = builderClass.mods.flags & ~Flags.PRIVATE;
+		if (superBuilderAnnotationNode != null) builderClass.mods.flags = builderClass.mods.flags & ~Flags.PRIVATE;
 	}
-
+	
 	private String getBuilderClassName(JavacNode annotationNode, JavacNode annotatedNode, JCClassDecl td, AnnotationValues<Builder> builderAnnotation, JavacTreeMaker maker) {
-		String builderClassName = builderAnnotation != null ? 
-			builderAnnotation.getInstance().builderClassName() : null;
+		String builderClassName = builderAnnotation != null ? builderAnnotation.getInstance().builderClassName() : null;
 		if (builderClassName == null || builderClassName.isEmpty()) {
 			builderClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
-			if (builderClassName == null || builderClassName.isEmpty())
-				builderClassName = "*Builder";
-
+			if (builderClassName == null || builderClassName.isEmpty()) builderClassName = "*Builder";
+			
 			JCMethodDecl fillParametersFrom = annotatedNode.get() instanceof JCMethodDecl ? (JCMethodDecl)annotatedNode.get() : null;
 			String replacement;
 			if (fillParametersFrom != null && !fillParametersFrom.getName().toString().equals("<init>")) {
@@ -226,9 +218,8 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			}
 			builderClassName = builderClassName.replace("*", replacement);
 		}
-
-		if (builderAnnotation == null)
-			builderClassName += "Impl"; // For @SuperBuilder, all Jackson annotations must be put on the BuilderImpl class.
+		
+		if (builderAnnotation == null) builderClassName += "Impl"; // For @SuperBuilder, all Jackson annotations must be put on the BuilderImpl class.
 		
 		return builderClassName;
 	}
@@ -238,7 +229,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
-				for (String bn : HandlerUtil.JACKSON_COPY_TO_BUILDER_ANNOTATIONS) { 
+				for (String bn : HandlerUtil.JACKSON_COPY_TO_BUILDER_ANNOTATIONS) {
 					if (typeMatches(bn, node, annotation.annotationType)) {
 						result.append(annotation);
 						break;

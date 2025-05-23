@@ -143,13 +143,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		job.init(annotation, annInstance, annotationNode);
 		
 		boolean generateBuilderMethod;
-		if (job.builderMethodName.isEmpty()) {
-			generateBuilderMethod = false;
-		} else if (!checkName("builderMethodName", job.builderMethodName, annotationNode)) {
-			return;
-		} else {
-			generateBuilderMethod = true;
-		}
+		if (job.builderMethodName.isEmpty()) generateBuilderMethod = false;
+		else if (!checkName("builderMethodName", job.builderMethodName, annotationNode)) return;
+		else generateBuilderMethod = true;
+		
 		if (!checkName("buildMethodName", job.buildMethodName, annotationNode)) return;
 		
 		// Do not delete the SuperBuilder annotation here, we need it for @Jacksonized.
@@ -313,9 +310,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				if (sd == null) continue;
 				JavacSingularizer singularizer = sd.getSingularizer();
 				if (singularizer == null) continue;
-				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(job.builderAbstractType, sd)) {
-					bfd.singularData = null;
-				}
+				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(job.builderAbstractType, sd)) bfd.singularData = null;
 			}
 		}
 		
@@ -389,7 +384,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				}
 				sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(job.builderImplType, annotationNode);
 			}
-
+			
 			// Create a simple constructor for the BuilderImpl class.
 			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PRIVATE, List.<JCAnnotation>nil(), job.builderImplType, List.<JavacNode>nil(), false, annotationNode);
 			if (cd != null) injectMethod(job.builderImplType, cd);
@@ -515,7 +510,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		recursiveSetGeneratedBy(builder, job.sourceNode);
 		return injectType(job.parentType, builder);
 	}
-
+	
 	/**
 	 * Generates a constructor that has a builder as the only parameter.
 	 * The values from the builder are used to initialize the fields of new instances.
@@ -582,8 +577,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (callBuilderBasedSuperConstructor) {
 			// The first statement must be the call to the super constructor.
 			JCMethodInvocation callToSuperConstructor = maker.Apply(List.<JCExpression>nil(),
-					maker.Ident(job.toName("super")),
-					List.<JCExpression>of(maker.Ident(builderVariableName)));
+				maker.Ident(job.toName("super")),
+				List.<JCExpression>of(maker.Ident(builderVariableName)));
 			statements.prepend(maker.Exec(callToSuperConstructor));
 		}
 		
@@ -659,7 +654,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		createRelevantNonNullAnnotation(job.parentType, methodDef);
 		return methodDef;
 	}
-
+	
 	/**
 	 * Generates a {@code $fillValuesFrom()} method in the abstract builder class.
 	 * 
@@ -685,7 +680,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		JCExpression classGenericNameExpr = maker.Ident(job.toName(classGenericName));
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.PARAMETER | Flags.FINAL), job.toName(INSTANCE_VARIABLE_NAME), classGenericNameExpr, null);
-
+		
 		ListBuffer<JCStatement> body = new ListBuffer<JCStatement>();
 		
 		if (inherited) {
@@ -709,7 +704,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.of(param), List.<JCExpression>nil(), bodyBlock, null);
 	}
-
+	
 	/**
 	 * Generates a {@code $fillValuesFromInstanceIntoBuilder()} method in
 	 * the builder implementation class that copies all fields from the instance
@@ -731,7 +726,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// 1st parameter: "Foobar instance"
 		JCVariableDecl paramInstance = maker.VarDef(maker.Modifiers(Flags.PARAMETER | Flags.FINAL), job.toName(INSTANCE_VARIABLE_NAME), cloneSelfType(job.parentType), null);
-
+		
 		// 2nd parameter: "FoobarBuilder<?, ?> b" (plus generics on the annotated type)
 		// First add all generics that are present on the parent type.
 		ListBuffer<JCExpression> typeParamsForBuilderParameter = getTypeParamExpressions(job.typeParams, maker, job.sourceNode);
@@ -804,7 +799,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		Name name = job.toName(SELF_METHOD);
 		JCExpression returnType = maker.Ident(job.toName(builderGenericName));
 		returnType = addCheckerFrameworkReturnsReceiver(returnType, maker, job.builderType, job.checkerFramework);
-
+		
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 	}
 	
@@ -1050,8 +1045,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		java.util.HashSet<String> usedNames = new HashSet<String>();
 		
 		// 1. Add type parameter names.
-		for (JCTypeParameter typeParam : typeParams)
-			usedNames.add(typeParam.getName().toString());
+		for (JCTypeParameter typeParam : typeParams) usedNames.add(typeParam.getName().toString());
 		
 		// 2. Add class name.
 		usedNames.add(td.name.toString());
@@ -1060,16 +1054,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		for (JCTree member : td.getMembers()) {
 			if (member.getKind() == com.sun.source.tree.Tree.Kind.VARIABLE && member instanceof JCVariableDecl) {
 				JCTree type = ((JCVariableDecl)member).getType();
-				if (type instanceof JCIdent)
-					usedNames.add(((JCIdent)type).getName().toString());
+				if (type instanceof JCIdent) usedNames.add(((JCIdent)type).getName().toString());
 			}
 		}
 		
 		// 4. Add extends and implements clauses.
 		addFirstToken(usedNames, Javac.getExtendsClause(td));
-		for (JCExpression impl : td.getImplementsClause()) {
-			addFirstToken(usedNames, impl);
-		}
+		for (JCExpression impl : td.getImplementsClause()) addFirstToken(usedNames, impl);
 		
 		return usedNames;
 	}
@@ -1082,7 +1073,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		while (type instanceof JCFieldAccess && ((JCFieldAccess)type).selected != null) {
 			// Add the first token, because only that can collide.
-			type = ((JCFieldAccess)type).selected;
+			type = ((JCFieldAccess) type).selected;
 		}
 		usedNames.add(type.toString());
 	}
@@ -1122,7 +1113,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		return typeParamsForBuilderParameter;
 	}
-
+	
 	private JCExpression copySelect(JavacTreeMaker maker, JCFieldAccess typeParam) {
 		java.util.List<Name> chainNames = new ArrayList<Name>();
 		JCExpression expression = typeParam;
@@ -1135,7 +1126,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				expression = null;
 			}
 		}
-
+		
 		Collections.reverse(chainNames);
 		JCExpression typeParameter = null;
 		for (Name name : chainNames) {
@@ -1158,18 +1149,16 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 					JCMethodDecl md = (JCMethodDecl) def;
 					String name = md.name.toString();
 					boolean matches = name.equals("<init>");
-					if (isTolerate(type, md)) 
-						continue;
+					if (isTolerate(type, md)) continue;
 					if (matches && md.params != null && md.params.length() == 1) {
 						// Cannot use typeMatches() here, because the parameter could be fully-qualified, partially-qualified, or not qualified.
 						// A string-compare of the last part should work. If it's a false-positive, users could still @Tolerate it.
 						String typeName = md.params.get(0).getType().toString();
 						int lastIndexOfDot = typeName.lastIndexOf('.');
 						if (lastIndexOfDot >= 0) {
-							typeName = typeName.substring(lastIndexOfDot+1);
+							typeName = typeName.substring(lastIndexOfDot + 1);
 						}
-						if ((builderClassName+"<?, ?>").equals(typeName))
-							return true;
+						if ((builderClassName+"<?, ?>").equals(typeName)) return true;
 					}
 				}
 			}

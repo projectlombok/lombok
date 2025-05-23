@@ -831,7 +831,7 @@ public class EclipseHandlerUtil {
 		}
 		return findAnnotationsInList(node, JACKSON_COPY_TO_GETTER_ANNOTATIONS);
 	}
-
+	
 	/**
 	 * Searches the given field node for annotations that are specifically intended to be copied to the setter.
 	 * 
@@ -844,7 +844,7 @@ public class EclipseHandlerUtil {
 		}
 		return findAnnotationsInList(node, JACKSON_COPY_TO_SETTER_ANNOTATIONS);
 	}
-
+	
 	/**
 	 * Searches the given field node for annotations that are specifically intended to be copied to the builder's singular method.
 	 */

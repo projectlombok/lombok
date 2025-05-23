@@ -721,7 +721,7 @@ public class ConfigurationKeys {
 	 * If set to {@code true}, no further {@code lombok.config} files will be checked.
 	 */
 	public static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("config.stopBubbling", "Tell the configuration system it should stop looking for other configuration files (default: false).") {};
-
+	
 	/**
 	 * lombok configuration: {@code lombok.copyableAnnotations} += &lt;TypeName: fully-qualified annotation class name&gt;.
 	 *
@@ -737,14 +737,14 @@ public class ConfigurationKeys {
 	 * checkerframework.org version will be generated.
 	 */
 	public static final ConfigurationKey<CheckerFrameworkVersion> CHECKER_FRAMEWORK = new ConfigurationKey<CheckerFrameworkVersion>("checkerframework", "If set with the version of checkerframework.org (in major.minor, or just 'true' for the latest supported version), create relevant checkerframework.org annotations for code lombok generates (default: false).") {};
-
+	
 	/**
 	 * lombok configuration: {@code lombok.standardException.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 *
 	 * If set, <em>any</em> usage of {@code @StandardException} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> STANDARD_EXCEPTION_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.standardException.flagUsage", "Emit a warning or error if @StandardException is used.") {};
-
+	
 	/**
 	 * lombok configuration: {@code lombok.copyJacksonAnnotationsToAccessors} = {@code true} | {@code false}.
 	 *
