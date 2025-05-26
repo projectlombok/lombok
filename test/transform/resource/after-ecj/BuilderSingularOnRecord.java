@@ -114,9 +114,6 @@ public @Builder record BuilderSingularOnRecord(List children, Collection scarves
       return (((((("BuilderSingularOnRecord.BuilderSingularOnRecordBuilder(children=" + this.children) + ", scarves=") + this.scarves) + ", rawList=") + this.rawList) + ")");
     }
   }
-/* Implicit */  private final List<T> children;
-/* Implicit */  private final Collection<? extends Number> scarves;
-/* Implicit */  private final List rawList;
   public static @java.lang.SuppressWarnings("all") @lombok.Generated <T>BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> builder() {
     return new BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T>();
   }

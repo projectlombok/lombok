@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021 The Project Lombok Authors.
+ * Copyright (C) 2013-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -168,10 +168,15 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 			}
 		}
 		if (posToInsert == -1) {
-			AbstractMethodDeclaration[] na = new AbstractMethodDeclaration[td.methods.length + 1];
-			posToInsert = td.methods.length;
-			System.arraycopy(td.methods, 0, na, 0, posToInsert);
-			td.methods = na;
+			if (td.methods == null) {
+				td.methods = new AbstractMethodDeclaration[1];
+				posToInsert = 0;
+			} else {
+				posToInsert = td.methods.length;
+				AbstractMethodDeclaration[] na = new AbstractMethodDeclaration[posToInsert + 1];
+				System.arraycopy(td.methods, 0, na, 0, posToInsert);
+				td.methods = na;
+			}
 		}
 		
 		ConstructorDeclaration cd = new ConstructorDeclaration(((CompilationUnitDeclaration) typeNode.top().get()).compilationResult);
@@ -186,8 +191,9 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 		
 		for (int i = 0; i < cd.arguments.length; i++) {
 			FieldDeclaration cmp = recordComponents.get(i);
-			cd.arguments[i] = new Argument(cmp.name, cmp.sourceStart, cmp.type, 0);
+			cd.arguments[i] = new Argument(cmp.name, cmp.sourceStart, cmp.type, cmp.modifiers);
 			cd.arguments[i].bits = ASTNode.IsArgument | ASTNode.IgnoreRawTypeCheck | ASTNode.IsReachable;
+			cd.arguments[i].annotations = cmp.annotations;
 			FieldReference lhs = new FieldReference(cmp.name, 0);
 			lhs.receiver = new ThisReference(0, 0);
 			SingleNameReference rhs = new SingleNameReference(cmp.name, 0);
@@ -302,6 +308,11 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 			declaration = (AbstractMethodDeclaration) node.up().get();
 		} catch (Exception e) {
 			return;
+		}
+		
+		if ((param.modifiers & AccRecord) != 0) {
+			addNullCheckIfNeeded(declaration, param, annotationNode);
+			node.up().rebuild();
 		}
 		
 		if (!force && isGenerated(declaration)) return;

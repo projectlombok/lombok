@@ -1,7 +1,6 @@
 // version 19:
 import lombok.NonNull;
 public record NonNullOnRecordExistingSetter(String a) {
-/* Implicit */  private final String a;
   public NonNullOnRecordExistingSetter(String a) {
     super();
     this.a = a;
