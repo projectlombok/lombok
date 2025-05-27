@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2021 The Project Lombok Authors.
+ * Copyright (C) 2012-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,10 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static lombok.javac.handlers.JavacResolver.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.ElementKind;
 
@@ -139,11 +141,18 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		final JavacNode annotationNode;
 		final List<Extension> extensions;
 		final boolean suppressBaseMethods;
+		final Set<String> names = new HashSet<String>();
 		
 		public ExtensionMethodReplaceVisitor(JavacNode annotationNode, List<Extension> extensions, boolean suppressBaseMethods) {
 			this.annotationNode = annotationNode;
 			this.extensions = extensions;
 			this.suppressBaseMethods = suppressBaseMethods;
+			
+			for (Extension extension : extensions) {
+				for (MethodSymbol methodSymbol : extension.extensionMethods) {
+					names.add(methodSymbol.name.toString());
+				}
+			}
 		}
 		
 		public void replace() {
@@ -173,6 +182,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			JCExpression receiver = receiverOf(methodCall);
 			String methodName = methodNameOf(methodCall);
 			
+			if (!names.contains(methodName)) return;
 			if ("this".equals(receiver.toString()) || "this".equals(methodName) || "super".equals(methodName)) return;
 			Map<JCTree, JCTree> resolution = new JavacResolution(methodCallNode.getContext()).resolveMethodMember(methodCallNode);
 			
