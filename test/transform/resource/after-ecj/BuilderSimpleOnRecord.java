@@ -28,8 +28,6 @@ public @lombok.Builder(access = lombok.AccessLevel.PROTECTED) record BuilderSimp
       return (((("BuilderSimpleOnRecord.BuilderSimpleOnRecordBuilder(l=" + this.l) + ", a=") + this.a) + ")");
     }
   }
-/* Implicit */  private final List<T> l;
-/* Implicit */  private final String a;
   protected static @java.lang.SuppressWarnings("all") @lombok.Generated <T>BuilderSimpleOnRecord.BuilderSimpleOnRecordBuilder<T> builder() {
     return new BuilderSimpleOnRecord.BuilderSimpleOnRecordBuilder<T>();
   }

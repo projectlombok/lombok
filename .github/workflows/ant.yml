@@ -94,6 +94,9 @@ jobs:
           - eclipse-oxygen
           - eclipse-202006
           - eclipse-202006-jdk8
+          - eclipse-202403
+          - eclipse-202503
+          - eclipse-I-build
           - eclipse-oxygen-full
           - eclipse-202403-full
           - eclipse-202503-full

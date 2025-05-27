@@ -11,10 +11,6 @@ public @FieldNameConstants(level = AccessLevel.PACKAGE) record FieldNameConstant
       super();
     }
   }
-/* Implicit */  private final String iAmADvdPlayer;
-/* Implicit */  private final int $skipMe;
-/* Implicit */  private final int andMe;
-/* Implicit */  private final String butPrintMePlease;
   static double skipMeToo;
   <clinit>() {
   }

@@ -56,8 +56,6 @@ public @lombok.extern.jackson.Jacksonized @lombok.Builder @JsonIgnoreProperties 
       return (((("JacksonizedOnRecord.JacksonizedOnRecordBuilder(string=" + this.string) + ", values=") + this.values) + ")");
     }
   }
-/* Implicit */  private final String string;
-/* Implicit */  private final List<String> values;
   public static @java.lang.SuppressWarnings("all") @lombok.Generated JacksonizedOnRecord.JacksonizedOnRecordBuilder builder() {
     return new JacksonizedOnRecord.JacksonizedOnRecordBuilder();
   }
