@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
@@ -34,11 +35,10 @@ import lombok.spi.Provides;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.util.List;
 
-package lombok.javac.handlers;
-
 /**
  * Handles the {@code lombok.GSet} annotation for javac.
  */
+@Provides
 public class HandleGSet extends JavacAnnotationHandler<Data>{
 
     private HandleGetter handleGetter = new HandleGetter();
@@ -47,19 +47,18 @@ public class HandleGSet extends JavacAnnotationHandler<Data>{
 
     @Override
     public void handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode){
-        handleFlagUsage(annotationNode, ConfigurationKeys.DATA_FLAG_USAGE, "@Data");
+        handleFlagUsage(annotationNode, ConfigurationKeys.GSET_FLAG_USAGE, "@GSet");
 
         deleteAnnotationIfNeccessary(annotationNode, Data.class);
         JavacNode typeNode = annotationNode.up();
 
         if (!isClass(typeNode)) {
-            annotationNode.addError("@Data is only supported on a class.");
+            annotationNode.addError("@GSet is only supported on a class.");
             return;
         }
 
         String staticConstructorName = annotation.getInstance().staticConstructor();
 
-        // TODO move this to the end OR move it to the top in eclipse.
         handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCAnnotation>nil());
         handleSetter.generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
     }
