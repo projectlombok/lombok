@@ -25,11 +25,10 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
-import lombok.Data;
+import lombok.GSet;
 import lombok.core.AnnotationValues;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.spi.Provides;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -46,10 +45,10 @@ public class HandleGSet extends JavacAnnotationHandler<Data>{
 
 
     @Override
-    public void handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode){
+    public void handle(AnnotationValues<GSet> annotation, JCAnnotation ast, JavacNode annotationNode){
         handleFlagUsage(annotationNode, ConfigurationKeys.GSET_FLAG_USAGE, "@GSet");
 
-        deleteAnnotationIfNeccessary(annotationNode, Data.class);
+        deleteAnnotationIfNeccessary(annotationNode, GSet.class);
         JavacNode typeNode = annotationNode.up();
 
         if (!isClass(typeNode)) {
