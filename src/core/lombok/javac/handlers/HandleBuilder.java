@@ -7,10 +7,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,7 +26,9 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.lang.model.element.Modifier;
 
@@ -52,17 +54,10 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.*;
 
-import lombok.AccessLevel;
-import lombok.Builder;
+import lombok.*;
 import lombok.Builder.ObtainVia;
-import lombok.ConfigurationKeys;
-import lombok.Singular;
-import lombok.ToString;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -83,8 +78,10 @@ import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 import lombok.spi.Provides;
 
 @Provides
-@HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
+@HandlerPriority(-1024)
+//-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends JavacAnnotationHandler<Builder> {
+
 	private HandleConstructor handleConstructor = new HandleConstructor();
 	
 	static final String CLEAN_FIELD_NAME = "$lombokUnclean";
@@ -137,6 +134,20 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
 			if (builderClassName == null) builderClassName = "";
+            
+            if (ann.extendsClass() != Object.class && ann.extendsClass() != Void.class) {
+                extendsClassName = ann.extendsClass().getCanonicalName();
+            }
+            java.util.List<Class<?>> implementsClasses = new ArrayList<Class<?>>(Arrays.asList(ann.implementsClasses()));
+            if (ann.serializable() && !implementsClasses.contains(Serializable.class)) {
+                implementsClasses.add(Serializable.class);
+            }
+            if (!implementsClasses.isEmpty()) {
+                implementsClassNames = new ArrayList<String>();
+                for (Class<?> clazz : implementsClasses) {
+                    implementsClassNames.add(clazz.getCanonicalName());
+                }
+            }
 		}
 		
 		static String getBuilderClassNameTemplate(JavacNode node, String override) {
@@ -949,7 +960,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		int modifiers = toJavacModifier(job.accessOuters);
 		if (job.isStatic) modifiers |= Flags.STATIC;
 		JCModifiers mods = maker.Modifiers(modifiers);
-		JCClassDecl builder = maker.ClassDef(mods, job.getBuilderClassName(), job.copyTypeParams(), null, List.<JCExpression>nil(), List.<JCTree>nil());
+		JCExpression superClassExpression = job.getBuilderExtendsClass();
+        List<JCExpression> implExpression = job.getBuilderImplementsClasses();
+        JCClassDecl builder = maker.ClassDef(mods, job.getBuilderClassName(), job.copyTypeParams(), superClassExpression, implExpression, List.<JCTree>nil());
 		recursiveSetGeneratedBy(builder, job.sourceNode);
 		return injectType(job.parentType, builder);
 	}
