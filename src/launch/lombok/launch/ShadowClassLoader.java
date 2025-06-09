@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2023 The Project Lombok Authors.
+ * Copyright (C) 2014-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,14 +67,14 @@ import java.util.zip.ZipInputStream;
  * <p>
  * Load order is as follows if at least one override is present:
  * <li>First, if the resource is found in one of the paths stated in the shadow classpath, find that.
- * <li>Next, ask the <code>parent</code> loader, which is passed during construction of the ShadowClassLoader.
+ * <li>Next, ask the {@code parent} loader, which is passed during construction of the ShadowClassLoader.
  * <li>Notably, this jar's contents are always skipped! (The idea of the shadow classpath is that this jar only functions as a launcher, not as a source of your actual application).
  * </ul>
  * 
  * If no overrides are present, the load order is as follows:
  * <li>First, if the resource is found in our own jar (trying ".SCL.<em>sclSuffix</em>" first for any resource request ending in ".class"), return that.
- * <li>Next, check any jar files other than our own, loading them via this classloader, if they have a file <code>META-INF/ShadowClassLoader</code> that contains a line of text with <em>sclSuffix</em>.
- * <li>Next, ask the <code>parent</code> loader.
+ * <li>Next, check any jar files other than our own, loading them via this classloader, if they have a file {@code META-INF/ShadowClassLoader} that contains a line of text with <em>sclSuffix</em>.
+ * <li>Next, ask the {@code parent} loader.
  * </ul>
  * 
  * Use ShadowClassLoader to accomplish the following things:<ul>

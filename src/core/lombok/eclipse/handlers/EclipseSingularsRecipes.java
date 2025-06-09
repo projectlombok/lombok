@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2021 The Project Lombok Authors.
+ * Copyright (C) 2015-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -422,7 +422,7 @@ public class EclipseSingularsRecipes {
 			return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, NULL_POSS);
 		}
 		
-		/** @return a {@code SingleNameReference} to the builder in the variable <code>builderVariable</code>. If {@ code builderVariable == "this"}, a {@code ThisReference} is returned. */
+		/** @return a {@code SingleNameReference} to the builder in the variable {@code builderVariable}. If {@code builderVariable == "this"}, a {@code ThisReference} is returned. */
 		protected static Reference getBuilderReference(String builderVariable) {
 			if ("this".equals(builderVariable)) {
 				return new ThisReference(0, 0);

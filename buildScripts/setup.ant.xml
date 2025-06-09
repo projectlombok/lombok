@@ -248,13 +248,12 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<ivy:cachepath pathid="cp.test" conf="test" />
 	</target>
 	
-	<target name="-setup.ossrh">
-		<loadfile quiet="true" failonerror="false" encoding="UTF-8" property="ossrh.password" srcfile="${gpg.keyrings}/ossrh.password">
+	<target name="-setup.mavenCentral">
+		<loadfile quiet="true" failonerror="false" encoding="UTF-8" property="mavencentral.authToken" srcfile="${gpg.keyrings}/mavenCentral.authToken">
 			<filterchain>
 				<striplinebreaks />
 			</filterchain>
 		</loadfile>
-		<property name="ossrh.username" value="rzwitserloot" />
 	</target>
 	
 	<target name="test.release.version" depends="-test.release.version" />

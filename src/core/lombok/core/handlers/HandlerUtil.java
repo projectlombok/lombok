@@ -79,7 +79,7 @@ public class HandlerUtil {
 		return 43;
 	}
 	
-	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS, COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
+	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, JACKSON_COPY_TO_GETTER_ANNOTATIONS, JACKSON_COPY_TO_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
 	static {
 		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
 		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
@@ -424,7 +424,37 @@ public class HandlerUtil {
 			"org.checkerframework.common.value.qual.UnknownVal",
 			"org.checkerframework.framework.qual.PurityUnqualified",
 		}));
-		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+		
+		// The following two lists contain all annotations that can be copied from the field to the getter or setter. 
+		// Right now, it only contains Jackson annotations.
+		// Jackson's annotation processing roughly works as follows: To calculate the annotation for a JSON property, Jackson 
+		// builds a triple of the Java field and the corresponding setter and getter methods. It is sufficient for an annotation
+		// to be present on one of those to become effective. E.g., a @JsonIgnore on a setter completely ignores the JSON property, 
+		// not only during deserialization, but also when serializing. Therefore, in most cases it is _not_ necessary to copy the 
+		// annotations. It may even harm, as Jackson considers some annotations inheritable, and this "virtual inheritance" only
+		// affects annotations on setter/getter, but not on private fields. 
+		// However, there are two exceptions where we have to copy the annotations:
+		// 1. When using a builder to deserialize, Jackson does _not_ "propagate" the annotations to the setter methods of the 
+		//    builder, i.e. annotations like @JsonIgnore on the field will not be respected when deserializing with a builder.
+		//    Thus, those annotations should be copied to the builder's setters.
+		// 2. If the getter/setter methods do not follow the exact beanspec naming strategy, Jackson will not correctly detect the 
+		//    field-getter-setter triple, and annotations may not work as intended.
+		//    However, we cannot always know what the user's intention is. Thus, lombok should only fix those cases where it is 
+		//    obvious what the user wants. That is the case for a `@Jacksonized @Accessors(fluent=true)`.
+		JACKSON_COPY_TO_GETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"com.fasterxml.jackson.annotation.JsonFormat",
+			"com.fasterxml.jackson.annotation.JsonIgnore",
+			"com.fasterxml.jackson.annotation.JsonIgnoreProperties",
+			"com.fasterxml.jackson.annotation.JsonProperty",
+			"com.fasterxml.jackson.annotation.JsonSubTypes",
+			"com.fasterxml.jackson.annotation.JsonTypeInfo",
+			"com.fasterxml.jackson.annotation.JsonUnwrapped",
+			"com.fasterxml.jackson.annotation.JsonView",
+			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper",
+			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty",
+			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText",
+		}));
+		JACKSON_COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JacksonInject",
 			"com.fasterxml.jackson.annotation.JsonAlias",
 			"com.fasterxml.jackson.annotation.JsonFormat",
@@ -441,9 +471,11 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText",
 		}));
-		COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+		JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JsonAnySetter",
 		}));
+		// In order to let Jackson recognize certain configuration annotations when deserializing using a builder, those must
+		// be copied to the generated builder class.
 		JACKSON_COPY_TO_BUILDER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"com.fasterxml.jackson.annotation.JsonAutoDetect",
 			"com.fasterxml.jackson.annotation.JsonFormat",

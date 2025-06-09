@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2021 The Project Lombok Authors.
+ * Copyright (C) 2015-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -362,7 +362,7 @@ public class JavacSingularsRecipes {
 				statements.prepend(JavacHandlerUtil.generateNullCheck(maker, null, data.getPluralName(), builderType, "%s cannot be null"));
 			}
 
-			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToSetterAnnotations(data.annotation.up()), maker);
+			List<JCAnnotation> methodAnnotations = copyAnnotations(findCopyableToSetterAnnotations(data.annotation.up(), true), maker);
 			
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, name, List.of(param), methodAnnotations, access, ignoreNullCollections);
 		}

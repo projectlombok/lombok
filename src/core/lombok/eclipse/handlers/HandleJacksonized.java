@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021 The Project Lombok Authors.
+ * Copyright (C) 2020-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ import java.util.List;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
@@ -47,6 +48,7 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.spi.Provides;
@@ -62,23 +64,24 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 
 	private static final char[][] JSON_POJO_BUILDER_ANNOTATION = Eclipse.fromQualifiedName("com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder");
 	private static final char[][] JSON_DESERIALIZE_ANNOTATION = Eclipse.fromQualifiedName("com.fasterxml.jackson.databind.annotation.JsonDeserialize");
-
+	private static final char[][] JSON_PROPERTY_ANNOTATION = Eclipse.fromQualifiedName("com.fasterxml.jackson.annotation.JsonProperty");
+	
 	@Override public void handle(AnnotationValues<Jacksonized> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.JACKSONIZED_FLAG_USAGE, "@Jacksonized");
-
+		
 		EclipseNode annotatedNode = annotationNode.up();
 		
 		EclipseNode tdNode;
-		if (annotatedNode.getKind() != Kind.TYPE) 
-			tdNode = annotatedNode.up(); // @Jacksonized on a constructor or a static factory method.
-		else
-			tdNode = annotatedNode; // @Jacksonized on the class.
+		if (annotatedNode.getKind() != Kind.TYPE)  tdNode = annotatedNode.up(); // @Jacksonized on a constructor or a static factory method.
+		else tdNode = annotatedNode; // @Jacksonized on the class.
 		TypeDeclaration td = (TypeDeclaration) tdNode.get();
 		
 		EclipseNode builderAnnotationNode = findAnnotation(Builder.class, annotatedNode);
 		EclipseNode superBuilderAnnotationNode = findAnnotation(SuperBuilder.class, annotatedNode);
-		if (builderAnnotationNode == null && superBuilderAnnotationNode == null) {
-			annotationNode.addWarning("@Jacksonized requires @Builder or @SuperBuilder for it to mean anything.");
+		EclipseNode accessorsAnnotationNode = (annotatedNode.getKind() == Kind.TYPE) ? findAnnotation(Accessors.class, annotatedNode) : null;
+		
+		if (builderAnnotationNode == null && superBuilderAnnotationNode == null && accessorsAnnotationNode == null) {
+			annotationNode.addWarning("@Jacksonized requires @Builder, @SuperBuilder, or @Accessors for it to mean anything.");
 			return;
 		}
 		
@@ -87,6 +90,17 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			return;
 		}
 		
+		boolean jacksonizedBuilder = builderAnnotationNode != null || superBuilderAnnotationNode != null;
+		if (jacksonizedBuilder) {
+			handleJacksonizedBuilder(ast, annotationNode, annotatedNode, tdNode, td, builderAnnotationNode, superBuilderAnnotationNode);
+		}
+		
+		if (accessorsAnnotationNode != null) {
+			handleJacksonizedAccessors(ast, annotationNode, annotatedNode, tdNode, td, accessorsAnnotationNode, jacksonizedBuilder);
+		}
+	}
+	
+	private void handleJacksonizedBuilder(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode builderAnnotationNode, EclipseNode superBuilderAnnotationNode) {
 		boolean isAbstract = (td.modifiers & ClassFileConstants.AccAbstract) != 0;
 		if (isAbstract) {
 			annotationNode.addError("Builders on abstract classes cannot be @Jacksonized (the builder would never be used).");
@@ -144,14 +158,45 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			builderClass.modifiers = builderClass.modifiers & ~ClassFileConstants.AccPrivate;
 	}
 	
+	private void handleJacksonizedAccessors(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode accessorsAnnotationNode, boolean jacksonizedBuilder) {
+		AnnotationValues<Accessors> accessorsAnnotation = accessorsAnnotationNode != null ? 
+			createAnnotation(Accessors.class, accessorsAnnotationNode) : null;
+		boolean fluent = accessorsAnnotation != null && accessorsAnnotation.getInstance().fluent();
+		
+		if (!fluent) {
+			// No changes required for chained-only accessors.
+			if (!jacksonizedBuilder) {
+				annotationNode.addWarning("@Jacksonized only affects fluent accessors (@Accessors(fluent=true)).");
+			}
+			return;
+		}
+		
+		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
+		for (EclipseNode eclipseNode : tdNode.down()) {
+			if (eclipseNode.getKind() == Kind.FIELD) {
+				createJsonPropertyForField(eclipseNode, annotationNode);
+			}
+		}
+		tdNode.rebuild();
+	}
+	
+	private void createJsonPropertyForField(EclipseNode fieldNode, EclipseNode annotationNode) {
+		if (hasAnnotation("com.fasterxml.jackson.annotation.JsonProperty", fieldNode)) return;
+		ASTNode astNode = fieldNode.get();
+		if (astNode instanceof FieldDeclaration) {
+			FieldDeclaration fd = (FieldDeclaration)astNode;
+			StringLiteral fieldName = new StringLiteral(fd.name, 0, 0, 0);
+			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JSON_PROPERTY_ANNOTATION, fieldName);
+		}
+	}
+	
 	private String getBuilderClassName(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, TypeDeclaration td, AnnotationValues<Builder> builderAnnotation) {
 		String builderClassName = builderAnnotation != null ? 
 			builderAnnotation.getInstance().builderClassName() : null;
 		if (builderClassName == null || builderClassName.isEmpty()) {
 			builderClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
-			if (builderClassName == null || builderClassName.isEmpty())
-				builderClassName = "*Builder";
-
+			if (builderClassName == null || builderClassName.isEmpty()) builderClassName = "*Builder";
+			
 			MethodDeclaration fillParametersFrom = annotatedNode.get() instanceof MethodDeclaration ? (MethodDeclaration) annotatedNode.get() : null;
 			char[] replacement;
 			if (fillParametersFrom != null) {
@@ -163,23 +208,22 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			}
 			builderClassName = builderClassName.replace("*", new String(replacement));
 		}
-
-		if (builderAnnotation == null)
-			builderClassName += "Impl"; // For @SuperBuilder, all Jackson annotations must be put on the BuilderImpl class.
+		
+		if (builderAnnotation == null) builderClassName += "Impl"; // For @SuperBuilder, all Jackson annotations must be put on the BuilderImpl class.
 		
 		return builderClassName;
 	}
 	
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
-
+	
 	private static Annotation[] findJacksonAnnotationsOnClass(TypeDeclaration td, EclipseNode node) {
 		if (td.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
-
+		
 		List<Annotation> result = new ArrayList<Annotation>();
 		for (Annotation annotation : td.annotations) {
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName() != null) {
-				for (String bn : HandlerUtil.JACKSON_COPY_TO_BUILDER_ANNOTATIONS) { 
+				for (String bn : HandlerUtil.JACKSON_COPY_TO_BUILDER_ANNOTATIONS) {
 					if (typeMatches(bn, node, typeRef)) {
 						result.add(annotation);
 						break;

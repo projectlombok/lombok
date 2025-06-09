@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2023 The Project Lombok Authors.
+ * Copyright (C) 2013-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -606,14 +606,14 @@ public class ConfigurationKeys {
 	/**
 	 * lombok configuration: {@code lombok.fieldDefaults.defaultPrivate} = {@code true} | {@code false}.
 	 * 
-	 * If set to <code>true</code> <em>any</em> field without an access modifier or {@code @PackagePrivate} is marked as {@code private} by lombok, in all source files compiled.
+	 * If set to {@code true} <em>any</em> field without an access modifier or {@code @PackagePrivate} is marked as {@code private} by lombok, in all source files compiled.
 	 */
 	public static final ConfigurationKey<Boolean> FIELD_DEFAULTS_PRIVATE_EVERYWHERE = new ConfigurationKey<Boolean>("lombok.fieldDefaults.defaultPrivate", "If true, fields without any access modifier, in any file (lombok annotated or not) are marked as private. Use @PackagePrivate or an explicit modifier to override this.") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.fieldDefaults.defaultFinal} = {@code true} | {@code false}.
 	 * 
-	 * If set to <code>true</code> <em>any</em> field without {@code @NonFinal} is marked as {@code final} by lombok, in all source files compiled.
+	 * If set to {@code true} <em>any</em> field without {@code @NonFinal} is marked as {@code final} by lombok, in all source files compiled.
 	 */
 	public static final ConfigurationKey<Boolean> FIELD_DEFAULTS_FINAL_EVERYWHERE = new ConfigurationKey<Boolean>("lombok.fieldDefaults.defaultFinal", "If true, fields, in any file (lombok annotated or not) are marked as final. Use @NonFinal to override this.") {};
 	
@@ -721,7 +721,7 @@ public class ConfigurationKeys {
 	 * If set to {@code true}, no further {@code lombok.config} files will be checked.
 	 */
 	public static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("config.stopBubbling", "Tell the configuration system it should stop looking for other configuration files (default: false).") {};
-
+	
 	/**
 	 * lombok configuration: {@code lombok.copyableAnnotations} += &lt;TypeName: fully-qualified annotation class name&gt;.
 	 *
@@ -737,11 +737,19 @@ public class ConfigurationKeys {
 	 * checkerframework.org version will be generated.
 	 */
 	public static final ConfigurationKey<CheckerFrameworkVersion> CHECKER_FRAMEWORK = new ConfigurationKey<CheckerFrameworkVersion>("checkerframework", "If set with the version of checkerframework.org (in major.minor, or just 'true' for the latest supported version), create relevant checkerframework.org annotations for code lombok generates (default: false).") {};
-
+	
 	/**
 	 * lombok configuration: {@code lombok.standardException.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 *
 	 * If set, <em>any</em> usage of {@code @StandardException} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> STANDARD_EXCEPTION_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.standardException.flagUsage", "Emit a warning or error if @StandardException is used.") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.copyJacksonAnnotationsToAccessors} = {@code true} | {@code false}.
+	 *
+	 * If {@code true}, copy certain Jackson annotations from a field to its corresponding accessors (getter/setters). This was the behavior from lombok 1.18.16 to 1.18.38.
+	 * However, it turned out to be harmful in certain situations. Thus, the default is now {@code false}.
+	 */
+	public static final ConfigurationKey<Boolean> COPY_JACKSON_ANNOTATIONS_TO_ACCESSORS = new ConfigurationKey<Boolean>("lombok.copyJacksonAnnotationsToAccessors", "Copy Jackson annotations from fields to the corresponding getters and setters.") {};
 }
