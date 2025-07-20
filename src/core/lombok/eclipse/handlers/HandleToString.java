@@ -81,9 +81,10 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		if (members == null) return;
 		
 		Boolean callSuper = ann.callSuper();
-		
+		Boolean skipNull = ann.skipNull();
 		if (!annotation.isExplicit("callSuper")) callSuper = null;
-		
+		if (!annotation.isExplicit("skipNull")) skipNull = null;
+
 		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
 		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
 		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
@@ -91,7 +92,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		Boolean fieldNamesConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 		boolean includeFieldNames = annotation.isExplicit("includeFieldNames") || fieldNamesConfiguration == null ? ann.includeFieldNames() : fieldNamesConfiguration;
 		
-		generateToString(annotationNode.up(), annotationNode, members, includeFieldNames, callSuper, true, fieldAccess);
+		generateToString(annotationNode.up(), annotationNode, members, includeFieldNames, callSuper, true, fieldAccess, skipNull);
 	}
 	
 	public void generateToStringForType(EclipseNode typeNode, EclipseNode errorNode) {
@@ -108,11 +109,11 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		FieldAccess access = doNotUseGettersConfiguration == null || !doNotUseGettersConfiguration ? FieldAccess.GETTER : FieldAccess.PREFER_FIELD;
 		
 		List<Included<EclipseNode, ToString.Include>> members = InclusionExclusionUtils.handleToStringMarking(typeNode, onlyExplicitlyIncluded, null, null);
-		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access);
+		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access, null);
 	}
 	
 	public void generateToString(EclipseNode typeNode, EclipseNode errorNode, List<Included<EclipseNode, ToString.Include>> members,
-		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
+		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, Boolean skipNull) {
 		
 		if (!isClassOrEnum(typeNode)) {
 			errorNode.addError("@ToString is only supported on a class or enum.");
@@ -142,7 +143,10 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 					}
 				}
 			}
-			MethodDeclaration toString = createToString(typeNode, members, includeFieldNames, callSuper, errorNode.get(), fieldAccess);
+			if(skipNull == null) {
+				skipNull = false;
+			}
+			MethodDeclaration toString = createToString(typeNode, members, includeFieldNames, callSuper, errorNode.get(), fieldAccess, skipNull);
 			injectMethod(typeNode, toString);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -156,7 +160,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	}
 	
 	public static MethodDeclaration createToString(EclipseNode type, Collection<Included<EclipseNode, ToString.Include>> members,
-		boolean includeNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
+		boolean includeNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean skipNull) {
 		
 		String typeName = getTypeName(type);
 		boolean isEnum = type.isEnumType();
@@ -223,6 +227,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		}
 		
 		for (Included<EclipseNode, ToString.Include> member : members) {
+			if(skipNull && member.getInc() == null) continue;
 			EclipseNode memberNode = member.getNode();
 			
 			TypeReference fieldType = getFieldType(memberNode, fieldAccess);

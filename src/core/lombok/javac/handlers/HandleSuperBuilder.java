@@ -356,7 +356,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		
 		// Let toString() call super.toString() if there is a superclass, so that it also shows fields from the superclass' builder.
-		JCMethodDecl toStringMethod = HandleToString.createToString(job.builderType, fieldNodes, true, superclassBuilderClass != null, FieldAccess.ALWAYS_FIELD, annotationNode);
+		JCMethodDecl toStringMethod = HandleToString.createToString(job.builderType, fieldNodes, true, superclassBuilderClass != null, FieldAccess.ALWAYS_FIELD, annotationNode, false);
 		if (toStringMethod != null) injectMethod(job.builderType, toStringMethod);
 		
 		// If clean methods are requested, add them now.

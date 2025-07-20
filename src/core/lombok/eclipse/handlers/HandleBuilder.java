@@ -571,7 +571,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true, false));
 				}
 			}
-			MethodDeclaration md = HandleToString.createToString(job.builderType, fieldNodes, true, false, ast, FieldAccess.ALWAYS_FIELD);
+			MethodDeclaration md = HandleToString.createToString(job.builderType, fieldNodes, true, false, ast, FieldAccess.ALWAYS_FIELD, false);
 			if (md != null) injectMethod(job.builderType, md);
 		}
 		

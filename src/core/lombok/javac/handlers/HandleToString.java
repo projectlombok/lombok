@@ -70,16 +70,17 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		if (members == null) return;
 		
 		Boolean callSuper = ann.callSuper();
-		
+		Boolean skipNull = ann.skipNull();
 		if (!annotation.isExplicit("callSuper")) callSuper = null;
-		
+		if (!annotation.isExplicit("skipNull")) skipNull = null;
+
 		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
 		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
 		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
 		boolean includeFieldNames = annotationNode.getAst().getBooleanAnnotationValue(annotation, "includeFieldNames", ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 		
-		generateToString(annotationNode.up(), annotationNode, members, includeFieldNames, callSuper, true, fieldAccess);
+		generateToString(annotationNode.up(), annotationNode, members, includeFieldNames, callSuper, true, fieldAccess, skipNull);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -96,11 +97,11 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		FieldAccess access = doNotUseGettersConfiguration == null || !doNotUseGettersConfiguration ? FieldAccess.GETTER : FieldAccess.PREFER_FIELD;
 		
 		java.util.List<Included<JavacNode, ToString.Include>> members = InclusionExclusionUtils.handleToStringMarking(typeNode, onlyExplicitlyIncluded, null, null);
-		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access);
+		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access, null);
 	}
 	
 	public void generateToString(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, ToString.Include>> members,
-		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
+		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, Boolean skipNull) {
 		
 		if (!isClassOrEnum(typeNode)) {
 			source.addError("@ToString is only supported on a class or enum.");
@@ -130,7 +131,10 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 					}
 				}
 			}
-			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source);
+			if(skipNull == null) {
+				skipNull = false;
+			}
+			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source, skipNull);
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -145,7 +149,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	}
 	
 	static JCMethodDecl createToString(JavacNode typeNode, Collection<Included<JavacNode, ToString.Include>> members,
-		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JavacNode source) {
+		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JavacNode source, boolean skipNull) {
 		
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
@@ -196,6 +200,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 		
 		for (Included<JavacNode, ToString.Include> member : members) {
+			if(skipNull && member.getInc() == null) continue;
 			JCExpression expr;
 			
 			JCExpression memberAccessor;
