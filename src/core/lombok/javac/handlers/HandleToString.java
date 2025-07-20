@@ -70,8 +70,8 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		if (members == null) return;
 		
 		Boolean callSuper = ann.callSuper();
-		Boolean skipNull = ann.skipNull();
 		if (!annotation.isExplicit("callSuper")) callSuper = null;
+		Boolean skipNull = ann.skipNull();
 		if (!annotation.isExplicit("skipNull")) skipNull = null;
 
 		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
