@@ -296,19 +296,17 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		
 		JavacTreeMaker maker = annotation.getTreeMaker();
 		
-		com.sun.tools.javac.util.List<JCAnnotation> annotations;
+		ArrayList<JCAnnotation> annotations = new ArrayList<JCAnnotation>();
 		if (sig.isDeprecated) {
-			annotations = com.sun.tools.javac.util.List.of(maker.Annotation(
+			annotations.add(maker.Annotation(
 					genJavaLangTypeRef(annotation, "Deprecated"),
 					com.sun.tools.javac.util.List.<JCExpression>nil()));
-		} else {
-			annotations = com.sun.tools.javac.util.List.nil();
 		}
 		for (Compound sigAnnotation : sig.annotations) {
 			annotations.add(maker.Annotation(sigAnnotation));
 		}
 
-		JCModifiers mods = maker.Modifiers(PUBLIC, annotations);
+		JCModifiers mods = maker.Modifiers(PUBLIC, com.sun.tools.javac.util.List.from(annotations.toArray(new JCAnnotation[0])));
 		JCExpression returnType = JavacResolution.typeToJCTree((Type) sig.type.getReturnType(), annotation.getAst(), true);
 		boolean useReturn = sig.type.getReturnType().getKind() != TypeKind.VOID;
 		ListBuffer<JCVariableDecl> params = sig.type.getParameterTypes().isEmpty() ? null : new ListBuffer<JCVariableDecl>();
