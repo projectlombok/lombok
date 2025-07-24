@@ -373,7 +373,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		if (tsym == null) return;
 		
 		for (Symbol member : tsym.getEnclosedElements()) {
-			ArrayList<Compound> copyableAnnotations = new ArrayList<>();
+			ArrayList<Compound> copyableAnnotations = new ArrayList<Compound>();
 			for (Compound am : member.getAnnotationMirrors()) {
 				String name = null;
 				try {
@@ -398,7 +398,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			String sig = printSig(methodType, member.name, types);
 			if (!banList.add(sig)) continue; //If add returns false, it was already in there
 			boolean isDeprecated = (member.flags() & DEPRECATED) != 0;
-			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem));
+			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem, copyableAnnotations));
 		}
 
 		for (Type type : types.directSupertypes(ct)) {
