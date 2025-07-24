@@ -71,6 +71,7 @@ import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
+import lombok.core.handlers.HandlerUtil;
 import lombok.experimental.Delegate;
 import lombok.javac.FindTypeVarScanner;
 import lombok.javac.JavacAnnotationHandler;
@@ -303,7 +304,10 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		} else {
 			annotations = com.sun.tools.javac.util.List.nil();
 		}
-		
+		for (Compound sigAnnotation : sig.annotations) {
+			annotations.add(maker.Annotation(sigAnnotation));
+		}
+
 		JCModifiers mods = maker.Modifiers(PUBLIC, annotations);
 		JCExpression returnType = JavacResolution.typeToJCTree((Type) sig.type.getReturnType(), annotation.getAst(), true);
 		boolean useReturn = sig.type.getReturnType().getKind() != TypeKind.VOID;
@@ -369,6 +373,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		if (tsym == null) return;
 		
 		for (Symbol member : tsym.getEnclosedElements()) {
+			ArrayList<Compound> copyableAnnotations = new ArrayList<>();
 			for (Compound am : member.getAnnotationMirrors()) {
 				String name = null;
 				try {
@@ -378,6 +383,11 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 				if ("lombok.Delegate".equals(name) || "lombok.experimental.Delegate".equals(name)) {
 					throw new DelegateRecursion(ct.tsym.name.toString(), member.name.toString());
 				}
+
+				if (HandlerUtil.COPYABLE_ANNOTATIONS_FOR_DELEGATE.contains(name)) {
+					copyableAnnotations.add(am);
+				}
+
 			}
 			if (member.getKind() != ElementKind.METHOD) continue;
 			if (member.isStatic()) continue;
@@ -403,12 +413,14 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		final ExecutableType type;
 		final boolean isDeprecated;
 		final ExecutableElement elem;
-		
-		MethodSig(Name name, ExecutableType type, boolean isDeprecated, ExecutableElement elem) {
+		final List<Compound> annotations;
+
+		MethodSig(Name name, ExecutableType type, boolean isDeprecated, ExecutableElement elem, List<Compound> annotations) {
 			this.name = name;
 			this.type = type;
 			this.isDeprecated = isDeprecated;
 			this.elem = elem;
+			this.annotations = annotations;
 		}
 		
 		String[] getParameterNames() {
