@@ -84,8 +84,8 @@ public class HandlerUtil {
 			JACKSON_COPY_TO_GETTER_ANNOTATIONS,
 			JACKSON_COPY_TO_SETTER_ANNOTATIONS,
 			JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS,
-			JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
-	public static final Set<String> COPYABLE_ANNOTATIONS_FOR_DELEGATE;
+			JACKSON_COPY_TO_BUILDER_ANNOTATIONS,
+			COPYABLE_ANNOTATIONS_FOR_DELEGATE;
 	static {
 		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
 		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
@@ -495,7 +495,7 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.annotation.JsonView",
 			"com.fasterxml.jackson.databind.annotation.JsonNaming",
 		}));
-		COPYABLE_ANNOTATIONS_FOR_DELEGATE = Collections.unmodifiableSet(Arrays.asList(new String[] {
+		COPYABLE_ANNOTATIONS_FOR_DELEGATE = Collections.unmodifiableList(Arrays.asList(new String[] {
 				"android.annotation.NonNull",
 				"android.annotation.Nullable",
 				"android.support.annotation.NonNull",
