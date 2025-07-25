@@ -5,13 +5,13 @@ import javax.annotation.Nullable;
 record DelegateOnRecord(SomeInterface runnable) {
 	interface SomeInterface {
 		@Nullable
-		String getString();
+		String getString(@Nullable String input);
 	}
 
 	@javax.annotation.Nullable
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
-	public java.lang.String getString() {
-		return this.runnable.getString();
+	public java.lang.String getString(@javax.annotation.Nullable final java.lang.String input) {
+		return this.runnable.getString(input);
 	}
 }

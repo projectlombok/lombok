@@ -6,6 +6,6 @@ import javax.annotation.Nullable;
 record DelegateOnRecord(@Delegate SomeInterface runnable) {
 	interface SomeInterface {
 		@Nullable 
-		String getString();
+		String getString(@Nullable String input);
 	}
 }

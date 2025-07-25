@@ -34,11 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -332,17 +328,22 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			thrown.append(JavacResolution.typeToJCTree((Type) ex, annotation.getAst(), true));
 		}
 		
-		int idx = 0;
-		String[] paramNames = sig.getParameterNames();
 		boolean varargs = sig.elem.isVarArgs();
-		for (TypeMirror param : sig.type.getParameterTypes()) {
+		ParameterSig[] paramSigs = sig.getParameters();
+		for (int idx = 0; idx < paramSigs.length; idx++) {
+			ParameterSig paramSig = paramSigs[idx];
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, annotation.getContext());
-			JCModifiers paramMods = maker.Modifiers(flags);
-			Name name = annotation.toName(paramNames[idx++]);
-			if (varargs && idx == paramNames.length) {
+
+			List<JCAnnotation> paramAnnotations = new ArrayList<JCAnnotation>();
+			for (AnnotationMirror b : paramSig.annotations) {
+				paramAnnotations.add(maker.Annotation((Compound) b));
+			}
+			JCModifiers paramMods = maker.Modifiers(flags, com.sun.tools.javac.util.List.from(paramAnnotations.toArray(new JCAnnotation[0])));
+			Name name = annotation.toName(paramSig.name);
+			if (varargs && idx == paramSigs.length - 1) {
 				paramMods.flags |= VARARGS;
 			}
-			params.append(maker.VarDef(paramMods, name, JavacResolution.typeToJCTree((Type) param, annotation.getAst(), true), null));
+			params.append(maker.VarDef(paramMods, name, JavacResolution.typeToJCTree((Type) paramSig.type, annotation.getAst(), true), null));
 			args.append(maker.Ident(name));
 		}
 		
@@ -421,20 +422,37 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			this.annotations = annotations;
 		}
 		
-		String[] getParameterNames() {
-			List<? extends VariableElement> paramList = elem.getParameters();
-			String[] paramNames = new String[paramList.size()];
-			for (int i = 0; i < paramNames.length; i++) {
-				paramNames[i] = paramList.get(i).getSimpleName().toString();
+		ParameterSig[] getParameters() {
+			VariableElement[] params = elem.getParameters().toArray(new VariableElement[0]);
+			TypeMirror[] paramTypes = type.getParameterTypes().toArray(new TypeMirror[0]);
+			ParameterSig[] parameterSigs = new ParameterSig[params.length];
+			for (int i = 0; i < parameterSigs.length; i++) {
+				parameterSigs[i] = new ParameterSig(
+						params[i].getSimpleName().toString(),
+						paramTypes[i],
+						params[i].getAnnotationMirrors()
+				);
 			}
-			return paramNames;
+			return parameterSigs;
 		}
 		
 		@Override public String toString() {
 			return (isDeprecated ? "@Deprecated " : "") + name + " " + type;
 		}
 	}
-	
+
+	public static class ParameterSig {
+		final String name;
+		final TypeMirror type;
+		final List<? extends AnnotationMirror> annotations;
+
+		ParameterSig(String name, TypeMirror type, List<? extends AnnotationMirror> annotations) {
+			this.name = name;
+			this.type = type;
+			this.annotations = annotations;
+		}
+	}
+
 	public static String printSig(ExecutableType method, Name name, JavacTypes types) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name.toString()).append("(");
