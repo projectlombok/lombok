@@ -292,17 +292,20 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		
 		JavacTreeMaker maker = annotation.getTreeMaker();
 		
-		ArrayList<JCAnnotation> annotations = new ArrayList<JCAnnotation>();
+		ArrayList<JCAnnotation> methodAnnotationsToCopy = new ArrayList<JCAnnotation>();
 		if (sig.isDeprecated) {
-			annotations.add(maker.Annotation(
+			methodAnnotationsToCopy.add(maker.Annotation(
 					genJavaLangTypeRef(annotation, "Deprecated"),
 					com.sun.tools.javac.util.List.<JCExpression>nil()));
 		}
+		Set<String> copyableAnnotations = JavacHandlerUtil.getCopyableAnnotationsForDelegate(annotation);
 		for (Compound sigAnnotation : sig.annotations) {
-			annotations.add(maker.Annotation(sigAnnotation));
+			if (copyableAnnotations.contains(sigAnnotation.type.tsym.flatName().toString())) {
+				methodAnnotationsToCopy.add(maker.Annotation(sigAnnotation));
+			}
 		}
 
-		JCModifiers mods = maker.Modifiers(PUBLIC, com.sun.tools.javac.util.List.from(annotations.toArray(new JCAnnotation[0])));
+		JCModifiers mods = maker.Modifiers(PUBLIC, com.sun.tools.javac.util.List.from(methodAnnotationsToCopy.toArray(new JCAnnotation[0])));
 		JCExpression returnType = JavacResolution.typeToJCTree((Type) sig.type.getReturnType(), annotation.getAst(), true);
 		boolean useReturn = sig.type.getReturnType().getKind() != TypeKind.VOID;
 		ListBuffer<JCVariableDecl> params = sig.type.getParameterTypes().isEmpty() ? null : new ListBuffer<JCVariableDecl>();
@@ -327,20 +330,21 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		for (TypeMirror ex : sig.type.getThrownTypes()) {
 			thrown.append(JavacResolution.typeToJCTree((Type) ex, annotation.getAst(), true));
 		}
-		
+
 		boolean varargs = sig.elem.isVarArgs();
 		ParameterSig[] paramSigs = sig.getParameters();
 		for (int idx = 0; idx < paramSigs.length; idx++) {
 			ParameterSig paramSig = paramSigs[idx];
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, annotation.getContext());
 
-			List<JCAnnotation> paramAnnotations = new ArrayList<JCAnnotation>();
+			List<JCAnnotation> paramAnnotationsToCopy = new ArrayList<JCAnnotation>();
 			for (AnnotationMirror b : paramSig.annotations) {
-				if (HandlerUtil.COPYABLE_ANNOTATIONS_FOR_DELEGATE.contains(((TypeElement) b.getAnnotationType().asElement()).getQualifiedName().toString())) {
-					paramAnnotations.add(maker.Annotation((Compound) b));
+				String fqn = ((TypeElement) b.getAnnotationType().asElement()).getQualifiedName().toString();
+				if (copyableAnnotations.contains(fqn)) {
+					paramAnnotationsToCopy.add(maker.Annotation((Compound) b));
 				}
 			}
-			JCModifiers paramMods = maker.Modifiers(flags, com.sun.tools.javac.util.List.from(paramAnnotations.toArray(new JCAnnotation[0])));
+			JCModifiers paramMods = maker.Modifiers(flags, com.sun.tools.javac.util.List.from(paramAnnotationsToCopy.toArray(new JCAnnotation[0])));
 			Name name = annotation.toName(paramSig.name);
 			if (varargs && idx == paramSigs.length - 1) {
 				paramMods.flags |= VARARGS;
@@ -374,7 +378,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		if (tsym == null) return;
 		
 		for (Symbol member : tsym.getEnclosedElements()) {
-			ArrayList<Compound> copyableAnnotations = new ArrayList<Compound>();
+			ArrayList<Compound> annotations = new ArrayList<Compound>();
 			for (Compound am : member.getAnnotationMirrors()) {
 				String name = null;
 				try {
@@ -385,9 +389,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 					throw new DelegateRecursion(ct.tsym.name.toString(), member.name.toString());
 				}
 
-				if (HandlerUtil.COPYABLE_ANNOTATIONS_FOR_DELEGATE.contains(name)) {
-					copyableAnnotations.add(am);
-				}
+				annotations.add(am);
 
 			}
 			if (member.getKind() != ElementKind.METHOD) continue;
@@ -399,7 +401,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			String sig = printSig(methodType, member.name, types);
 			if (!banList.add(sig)) continue; //If add returns false, it was already in there
 			boolean isDeprecated = (member.flags() & DEPRECATED) != 0;
-			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem, copyableAnnotations));
+			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem, annotations));
 		}
 
 		for (Type type : types.directSupertypes(ct)) {

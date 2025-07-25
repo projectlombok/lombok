@@ -32,10 +32,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import com.sun.source.tree.TreeVisitor;
@@ -1755,7 +1752,18 @@ public class JavacHandlerUtil {
 
 		return copyAnnotations(result.toList(), node.getTreeMaker());
 	}
-	
+
+	public static Set<String> getCopyableAnnotationsForDelegate(JavacNode node) {
+		HashSet<String> copyable = new HashSet<String>();
+		java.util.List<TypeName> configuredCopyable = node.getAst().readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS_FOR_DELEGATE);
+		if (configuredCopyable != null) {
+			for (TypeName cn : configuredCopyable) if (cn != null) copyable.add(cn.toString());
+		}
+    copyable.addAll(COPYABLE_ANNOTATIONS_FOR_DELEGATE);
+
+		return copyable;
+	}
+
 	/**
 	 * Searches the given field node for annotations that are specifically intended to be copied to the getter.
 	 * 
