@@ -2,10 +2,12 @@
 //version 14:
 import lombok.experimental.Delegate;
 import javax.annotation.Nullable;
+import javax.annotation.Tainted;
 
 record DelegateOnRecord(@Delegate SomeInterface runnable) {
 	interface SomeInterface {
-		@Nullable 
-		String getString(@Nullable String input);
+		@Nullable
+		@Tainted
+		String getString(@Nullable @Tainted String input);
 	}
 }

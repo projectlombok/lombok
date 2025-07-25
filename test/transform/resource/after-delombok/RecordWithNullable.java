@@ -1,11 +1,13 @@
 //platform !eclipse: Requires a 'full' eclipse with intialized workspace, and we don't (yet) have that set up properly in the test run.
 //version 14:
 import javax.annotation.Nullable;
+import javax.annotation.Tainted;
 
 record DelegateOnRecord(SomeInterface runnable) {
 	interface SomeInterface {
 		@Nullable
-		String getString(@Nullable String input);
+		@Tainted
+		String getString(@Nullable @Tainted String input);
 	}
 
 	@javax.annotation.Nullable

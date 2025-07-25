@@ -336,7 +336,9 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 
 			List<JCAnnotation> paramAnnotations = new ArrayList<JCAnnotation>();
 			for (AnnotationMirror b : paramSig.annotations) {
-				paramAnnotations.add(maker.Annotation((Compound) b));
+				if (HandlerUtil.COPYABLE_ANNOTATIONS_FOR_DELEGATE.contains(((TypeElement) b.getAnnotationType().asElement()).getQualifiedName().toString())) {
+					paramAnnotations.add(maker.Annotation((Compound) b));
+				}
 			}
 			JCModifiers paramMods = maker.Modifiers(flags, com.sun.tools.javac.util.List.from(paramAnnotations.toArray(new JCAnnotation[0])));
 			Name name = annotation.toName(paramSig.name);
