@@ -82,7 +82,7 @@ public class Javac {
 	public static final long COMPACT_RECORD_CONSTRUCTOR = 1L << 51; // MethodSymbols (the 'implicit' many-args constructor that records have)
 	public static final long UNINITIALIZED_FIELD = 1L << 51; // VarSymbols (To identify fields that the compact record constructor won't initialize)
 	public static final long GENERATED_MEMBER = 1L << 24; // MethodSymbols, VarSymbols (marks methods and the constructor generated in records)
-	public static final long SEALED = 1L << 62; // ClassSymbols (Flag to indicate sealed class/interface declaration)
+	public static final long SEALED = 1L << 62 | 1L << 48; // ClassSymbols (Flag to indicate sealed class/interface declaration)
 	public static final long NON_SEALED = 1L << 63; // ClassSymbols (Flag to indicate that the class/interface was declared with the non-sealed modifier)
 	
 	/**
