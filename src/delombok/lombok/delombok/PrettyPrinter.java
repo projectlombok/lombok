@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2024 The Project Lombok Authors.
+ * Copyright (C) 2016-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,13 +92,13 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 
 import lombok.javac.CommentInfo;
-import lombok.javac.Javac;
-import lombok.javac.PackageName;
-import lombok.permit.Permit;
 import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
+import lombok.javac.Javac;
 import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
+import lombok.javac.PackageName;
+import lombok.permit.Permit;
 
 public class PrettyPrinter extends JCTree.Visitor {
 	private static final String LINE_SEP = System.getProperty("line.separator");
@@ -697,7 +697,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 		 */
 		try {
 			innermostArrayBracketsAreVarargs = varargs;
-			if (tree.vartype == null || tree.vartype.pos == -1) {
+			if (tree.vartype == null || tree.vartype.pos == -1 || endPos(tree.vartype) == -1) {
 				print("var");
 			} else {
 				print(tree.vartype);
