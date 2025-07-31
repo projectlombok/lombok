@@ -524,6 +524,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	private Name currentTypeName;
 	@Override public void visitClassDef(JCClassDecl tree) {
+		if ((tree.mods.flags & IMPLICIT_CLASS) != 0) {
+			printClassMembers(tree.defs, false, false);
+			consumeComments(endPos(tree));
+			return;
+		}
+		
 		println();
 		printDocComment(tree);
 		align();

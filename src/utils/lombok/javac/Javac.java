@@ -84,6 +84,7 @@ public class Javac {
 	public static final long GENERATED_MEMBER = 1L << 24; // MethodSymbols, VarSymbols (marks methods and the constructor generated in records)
 	public static final long SEALED = 1L << 62 | 1L << 48; // ClassSymbols (Flag to indicate sealed class/interface declaration) - from the introduction of sealed until ~jdk23, this was 62. In jdk24, it's 48. Ugh.
 	public static final long NON_SEALED = 1L << 63; // ClassSymbols (Flag to indicate that the class/interface was declared with the non-sealed modifier)
+	public static final long IMPLICIT_CLASS = 1L << 19; // ClassSymbols (Flag to indicate that the class/interface wasn't actually written out; it is an implicitly declared top-level class). Introduced in JDK25, JEP512.
 	
 	/**
 	 * Returns the version of this java compiler, i.e. the JDK that it shipped in. For example, for javac v1.7, this returns {@code 7}.
