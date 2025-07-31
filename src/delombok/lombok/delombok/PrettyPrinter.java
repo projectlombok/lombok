@@ -1033,7 +1033,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 		if ((v & NATIVE) != 0) print("native ");
 		if ((v & ABSTRACT) != 0) print("abstract ");
 		if ((v & SEALED) != 0) print("sealed ");
-		if ((v & NON_SEALED) != 0) print("non-sealed ");
+		if ((v & NON_SEALED) != 0) print("non-sealed "); // Yes, this is a real keyword.
 		if ((v & STRICTFP) != 0) print("strictfp ");
 		if ((v & DEFAULT) != 0 && (v & INTERFACE) == 0) print("default ");
 	}
