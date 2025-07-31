@@ -514,6 +514,14 @@ public class PrettyPrinter extends JCTree.Visitor {
 		println(";", tree);
 	}
 	
+	void printModuleImport(JCTree tree) {
+		JCExpression qualid = readObject(tree, "module", null);
+		
+		aPrint("import module ");
+		print(qualid);
+		println(";", tree);
+	}
+	
 	private Name currentTypeName;
 	@Override public void visitClassDef(JCClassDecl tree) {
 		println();
@@ -1710,6 +1718,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printRecordPattern(tree);
 		} else if (className.endsWith("$JCAnyPattern")) { // Introduced in JDK22
 			print("_");
+		} else if (className.endsWith("$JCModuleImport")) { // Introduced in JDK25
+			printModuleImport(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
