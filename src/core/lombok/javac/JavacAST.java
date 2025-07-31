@@ -416,7 +416,6 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		JCANNOTATEDTYPE_FIELDS_INITIALIZED = true;
 	}
 	
-	
 	private static Field JCENHANCEDFORLOOP_VARORRECORDPATTERN_FIELD = Permit.permissiveGetField(JCEnhancedForLoop.class, "varOrRecordPattern");
 	private static JCTree getVarOrRecordPattern(JCEnhancedForLoop loop) {
 		if (JCENHANCEDFORLOOP_VARORRECORDPATTERN_FIELD == null) {
@@ -594,7 +593,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			if (newSource != null) errorLogger.useSource(oldSource);
 		}
 	}
-
+	
 	public void removeFromDeferredDiagnostics(int startPos, int endPos) {
 		JCCompilationUnit self = (JCCompilationUnit) top().get();
 		new CompilerMessageSuppressor(getContext()).removeAllBetween(self.sourcefile, startPos, endPos);
@@ -641,21 +640,21 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			this.errorCount = errorCount;
 			this.warningCount = warningCount;
 		}
-
+		
 		final JavaFileObject useSource(JavaFileObject file) {
 			return log.useSource(file);
 		}
-
+		
 		final void error(DiagnosticPosition pos, String message) {
 			increment(errorCount);
 			error1(pos, message);
 		}
-
+		
 		final void warning(DiagnosticPosition pos, String message) {
 			increment(warningCount);
 			warning1(pos, message);
 		}
-
+		
 		abstract void error1(DiagnosticPosition pos, String message);
 		abstract void warning1(DiagnosticPosition pos, String message);
 		abstract void note(DiagnosticPosition pos, String message);
@@ -699,7 +698,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		private JdkBefore9(Log log, Messager messager, Field errorCount) {
 			super(log, messager, errorCount, null);
 		}
-
+		
 		@Override void error1(DiagnosticPosition pos, String message) {
 			boolean prev = log.multipleErrors;
 			log.multipleErrors = true;
@@ -709,11 +708,11 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				log.multipleErrors = prev;
 			}
 		}
-
+		
 		@Override void warning1(DiagnosticPosition pos, String message) {
 			log.warning(pos, "proc.messager", message);
 		}
-
+		
 		@Override void note(DiagnosticPosition pos, String message) {
 			log.note(pos, "proc.messager", message);
 		}
@@ -728,14 +727,14 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		
 		private Jdk9Plus(Log log, Messager messager, Field errorCount, Field warningCount) {
 			super(log, messager, errorCount, warningCount);
-
+			
 			try {
 				final String jcd = "com.sun.tools.javac.util.JCDiagnostic";
 				Class<?> df = Class.forName(jcd + "$DiagnosticFlag");
 				for (Object constant : df.getEnumConstants()) {
 					if (constant.toString().equals("MULTIPLE")) this.multiple = constant;
 				}
-
+				
 				Class<?> errorCls = Class.forName(jcd + "$Error");
 				Class<?> warningCls = Class.forName(jcd + "$Warning");
 				Class<?> noteCls = Class.forName(jcd + "$Note");
@@ -744,10 +743,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				this.errorMethod = Permit.getMethod(lc, "error", df, DiagnosticPosition.class, errorCls);
 				this.warningMethod = Permit.getMethod(lc, "warning", DiagnosticPosition.class, warningCls);
 				this.noteMethod = Permit.getMethod(lc, "note", DiagnosticPosition.class, noteCls);
-
+				
 				Field diagsField = Permit.getField(lc.getSuperclass(), "diags");
 				this.diags = (JCDiagnostic.Factory) diagsField.get(log);
-
+				
 				Class<?> dc = this.diags.getClass();
 				this.errorKey = Permit.getMethod(dc, "errorKey", String.class, Object[].class);
 				this.warningKey = Permit.permissiveGetMethod(dc, "warningKey", String.class, Object[].class);
@@ -764,7 +763,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			Object error = Permit.invokeSneaky(this.errorKey, diags, PROC_MESSAGER, new Object[] { message });
 			if (error != null) Permit.invokeSneaky(errorMethod, log, multiple, pos, error);
 		}
-
+		
 		@Override
 		void warning1(DiagnosticPosition pos, String message) {
 			Object warning;
@@ -775,7 +774,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			}
 			if (warning != null) Permit.invokeSneaky(warningMethod, log, pos, warning);
 		}
-
+		
 		@Override
 		void note(DiagnosticPosition pos, String message) {
 			Object note = Permit.invokeSneaky(this.noteKey, diags, PROC_MESSAGER, new Object[] { message });
