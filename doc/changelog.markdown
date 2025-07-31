@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.39 "Edgy Guinea Pig"
+* PLATFORM: JDK25 support added (we're still one week out from official first release candidate, but feature freeze is in effect so we expect this version to be compatible with JDK25's official release). [Issue #3859](https://github.com/projectlombok/lombok/issues/3859).
 * BUGFIX: Recent versions of eclipse (or the eclipse-based java lang server for VSCode) caused `java.lang.IllegalArgumentException: Document does not match the AST`. [Issue #3886](https://github.com/projectlombok/lombok/issues/3886).
 * FEATURE: `@Jacksonized @Accessors(fluent=true)` automatically creates the relevant annotations such that Jackson correctly identifies fluent accessors.
 * IMPROBABLE BREAKING CHANGE: From versions 1.18.16 to 1.18.38, lombok automatically copies certain Jackson annotations (e.g., `@JsonProperty`) from fields to the corresponding accessors (getters/setters). However, it turned out to be harmful in certain situations. Thus, Lombok does not automatically copy those annotations any more. You can restore the old behavior using the [config key](https://projectlombok.org/features/configuration) `lombok.copyJacksonAnnotationsToAccessors = true`.
