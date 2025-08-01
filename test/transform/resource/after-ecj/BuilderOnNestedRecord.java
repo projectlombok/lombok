@@ -19,10 +19,8 @@ public record BuilderOnNestedRecord(T t)<T> {
         return (("BuilderOnNestedRecord.Nested.NestedBuilder(a=" + this.a) + ")");
       }
     }
-/* Implicit */    private final String a;
     public static @java.lang.SuppressWarnings("all") @lombok.Generated BuilderOnNestedRecord.Nested.NestedBuilder builder() {
       return new BuilderOnNestedRecord.Nested.NestedBuilder();
     }
   }
-/* Implicit */  private final T t;
 }

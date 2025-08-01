@@ -205,6 +205,8 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 					<!-- osgi.extender dependecies -->
 					<arg value="osgi.bundle:org.apache.felix.scr" />
 					<arg value="osgi.bundle:org.apache.aries.spifly.dynamic.bundle" />
+					<!-- Unresolvable until we add property based dependency resolution -->
+					<arg value="osgi.bundle:org.eclipse.swt.svg" />
 					<!-- Real dependencies -->
 					<arg value="osgi.bundle:org.eclipse.jdt.core" />
 					<arg value="osgi.bundle:org.eclipse.jdt.ui" />
