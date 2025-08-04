@@ -62,7 +62,7 @@ and rerun the build; this build is capable of finding VMs automatically on many 
 		<local name="java_home.result" />
 		<exec newenvironment="true" executable="${exe.java_home}" errorproperty="discard" outputproperty="java_home.answer" failifexecutionfails="false" resultproperty="java_home.result">
 			<env key="floobargle" value="FOO" /> <!-- we do not want JAVA_HOME to be set. This requires newenvironment="true" AND some sort of env value -->
-			<arg value="-v" />
+			<arg value="-Fv" />
 			<arg value="${find-vm.version}" />
 		</exec>
 		<condition property="jvm.loc" value="${java_home.answer}">
