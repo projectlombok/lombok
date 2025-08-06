@@ -403,8 +403,9 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	}
 	
 	private Collection<EclipseNode> buildRecordComponents(AbstractVariableDeclaration[] children) {
+		if (children == null) return Collections.emptyList();
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
-		if (children != null) for (int i = 0; i < children.length; i++) {
+		for (int i = 0; i < children.length; i++) {
 			addIfNotNull(childNodes, buildRecordComponent(children[i]));
 		}
 		return childNodes;
