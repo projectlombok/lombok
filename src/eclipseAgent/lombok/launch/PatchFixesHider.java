@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2024 The Project Lombok Authors.
+ * Copyright (C) 2010-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1115,6 +1115,10 @@ final class PatchFixesHider {
 		
 		public static boolean isImplicitCanonicalConstructor(AbstractMethodDeclaration method, Object parameter) {
 			return (method.bits & IsCanonicalConstructor) != 0 && (method.bits & IsImplicit) != 0;
+		}
+		
+		public static boolean isRecordComponent(FieldDeclaration field, Object parameter) {
+			return (field.modifiers & AccRecord) != 0;
 		}
 		
 		public static StringBuffer returnStringBuffer(Object p1, StringBuffer buffer) {

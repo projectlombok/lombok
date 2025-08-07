@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -354,7 +355,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		case TYPE:
 			return buildType((TypeDeclaration) node);
 		case FIELD:
-			return buildField((FieldDeclaration) node, null);
+			return buildField((FieldDeclaration) node);
 		case INITIALIZER:
 			return buildInitializer((Initializer) node);
 		case METHOD:
@@ -393,17 +394,38 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	private EclipseNode buildType(TypeDeclaration type) {
 		if (setAndGetAsHandled(type)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
-		childNodes.addAll(buildFields(type.fields, getRecordFieldAnnotations(type)));
+		childNodes.addAll(buildRecordComponents(getRecordComponents(type)));
+		childNodes.addAll(buildFields(type.fields));
 		childNodes.addAll(buildTypes(type.memberTypes));
 		childNodes.addAll(buildMethods(type.methods));
 		childNodes.addAll(buildAnnotations(type.annotations, false));
 		return putInMap(new EclipseNode(this, type, childNodes, Kind.TYPE));
 	}
 	
-	private Collection<EclipseNode> buildFields(FieldDeclaration[] children, Annotation[][] annotations) {
+	private Collection<EclipseNode> buildRecordComponents(AbstractVariableDeclaration[] children) {
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		if (children != null) for (int i = 0; i < children.length; i++) {
-			addIfNotNull(childNodes, buildField(children[i], annotations[i]));
+			addIfNotNull(childNodes, buildRecordComponent(children[i]));
+		}
+		return childNodes;
+	}
+	
+	private EclipseNode buildRecordComponent(AbstractVariableDeclaration field) {
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		addIfNotNull(childNodes, buildTypeUse(field.type));
+		addIfNotNull(childNodes, buildStatement(field.initialization));
+		childNodes.addAll(buildAnnotations(field.annotations, true));
+		FieldDeclaration fieldDeclaration = new FieldDeclaration(field.name, field.sourceStart, field.sourceEnd);
+		fieldDeclaration.type = field.type;
+		fieldDeclaration.modifiers = field.modifiers | Eclipse.AccRecord;
+		fieldDeclaration.annotations = field.annotations;
+		return putInMap(new EclipseNode(this, fieldDeclaration, childNodes, Kind.FIELD));
+	}
+
+	private Collection<EclipseNode> buildFields(FieldDeclaration[] children) {
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		if (children != null) for (int i = 0; i < children.length; i++) {
+			addIfNotNull(childNodes, buildField(children[i]));
 		}
 		return childNodes;
 	}
@@ -414,13 +436,14 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		return list;
 	}
 	
-	private EclipseNode buildField(FieldDeclaration field, Annotation[] annotations) {
+	private EclipseNode buildField(FieldDeclaration field) {
 		if (field instanceof Initializer) return buildInitializer((Initializer) field);
 		if (setAndGetAsHandled(field)) return null;
+		if (isRecordField(field)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		addIfNotNull(childNodes, buildTypeUse(field.type));
 		addIfNotNull(childNodes, buildStatement(field.initialization));
-		childNodes.addAll(buildAnnotations(annotations != null ? annotations : field.annotations, true));
+		childNodes.addAll(buildAnnotations(field.annotations, true));
 		return putInMap(new EclipseNode(this, field, childNodes, Kind.FIELD));
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 The Project Lombok Authors.
+ * Copyright (C) 2022-2025 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,7 @@ public class DownloadEclipseDependencies {
 		String updateSiteUrl = args[2];
 		boolean resolveDependencies = Boolean.parseBoolean(args[3]);
 		List<String> bundles = Arrays.asList(Arrays.copyOfRange(args, 4, args.length));
+		boolean isCi = "true".equalsIgnoreCase(System.getenv("CI"));
 		
 		UpdateSite updateSite = new UpdateSite();
 		updateSite.read(updateSiteUrl);
@@ -69,14 +70,16 @@ public class DownloadEclipseDependencies {
 			// Download artifact
 			downloadFile(artifact, pluginSource, pluginTarget);
 			
-			// Download artifact source
-			int index = artifact.lastIndexOf("_");
-			String source = artifact.substring(0, index) + ".source" + artifact.substring(index);
-			try {
-				downloadFile(source, pluginSource, pluginTarget);
-			} catch (Exception e) {
-				// It's just the source; sometimes these aren't present (specifically, `org.eclipse.swt` doesn't currently appear to have the sources, at least not using the `_sources` naming scheme). Don't fail, just skip them.
-				System.out.println("[failed]");
+			// Download artifact source for local development
+			if (!isCi) {
+				int index = artifact.lastIndexOf("_");
+				String source = artifact.substring(0, index) + ".source" + artifact.substring(index);
+				try {
+					downloadFile(source, pluginSource, pluginTarget);
+				} catch (Exception e) {
+					// It's just the source; sometimes these aren't present (specifically, `org.eclipse.swt` doesn't currently appear to have the sources, at least not using the `_sources` naming scheme). Don't fail, just skip them.
+					System.out.println("[failed]");
+				}
 			}
 		}
 		
