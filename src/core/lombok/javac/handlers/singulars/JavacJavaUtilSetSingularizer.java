@@ -35,11 +35,11 @@ import com.sun.tools.javac.util.Name;
 @Provides(JavacSingularizer.class)
 public class JavacJavaUtilSetSingularizer extends JavacJavaUtilListSetSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of("java.util.Set", "java.util.SortedSet", "java.util.NavigableSet");
+		return LombokImmutableList.of("java.util.Set", "java.util.SortedSet", "java.util.NavigableSet", "java.util.SequencedSet");
 	}
 	
 	@Override protected String getEmptyMaker(String target) {
-		if (target.endsWith("SortedSet")) return "java.util.Collections.emptySortedSet";
+		if (target.endsWith("SortedSet") || target.endsWith("SequencedSet")) return "java.util.Collections.emptySortedSet";
 		if (target.endsWith("NavigableSet")) return "java.util.Collections.emptyNavigableSet";
 		return "java.util.Collections.emptySet";
 	}
@@ -49,6 +49,8 @@ public class JavacJavaUtilSetSingularizer extends JavacJavaUtilListSetSingulariz
 		
 		if (data.getTargetFqn().equals("java.util.Set")) {
 			statements.appendList(createJavaUtilSetMapInitialCapacitySwitchStatements(maker, data, builderType, false, "emptySet", "singleton", "LinkedHashSet", source, builderVariable));
+		} else if (data.getTargetFqn().equals("java.util.SequencedSet")) {
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, false, true, false, true, "LinkedHashSet", source, builderVariable));
 		} else {
 			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, false, true, false, true, "TreeSet", source, builderVariable));
 		}
