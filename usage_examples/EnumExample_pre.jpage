@@ -1,0 +1,8 @@
+@lombok.Enum
+enum MyEnum {
+    int value;
+    String name;
+    
+    ONE(1,"one"),
+    TWO(2,"two");
+}
