@@ -27,6 +27,7 @@ import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.lang.model.element.Modifier;
 
@@ -505,8 +506,15 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists("toString", job.builderType, 0) == MemberExistsResult.NOT_EXISTS) {
+			java.util.List<String> oldExcludes = findOldToStringExcludes(job.parentType);
 			java.util.List<Included<JavacNode, ToString.Include>> fieldNodes = new ArrayList<Included<JavacNode, ToString.Include>>();
 			for (BuilderFieldData bfd : job.builderFields) {
+				if (hasAnnotation(ToString.Exclude.class, bfd.originalFieldNode)) {
+					continue;
+				}
+				if (oldExcludes.contains(bfd.originalFieldNode.getName())) {
+					continue;
+				}
 				for (JavacNode f : bfd.createdFields) {
 					fieldNodes.add(new Included<JavacNode, ToString.Include>(f, null, true, false));
 				}
@@ -1019,5 +1027,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		return null;
+	}
+
+	private java.util.List<String> findOldToStringExcludes(JavacNode parentType) {
+		JavacNode toStringAnnotationNode = findAnnotation(ToString.class, parentType);
+		if (toStringAnnotationNode == null) return Collections.emptyList();
+		
+		AnnotationValues<ToString> toStringAnnotation = createAnnotation(ToString.class, toStringAnnotationNode);
+		return toStringAnnotation.getAsStringList("exclude");
 	}
 }
