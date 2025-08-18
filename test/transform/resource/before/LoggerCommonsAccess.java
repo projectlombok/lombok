@@ -1,26 +1,26 @@
 import lombok.AccessLevel;
 import lombok.extern.apachecommons.CommonsLog;
 
-@CommonsLog(access=AccessLevel.PUBLIC)
+@CommonsLog(access = AccessLevel.PUBLIC)
 class LoggerCommonsAccessPublic {
 }
 
-@CommonsLog(access=AccessLevel.MODULE)
+@CommonsLog(access = AccessLevel.MODULE)
 class LoggerCommonsAccessModule {
 }
 
-@CommonsLog(access=AccessLevel.PROTECTED)
+@CommonsLog(access = AccessLevel.PROTECTED)
 class LoggerCommonsAccessProtected {
 }
 
-@CommonsLog(access=AccessLevel.PACKAGE)
+@CommonsLog(access = AccessLevel.PACKAGE)
 class LoggerCommonsAccessPackage {
 }
 
-@CommonsLog(access=AccessLevel.PRIVATE)
+@CommonsLog(access = AccessLevel.PRIVATE)
 class LoggerCommonsAccessPrivate {
 }
 
-@CommonsLog(access=AccessLevel.NONE)
+@CommonsLog(access = AccessLevel.NONE)
 class LoggerCommonsAccessNone {
 }
