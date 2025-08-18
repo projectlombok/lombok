@@ -26,6 +26,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.AccessLevel;
+
 /**
  * Causes lombok to generate a logger field.
  * <p>
@@ -61,6 +63,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Slf4j {
+	/**
+	 * If you want your Logger to be non-private, you can specify an alternate access level here.
+	 * 
+	 * @return The constructed Logger method will be generated with this access modifier.
+	 */
+	AccessLevel access() default AccessLevel.PRIVATE;
+	
 	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
 }
