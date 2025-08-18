@@ -66,6 +66,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface CustomLog {
 	/**
+	 * If you want your Logger to be non-private, you can specify an alternate access level here.
+	 * 
+	 * @return The constructed Logger method will be generated with this access modifier.
+	 */
+	AccessLevel access() default AccessLevel.PRIVATE;
+	
+	/**
 	 * 
 	 * Sets a custom topic/category. Note that this requires you to specify a parameter configuration for your custom logger that includes {@code TOPIC}.
 	 * 
