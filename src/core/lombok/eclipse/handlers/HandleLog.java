@@ -100,6 +100,7 @@ public class HandleLog {
 			Expression loggerTopic = (Expression) annotation.getActualExpression("topic");
 			
 			if (valueGuess instanceof String && ((String) valueGuess).trim().isEmpty()) loggerTopic = null;
+			
 			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
 				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");
 				loggerTopic = null;
@@ -108,6 +109,9 @@ public class HandleLog {
 				annotationNode.addError(framework.getAnnotationAsString() + " requires a topic.");
 				loggerTopic = new StringLiteral(new char[]{}, 0, 0, 0);
 			}
+			
+			if (access == AccessLevel.NONE)
+				break;
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			FieldDeclaration fieldDeclaration = createField(framework, access, source, loggingType, logFieldName.getName(), useStatic, loggerTopic);
@@ -138,7 +142,7 @@ public class HandleLog {
 		switch (level) {
 			case PUBLIC: return Flags.PUBLIC; 
 			case PROTECTED: return Flags.PROTECTED;
-			case PRIVATE: return Flags.PUBLIC;
+			case PRIVATE: return Flags.PRIVATE;
 			default: return 0;
 		}
 	}
