@@ -24,3 +24,11 @@ class LoggerCustomAccessPrivate {
 @CustomLog(access=AccessLevel.NONE)
 class LoggerCustomAccessNone {
 }
+class MyLoggerFactory {
+	static MyLogger create(Class<?> clazz) {
+		return null;
+	}
+}
+class MyLogger {
+}
+

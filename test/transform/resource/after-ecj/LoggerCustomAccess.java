@@ -47,3 +47,17 @@ import lombok.CustomLog;
     super();
   }
 }
+class MyLoggerFactory {
+  MyLoggerFactory() {
+    super();
+  }
+  static MyLogger create(Class<?> clazz) {
+    return null;
+  }
+}
+class MyLogger {
+  MyLogger() {
+    super();
+  }
+}
+
