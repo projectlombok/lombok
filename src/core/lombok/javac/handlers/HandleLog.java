@@ -117,14 +117,6 @@ public class HandleLog {
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	private static int toFlags(AccessLevel level) {
-		switch (level) {
-			case PUBLIC: return Flags.PUBLIC; 
-			case PROTECTED: return Flags.PROTECTED;
-			case PRIVATE: return Flags.PRIVATE;
-			default: return 0;
-		}
-	}
 	
 	private static boolean createField(LoggingFramework framework, AccessLevel access, JavacNode typeNode, JCFieldAccess loggingType, JavacNode source, String logFieldName, boolean useStatic, JCExpression loggerTopic) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
@@ -139,7 +131,7 @@ public class HandleLog {
 		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, List.<JCExpression>from(factoryParameters));
 		
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
-			maker.Modifiers(toFlags(access) | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
+			maker.Modifiers(toJavacModifier(access) | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
 			typeNode.toName(logFieldName), loggerType, factoryMethodCall), source);
 		
 		if (isRecord(typeNode) && Javac.getJavaCompilerVersion() < 16) {

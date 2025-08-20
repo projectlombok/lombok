@@ -39,8 +39,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 
-import com.sun.tools.javac.code.Flags;
-
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
@@ -138,15 +136,6 @@ public class HandleLog {
 		return result;
 	}
 	
-	private static int toFlags(AccessLevel level) {
-		switch (level) {
-			case PUBLIC: return Flags.PUBLIC; 
-			case PROTECTED: return Flags.PROTECTED;
-			case PRIVATE: return Flags.PRIVATE;
-			default: return 0;
-		}
-	}
-	
 	private static FieldDeclaration createField(LoggingFramework framework, AccessLevel access, Annotation source, ClassLiteralAccess loggingType, String logFieldName, boolean useStatic, Expression loggerTopic) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
@@ -155,7 +144,7 @@ public class HandleLog {
 		FieldDeclaration fieldDecl = new FieldDeclaration(logFieldName.toCharArray(), 0, -1);
 		setGeneratedBy(fieldDecl, source);
 		fieldDecl.declarationSourceEnd = -1;
-		fieldDecl.modifiers = toFlags(access) | (useStatic ? Modifier.STATIC : 0) | Modifier.FINAL;
+		fieldDecl.modifiers = toEclipseModifier(access) | (useStatic ? Modifier.STATIC : 0) | Modifier.FINAL;
 		
 		LogDeclaration logDeclaration = framework.getDeclaration();
 		fieldDecl.type = createTypeReference(logDeclaration.getLoggerType().getName(), source);
