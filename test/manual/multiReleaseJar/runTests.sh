@@ -5,9 +5,10 @@ mkdir -p out/javac
 
 # We cannot use the link because javac can infer the module name
 JAR=$(realpath ../../../lib/test/org.jetbrains-annotations.jar)
+LOMBOK_JAR=$(realpath ../../../dist/lombok.jar)
 
-javac --processor-path ../../../dist/lombok.jar -p ../../../dist/lombok.jar:$JAR -d out/javac src/module-info.java src/pkg/MultiReleaseJarTest.java
+javac --processor-path $LOMBOK_JAR -p $LOMBOK_JAR:$JAR -d out/javac src/module-info.java src/pkg/MultiReleaseJarTest.java
 
 echo Now we try to delombok and see if it works as designed.
 
-java -jar ../../../dist/lombok.jar delombok --module-path $JAR -d out/delombok src
+java -jar $LOMBOK_JAR delombok --module-path $JAR -d out/delombok src
