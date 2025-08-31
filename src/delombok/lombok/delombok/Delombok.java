@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -208,17 +209,15 @@ public class Delombok {
 		return out.toString();
 	}
 	
+	private static final Pattern JAR_PATTERN = Pattern.compile("^(?:jar:)?(?:file:)?(.*[.]jar)![/].*$");
+	
 	static String getPathOfSelf() {
-		String url = Delombok.class.getResource("Delombok.class").toString();
-		if (url.endsWith("lombok/delombok/Delombok.class")) {
-			url = urlDecode(url.substring(0, url.length() - "lombok/delombok/Delombok.class".length()));
-		} else if (url.endsWith("lombok/delombok/Delombok.SCL.lombok")) {
-			url = urlDecode(url.substring(0, url.length() - "lombok/delombok/Delombok.SCL.lombok".length()));
-		} else {
-			return null;
+		String url = urlDecode(Delombok.class.getResource("Delombok.class").toString());
+		
+		Matcher matcher = JAR_PATTERN.matcher(url);
+		if (matcher.matches()) {
+			return matcher.group(1);
 		}
-		if (url.startsWith("jar:file:") && url.endsWith("!/")) return url.substring(9, url.length() - 2);
-		if (url.startsWith("file:")) return url.substring(5);
 		return null;
 	}
 	

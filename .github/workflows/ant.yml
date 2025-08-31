@@ -204,9 +204,6 @@ jobs:
           restore-keys: |
             ivy-
 
-      - name: Download dependencies
-        run: ant -noinput deps
-
       - uses: actions/download-artifact@v4
         with:
           name: lombok.jar
