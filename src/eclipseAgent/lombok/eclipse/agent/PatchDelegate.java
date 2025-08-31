@@ -983,15 +983,17 @@ public class PatchDelegate {
 	
 	private static Set<String> findAlreadyImplementedMethods(TypeDeclaration decl) {
 		Set<String> sigs = new HashSet<String>();
-		for (AbstractMethodDeclaration md : decl.methods) {
-			if (md.isStatic()) continue;
-			if ((md.modifiers & ClassFileConstants.AccBridge) != 0) continue;
-			if (md.isConstructor()) continue;
-			if ((md.modifiers & ExtraCompilerModifiers.AccDefaultAbstract) != 0) continue;
-			if ((md.modifiers & ClassFileConstants.AccPublic) == 0) continue;
-			if ((md.modifiers & ClassFileConstants.AccSynthetic) != 0) continue;
-			
-			sigs.add(printSig(md, decl.scope));
+		if (decl.methods != null) {
+			for (AbstractMethodDeclaration md : decl.methods) {
+				if (md.isStatic()) continue;
+				if ((md.modifiers & ClassFileConstants.AccBridge) != 0) continue;
+				if (md.isConstructor()) continue;
+				if ((md.modifiers & ExtraCompilerModifiers.AccDefaultAbstract) != 0) continue;
+				if ((md.modifiers & ClassFileConstants.AccPublic) == 0) continue;
+				if ((md.modifiers & ClassFileConstants.AccSynthetic) != 0) continue;
+				
+				sigs.add(printSig(md, decl.scope));
+			}
 		}
 		return sigs;
 	}
