@@ -184,7 +184,7 @@ jobs:
         dir: [compileTests, multiReleaseJar, moduleBasedMultiProject]
         include:
           - jdk: 8
-            goal: compileTests
+            dir: compileTests
       fail-fast: false
     
     steps:
