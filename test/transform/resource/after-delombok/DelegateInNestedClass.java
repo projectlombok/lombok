@@ -5,6 +5,7 @@ class DelegateInNestedClass {
 			private final java.lang.Runnable field = null;
 
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			public void run() {
 				this.field.run();
 			}
@@ -15,6 +16,7 @@ class DelegateInNestedClass {
 		Runnable r = new Runnable() {
 			private final java.lang.Runnable field = null;
 			@java.lang.SuppressWarnings("all")
+			@lombok.Generated
 			public void run() {
 				this.field.run();
 			}
@@ -26,6 +28,7 @@ class DelegateInNestedClass {
 		private final java.lang.Runnable field = null;
 
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public void run() {
 			this.field.run();
 		}
@@ -36,6 +39,7 @@ class DelegateInNestedClass {
 		private final java.lang.Runnable field = null;
 
 		@java.lang.SuppressWarnings("all")
+		@lombok.Generated
 		public void run() {
 			this.field.run();
 		}
