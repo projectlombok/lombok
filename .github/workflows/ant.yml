@@ -180,8 +180,11 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [8, 11, 17, 21, 25]
+        jdk: [11, 17, 21, 25]
         dir: [compileTests, multiReleaseJar, moduleBasedMultiProject]
+        include:
+          - jdk: 8
+            goal: compileTests
       fail-fast: false
     
     steps:
@@ -203,6 +206,9 @@ jobs:
           key: ivy-${{ hashFiles('**/ivy.xml') }}
           restore-keys: |
             ivy-
+
+      - name: Download dependencies
+        run: ant -noinput deps
 
       - uses: actions/download-artifact@v4
         with:
