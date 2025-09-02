@@ -32,6 +32,9 @@ lombok.copyableAnnotations += copy1
 # BASE/d1/d11/lombok.config (stopped bubbling):
 #    7: lombok.copyableAnnotations += copy1
 
+# Generate some style of null annotation for generated code where this is relevant. (default: none).
+clear lombok.addNullAnnotations
+
 
 Configuration for:
 - BASE/d1/d11/d111
@@ -101,6 +104,9 @@ lombok.copyableAnnotations += copy2
 # BASE/d1/d11/d111/lombok.config:
 #    5: lombok.copyableAnnotations += copy2
 
+# Generate some style of null annotation for generated code where this is relevant. (default: none).
+clear lombok.addNullAnnotations
+
 
 Configuration for 'BASE/d1/d12'.
 
@@ -129,3 +135,38 @@ clear lombok.log.fieldName
 
 # Copy these annotations to getters, setters, with methods, builder-setters, etc.
 clear lombok.copyableAnnotations
+
+# Generate some style of null annotation for generated code where this is relevant. (default: none).
+clear lombok.addNullAnnotations
+
+
+Configuration for 'BASE/features/annotations'.
+
+# Emit a warning or error if @Accessors is used.
+clear lombok.accessors.flagUsage
+
+# Generate setters that return 'this' instead of 'void' (default: false).
+clear lombok.accessors.chain
+
+# Strip this field prefix, like 'f' or 'm_', from the names of generated getters, setters, and with-ers.
+clear lombok.accessors.prefix
+
+# Generate @javax.annotation.Generated on all generated code (default: false). Deprecated, use 'lombok.addJavaxGeneratedAnnotation' instead.
+clear lombok.addGeneratedAnnotation
+
+# Generate @javax.annotation.Generated on all generated code (default: follow lombok.addGeneratedAnnotation).
+clear lombok.addJavaxGeneratedAnnotation
+
+# Generate @ConstructorProperties for generated constructors (default: false).
+clear lombok.anyConstructor.addConstructorProperties
+
+# Use this name for the generated logger fields (default: 'log').
+clear lombok.log.fieldName
+
+# Copy these annotations to getters, setters, with methods, builder-setters, etc.
+clear lombok.copyableAnnotations
+
+# Generate some style of null annotation for generated code where this is relevant. (default: none).
+lombok.addNullAnnotations = jspecify
+# BASE/features/annotations/lombok.config (stopped bubbling):
+#    3: lombok.addNullAnnotations = jspecify

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2023 The Project Lombok Authors.
+ * Copyright (C) 2020-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -155,5 +155,9 @@ public final class NullAnnotationLibrary implements ConfigurationValueType {
 		}
 		if (atStart) throw new IllegalArgumentException(MSG + fqn);
 		return fqn;
+	}
+	
+	@Override public String toString() {
+		return key;
 	}
 }

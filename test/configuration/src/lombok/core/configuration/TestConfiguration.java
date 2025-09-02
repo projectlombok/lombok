@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2020 The Project Lombok Authors.
+ * Copyright (C) 2014-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,12 +40,12 @@ public class TestConfiguration {
 	public void testDisplayVerbose() throws Exception {
 		
 		@SuppressWarnings(value = {"all", "unchecked", "deprecation"})
-		Collection<ConfigurationKey<?>> keys = Arrays.asList(ACCESSORS_FLAG_USAGE, ACCESSORS_CHAIN, ACCESSORS_PREFIX, ADD_GENERATED_ANNOTATIONS, ADD_JAVAX_GENERATED_ANNOTATIONS, ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES, LOG_ANY_FIELD_NAME, COPYABLE_ANNOTATIONS);
+		Collection<ConfigurationKey<?>> keys = Arrays.asList(ACCESSORS_FLAG_USAGE, ACCESSORS_CHAIN, ACCESSORS_PREFIX, ADD_GENERATED_ANNOTATIONS, ADD_JAVAX_GENERATED_ANNOTATIONS, ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES, LOG_ANY_FIELD_NAME, COPYABLE_ANNOTATIONS, ADD_NULL_ANNOTATIONS);
 		
 		String baseName = "test/configuration/resource/configurationRoot/";
 		File directory = new File(baseName);
 		String normalizedName = new File(directory.getAbsoluteFile().toURI().normalize()).toString().replace('\\', '/') + "/";
-		Collection<String> paths = Arrays.asList(normalizedName + "d1/d11", normalizedName + "d1/d12", normalizedName + "d1/d11/d111", normalizedName + "d1/d11/d111/f1.txt");
+		Collection<String> paths = Arrays.asList(normalizedName + "d1/d11", normalizedName + "d1/d12", normalizedName + "d1/d11/d111", normalizedName + "d1/d11/d111/f1.txt", normalizedName + "features/annotations");
 		
 		ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
 		ByteArrayOutputStream rawErr = new ByteArrayOutputStream();
