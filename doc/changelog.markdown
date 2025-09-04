@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.41 "Edgy Guinea Pig"
+* No changes since v1.18.40 yet.
+
 ### v1.18.40 (September 4th, 2025)
 * PLATFORM: JDK25 support added [#3859](https://github.com/projectlombok/lombok/issues/3859).
 * BUGFIX: Recent versions of eclipse (or the eclipse-based java lang server for VSCode) caused `java.lang.IllegalArgumentException: Document does not match the AST`. [Issue #3886](https://github.com/projectlombok/lombok/issues/3886).
