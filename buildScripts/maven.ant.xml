@@ -50,7 +50,7 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 				<fileset dir="test/core/src" />
 			</jar>
 			
-			<copy tofile="build/pom.xml" overwrite="true" file="doc/maven-pom.xml">
+			<copy tofile="build/lombok-@{version-name}.pom" overwrite="true" file="doc/maven-pom.xml">
 				<filterchain>
 					<replacetokens>
 						<token key="VERSION" value="@{version-name}" />
@@ -82,14 +82,15 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 		</fail>
 		
 		<delete quiet="true" dir="build/maven-publish" />
-		<mkdir dir="build/maven-publish" />
-		<copy todir="build/maven-publish">
+		<property name="maven.publish.projdir" location="build/maven-publish/org/projectlombok/lombok/${lombok.version}" />
+		<mkdir dir="${maven.publish.projdir}" />
+		<copy todir="${maven.publish.projdir}">
 			<fileset dir="dist">
 				<include name="lombok-${lombok.version}.jar" />
 				<include name="lombok-${lombok.version}-sources.jar" />
 				<include name="lombok-${lombok.version}-javadoc.jar" />
 			</fileset>
-			<fileset dir="build" includes="pom.xml" />
+			<fileset dir="build" includes="lombok-${lombok.version}.pom" />
 		</copy>
 		
 		<apply executable="${exe.gpg}" failifexecutionfails="false" resultproperty="gpg.result">
@@ -98,7 +99,7 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 			<arg value="--yes" />
 			<arg value="--homedir" />
 			<arg value="${gpg.keyrings}" />
-			<fileset dir="build/maven-publish" />
+			<fileset dir="${maven.publish.projdir}" />
 		</apply>
 		
 		<fail>
@@ -108,18 +109,26 @@ This buildfile is part of projectlombok.org. It makes maven-compatible repositor
 			</condition>
 		</fail>
 		
-		<jar destfile="build/maven-publish/lombok-bundle.jar">
-			<fileset dir="build/maven-publish" />
-		</jar>
+		<checksum algorithm="SHA-1" fileext=".sha1">
+			<fileset dir="${maven.publish.projdir}">
+				<include name="*.jar" />
+				<include name="*.pom" />
+			</fileset>
+		</checksum>
 		
-		<exec executable="${exe.curl}" failifexecutionfails="false" resultproperty="curl.result">
-			<arg value="--header" />
-			<arg value="Authorization: Bearer ${mavencentral.authToken}" />
-			<arg value="-F" />
-			<arg value="file=@build/maven-publish/lombok-bundle.jar;type=application/java-archive" />
-			<arg value="https://central.sonatype.org/api/v1/publisher/upload" />
-		</exec>
-		<echo>The artifact has been published to staging. Now go to https://central.sonatype.org/, log in, then doublecheck if all is well and 'release' it.</echo>
+		<checksum algorithm="MD5" fileext=".md5">
+			<fileset dir="${maven.publish.projdir}">
+				<include name="*.jar" />
+				<include name="*.pom" />
+			</fileset>
+		</checksum>
+		
+		<property name="maven.publish.bundlezip" location="build/maven-publish/lombok-maven-deploy-bundle-${lombok.version}.zip" />
+		<zip destfile="${maven.publish.bundlezip}">
+			<fileset dir="build/maven-publish" />
+		</zip>
+		
+		<echo>An artifact ready to upload to central.sonatype.com is available at: ${maven.publish.bundlezip}</echo>
 	</target>
 	
 	<target name="maven.edge" depends="version, dist, javadoc.build" description="Create a maven repo for the current snapshot into a build dir. The intent is for you to put that on a server someplace. Will invoke your local mvn installation.">
