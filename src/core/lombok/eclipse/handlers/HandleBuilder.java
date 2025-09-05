@@ -565,8 +565,15 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists("toString", job.builderType, 0) == MemberExistsResult.NOT_EXISTS) {
+			List<String> oldExcludes = findOldToStringExcludes(job.parentType);
 			List<Included<EclipseNode, ToString.Include>> fieldNodes = new ArrayList<Included<EclipseNode, ToString.Include>>();
 			for (BuilderFieldData bfd : job.builderFields) {
+				if (bfd.originalFieldNode.hasAnnotation(ToString.Exclude.class)) {
+					continue;
+				}
+				if (oldExcludes.contains(bfd.originalFieldNode.getName())) {
+					continue;
+				}
 				for (EclipseNode f : bfd.createdFields) {
 					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true, false));
 				}
@@ -1136,5 +1143,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		return null;
+	}
+
+	private List<String> findOldToStringExcludes(EclipseNode parentType) {
+		EclipseNode toStringAnnotationNode = findAnnotation(ToString.class, parentType);
+		if (toStringAnnotationNode == null) return Collections.emptyList();
+		
+		AnnotationValues<ToString> toStringAnnotation = createAnnotation(ToString.class, toStringAnnotationNode);
+		return toStringAnnotation.getAsStringList("exclude");
 	}
 }
