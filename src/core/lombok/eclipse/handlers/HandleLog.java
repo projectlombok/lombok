@@ -54,7 +54,7 @@ public class HandleLog {
 	private static final IdentifierName LOG = IdentifierName.valueOf("log");
 	
 	private HandleLog() {
-		throw new UnsupportedOperationException();
+		throw new AssertionError();
 	}
 	
 	public static void processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode) {
