@@ -1142,7 +1142,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	/**
 	 * Checks if there is a manual constructor in the given type with a single parameter (builder).
 	 */
-private boolean constructorExists(JavacNode type, String builderClassName) {
+    private boolean constructorExists(JavacNode type, String builderClassName) {
         if (type != null && type.get() instanceof JCClassDecl) {
             for (JCTree def : ((JCClassDecl) type.get()).defs) {
                 if (def instanceof JCMethodDecl) {
