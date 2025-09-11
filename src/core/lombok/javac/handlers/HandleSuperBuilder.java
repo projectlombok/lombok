@@ -1142,27 +1142,32 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	/**
 	 * Checks if there is a manual constructor in the given type with a single parameter (builder).
 	 */
-	private boolean constructorExists(JavacNode type, String builderClassName) {
-		if (type != null && type.get() instanceof JCClassDecl) {
-			for (JCTree def : ((JCClassDecl)type.get()).defs) {
-				if (def instanceof JCMethodDecl) {
-					JCMethodDecl md = (JCMethodDecl) def;
-					String name = md.name.toString();
-					boolean matches = name.equals("<init>");
-					if (isTolerate(type, md)) continue;
-					if (matches && md.params != null && md.params.length() == 1) {
-						// Cannot use typeMatches() here, because the parameter could be fully-qualified, partially-qualified, or not qualified.
-						// A string-compare of the last part should work. If it's a false-positive, users could still @Tolerate it.
-						String typeName = md.params.get(0).getType().toString();
-						int lastIndexOfDot = typeName.lastIndexOf('.');
-						if (lastIndexOfDot >= 0) {
-							typeName = typeName.substring(lastIndexOfDot + 1);
-						}
-						if ((builderClassName+"<?, ?>").equals(typeName)) return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
+private boolean constructorExists(JavacNode type, String builderClassName) {
+        if (type != null && type.get() instanceof JCClassDecl) {
+            for (JCTree def : ((JCClassDecl) type.get()).defs) {
+                if (def instanceof JCMethodDecl) {
+                    JCMethodDecl md = (JCMethodDecl) def;
+                    if (!md.name.contentEquals("<init>")) continue;
+                    if (isTolerate(type, md)) continue;
+                    if (md.params != null && md.params.length() == 1) {
+                        JCExpression paramType = md.params.get(0).vartype;
+                        if (paramType instanceof JCTypeApply) {
+                            JCTypeApply paramType_ = (JCTypeApply) paramType;
+                            if (paramType_.clazz instanceof JCIdent && ((JCIdent) paramType_.clazz).name.contentEquals(builderClassName)) {
+                                List<JCExpression> paramArgs = paramType_.arguments;
+                                if (paramArgs.size() >= 2) {
+                                    JCExpression argLast = paramArgs.get(paramArgs.size() - 1);
+                                    JCExpression argLast2 = paramArgs.get(paramArgs.size() - 2);
+                                    if (argLast instanceof JCWildcard && argLast2 instanceof JCWildcard) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }
