@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -132,6 +132,10 @@ public class DocCommentIntegrator {
 			((DocCommentTable) map_).putComment(node, new Comment() {
 				@Override public String getText() {
 					return docCommentContent_;
+				}
+				
+				@Override public Comment stripIndent() {
+					return this;
 				}
 				
 				@Override public DiagnosticPosition getPos() {

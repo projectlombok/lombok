@@ -348,7 +348,7 @@ public class Javac {
 		public static boolean validateJavadoc(Object dc, JCTree node) {
 			DocCommentTable dct = (DocCommentTable) dc;
 			Comment javadoc = dct.getComment(node);
-			return javadoc == null || javadoc.getText() == null || javadoc.getSourcePos(0) >= 0;
+			return javadoc == null || javadoc.getText() == null || (javadoc.getSourcePos(0) >= 0 && hasParseableDocComment(dct, node));
 		}
 		
 		static void setJavadoc(Object dc, JCTree node, String javadoc) {
@@ -366,10 +366,19 @@ public class Javac {
 			}
 		}
 		
+		private static boolean hasParseableDocComment(Object dc, JCTree node) {
+			DocCommentTable dct = (DocCommentTable) dc;
+			return Permit.invokeSneaky(Permit.permissiveGetMethod(DocCommentTable.class, "getCommentTree", JCTree.class), dct, node) != null;
+		}
+		
 		private static Comment createJavadocComment(final String text, final JCTree field) {
 			return new Comment() {
 				@Override public String getText() {
 					return text;
+				}
+				
+				@Override public Comment stripIndent() {
+					return this;
 				}
 				
 				@Override public int getSourcePos(int index) {
@@ -383,7 +392,7 @@ public class Javac {
 				@Override public boolean isDeprecated() {
 					return text.contains("@deprecated") && field instanceof JCVariableDecl && isFieldDeprecated(field);
 				}
-
+				
 				@Override public DiagnosticPosition getPos() {
 					return field;
 				}
