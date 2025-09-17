@@ -47,7 +47,7 @@ import lombok.experimental.SuperBuilder;
  * also a {@code @Builder} or a {@code @SuperBuilder}; a warning is emitted
  * otherwise.
  * <p>
- * In particular, the annotation does the following:
+ * In particular, the annotation does the following for {@code @(Super)Builder}</code>:
  * <ul>
  * <li>Configure Jackson to use the builder for deserialization using
  * {@code @JsonDeserialize(builder=Foobar.FoobarBuilder[Impl].class)} on the

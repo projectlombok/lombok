@@ -3,14 +3,26 @@
 <@f.scaffold title="@Jacksonized" logline="Bob, meet Jackson. Lets make sure you become fast friends.">
 	<@f.history>
 		<p>
-			<code>@Jacksonized</code> was introduced as experimental feature in lombok v1.18.14.
+			<code>@Jacksonized</code> was introduced as experimental feature for <code>@Builder</code> and <code>@SuperBuilder</code> in lombok v1.18.14.
+		</p><p>
+			Support for <code>@Accessors</code> was added in lombok v1.18.40.
 		</p>
 	</@f.history>
 	
 	<@f.overview>
 		<p>
-			The <code>@Jacksonized</code> annotation is an add-on annotation for <a href="/features/Builder"><code>@Builder</code></a> and <a href="/features/experimental/SuperBuilder"><code>@SuperBuilder</code></a>.
-			It automatically configures the generated builder class to be used by <a href="https://github.com/FasterXML/jackson">Jackson</a>'s deserialization.
+			The <code>@Jacksonized</code> annotation is an add-on annotation for <a href="/features/Builder"><code>@Builder</code></a>, <a href="/features/experimental/SuperBuilder"><code>@SuperBuilder</code></a>, and <a href="/features/experimental/Accessors"><code>@Accessors</code></a>.
+		</p><p>
+			For <code>@Accessors(fluent = true)</code> on a type, it automatically configures Jackson to use the generated setters and getters for (de-)serialization by inserting <code>@JsonProperty</code> annotations.
+			(Note that <code>@Jacksonized @Accessors</code> on fields are not supported.)<div class="snippet"><div class="java" align="left"><pre>
+@Jacksonized @Accessors(fluent = true)
+@Getter @Setter
+public class AccessorsExample {
+	private int age = 10;
+}
+		</pre></div></div>
+		</p><p>
+			For <code>@Builder</code> and <code>@SuperBuilder</code>, it automatically configures the generated builder class to be used by <a href="https://github.com/FasterXML/jackson">Jackson</a>'s deserialization.
 			It only has an effect if present at a context where there is also a <code>@Builder</code> or a <code>@SuperBuilder</code>; a warning is emitted otherwise.
  		</p><p>
 			Without <code>@Jacksonized</code>, you would have to customize your builder class(es).
@@ -29,7 +41,7 @@ public class JacksonExample {
 	
 	<@f.smallPrint>
  		<p>
-			In particular, the annotation does the following:
+			In particular, the annotation does the following for <code>@(Super)Builder</code>:
 			<ul>
 				<li>
 					Configure Jackson to use the builder for deserialization using <code>@JsonDeserialize(builder=<em>Foobar</em>.<em>Foobar</em>Builder[Impl].class))</code> on the class (where <em>Foobar</em> is the name of the annotated class, and <code>Impl</code> is added for <code>@SuperBuilder</code>).
