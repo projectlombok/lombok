@@ -99,8 +99,7 @@ public class HandleLog {
 				loggerTopic = typeNode.getTreeMaker().Literal("");
 			}
 			
-			if (access == AccessLevel.NONE)
-				break;
+			if (access == AccessLevel.NONE) break;
 			
 			JCFieldAccess loggingType = selfType(typeNode);
 			createField(framework, access, typeNode, loggingType, annotationNode, logFieldName.getName(), useStatic, loggerTopic);

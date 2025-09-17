@@ -108,8 +108,7 @@ public class HandleLog {
 				loggerTopic = new StringLiteral(new char[]{}, 0, 0, 0);
 			}
 			
-			if (access == AccessLevel.NONE)
-				break;
+			if (access == AccessLevel.NONE) break;
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			FieldDeclaration fieldDeclaration = createField(framework, access, source, loggingType, logFieldName.getName(), useStatic, loggerTopic);
