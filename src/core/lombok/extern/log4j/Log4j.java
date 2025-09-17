@@ -65,7 +65,8 @@ import lombok.AccessLevel;
 @Target(ElementType.TYPE)
 public @interface Log4j {
 	/**
-	 * If you want your Logger to be non-private, you can specify an alternate access level here.
+	 * Sets the access level of the generated log field.
+	 * Default: {@code AccessLevel.PRIVATE}.
 	 * 
 	 * @return The constructed Logger method will be generated with this access modifier.
 	 */
