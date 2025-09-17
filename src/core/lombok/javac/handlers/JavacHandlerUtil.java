@@ -997,6 +997,7 @@ public class JavacHandlerUtil {
 	/**
 	 * Turns an {@code AccessLevel} instance into the flag bit used by javac.
 	 */
+	@SuppressWarnings("deprecation") // We have to use MODULE here to make it act according to spec, which is to treat it like `PACKAGE`.
 	public static int toJavacModifier(AccessLevel accessLevel) {
 		switch (accessLevel) {
 		case MODULE:

@@ -1393,6 +1393,7 @@ public class EclipseHandlerUtil {
 	/**
 	 * Turns an {@code AccessLevel} instance into the flag bit used by eclipse.
 	 */
+	@SuppressWarnings("deprecation") // We have to use MODULE here to make it act according to spec, which is to treat it like `PACKAGE`.
 	public static int toEclipseModifier(AccessLevel value) {
 		switch (value) {
 		case MODULE:

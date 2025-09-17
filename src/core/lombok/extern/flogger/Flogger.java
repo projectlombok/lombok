@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Project Lombok Authors.
+ * Copyright (C) 2018-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import lombok.AccessLevel;
 
 /**
  * Causes lombok to generate a logger field.
@@ -60,4 +62,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Flogger {
+	/**
+	 * Sets the access level of the generated log field.
+	 * Default: {@code AccessLevel.PRIVATE}.
+	 * 
+	 * @return The constructed Logger method will be generated with this access modifier.
+	 */
+	AccessLevel access() default AccessLevel.PRIVATE;
 }

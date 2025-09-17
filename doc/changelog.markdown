@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.41 "Edgy Guinea Pig"
+* FEATURE: All the various `@Log` annotations now allow you to change their access level (they still default to `private`). [#2280](https://github.com/projectlombok/lombok/issues/2280). Thanks to new contributor Liam Pace!
 * BUGFIX: Javadoc parsing was broken in Netbeans and ErrorProne for JDK25 [#3940](https://github.com/projectlombok/lombok/issues/3940).
 
 ### v1.18.40 (September 4th, 2025)
