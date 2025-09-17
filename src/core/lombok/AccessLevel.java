@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,24 @@ package lombok;
  * Represents an AccessLevel. Used e.g. to specify the access level for generated methods and fields.
  */
 public enum AccessLevel {
-	PUBLIC, MODULE, PROTECTED, PACKAGE, PRIVATE,
+	/** Represents the {@code public} access level. */
+	PUBLIC,
+	
+	/**
+	 * Acts exactly like {@code PACKAGE} - the package private access level.
+	 * @deprecated This value was created at a time when a module-level access keyword was planned as a way of being prepared for the future. But that's not the direction java went in; a 'module access level' is not likely to ever exist. This enum acts like {@code PACKAGE} in every way.
+	 */
+	@Deprecated MODULE,
+	
+	/** Represents the {@code protected} access level (any code in the same package as well as any subtype). */
+	PROTECTED,
+	
+	/** Represents the default access level: package private. (any code in the same package). */
+	PACKAGE,
+	
+	/** Represents the {@code private} access level. */
+	PRIVATE,
+	
 	/** Represents not generating anything or the complete lack of a method. */
 	NONE;
 }
