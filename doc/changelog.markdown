@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.41 "Edgy Guinea Pig"
-* No changes since v1.18.40 yet.
+* BUGFIX: Javadoc parsing was broken in Netbeans and ErrorProne for JDK25 [#3940](https://github.com/projectlombok/lombok/issues/3940).
 
 ### v1.18.40 (September 4th, 2025)
 * PLATFORM: JDK25 support added [#3859](https://github.com/projectlombok/lombok/issues/3859).
