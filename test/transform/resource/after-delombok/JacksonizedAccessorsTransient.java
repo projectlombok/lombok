@@ -1,5 +1,7 @@
 public class JacksonizedAccessorsTransient {
+	@com.fasterxml.jackson.annotation.JsonIgnore
 	private transient int intValue;
+	@com.fasterxml.jackson.annotation.JsonIgnore
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	public int intValue() {
@@ -8,6 +10,7 @@ public class JacksonizedAccessorsTransient {
 	/**
 	 * @return {@code this}.
 	 */
+	@com.fasterxml.jackson.annotation.JsonIgnore
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	public JacksonizedAccessorsTransient intValue(final int intValue) {
