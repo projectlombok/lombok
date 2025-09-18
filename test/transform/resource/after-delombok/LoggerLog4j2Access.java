@@ -1,3 +1,4 @@
+//version 8:
 import lombok.AccessLevel;
 class LoggerLog4j2AccessPublic {
 	@java.lang.SuppressWarnings("all")
