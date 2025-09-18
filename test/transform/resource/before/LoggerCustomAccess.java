@@ -6,6 +6,7 @@ import lombok.CustomLog;
 class LoggerCustomAccessPublic {
 }
 
+@SuppressWarnings("deprecation")
 @CustomLog(access = AccessLevel.MODULE)
 class LoggerCustomAccessModule {
 }

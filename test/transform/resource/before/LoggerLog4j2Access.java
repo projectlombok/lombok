@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 class LoggerLog4j2AccessPublic {
 }
 
+@SuppressWarnings("deprecation")
 @Log4j2(access = AccessLevel.MODULE)
 class LoggerLog4j2AccessModule {
 }
