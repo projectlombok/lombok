@@ -61,6 +61,24 @@ import lombok.spi.Provides;
 @HandlerPriority(-512) // Above Handle(Super)Builder's level (builders must be already generated), but before all handlers generating getters/setters.
 public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	
+	private static enum JacksonAnnotations {
+		JSON_POJO_BUILDER("com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder"),
+		JSON_DESERIALIZE("com.fasterxml.jackson.databind.annotation.JsonDeserialize"),
+		JSON_PROPERTY("com.fasterxml.jackson.annotation.JsonProperty"),
+		JSON_IGNORE("com.fasterxml.jackson.annotation.JsonIgnore");
+		
+		private final String qualifiedName;
+		private final String[] chainedDots;
+		private JacksonAnnotations(final String qualifiedName) {
+			this.qualifiedName = qualifiedName;
+			this.chainedDots = qualifiedName.split("\\.");
+		}
+		
+		private boolean isAnnotating(JavacNode node) {
+			return hasAnnotation(this.qualifiedName, node);
+		}
+	}
+	
 	@Override public void handle(AnnotationValues<Jacksonized> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.JACKSONIZED_FLAG_USAGE, "@Jacksonized");
 		
@@ -110,12 +128,12 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	}
 	
 	private void createJsonPropertyForField(JavacNode fieldNode, JavacNode annotationNode) {
-		if (hasAnnotation("com.fasterxml.jackson.annotation.JsonProperty", fieldNode)) {
+		if (JacksonAnnotations.JSON_PROPERTY.isAnnotating(fieldNode)) {
 			return;
 		}
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
-		JCExpression jsonPropertyType = chainDots(fieldNode, "com", "fasterxml", "jackson", "annotation", "JsonProperty");
+		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotations.JSON_PROPERTY.chainedDots);
 		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.<JCExpression>of(maker.Literal(fieldNode.getName())));
 		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
 		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
@@ -165,7 +183,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		
 		// Insert @JsonDeserialize on annotated class.
-		if (hasAnnotation("com.fasterxml.jackson.databind.annotation.JsonDeserialize", tdNode)) {
+		if (JacksonAnnotations.JSON_DESERIALIZE.isAnnotating(tdNode)) {
 			annotationNode.addError("@JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.");
 			return;
 		}
@@ -173,18 +191,18 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			annotationNode.addError("@JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.");
 			return;
 		}
-
+		
 		JacksonVersion jacksonVersion = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, JacksonVersion.getDefault());
 		if (jacksonVersion == null || !jacksonVersion.isValid()) {
 			annotationNode.addError("No valid jackson version selected.");
 			return;
 		}
 		if (jacksonVersion.useJackson2()) {
-			JCExpression jsonDeserializeType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonDeserialize");
+			JCExpression jsonDeserializeType = chainDots(annotatedNode, JacksonAnnotations.JSON_DESERIALIZE2.chainedDots);
 			insertJsonDeserializeAnnotation(annotationNode, annotatedNode, tdNode, td, maker, builderClassName, jsonDeserializeType);
 		}
 		if (jacksonVersion.useJackson3()) {
-			JCExpression jsonDeserializeType = chainDots(annotatedNode, "tools", "jackson", "databind", "annotation", "JsonDeserialize");
+			JCExpression jsonDeserializeType = chainDots(annotatedNode, JacksonAnnotations.JSON_DESERIALIZE3.chainedDots);
 			insertJsonDeserializeAnnotation(annotationNode, annotatedNode, tdNode, td, maker, builderClassName, jsonDeserializeType);
 		}
 		
@@ -195,19 +213,19 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			recursiveSetGeneratedBy(anno, annotationNode);
 		}
 		builderClass.mods.annotations = builderClass.mods.annotations.appendList(copiedAnnotations);
-
+		
 		if (jacksonVersion.useJackson2()) {
-			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonPOJOBuilder");
+			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, JacksonAnnotations.JSON_POJO_BUILDER2.chainedDots);
 			insertJsonPojoAnnotation(annotationNode, annotatedNode, setPrefix, buildMethodName, maker, builderClass, jsonPOJOBuilderType);
 		}
 		if (jacksonVersion.useJackson3()) {
-			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "tools", "jackson", "databind", "annotation", "JsonPOJOBuilder");
+			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, JacksonAnnotations.JSON_POJO_BUILDER3.chainedDots);
 			insertJsonPojoAnnotation(annotationNode, annotatedNode, setPrefix, buildMethodName, maker, builderClass, jsonPOJOBuilderType);
 		}
 		// @SuperBuilder? Make it package-private!
 		if (superBuilderAnnotationNode != null) builderClass.mods.flags = builderClass.mods.flags & ~Flags.PRIVATE;
 	}
-
+	
 	// Insert @JsonPOJOBuilder on the builder class.
 	private void insertJsonPojoAnnotation(JavacNode annotationNode, JavacNode annotatedNode, String setPrefix, String buildMethodName, JavacTreeMaker maker, JCClassDecl builderClass, JCExpression jsonPOJOBuilderType) {
 		JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
