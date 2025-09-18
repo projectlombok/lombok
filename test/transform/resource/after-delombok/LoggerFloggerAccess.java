@@ -5,6 +5,7 @@ class LoggerFloggerAccessPublic {
 	public static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
 
 }
+@SuppressWarnings("deprecation")
 class LoggerFloggerAccessModule {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated

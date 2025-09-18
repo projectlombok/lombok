@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
     super();
   }
 }
-@Slf4j(access = AccessLevel.MODULE) class LoggerSlf4jAccessModule {
+@SuppressWarnings("deprecation") @Slf4j(access = AccessLevel.MODULE) class LoggerSlf4jAccessModule {
   static final @java.lang.SuppressWarnings("all") @lombok.Generated org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jAccessModule.class);
   <clinit>() {
   }

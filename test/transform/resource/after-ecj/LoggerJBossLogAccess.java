@@ -9,7 +9,7 @@ import lombok.extern.jbosslog.JBossLog;
     super();
   }
 }
-@JBossLog(access = AccessLevel.MODULE) class LoggerJBossLogAccessModule {
+@SuppressWarnings("deprecation") @JBossLog(access = AccessLevel.MODULE) class LoggerJBossLogAccessModule {
   static final @java.lang.SuppressWarnings("all") @lombok.Generated org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogAccessModule.class);
   <clinit>() {
   }
