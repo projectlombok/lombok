@@ -5,6 +5,7 @@ import lombok.extern.flogger.Flogger;
 class LoggerFloggerAccessPublic {
 }
 
+@SuppressWarnings("deprecation")
 @Flogger(access = AccessLevel.MODULE)
 class LoggerFloggerAccessModule {
 }

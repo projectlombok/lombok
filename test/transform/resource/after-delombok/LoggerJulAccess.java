@@ -5,6 +5,7 @@ class LoggerJulAccessPublic {
 	public static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJulAccessPublic.class.getName());
 
 }
+@SuppressWarnings("deprecation")
 class LoggerJulAccessModule {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated

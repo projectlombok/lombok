@@ -5,6 +5,7 @@ import lombok.extern.slf4j.XSlf4j;
 class LoggerXslf4jAccessPublic {
 }
 
+@SuppressWarnings("deprecation")
 @XSlf4j(access = AccessLevel.MODULE)
 class LoggerXslf4jAccessModule {
 }

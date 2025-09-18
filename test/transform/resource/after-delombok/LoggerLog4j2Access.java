@@ -5,6 +5,7 @@ class LoggerLog4j2AccessPublic {
 	public static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(LoggerLog4j2AccessPublic.class);
 
 }
+@SuppressWarnings("deprecation")
 class LoggerLog4j2AccessModule {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
