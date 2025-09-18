@@ -63,7 +63,8 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	private static enum JacksonAnnotations {
 		JSON_POJO_BUILDER("com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder"),
 		JSON_DESERIALIZE("com.fasterxml.jackson.databind.annotation.JsonDeserialize"),
-		JSON_PROPERTY("com.fasterxml.jackson.annotation.JsonProperty");
+		JSON_PROPERTY("com.fasterxml.jackson.annotation.JsonProperty"),
+		JSON_IGNORE("com.fasterxml.jackson.annotation.JsonIgnore");
 		
 		private final String qualifiedName;
 		private final String[] chainedDots;
@@ -118,11 +119,12 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		
 		// Add @JsonProperty to all non-transient fields. It will be automatically copied to the getter/setters later.
+		// Add @JsonIgnore to all transient fields. It will be automatically copied to the getter/setters later.
 		for (JavacNode javacNode : tdNode.down()) {
-			if (javacNode.getKind() != Kind.FIELD || javacNode.isTransient()) {
-				continue;
+			if (javacNode.getKind() == Kind.FIELD) {
+				if (javacNode.isTransient()) createJsonIgnoreForField(javacNode, annotationNode);
+				else createJsonPropertyForField(javacNode, annotationNode);
 			}
-			createJsonPropertyForField(javacNode, annotationNode);
 		}
 	}
 	
@@ -134,6 +136,19 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		
 		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotations.JSON_PROPERTY.chainedDots);
 		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.<JCExpression>of(maker.Literal(fieldNode.getName())));
+		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
+		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
+		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);
+	}
+	
+	private void createJsonIgnoreForField(JavacNode fieldNode, JavacNode annotationNode) {
+		if (JacksonAnnotations.JSON_IGNORE.isAnnotating(fieldNode)) {
+			return;
+		}
+		JavacTreeMaker maker = fieldNode.getTreeMaker();
+		
+		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotations.JSON_IGNORE.chainedDots);
+		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.<JCExpression>nil());
 		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
 		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
 		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);
