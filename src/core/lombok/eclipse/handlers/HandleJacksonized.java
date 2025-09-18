@@ -187,10 +187,10 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		
 		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
 		for (EclipseNode eclipseNode : tdNode.down()) {
-			if (eclipseNode.getKind() != Kind.FIELD || eclipseNode.isTransient()) {
-				continue;
+			if (eclipseNode.getKind() == Kind.FIELD) {
+				if (eclipseNode.isTransient()) createJsonIgnoreForField(eclipseNode, annotationNode);
+				else createJsonPropertyForField(eclipseNode, annotationNode);
 			}
-			createJsonPropertyForField(eclipseNode, annotationNode);
 		}
 		tdNode.rebuild();
 	}
@@ -202,6 +202,15 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			FieldDeclaration fd = (FieldDeclaration)astNode;
 			StringLiteral fieldName = new StringLiteral(fd.name, 0, 0, 0);
 			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotations.JSON_PROPERTY.annotation, fieldName);
+		}
+	}
+	
+	private void createJsonIgnoreForField(EclipseNode fieldNode, EclipseNode annotationNode) {
+		if (JacksonAnnotations.JSON_IGNORE.isAnnotating(fieldNode)) return;
+		ASTNode astNode = fieldNode.get();
+		if (astNode instanceof FieldDeclaration) {
+			FieldDeclaration fd = (FieldDeclaration)astNode;
+			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotations.JSON_IGNORE.annotation);
 		}
 	}
 	
