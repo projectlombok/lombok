@@ -1,34 +1,34 @@
 import lombok.AccessLevel;
-class LoggerXslf4jAccessPublic {
+class LoggerXSlf4jAccessPublic {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
-	public static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXslf4jAccessPublic.class);
+	public static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXSlf4jAccessPublic.class);
 
 }
 @SuppressWarnings("deprecation")
-class LoggerXslf4jAccessModule {
+class LoggerXSlf4jAccessModule {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
-	static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXslf4jAccessModule.class);
+	static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXSlf4jAccessModule.class);
 
 }
-class LoggerXslf4jAccessProtected {
+class LoggerXSlf4jAccessProtected {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
-	protected static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXslf4jAccessProtected.class);
+	protected static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXSlf4jAccessProtected.class);
 
 }
-class LoggerXslf4jAccessPackage {
+class LoggerXSlf4jAccessPackage {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
-	static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXslf4jAccessPackage.class);
+	static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXSlf4jAccessPackage.class);
 
 }
-class LoggerXslf4jAccessPrivate {
+class LoggerXSlf4jAccessPrivate {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
-	private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXslf4jAccessPrivate.class);
+	private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LoggerXSlf4jAccessPrivate.class);
 
 }
-class LoggerXslf4jAccessNone {
+class LoggerXSlf4jAccessNone {
 }
