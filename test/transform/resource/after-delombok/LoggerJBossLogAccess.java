@@ -5,6 +5,7 @@ class LoggerJBossLogAccessPublic {
 	public static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LoggerJBossLogAccessPublic.class);
 
 }
+@SuppressWarnings("deprecation")
 class LoggerJBossLogAccessModule {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated

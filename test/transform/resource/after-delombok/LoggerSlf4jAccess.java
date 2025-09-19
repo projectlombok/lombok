@@ -5,6 +5,7 @@ class LoggerSlf4jAccessPublic {
 	public static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jAccessPublic.class);
 
 }
+@SuppressWarnings("deprecation")
 class LoggerSlf4jAccessModule {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated

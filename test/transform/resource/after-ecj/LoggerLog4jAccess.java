@@ -9,7 +9,7 @@ import lombok.extern.log4j.Log4j;
     super();
   }
 }
-@Log4j(access = AccessLevel.MODULE) class LoggerLog4jAccessModule {
+@SuppressWarnings("deprecation") @Log4j(access = AccessLevel.MODULE) class LoggerLog4jAccessModule {
   static final @java.lang.SuppressWarnings("all") @lombok.Generated org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LoggerLog4jAccessModule.class);
   <clinit>() {
   }

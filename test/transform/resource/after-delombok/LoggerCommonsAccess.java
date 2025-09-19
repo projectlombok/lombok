@@ -5,6 +5,7 @@ class LoggerCommonsAccessPublic {
 	public static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommonsAccessPublic.class);
 
 }
+@SuppressWarnings("deprecation")
 class LoggerCommonsAccessModule {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated

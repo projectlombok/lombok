@@ -5,6 +5,7 @@ import lombok.extern.jbosslog.JBossLog;
 class LoggerJBossLogAccessPublic {
 }
 
+@SuppressWarnings("deprecation")
 @JBossLog(access = AccessLevel.MODULE)
 class LoggerJBossLogAccessModule {
 }

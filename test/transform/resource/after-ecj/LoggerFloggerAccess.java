@@ -9,7 +9,7 @@ import lombok.extern.flogger.Flogger;
     super();
   }
 }
-@Flogger(access = AccessLevel.MODULE) class LoggerFloggerAccessModule {
+@SuppressWarnings("deprecation") @Flogger(access = AccessLevel.MODULE) class LoggerFloggerAccessModule {
   static final @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
   <clinit>() {
   }

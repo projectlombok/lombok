@@ -9,7 +9,7 @@ import lombok.extern.apachecommons.CommonsLog;
     super();
   }
 }
-@CommonsLog(access = AccessLevel.MODULE) class LoggerCommonsAccessModule {
+@SuppressWarnings("deprecation") @CommonsLog(access = AccessLevel.MODULE) class LoggerCommonsAccessModule {
   static final @java.lang.SuppressWarnings("all") @lombok.Generated org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommonsAccessModule.class);
   <clinit>() {
   }

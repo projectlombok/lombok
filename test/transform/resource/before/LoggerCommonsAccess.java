@@ -5,6 +5,7 @@ import lombok.extern.apachecommons.CommonsLog;
 class LoggerCommonsAccessPublic {
 }
 
+@SuppressWarnings("deprecation")
 @CommonsLog(access = AccessLevel.MODULE)
 class LoggerCommonsAccessModule {
 }
