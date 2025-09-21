@@ -6,11 +6,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedOnRecord.JacksonizedOnRecordBuilder.class)
+@tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedOnRecord.JacksonizedOnRecordBuilder.class)
 public record JacksonizedOnRecord(@JsonProperty("test") @Nullable String string, @JsonAnySetter List<String> values) {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	@JsonIgnoreProperties
 	@com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
+	@tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
 	public static class JacksonizedOnRecordBuilder {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated

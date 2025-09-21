@@ -467,6 +467,7 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.annotation.JsonUnwrapped",
 			"com.fasterxml.jackson.annotation.JsonView",
 			"com.fasterxml.jackson.databind.annotation.JsonDeserialize",
+			"tools.jackson.databind.annotation.JsonDeserialize",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty",
 			"com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText",
@@ -488,6 +489,7 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.annotation.JsonTypeName",
 			"com.fasterxml.jackson.annotation.JsonView",
 			"com.fasterxml.jackson.databind.annotation.JsonNaming",
+			"tools.jackson.databind.annotation.JsonNaming",
 		}));
 	}
 	
