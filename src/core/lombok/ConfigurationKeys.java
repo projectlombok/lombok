@@ -711,6 +711,22 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> JACKSONIZED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.jacksonized.flagUsage", "Emit a warning or error if @Jacksonized is used.") {};
 	
+
+	/**
+	 * lombok configuration: {@code lombok.jacksonized.useJackson2} = {@code true} | {@code false}.
+	 *
+	 * If set to {@code true}, generate Jackson 2.x compatible code.
+	 */
+	public static final ConfigurationKey<Boolean> JACKSONIZED_USE_JACKSON2 = new ConfigurationKey<Boolean>("lombok.jacksonized.useJackson2", "Generate Jackson 2.x compatible code (default: true)") {};
+
+	/**
+	 * lombok configuration: {@code lombok.jacksonized.useJackson3} = {@code true} | {@code false}.
+	 *
+	 * If set to {@code true}, generate Jackson 3.x compatible code.
+	 */
+	public static final ConfigurationKey<Boolean> JACKSONIZED_USE_JACKSON3 = new ConfigurationKey<Boolean>("lombok.jacksonized.useJackson3", "Generate Jackson 3.x compatible code (default: false)") {};
+
+
 	// ----- Configuration System -----
 	
 	/**

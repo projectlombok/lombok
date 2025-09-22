@@ -146,10 +146,14 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		TypeReference builderClassExpression = namePlusTypeParamsToTypeReference(builderClassNode, null, p);
 		ClassLiteralAccess builderClassLiteralAccess = new ClassLiteralAccess(td.sourceEnd, builderClassExpression);
 		MemberValuePair builderMvp = new MemberValuePair("builder".toCharArray(), td.sourceStart, td.sourceEnd, builderClassLiteralAccess);
-		/* if (jackson2) */ {
+
+		Boolean useJackson2 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON2, Boolean.TRUE);
+		Boolean useJackson3 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON3, Boolean.FALSE);
+
+		if (useJackson2) {
 			td.annotations = addAnnotation(td, td.annotations, JACKSON2_JSON_DESERIALIZE_ANNOTATION, builderMvp);
 		}
-		/* if (jackson3) */ {
+		if (useJackson3) {
 			td.annotations = addAnnotation(td, td.annotations, JACKSON3_JSON_DESERIALIZE_ANNOTATION, builderMvp);
 		}
 		// Copy annotations from the class to the builder class.
@@ -161,10 +165,10 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		MemberValuePair withPrefixMvp = new MemberValuePair("withPrefix".toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, withPrefixLiteral);
 		StringLiteral buildMethodNameLiteral = new StringLiteral(buildMethodName.toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, 0);
 		MemberValuePair buildMethodNameMvp = new MemberValuePair("buildMethodName".toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, buildMethodNameLiteral);
-		/* if (jackson2) */ {
+		if (useJackson2) {
 			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JACKSON2_JSON_POJO_BUILDER_ANNOTATION, withPrefixMvp, buildMethodNameMvp);
 		}
-		/* if (jackson3) */ {
+		if (useJackson3) {
 			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JACKSON3_JSON_POJO_BUILDER_ANNOTATION, withPrefixMvp, buildMethodNameMvp);
 		}
 		// @SuperBuilder? Make it package-private!

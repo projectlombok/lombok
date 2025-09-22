@@ -172,7 +172,11 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			annotationNode.addError("@JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.");
 			return;
 		}
-		/* if (jackson2) */ {
+
+		Boolean useJackson2 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON2, Boolean.TRUE);
+		Boolean useJackson3 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON3, Boolean.TRUE);
+
+		if (useJackson2) {
 			JCExpression jsonDeserializeType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonDeserialize");
 			JCExpression builderClassExpression = namePlusTypeParamsToTypeReference(maker, tdNode, annotationNode.toName(builderClassName), false, List.<JCTypeParameter>nil());
 			JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
@@ -181,7 +185,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			recursiveSetGeneratedBy(annotationJsonDeserialize, annotationNode);
 			td.mods.annotations = td.mods.annotations.append(annotationJsonDeserialize);
 		}
-		/* if (jackson3) */ {
+		if (useJackson3) {
 			JCExpression jsonDeserializeType = chainDots(annotatedNode, "tools", "jackson", "databind", "annotation", "JsonDeserialize");
 			JCExpression builderClassExpression = namePlusTypeParamsToTypeReference(maker, tdNode, annotationNode.toName(builderClassName), false, List.<JCTypeParameter>nil());
 			JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
@@ -199,7 +203,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		builderClass.mods.annotations = builderClass.mods.annotations.appendList(copiedAnnotations);
 
-		/* if (jackson2) */ {
+		if (useJackson2) {
 			// Insert @JsonPOJOBuilder on the builder class.
 			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonPOJOBuilder");
 			JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
@@ -208,7 +212,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			recursiveSetGeneratedBy(annotationJsonPOJOBuilder, annotatedNode);
 			builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPOJOBuilder);
 		}
-		/* if (jackson3) */ {
+		if (useJackson3) {
 			// Insert @JsonPOJOBuilder on the builder class.
 			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "tools", "jackson", "databind", "annotation", "JsonPOJOBuilder");
 			JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
