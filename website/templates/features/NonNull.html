@@ -7,7 +7,7 @@
 	
 	<@f.overview>
 		<p>
-			You can use <code>@NonNull</code> on a record component, or a parameter of a method or constructor. This will cause to lombok generate a null-check statement for you.
+			You can use <code>@NonNull</code> on a record component, or a parameter of a method or constructor. This will cause lombok to generate a null-check statement for you.
 		</p><p>
 			Lombok has always treated various annotations generally named <code>@NonNull</code> on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via for example <a href="/features/Data"><code>@Data</code></a>. However, using lombok's own <code>@lombok.NonNull</code> on a parameter or record component results in the insertion of the null-check at the top of that method.
 		</p><p>
