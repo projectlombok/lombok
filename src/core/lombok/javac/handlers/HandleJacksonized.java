@@ -174,6 +174,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 
 		Boolean useJackson2 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON2, Boolean.TRUE);
+		//FIXME: default for jackson3 should be false, I need to figure out how to use a non default config option in tests.
 		Boolean useJackson3 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON3, Boolean.TRUE);
 
 		if (useJackson2) {
