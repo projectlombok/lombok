@@ -149,6 +149,10 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 
 		Boolean useJackson2 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON2, Boolean.TRUE);
 		Boolean useJackson3 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON3, Boolean.FALSE);
+		if (! (useJackson2 || useJackson3)) {
+			annotationNode.addError("Usage: lombok.jacksonized.useJackson2, lombok.jacksonized.useJackson3 or both must be true.");
+			return;
+		}
 
 		if (useJackson2) {
 			td.annotations = addAnnotation(td, td.annotations, JACKSON2_JSON_DESERIALIZE_ANNOTATION, builderMvp);

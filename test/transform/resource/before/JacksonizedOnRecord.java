@@ -1,4 +1,5 @@
 //version 14:
+//CONF: lombok.jacksonized.useJackson3 = true
 import java.util.List;
 import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonAnySetter;

@@ -1,8 +1,8 @@
 import java.util.List;
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;
-@com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderComplex.TestVoidName.class) class JacksonizedBuilderComplex {
-  public static @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "with",buildMethodName = "execute") class TestVoidName<T extends Number> {
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderComplex.TestVoidName.class) @tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderComplex.TestVoidName.class) class JacksonizedBuilderComplex {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "with",buildMethodName = "execute") @tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "with",buildMethodName = "execute") class TestVoidName<T extends Number> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated T number;
     private @java.lang.SuppressWarnings("all") @lombok.Generated int arg2;
     private @java.lang.SuppressWarnings("all") @lombok.Generated String arg3;
