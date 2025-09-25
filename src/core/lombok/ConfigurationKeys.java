@@ -205,7 +205,16 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @Data} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> DATA_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.data.flagUsage", "Emit a warning or error if @Data is used.") {};
-	
+
+	// ----- GSet -----
+
+	/**
+	 * lombok configuration: {@code lombok.gset.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 *
+	 * If set, <em>any</em> usage of {@code @GSet} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> GSET_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.gset.flagUsage", "Emit a warning or error if @GSet is used.") {};
+
 	// ----- Value -----
 	
 	/**
