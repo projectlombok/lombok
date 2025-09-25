@@ -1,4 +1,4 @@
-//version 8:
+//version 8: Our Log4j2 version doesn't support Java 6
 class LoggerLog4j2 {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
