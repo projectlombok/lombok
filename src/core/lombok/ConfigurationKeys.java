@@ -29,6 +29,7 @@ import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
 import lombok.core.configuration.IdentifierName;
+import lombok.core.configuration.JacksonVersion;
 import lombok.core.configuration.LogDeclaration;
 import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -713,18 +714,11 @@ public class ConfigurationKeys {
 	
 
 	/**
-	 * lombok configuration: {@code lombok.jacksonized.useJackson2} = {@code true} | {@code false}.
+	 * lombok configuration: {@code lombok.jacksonized.jacksonVersion} = {@code 2} | {@code 3} | {@code 2_3}.
 	 *
-	 * If set to {@code true}, generate Jackson 2.x compatible code.
+	 * The jackson major version to use.
 	 */
-	public static final ConfigurationKey<Boolean> JACKSONIZED_USE_JACKSON2 = new ConfigurationKey<Boolean>("lombok.jacksonized.useJackson2", "Generate Jackson 2.x compatible code (default: true)") {};
-
-	/**
-	 * lombok configuration: {@code lombok.jacksonized.useJackson3} = {@code true} | {@code false}.
-	 *
-	 * If set to {@code true}, generate Jackson 3.x compatible code.
-	 */
-	public static final ConfigurationKey<Boolean> JACKSONIZED_USE_JACKSON3 = new ConfigurationKey<Boolean>("lombok.jacksonized.useJackson3", "Generate Jackson 3.x compatible code (default: false)") {};
+	public static final ConfigurationKey<JacksonVersion> JACKSONIZED_JACKSON_VERSION = new ConfigurationKey<JacksonVersion>("lombok.jacksonized.jacksonVersion", "Select the jackson major version to use (default: 2)") {};
 
 
 	// ----- Configuration System -----

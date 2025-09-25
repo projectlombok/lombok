@@ -44,6 +44,7 @@ import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.AST.Kind;
+import lombok.core.configuration.JacksonVersion;
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -147,17 +148,16 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		ClassLiteralAccess builderClassLiteralAccess = new ClassLiteralAccess(td.sourceEnd, builderClassExpression);
 		MemberValuePair builderMvp = new MemberValuePair("builder".toCharArray(), td.sourceStart, td.sourceEnd, builderClassLiteralAccess);
 
-		Boolean useJackson2 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON2, Boolean.TRUE);
-		Boolean useJackson3 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON3, Boolean.FALSE);
-		if (! (useJackson2 || useJackson3)) {
-			annotationNode.addError("Usage: lombok.jacksonized.useJackson2, lombok.jacksonized.useJackson3 or both must be true.");
+		JacksonVersion jacksonVersion = annotationNode.getAst().readConfiguration(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION);
+		if (! (jacksonVersion.useJackson2() || jacksonVersion.useJackson3())) {
+			annotationNode.addError("Usage: No valid jackson version selected");
 			return;
 		}
 
-		if (useJackson2) {
+		if (jacksonVersion.useJackson2()) {
 			td.annotations = addAnnotation(td, td.annotations, JACKSON2_JSON_DESERIALIZE_ANNOTATION, builderMvp);
 		}
-		if (useJackson3) {
+		if (jacksonVersion.useJackson3()) {
 			td.annotations = addAnnotation(td, td.annotations, JACKSON3_JSON_DESERIALIZE_ANNOTATION, builderMvp);
 		}
 		// Copy annotations from the class to the builder class.
@@ -169,10 +169,10 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		MemberValuePair withPrefixMvp = new MemberValuePair("withPrefix".toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, withPrefixLiteral);
 		StringLiteral buildMethodNameLiteral = new StringLiteral(buildMethodName.toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, 0);
 		MemberValuePair buildMethodNameMvp = new MemberValuePair("buildMethodName".toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, buildMethodNameLiteral);
-		if (useJackson2) {
+		if (jacksonVersion.useJackson2()) {
 			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JACKSON2_JSON_POJO_BUILDER_ANNOTATION, withPrefixMvp, buildMethodNameMvp);
 		}
-		if (useJackson3) {
+		if (jacksonVersion.useJackson3()) {
 			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JACKSON3_JSON_POJO_BUILDER_ANNOTATION, withPrefixMvp, buildMethodNameMvp);
 		}
 		// @SuperBuilder? Make it package-private!

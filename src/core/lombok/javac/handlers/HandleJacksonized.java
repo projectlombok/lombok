@@ -42,6 +42,7 @@ import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
+import lombok.core.configuration.JacksonVersion;
 import lombok.core.handlers.HandlerUtil;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
@@ -173,14 +174,12 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			return;
 		}
 
-		Boolean useJackson2 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON2, Boolean.TRUE);
-		Boolean useJackson3 = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_USE_JACKSON3, Boolean.FALSE);
-
-		if (! (useJackson2 || useJackson3)) {
-			annotationNode.addError("Usage: lombok.jacksonized.useJackson2, lombok.jacksonized.useJackson3 or both must be true.");
+		JacksonVersion jacksonVersion = annotationNode.getAst().readConfiguration(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION);
+		if (! (jacksonVersion.useJackson2() || jacksonVersion.useJackson3())) {
+			annotationNode.addError("Usage: No valid jackson version selected");
 			return;
 		}
-		if (useJackson2) {
+		if (jacksonVersion.useJackson2()) {
 			JCExpression jsonDeserializeType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonDeserialize");
 			JCExpression builderClassExpression = namePlusTypeParamsToTypeReference(maker, tdNode, annotationNode.toName(builderClassName), false, List.<JCTypeParameter>nil());
 			JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
@@ -189,7 +188,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			recursiveSetGeneratedBy(annotationJsonDeserialize, annotationNode);
 			td.mods.annotations = td.mods.annotations.append(annotationJsonDeserialize);
 		}
-		if (useJackson3) {
+		if (jacksonVersion.useJackson3()) {
 			JCExpression jsonDeserializeType = chainDots(annotatedNode, "tools", "jackson", "databind", "annotation", "JsonDeserialize");
 			JCExpression builderClassExpression = namePlusTypeParamsToTypeReference(maker, tdNode, annotationNode.toName(builderClassName), false, List.<JCTypeParameter>nil());
 			JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
@@ -207,7 +206,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		builderClass.mods.annotations = builderClass.mods.annotations.appendList(copiedAnnotations);
 
-		if (useJackson2) {
+		if (jacksonVersion.useJackson2()) {
 			// Insert @JsonPOJOBuilder on the builder class.
 			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonPOJOBuilder");
 			JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
@@ -216,7 +215,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			recursiveSetGeneratedBy(annotationJsonPOJOBuilder, annotatedNode);
 			builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPOJOBuilder);
 		}
-		if (useJackson3) {
+		if (jacksonVersion.useJackson3()) {
 			// Insert @JsonPOJOBuilder on the builder class.
 			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "tools", "jackson", "databind", "annotation", "JsonPOJOBuilder");
 			JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));

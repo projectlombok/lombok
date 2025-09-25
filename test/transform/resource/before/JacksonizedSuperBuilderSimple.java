@@ -1,4 +1,4 @@
-//CONF: lombok.jacksonized.useJackson3 = true
+//CONF: lombok.jacksonized.jacksonVersion = 2_3
 //version 8: Jackson deps are at least Java7+.
 public class JacksonizedSuperBuilderSimple {
 	@lombok.extern.jackson.Jacksonized
