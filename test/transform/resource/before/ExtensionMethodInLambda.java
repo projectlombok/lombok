@@ -4,6 +4,8 @@ import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod(value = ExtensionMethodInLambda.Extensions.class)
 public class ExtensionMethodInLambda {
+	private static final Function<String, String> testStatic = s -> s.reverse();
+	
 	public void testSimple() {
 		String test = "test";
 		test = test.map(s -> s.reverse());

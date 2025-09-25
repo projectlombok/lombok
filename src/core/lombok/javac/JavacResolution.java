@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2021 The Project Lombok Authors.
+ * Copyright (C) 2011-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -416,7 +416,7 @@ public class JavacResolution {
 	}
 	
 	private static int compare(Name a, Name b) {
-		return a.compareTo(b);
+		return a.toString().compareTo(b.toString());
 	}
 	
 	private static boolean isLocalType(TypeSymbol symbol) {
@@ -469,7 +469,7 @@ public class JavacResolution {
 						winLevel = level;
 						continue;
 					}
-					if (compare(winner.tsym.getQualifiedName(), t.tsym.getQualifiedName()) < 0) winner = t;
+					if (compare(winner.tsym.getQualifiedName(), t.tsym.getQualifiedName()) > 0) winner = t;
 				}
 				if (winner == null) return createJavaLangObject(ast);
 				return typeToJCTree(winner, ast, allowCompound, allowVoid, allowCapture);

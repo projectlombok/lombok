@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2021 The Project Lombok Authors.
+ * Copyright (C) 2011-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,10 @@ package lombok.javac;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -36,7 +39,6 @@ import javax.tools.JavaFileObject;
 
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic;
-import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 
 import lombok.permit.Permit;
@@ -53,9 +55,14 @@ public final class CompilerMessageSuppressor {
 	private static final Field deferDiagnosticsField, deferredDiagnosticsField, diagnosticHandlerField;
 	private static final ConcurrentMap<Class<?>, Field> handlerDeferredFields = new ConcurrentHashMap<Class<?>, Field>();
 	private static final Field NULL_FIELD;
+	private static final Class<?> DIAGNOSTIC_HANDLER;
+	private static final Class<?> DISCARD_DIAGNOSTIC_HANDLER;
+	private static final Method POP_DIAGNOSTIC_HANDLER;
+	private static final Constructor<?> DISCARD_DIAGNOSTIC_HANDLER_CONSTRUCTOR;
 	private Boolean dumpOnError, promptOnError;
 	private DiagnosticListener<?> contextDiagnosticListener, logDiagnosticListener;
 	private final Context context;
+	private Object diagnosticHandler;
 	
 	private static final ThreadLocal<Queue<?>> queueCache = new ThreadLocal<Queue<?>>();
 	
@@ -87,11 +94,24 @@ public final class CompilerMessageSuppressor {
 		diagnosticHandlerField = getDeclaredField(Log.class, "diagnosticHandler");
 		
 		NULL_FIELD = getDeclaredField(JavacResolution.class, "NULL_FIELD");
+		
+		DIAGNOSTIC_HANDLER = getClass("com.sun.tools.javac.util.Log$DiagnosticHandler");
+		DISCARD_DIAGNOSTIC_HANDLER = getClass("com.sun.tools.javac.util.Log$DiscardDiagnosticHandler");
+		POP_DIAGNOSTIC_HANDLER = DIAGNOSTIC_HANDLER != null ? Permit.permissiveGetMethod(Log.class, "popDiagnosticHandler", DIAGNOSTIC_HANDLER) : null;
+		DISCARD_DIAGNOSTIC_HANDLER_CONSTRUCTOR = DISCARD_DIAGNOSTIC_HANDLER != null ? Permit.permissiveGetConstructor(DISCARD_DIAGNOSTIC_HANDLER, Log.class) : null;
 	}
 	
 	static Field getDeclaredField(Class<?> c, String fieldName) {
 		try {
 			return Permit.getField(c, fieldName);
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+	
+	static Class<?> getClass(String name) {
+		try {
+			return Class.forName(name);
 		} catch (Throwable t) {
 			return null;
 		}
@@ -118,16 +138,6 @@ public final class CompilerMessageSuppressor {
 			}
 		} catch (Exception e) {}
 		
-		if (diagnosticHandlerField != null) try {
-			Object handler = diagnosticHandlerField.get(log);
-			Field field = getDeferredField(handler);
-			if (field != null) {
-				queueCache.set((Queue<?>) field.get(handler));
-				Queue<?> empty = new LinkedList<Object>();
-				field.set(handler, empty);
-			}
-		} catch (Exception e) {}
-		
 		if (dumpOnErrorField != null) try {
 			dumpOnError = (Boolean) dumpOnErrorField.get(log);
 			dumpOnErrorField.set(log, false);
@@ -143,6 +153,11 @@ public final class CompilerMessageSuppressor {
 		if (diagnosticListenerField != null) try {
 			logDiagnosticListener = (DiagnosticListener<?>) diagnosticListenerField.get(log);
 			diagnosticListenerField.set(log, null);
+		} catch (Exception e) {
+		}
+		
+		if (DISCARD_DIAGNOSTIC_HANDLER != null) try {
+			diagnosticHandler = Permit.newInstance(DISCARD_DIAGNOSTIC_HANDLER_CONSTRUCTOR, log);
 		} catch (Exception e) {
 		}
 	}
@@ -183,19 +198,15 @@ public final class CompilerMessageSuppressor {
 			logDiagnosticListener = null;
 		} catch (Exception e) {}
 		
-		if (diagnosticHandlerField != null && queueCache.get() != null) try {
-			Object handler = diagnosticHandlerField.get(log);
-			Field field = getDeferredField(handler);
-			if (field != null) {
-				field.set(handler, queueCache.get());
-				queueCache.set(null);
-			}
-		} catch (Exception e) {}
-		
 		if (deferDiagnosticsField != null && queueCache.get() != null) try {
 			deferredDiagnosticsField.set(log, queueCache.get());
 			queueCache.set(null);
 		} catch (Exception e) {}
+		
+		if (diagnosticHandler != null) try {
+			Permit.invoke(POP_DIAGNOSTIC_HANDLER, log, diagnosticHandler);
+		} catch (Exception e) {}
+		diagnosticHandler = null;
 	}
 	
 	public void removeAllBetween(JavaFileObject sourcefile, int startPos, int endPos) {
@@ -222,11 +233,12 @@ public final class CompilerMessageSuppressor {
 		if (field == null || receiver == null) return;
 		
 		try {
-			ListBuffer<?> deferredDiagnostics = (ListBuffer<?>) field.get(receiver);
-			ListBuffer<Object> newDeferredDiagnostics = new ListBuffer<Object>();
+			Collection<?> deferredDiagnostics = (Collection<?>) field.get(receiver);
+			if (deferredDiagnostics.isEmpty()) return;
+			LinkedList<Object> newDeferredDiagnostics = new LinkedList<Object>();
 			for (Object diag_ : deferredDiagnostics) {
 				if (!(diag_ instanceof JCDiagnostic)) {
-					newDeferredDiagnostics.append(diag_);
+					newDeferredDiagnostics.add(diag_);
 					continue;
 				}
 				JCDiagnostic diag = (JCDiagnostic) diag_;
@@ -234,7 +246,7 @@ public final class CompilerMessageSuppressor {
 				if (here >= startPos && here < endPos && diag.getSource() == sourcefile) {
 					// We eliminate it
 				} else {
-					newDeferredDiagnostics.append(diag);
+					newDeferredDiagnostics.add(diag);
 				}
 			}
 			field.set(receiver, newDeferredDiagnostics);

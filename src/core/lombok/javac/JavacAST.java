@@ -68,6 +68,7 @@ import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Position;
 
 /**
  * Wraps around javac's internal AST view to add useful features as well as the ability to visit parents from children,
@@ -595,6 +596,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	}
 	
 	public void removeFromDeferredDiagnostics(int startPos, int endPos) {
+		if (startPos == Position.NOPOS || endPos == Position.NOPOS) return;
 		JCCompilationUnit self = (JCCompilationUnit) top().get();
 		new CompilerMessageSuppressor(getContext()).removeAllBetween(self.sourcefile, startPos, endPos);
 	}
