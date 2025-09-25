@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 The Project Lombok Authors.
+ * Copyright (C) 2018-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -163,6 +163,14 @@ public class Permit {
 	
 	public static <T> Constructor<T> getConstructor(Class<T> c, Class<?>... parameterTypes) throws NoSuchMethodException {
 		return setAccessible(c.getDeclaredConstructor(parameterTypes));
+	}
+	
+	public static <T> Constructor<T> permissiveGetConstructor(Class<T> c, Class<?>... parameterTypes) {
+		try {
+			return getConstructor(c, parameterTypes);
+		} catch (Exception ignore) {
+			return null;
+		}
 	}
 	
 	private static Object reflectiveStaticFieldAccess(Class<?> c, String fName) {
