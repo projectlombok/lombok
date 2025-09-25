@@ -6,7 +6,7 @@ public final class JacksonVersion implements ConfigurationValueType {
 	private final boolean useJackson3;
 
 	public static final JacksonVersion _2 = new JacksonVersion(true,  false);
-	public static final JacksonVersion _3 = new JacksonVersion(true,  false);
+	public static final JacksonVersion _3 = new JacksonVersion(false,  true);
 	public static final JacksonVersion _23 = new JacksonVersion(true,  true);
 
 	public JacksonVersion(boolean useJackson2, boolean useJackson3) {
@@ -42,5 +42,9 @@ public final class JacksonVersion implements ConfigurationValueType {
 
 	public boolean useJackson3() {
 		return useJackson3;
+	}
+
+	public boolean isValid() {
+		return useJackson2 || useJackson3;
 	}
 }

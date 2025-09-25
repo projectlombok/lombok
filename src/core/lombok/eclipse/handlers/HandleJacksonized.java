@@ -148,8 +148,8 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		ClassLiteralAccess builderClassLiteralAccess = new ClassLiteralAccess(td.sourceEnd, builderClassExpression);
 		MemberValuePair builderMvp = new MemberValuePair("builder".toCharArray(), td.sourceStart, td.sourceEnd, builderClassLiteralAccess);
 
-		JacksonVersion jacksonVersion = annotationNode.getAst().readConfiguration(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION);
-		if (! (jacksonVersion.useJackson2() || jacksonVersion.useJackson3())) {
+		JacksonVersion jacksonVersion = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, JacksonVersion._2);
+		if (! jacksonVersion.isValid()) {
 			annotationNode.addError("Usage: No valid jackson version selected");
 			return;
 		}
