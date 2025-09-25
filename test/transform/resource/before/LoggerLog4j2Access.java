@@ -1,3 +1,4 @@
+// version 8: Our Log4j2 version doesn't support Java 6
 import lombok.AccessLevel;
 import lombok.extern.log4j.Log4j2;
 
