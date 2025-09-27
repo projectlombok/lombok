@@ -89,6 +89,11 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	</target>
 	
 	<target name="-setup.build" depends="autoclean">
+		<fail>lombok must be compiled on jdk11 or later. Your version is: ${ant.java.version}
+			<condition>
+				<not><matches string="${ant.java.version}" pattern="${pattern.jdk11plus}" /></not>
+			</condition>
+		</fail>
 		<mkdir dir="build" />
 		<echo file="build/build-ver.txt">${build.version}</echo>
 	</target>
@@ -271,11 +276,6 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 	<fail>ant needs to be at least v1.10.0 or higher to build lombok. Your version is: ${ant.version}
 		<condition>
 			<not><antversion atleast="1.10.0" /></not>
-		</condition>
-	</fail>
-	<fail>lombok must be compiled on jdk11 or later. Your version is: ${ant.java.version}
-		<condition>
-			<not><matches string="${ant.java.version}" pattern="${pattern.jdk11plus}" /></not>
 		</condition>
 	</fail>
 </project>
