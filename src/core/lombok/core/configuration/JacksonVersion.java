@@ -15,7 +15,7 @@ public final class JacksonVersion implements ConfigurationValueType {
 	}
 
 	public static String exampleValue() {
-		return "2";
+		return "2, 3 or 2_3";
 	}
 
 	public static String description() {
@@ -31,8 +31,8 @@ public final class JacksonVersion implements ConfigurationValueType {
 			return _3;
 		} else if ("2_3".equals(value.trim())) {
 			return _23;
-		} else{
-			throw new IllegalArgumentException("Unsupported Jackson version selector. Supported values: 2, 3 or 2_3 ");
+		} else {
+			throw new IllegalArgumentException("Unsupported Jackson version selector.");
 		}
 	}
 

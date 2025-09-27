@@ -175,8 +175,8 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 
 		JacksonVersion jacksonVersion = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, JacksonVersion._2);
-		if (! jacksonVersion.isValid()) {
-			annotationNode.addError("Usage: No valid jackson version selected");
+		if (jacksonVersion == null || !jacksonVersion.isValid()) {
+			annotationNode.addError("No valid jackson version selected.");
 			return;
 		}
 		if (jacksonVersion.useJackson2()) {
