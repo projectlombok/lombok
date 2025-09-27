@@ -1,5 +1,5 @@
 public class JacksonizedSuperBuilderSimple {
-  public static @lombok.extern.jackson.Jacksonized @lombok.experimental.SuperBuilder @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true) @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedSuperBuilderSimple.Parent.ParentBuilderImpl.class) class Parent {
+  public static @lombok.extern.jackson.Jacksonized @lombok.experimental.SuperBuilder @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true) @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedSuperBuilderSimple.Parent.ParentBuilderImpl.class) @tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedSuperBuilderSimple.Parent.ParentBuilderImpl.class) class Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<C extends JacksonizedSuperBuilderSimple.Parent, B extends JacksonizedSuperBuilderSimple.Parent.ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated int field1;
       public ParentBuilder() {
@@ -18,7 +18,7 @@ public class JacksonizedSuperBuilderSimple {
         return (("JacksonizedSuperBuilderSimple.Parent.ParentBuilder(field1=" + this.field1) + ")");
       }
     }
-    static final @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true) @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") class ParentBuilderImpl extends JacksonizedSuperBuilderSimple.Parent.ParentBuilder<JacksonizedSuperBuilderSimple.Parent, JacksonizedSuperBuilderSimple.Parent.ParentBuilderImpl> {
+    static final @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true) @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") @tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") class ParentBuilderImpl extends JacksonizedSuperBuilderSimple.Parent.ParentBuilder<JacksonizedSuperBuilderSimple.Parent, JacksonizedSuperBuilderSimple.Parent.ParentBuilderImpl> {
       private ParentBuilderImpl() {
         super();
       }

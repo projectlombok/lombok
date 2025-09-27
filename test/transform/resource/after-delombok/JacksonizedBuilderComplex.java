@@ -2,12 +2,14 @@
 //CONF: lombok.builder.className = Test*Name
 import java.util.List;
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderComplex.TestVoidName.class)
+@tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderComplex.TestVoidName.class)
 class JacksonizedBuilderComplex {
 	private static <T extends Number> void testVoidWithGenerics(T number, int arg2, String arg3, JacksonizedBuilderComplex selfRef) {
 	}
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	@com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "with", buildMethodName = "execute")
+	@tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "with", buildMethodName = "execute")
 	public static class TestVoidName<T extends Number> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated

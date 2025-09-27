@@ -1,7 +1,7 @@
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-@lombok.extern.jackson.Jacksonized @JsonIgnoreProperties(ignoreUnknown = true) @lombok.Builder(access = lombok.AccessLevel.PROTECTED) @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSimple.JacksonizedBuilderSimpleBuilder.class) class JacksonizedBuilderSimple<T> {
-  protected static @java.lang.SuppressWarnings("all") @lombok.Generated @JsonIgnoreProperties(ignoreUnknown = true) @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") class JacksonizedBuilderSimpleBuilder<T> {
+@lombok.extern.jackson.Jacksonized @JsonIgnoreProperties(ignoreUnknown = true) @lombok.Builder(access = lombok.AccessLevel.PROTECTED) @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSimple.JacksonizedBuilderSimpleBuilder.class) @tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSimple.JacksonizedBuilderSimpleBuilder.class) class JacksonizedBuilderSimple<T> {
+  protected static @java.lang.SuppressWarnings("all") @lombok.Generated @JsonIgnoreProperties(ignoreUnknown = true) @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") @tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") class JacksonizedBuilderSimpleBuilder<T> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated int yes;
     private @java.lang.SuppressWarnings("all") @lombok.Generated List<T> also;
     @java.lang.SuppressWarnings("all") @lombok.Generated JacksonizedBuilderSimpleBuilder() {

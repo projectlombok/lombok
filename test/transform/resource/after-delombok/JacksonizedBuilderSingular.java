@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder.class)
+@tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder.class)
 public class JacksonizedBuilderSingular {
 	@JsonAnySetter
 	private Map<String, Object> any;
@@ -26,6 +27,7 @@ public class JacksonizedBuilderSingular {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	@com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
+	@tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
 	public static class JacksonizedBuilderSingularBuilder {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated

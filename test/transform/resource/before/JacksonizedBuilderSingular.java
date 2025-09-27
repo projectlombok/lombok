@@ -1,4 +1,5 @@
 //version 8: Jackson deps are at least Java7+.
+//CONF: lombok.jacksonized.jacksonVersion = 2_3
 import java.util.List;
 import java.util.Map;
 

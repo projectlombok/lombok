@@ -2,6 +2,7 @@
 public class JacksonizedSuperBuilderSimple {
 	@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 	@com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedSuperBuilderSimple.Parent.ParentBuilderImpl.class)
+	@tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedSuperBuilderSimple.Parent.ParentBuilderImpl.class)
 	public static class Parent {
 		int field1;
 		@java.lang.SuppressWarnings("all")
@@ -36,6 +37,7 @@ public class JacksonizedSuperBuilderSimple {
 		@lombok.Generated
 		@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 		@com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
+		@tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
 		static final class ParentBuilderImpl extends JacksonizedSuperBuilderSimple.Parent.ParentBuilder<JacksonizedSuperBuilderSimple.Parent, JacksonizedSuperBuilderSimple.Parent.ParentBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
 			@lombok.Generated
