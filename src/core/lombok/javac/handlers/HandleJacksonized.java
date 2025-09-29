@@ -181,21 +181,11 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		if (jacksonVersion.useJackson2()) {
 			JCExpression jsonDeserializeType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonDeserialize");
-			JCExpression builderClassExpression = namePlusTypeParamsToTypeReference(maker, tdNode, annotationNode.toName(builderClassName), false, List.<JCTypeParameter>nil());
-			JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
-			JCExpression assign = maker.Assign(maker.Ident(annotationNode.toName("builder")), builderClassReference);
-			JCAnnotation annotationJsonDeserialize = maker.Annotation(jsonDeserializeType, List.of(assign));
-			recursiveSetGeneratedBy(annotationJsonDeserialize, annotationNode);
-			td.mods.annotations = td.mods.annotations.append(annotationJsonDeserialize);
+			insertJsonDeserializeAnnotation(annotationNode, annotatedNode, tdNode, td, maker, builderClassName, jsonDeserializeType);
 		}
 		if (jacksonVersion.useJackson3()) {
 			JCExpression jsonDeserializeType = chainDots(annotatedNode, "tools", "jackson", "databind", "annotation", "JsonDeserialize");
-			JCExpression builderClassExpression = namePlusTypeParamsToTypeReference(maker, tdNode, annotationNode.toName(builderClassName), false, List.<JCTypeParameter>nil());
-			JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
-			JCExpression assign = maker.Assign(maker.Ident(annotationNode.toName("builder")), builderClassReference);
-			JCAnnotation annotationJsonDeserialize = maker.Annotation(jsonDeserializeType, List.of(assign));
-			recursiveSetGeneratedBy(annotationJsonDeserialize, annotationNode);
-			td.mods.annotations = td.mods.annotations.append(annotationJsonDeserialize);
+			insertJsonDeserializeAnnotation(annotationNode, annotatedNode, tdNode, td, maker, builderClassName, jsonDeserializeType);
 		}
 		
 		// Copy annotations from the class to the builder class.
@@ -207,25 +197,34 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		builderClass.mods.annotations = builderClass.mods.annotations.appendList(copiedAnnotations);
 
 		if (jacksonVersion.useJackson2()) {
-			// Insert @JsonPOJOBuilder on the builder class.
 			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonPOJOBuilder");
-			JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
-			JCExpression buildMethodNameExpr = maker.Assign(maker.Ident(annotationNode.toName("buildMethodName")), maker.Literal(buildMethodName));
-			JCAnnotation annotationJsonPOJOBuilder = maker.Annotation(jsonPOJOBuilderType, List.of(withPrefixExpr, buildMethodNameExpr));
-			recursiveSetGeneratedBy(annotationJsonPOJOBuilder, annotatedNode);
-			builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPOJOBuilder);
+			insertJsonPojoAnnotation(annotationNode, annotatedNode, setPrefix, buildMethodName, maker, builderClass, jsonPOJOBuilderType);
 		}
 		if (jacksonVersion.useJackson3()) {
-			// Insert @JsonPOJOBuilder on the builder class.
 			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "tools", "jackson", "databind", "annotation", "JsonPOJOBuilder");
-			JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
-			JCExpression buildMethodNameExpr = maker.Assign(maker.Ident(annotationNode.toName("buildMethodName")), maker.Literal(buildMethodName));
-			JCAnnotation annotationJsonPOJOBuilder = maker.Annotation(jsonPOJOBuilderType, List.of(withPrefixExpr, buildMethodNameExpr));
-			recursiveSetGeneratedBy(annotationJsonPOJOBuilder, annotatedNode);
-			builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPOJOBuilder);
+			insertJsonPojoAnnotation(annotationNode, annotatedNode, setPrefix, buildMethodName, maker, builderClass, jsonPOJOBuilderType);
 		}
 		// @SuperBuilder? Make it package-private!
 		if (superBuilderAnnotationNode != null) builderClass.mods.flags = builderClass.mods.flags & ~Flags.PRIVATE;
+	}
+
+	// Insert @JsonPOJOBuilder on the builder class.
+	private void insertJsonPojoAnnotation(JavacNode annotationNode, JavacNode annotatedNode, String setPrefix, String buildMethodName, JavacTreeMaker maker, JCClassDecl builderClass, JCExpression jsonPOJOBuilderType) {
+		JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
+		JCExpression buildMethodNameExpr = maker.Assign(maker.Ident(annotationNode.toName("buildMethodName")), maker.Literal(buildMethodName));
+		JCAnnotation annotationJsonPOJOBuilder = maker.Annotation(jsonPOJOBuilderType, List.of(withPrefixExpr, buildMethodNameExpr));
+		recursiveSetGeneratedBy(annotationJsonPOJOBuilder, annotatedNode);
+		builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPOJOBuilder);
+	}
+
+	// Insert @JsonDeserialize on the class.
+	private void insertJsonDeserializeAnnotation(JavacNode annotationNode, JavacNode annotatedNode, JavacNode tdNode, JCClassDecl td, JavacTreeMaker maker, String builderClassName, JCExpression jsonDeserializeType) {
+		JCExpression builderClassExpression = namePlusTypeParamsToTypeReference(maker, tdNode, annotationNode.toName(builderClassName), false, List.<JCTypeParameter>nil());
+		JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
+		JCExpression assign = maker.Assign(maker.Ident(annotationNode.toName("builder")), builderClassReference);
+		JCAnnotation annotationJsonDeserialize = maker.Annotation(jsonDeserializeType, List.of(assign));
+		recursiveSetGeneratedBy(annotationJsonDeserialize, annotationNode);
+		td.mods.annotations = td.mods.annotations.append(annotationJsonDeserialize);
 	}
 	
 	private String getBuilderClassName(JavacNode annotationNode, JavacNode annotatedNode, JCClassDecl td, AnnotationValues<Builder> builderAnnotation, JavacTreeMaker maker) {
