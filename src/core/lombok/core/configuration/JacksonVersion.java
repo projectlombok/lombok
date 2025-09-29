@@ -5,13 +5,12 @@ public final class JacksonVersion implements ConfigurationValueType {
 	private final boolean useJackson2;
 	private final boolean useJackson3;
 
-	public static final JacksonVersion _2 = new JacksonVersion(true,  false);
-	public static final JacksonVersion _3 = new JacksonVersion(false,  true);
-	public static final JacksonVersion _23 = new JacksonVersion(true,  true);
+	private static final JacksonVersion _2 = new JacksonVersion(true,  false);
+	private static final JacksonVersion _3 = new JacksonVersion(false,  true);
+	private static final JacksonVersion _23 = new JacksonVersion(true,  true);
 
-	public JacksonVersion(boolean useJackson2, boolean useJackson3) {
-		this.useJackson2 = useJackson2;
-		this.useJackson3 = useJackson3;
+	public static final JacksonVersion getDefault() {
+		return _2;
 	}
 
 	public static String exampleValue() {
@@ -24,7 +23,7 @@ public final class JacksonVersion implements ConfigurationValueType {
 
 	public static JacksonVersion valueOf(String value) {
 		if (value == null || value.isEmpty()) {
-			return _2;
+			return getDefault();
 		} else if ("2".equals(value.trim())) {
 			return _2;
 		} else if ("3".equals(value.trim())) {
@@ -34,6 +33,11 @@ public final class JacksonVersion implements ConfigurationValueType {
 		} else {
 			throw new IllegalArgumentException("Unsupported Jackson version selector.");
 		}
+	}
+
+	private JacksonVersion(boolean useJackson2, boolean useJackson3) {
+		this.useJackson2 = useJackson2;
+		this.useJackson3 = useJackson3;
 	}
 
 	public boolean useJackson2() {
