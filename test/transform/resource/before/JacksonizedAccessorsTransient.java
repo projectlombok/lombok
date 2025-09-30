@@ -4,4 +4,6 @@
 @lombok.Setter
 public class JacksonizedAccessorsTransient {
 	private transient int intValue;
+	@com.fasterxml.jackson.annotation.JsonIgnore private transient long longValue;
+	@com.fasterxml.jackson.annotation.JsonIgnore private double doubleValue;
 }
