@@ -188,15 +188,20 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
 		for (EclipseNode eclipseNode : tdNode.down()) {
 			if (eclipseNode.getKind() == Kind.FIELD) {
-				if (eclipseNode.isTransient()) createJsonIgnoreForField(eclipseNode, annotationNode);
-				else createJsonPropertyForField(eclipseNode, annotationNode);
+				if (JacksonAnnotations.JSON_PROPERTY.isAnnotating(eclipseNode) || 
+					JacksonAnnotations.JSON_IGNORE.isAnnotating(eclipseNode)) {
+					return;
+				} else if (eclipseNode.isTransient()) {
+					createJsonIgnoreForField(eclipseNode, annotationNode);
+				} else {
+					createJsonPropertyForField(eclipseNode, annotationNode);
+				}
 			}
 		}
 		tdNode.rebuild();
 	}
 	
 	private void createJsonPropertyForField(EclipseNode fieldNode, EclipseNode annotationNode) {
-		if (JacksonAnnotations.JSON_PROPERTY.isAnnotating(fieldNode)) return;
 		ASTNode astNode = fieldNode.get();
 		if (astNode instanceof FieldDeclaration) {
 			FieldDeclaration fd = (FieldDeclaration)astNode;
@@ -206,7 +211,6 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 	}
 	
 	private void createJsonIgnoreForField(EclipseNode fieldNode, EclipseNode annotationNode) {
-		if (JacksonAnnotations.JSON_IGNORE.isAnnotating(fieldNode)) return;
 		ASTNode astNode = fieldNode.get();
 		if (astNode instanceof FieldDeclaration) {
 			FieldDeclaration fd = (FieldDeclaration)astNode;
