@@ -122,16 +122,19 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		// Add @JsonIgnore to all transient fields. It will be automatically copied to the getter/setters later.
 		for (JavacNode javacNode : tdNode.down()) {
 			if (javacNode.getKind() == Kind.FIELD) {
-				if (javacNode.isTransient()) createJsonIgnoreForField(javacNode, annotationNode);
-				else createJsonPropertyForField(javacNode, annotationNode);
+				if (JacksonAnnotations.JSON_PROPERTY.isAnnotating(javacNode) || 
+					JacksonAnnotations.JSON_IGNORE.isAnnotating(javacNode)) {
+					return;
+				} else if (javacNode.isTransient()) {
+					createJsonIgnoreForField(javacNode, annotationNode);
+				} else {
+					createJsonPropertyForField(javacNode, annotationNode);
+				}
 			}
 		}
 	}
 	
 	private void createJsonPropertyForField(JavacNode fieldNode, JavacNode annotationNode) {
-		if (JacksonAnnotations.JSON_PROPERTY.isAnnotating(fieldNode)) {
-			return;
-		}
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotations.JSON_PROPERTY.chainedDots);
@@ -142,9 +145,6 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	}
 	
 	private void createJsonIgnoreForField(JavacNode fieldNode, JavacNode annotationNode) {
-		if (JacksonAnnotations.JSON_IGNORE.isAnnotating(fieldNode)) {
-			return;
-		}
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotations.JSON_IGNORE.chainedDots);
