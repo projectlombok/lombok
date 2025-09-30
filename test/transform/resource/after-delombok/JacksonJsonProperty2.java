@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class JacksonJsonProperty3 {
+public class JacksonJsonProperty2 {
 	@JsonProperty("a")
 	String propertyOne;
 	@JsonProperty("b")
@@ -13,7 +13,7 @@ public class JacksonJsonProperty3 {
 
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
-	public JacksonJsonProperty3() {
+	public JacksonJsonProperty2() {
 	}
 
 	@JsonProperty("a")
@@ -61,8 +61,8 @@ public class JacksonJsonProperty3 {
 	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
-		if (!(o instanceof JacksonJsonProperty3)) return false;
-		final JacksonJsonProperty3 other = (JacksonJsonProperty3) o;
+		if (!(o instanceof JacksonJsonProperty2)) return false;
+		final JacksonJsonProperty2 other = (JacksonJsonProperty2) o;
 		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.getPropertyTwo() != other.getPropertyTwo()) return false;
 		final java.lang.Object this$propertyOne = this.getPropertyOne();
@@ -77,7 +77,7 @@ public class JacksonJsonProperty3 {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
-		return other instanceof JacksonJsonProperty3;
+		return other instanceof JacksonJsonProperty2;
 	}
 
 	@java.lang.Override
@@ -98,6 +98,6 @@ public class JacksonJsonProperty3 {
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	public java.lang.String toString() {
-		return "JacksonJsonProperty3(propertyOne=" + this.getPropertyOne() + ", propertyTwo=" + this.getPropertyTwo() + ", additional=" + this.getAdditional() + ")";
+		return "JacksonJsonProperty2(propertyOne=" + this.getPropertyOne() + ", propertyTwo=" + this.getPropertyTwo() + ", additional=" + this.getAdditional() + ")";
 	}
 }

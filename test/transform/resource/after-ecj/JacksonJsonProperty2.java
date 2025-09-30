@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-public @Data class JacksonJsonProperty3 {
+public @Data class JacksonJsonProperty2 {
   @JsonProperty("a") String propertyOne;
   @JsonProperty("b") int propertyTwo;
   Map<String, Object> additional = new HashMap<>();
@@ -27,9 +27,9 @@ public @Data class JacksonJsonProperty3 {
   public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((! (o instanceof JacksonJsonProperty3)))
+    if ((! (o instanceof JacksonJsonProperty2)))
         return false;
-    final JacksonJsonProperty3 other = (JacksonJsonProperty3) o;
+    final JacksonJsonProperty2 other = (JacksonJsonProperty2) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getPropertyTwo() != other.getPropertyTwo()))
@@ -45,7 +45,7 @@ public @Data class JacksonJsonProperty3 {
     return true;
   }
   protected @java.lang.SuppressWarnings("all") @lombok.Generated boolean canEqual(final java.lang.Object other) {
-    return (other instanceof JacksonJsonProperty3);
+    return (other instanceof JacksonJsonProperty2);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated int hashCode() {
     final int PRIME = 59;
@@ -58,9 +58,9 @@ public @Data class JacksonJsonProperty3 {
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
-    return (((((("JacksonJsonProperty3(propertyOne=" + this.getPropertyOne()) + ", propertyTwo=") + this.getPropertyTwo()) + ", additional=") + this.getAdditional()) + ")");
+    return (((((("JacksonJsonProperty2(propertyOne=" + this.getPropertyOne()) + ", propertyTwo=") + this.getPropertyTwo()) + ", additional=") + this.getAdditional()) + ")");
   }
-  public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonJsonProperty3() {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonJsonProperty2() {
     super();
   }
 }
