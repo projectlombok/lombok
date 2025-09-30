@@ -163,7 +163,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
 		String setterName = toSetterName(fieldNode, isBoolean, accessors);
 		boolean shouldReturnThis = shouldReturnThis(fieldNode, accessors);
-		boolean fluent = accessors.isExplicit("fluent");		
+		boolean fluent = accessors.isExplicit("fluent");	
+		
 		if (setterName == null) {
 			fieldNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
 			return;
