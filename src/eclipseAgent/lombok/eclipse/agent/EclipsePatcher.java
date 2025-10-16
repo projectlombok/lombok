@@ -103,6 +103,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchASTConverterLiterals(sm);
 		patchASTNodeSearchUtil(sm);
 		patchFieldInitializer(sm);
+		patchFoldingStructure(sm);
 		
 		patchPostCompileHookEcj(sm);
 		
@@ -1071,6 +1072,30 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1, StackRequest.PARAM2)
 				.transplant()
 				.build());
+	}
+	
+	private static void patchFoldingStructure(ScriptManager sm) {
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
+			.target(new MethodTarget("org.eclipse.jdt.ui.text.folding.DefaultJavaFoldingStructureProvider$FoldingVisitor", "createFoldingRegionForTryBlock", "void", "org.eclipse.jdt.core.dom.TryStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.ui.text.folding.DefaultJavaFoldingStructureProvider$FoldingVisitor", "createFoldingRegionForFinallyBlock", "void", "org.eclipse.jdt.core.dom.TryStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.ui.text.folding.DefaultJavaFoldingStructureProvider$FoldingVisitor", "createFoldingRegionForStatement", "void", "org.eclipse.jdt.core.dom.ASTNode"))
+			.target(new MethodTarget("org.eclipse.jdt.ui.text.folding.DefaultJavaFoldingStructureProvider$FoldingVisitor", "createFoldingRegion", "void", "org.eclipse.jdt.core.dom.ASTNode", "boolean"))
+			.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
+			.request(StackRequest.PARAM1)
+			.transplant()
+			.build());
+		
+		sm.addScriptIfWitness(OSGI_TYPES, ScriptBuilder.exitEarly()
+			.target(new MethodTarget("org.eclipse.jdt.ui.text.folding.DefaultJavaFoldingStructureProvider$FoldingVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.TypeDeclaration"))
+			.target(new MethodTarget("org.eclipse.jdt.ui.text.folding.DefaultJavaFoldingStructureProvider$FoldingVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.MethodDeclaration"))
+			.target(new MethodTarget("org.eclipse.jdt.ui.text.folding.DefaultJavaFoldingStructureProvider$FoldingVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.IfStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.ui.text.folding.DefaultJavaFoldingStructureProvider$FoldingVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.IfStatement"))
+			.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
+			.request(StackRequest.PARAM1)
+			.valueMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "returnFalse", "boolean", "java.lang.Object"))
+			.transplant()
+			.build());
+		
 	}
 	
 	private static void patchFieldInitializer(ScriptManager sm) {
