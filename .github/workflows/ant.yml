@@ -96,10 +96,12 @@ jobs:
           - eclipse-202006-jdk8
           - eclipse-202403
           - eclipse-202503
+          - eclipse-202509
           - eclipse-I-build
           - eclipse-oxygen-full
           - eclipse-202403-full
           - eclipse-202503-full
+          - eclipse-202509-full
           - eclipse-I-build-full
           - ecj11
           - ecj14
