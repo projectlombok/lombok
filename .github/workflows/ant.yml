@@ -150,10 +150,10 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [8, 11, 17, 21, 23]
+        jdk: [8, 11, 17, 21, 25]
         tool: 
           - {name: "maven",  cmd: "mvn compile"}
-          - {name: "gradle", cmd: "gradle assemble"}
+          - {name: "gradle", cmd: "gradle assemble", buildArgs: {"25": "--build-arg gradle=9.1.0"}}
           - {name: "ant",    cmd: "ant dist"}
           - {name: "bazel",  cmd: "bazel build //:ProjectRunner"}
       fail-fast: false
@@ -170,7 +170,7 @@ jobs:
         
       - name: Build container
         working-directory: ./docker
-        run: docker build --build-arg jdk=${{ matrix.jdk }} -t $IMAGE_NAME -f ${{ matrix.tool.name }}/Dockerfile .
+        run: docker build --build-arg jdk=${{ matrix.jdk }} ${{ matrix.tool.buildArgs[matrix.jdk] }} -t $IMAGE_NAME -f ${{ matrix.tool.name }}/Dockerfile .
         
       - name: Compile in container
         run: docker run --entrypoint="" -v $(pwd)/lombok.jar:/workspace/lombok.jar $IMAGE_NAME /bin/bash -c "cd classpath; ${{ matrix.tool.cmd }}"
@@ -180,7 +180,7 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [8, 11, 17, 21, 23]
+        jdk: [8, 11, 17, 21, 25]
         dir: [compileTests]
       fail-fast: false
     
