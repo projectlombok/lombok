@@ -1,5 +1,6 @@
 //version 8: Jackson deps are at least Java7+.
 //CONF: lombok.builder.className = Test*Name
+//CONF: lombok.jacksonized.jacksonVersion = 2_3
 import java.util.List;
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;

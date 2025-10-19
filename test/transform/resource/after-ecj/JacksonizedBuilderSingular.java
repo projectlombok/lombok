@@ -7,8 +7,8 @@ import com.google.common.collect.ImmutableMap;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.extern.jackson.Jacksonized;
-public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder.class) class JacksonizedBuilderSingular {
-  public static @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") class JacksonizedBuilderSingularBuilder {
+public @Jacksonized @Builder @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder.class) @tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder.class) class JacksonizedBuilderSingular {
+  public static @java.lang.SuppressWarnings("all") @lombok.Generated @com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") @tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "",buildMethodName = "build") class JacksonizedBuilderSingularBuilder {
     private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> any$key;
     private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<Object> any$value;
     private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> values;

@@ -29,6 +29,7 @@ import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
 import lombok.core.configuration.IdentifierName;
+import lombok.core.configuration.JacksonVersion;
 import lombok.core.configuration.LogDeclaration;
 import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -711,6 +712,15 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> JACKSONIZED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.jacksonized.flagUsage", "Emit a warning or error if @Jacksonized is used.") {};
 	
+
+	/**
+	 * lombok configuration: {@code lombok.jacksonized.jacksonVersion} = {@code 2} | {@code 3} | {@code 2_3}.
+	 *
+	 * The jackson major version to use.
+	 */
+	public static final ConfigurationKey<JacksonVersion> JACKSONIZED_JACKSON_VERSION = new ConfigurationKey<JacksonVersion>("lombok.jacksonized.jacksonVersion", "Select the jackson major version to use (default: 2)") {};
+
+
 	// ----- Configuration System -----
 	
 	/**

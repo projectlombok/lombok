@@ -3,6 +3,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSimple.JacksonizedBuilderSimpleBuilder.class)
+@tools.jackson.databind.annotation.JsonDeserialize(builder = JacksonizedBuilderSimple.JacksonizedBuilderSimpleBuilder.class)
 class JacksonizedBuilderSimple<T> {
 	private final int noshow = 0;
 	private final int yes;
@@ -18,6 +19,7 @@ class JacksonizedBuilderSimple<T> {
 	@lombok.Generated
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
+	@tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "", buildMethodName = "build")
 	protected static class JacksonizedBuilderSimpleBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
