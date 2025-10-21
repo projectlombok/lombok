@@ -208,6 +208,7 @@ public class JavacSingularsRecipes {
 				}
 				case METHOD: {
 					JCMethodDecl method = (JCMethodDecl) child.get();
+					if (isTolerate(child, method)) continue;
 					Name name = method.name;
 					if (name == null) break;
 					if (getGeneratedBy(method) != null) continue;
