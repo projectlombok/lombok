@@ -307,7 +307,7 @@ public class ConfigurationKeys {
 	 * If {@code true}, require a {@code @ToString.Include} annotation on any fields/no-args methods you want to include in lombok's generated `@ToString` method. Otherwise, every (non-static, non-dollar-named) field is included by default  (default = false).
 	 */
 	public static final ConfigurationKey<Boolean> TO_STRING_ONLY_EXPLICITLY_INCLUDED = new ConfigurationKey<Boolean>("lombok.toString.onlyExplicitlyIncluded", "Include only fields/methods explicitly marked with @ToString.Include. Otherwise, include all non-static, non-dollar-named fields (default = false).") {};
-	
+
 	// ----- Builder -----
 	
 	/**
