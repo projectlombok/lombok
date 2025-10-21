@@ -16,6 +16,6 @@ final @UtilityClass class UtilityClassGeneric {
   }
   private @java.lang.SuppressWarnings("all") @lombok.Generated UtilityClassGeneric() {
     super();
-    throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    throw new java.lang.AssertionError("This is a utility class and cannot be instantiated");
   }
 }
