@@ -1,4 +1,5 @@
 /*
+
  * Copyright (C) 2013-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -7,10 +8,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -56,7 +57,7 @@ import java.lang.annotation.Target;
  * <br>
  * <p>
  * Before:
- * 
+ *
  * <pre>
  * &#064;Builder
  * class Example&lt;T&gt; {
@@ -64,138 +65,149 @@ import java.lang.annotation.Target;
  * 	private final String bar;
  * }
  * </pre>
- * 
+ * <p>
  * After:
- * 
+ *
  * <pre>
  * class Example&lt;T&gt; {
  * 	private T foo;
  * 	private final String bar;
- * 	
+ *
  * 	private Example(T foo, String bar) {
  * 		this.foo = foo;
  * 		this.bar = bar;
- * 	}
- * 	
+ *    }
+ *
  * 	public static &lt;T&gt; ExampleBuilder&lt;T&gt; builder() {
  * 		return new ExampleBuilder&lt;T&gt;();
- * 	}
- * 	
+ *    }
+ *
  * 	public static class ExampleBuilder&lt;T&gt; {
  * 		private T foo;
  * 		private String bar;
- * 		
+ *
  * 		private ExampleBuilder() {}
- * 		
+ *
  * 		public ExampleBuilder foo(T foo) {
  * 			this.foo = foo;
  * 			return this;
- * 		}
- * 		
+ *        }
+ *
  * 		public ExampleBuilder bar(String bar) {
  * 			this.bar = bar;
  * 			return this;
- * 		}
- * 		
+ *        }
+ *
  * 		&#064;java.lang.Override public String toString() {
  * 			return "ExampleBuilder(foo = " + foo + ", bar = " + bar + ")";
- * 		}
- * 		
+ *        }
+ *
  * 		public Example build() {
  * 			return new Example(foo, bar);
- * 		}
- * 	}
+ *        }
+ *    }
  * }
  * </pre>
- * 
+ *
  * @see Singular
  */
 @Target({TYPE, METHOD, CONSTRUCTOR})
 @Retention(SOURCE)
 public @interface Builder {
-	/**
-	 * The field annotated with {@code @Default} must have an initializing expression; that expression is taken as the default to be used if not explicitly set during building.
-	 */
-	@Target(FIELD)
-	@Retention(SOURCE)
-	public @interface Default {}
+    /**
+     * The field annotated with {@code @Default} must have an initializing expression; that expression is taken as the default to be used if not explicitly set during building.
+     */
+    @Target(FIELD)
+    @Retention(SOURCE)
+    public @interface Default {
+    }
 
-	/** @return Name of the method that creates a new builder instance. Default: {@code builder}. If the empty string, suppress generating the {@code builder} method. */
-	String builderMethodName() default "builder";
-	
-	/** @return Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
-	String buildMethodName() default "build";
-	
-	/**
-	 * Name of the builder class.
-	 * 
-	 * Default for {@code @Builder} on types and constructors: see the configkey {@code lombok.builder.className}, which if not set defaults to {@code (TypeName)Builder}.
-	 * <p>
-	 * Default for {@code @Builder} on methods: see the configkey {@code lombok.builder.className}, which if not set defaults to {@code (ReturnTypeName)Builder}.
-	 * 
-	 * @return Name of the builder class that will be generated (or if it already exists, will be filled with builder elements).
-	 */
-	String builderClassName() default "";
-	
-	/**
-	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
-	 * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns
-	 * an instance of the declaring type.
-	 * 
-	 * @return Whether to generate a {@code toBuilder()} method.
-	 */
-	boolean toBuilder() default false;
-	
-	/**
-	 * Sets the access level of the generated builder class. By default, generated builder classes are {@code public}.
-	 * Note: This does nothing if you write your own builder class (we won't change its access level).
-	 * 
-	 * @return The builder class will be generated with this access modifier.
-	 */
-	AccessLevel access() default lombok.AccessLevel.PUBLIC;
+    /**
+     * @return Name of the method that creates a new builder instance. Default: {@code builder}. If the empty string, suppress generating the {@code builder} method.
+     */
+    String builderMethodName() default "builder";
 
-	/**
-	 * Prefix to prepend to 'set' methods in the generated builder class.  By default, generated methods do not include a prefix.
-	 *
-	 * For example, a method normally generated as {@code someField(String someField)} would instead be
-	 * generated as {@code withSomeField(String someField)} if using {@code @Builder(setterPrefix = "with")}.
-	 *
-	 * Note that using "with" to prefix builder setter methods is strongly discouraged as "with" normally
-	 * suggests immutable data structures, and builders by definition are mutable objects.
-	 * 
-	 * For {@code @Singular} fields, the generated methods are called {@code withName}, {@code withNames}, and {@code clearNames}, instead of
-	 * the default {@code name}, {@code names}, and {@code clearNames}.
-	 * 
-	 * @return The prefix to prepend to generated method names.
-	 */
-	String setterPrefix() default "";
-	
-	/**
-	 * Put on a field (in case of {@code @Builder} on a type) or a parameter (for {@code @Builder} on a constructor or static method) to
-	 * indicate how lombok should obtain a value for this field or parameter given an instance; this is only relevant if {@code toBuilder} is {@code true}.
-	 * 
-	 * You do not need to supply an {@code @ObtainVia} annotation unless you wish to change the default behaviour: Use a field with the same name.
-	 * <p>
-	 * Note that one of {@code field} or {@code method} should be set, or an error is generated.
-	 * <p>
-	 * The default behaviour is to obtain a value by referencing the name of the parameter as a field on 'this'.
-	 */
-	@Target({FIELD, PARAMETER})
-	@Retention(SOURCE)
-	public @interface ObtainVia {
-		/**
-		 * @return Tells lombok to obtain a value with the expression {@code this.value}.
-		 */
-		String field() default "";
-		
-		/**
-		 * @return Tells lombok to obtain a value with the expression {@code this.method()}.
-		 */
-		String method() default "";
-		
-		/**
-		 * @return Tells lombok to obtain a value with the expression {@code SelfType.method(this)}; requires {@code method} to be set.
-		 */
-		boolean isStatic() default false;
-	}
+    /**
+     * @return Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class.
+     */
+    String buildMethodName() default "build";
+
+    /**
+     * Name of the builder class.
+     * <p>
+     * Default for {@code @Builder} on types and constructors: see the configkey {@code lombok.builder.className}, which if not set defaults to {@code (TypeName)Builder}.
+     * <p>
+     * Default for {@code @Builder} on methods: see the configkey {@code lombok.builder.className}, which if not set defaults to {@code (ReturnTypeName)Builder}.
+     *
+     * @return Name of the builder class that will be generated (or if it already exists, will be filled with builder elements).
+     */
+    String builderClassName() default "";
+
+    /**
+     * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
+     * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns
+     * an instance of the declaring type.
+     *
+     * @return Whether to generate a {@code toBuilder()} method.
+     */
+    boolean toBuilder() default false;
+
+    /**
+     * Sets the access level of the generated builder class. By default, generated builder classes are {@code public}.
+     * Note: This does nothing if you write your own builder class (we won't change its access level).
+     *
+     * @return The builder class will be generated with this access modifier.
+     */
+    AccessLevel access() default lombok.AccessLevel.PUBLIC;
+
+    /**
+     * Prefix to prepend to 'set' methods in the generated builder class.  By default, generated methods do not include a prefix.
+     * <p>
+     * For example, a method normally generated as {@code someField(String someField)} would instead be
+     * generated as {@code withSomeField(String someField)} if using {@code @Builder(setterPrefix = "with")}.
+     * <p>
+     * Note that using "with" to prefix builder setter methods is strongly discouraged as "with" normally
+     * suggests immutable data structures, and builders by definition are mutable objects.
+     * <p>
+     * For {@code @Singular} fields, the generated methods are called {@code withName}, {@code withNames}, and {@code clearNames}, instead of
+     * the default {@code name}, {@code names}, and {@code clearNames}.
+     *
+     * @return The prefix to prepend to generated method names.
+     */
+    String setterPrefix() default "";
+
+    Class<?> extendsClass() default Void.class;
+
+    Class<?>[] implementsClasses() default {};
+
+    boolean serializable() default false;
+
+    /**
+     * Put on a field (in case of {@code @Builder} on a type) or a parameter (for {@code @Builder} on a constructor or static method) to
+     * indicate how lombok should obtain a value for this field or parameter given an instance; this is only relevant if {@code toBuilder} is {@code true}.
+     * <p>
+     * You do not need to supply an {@code @ObtainVia} annotation unless you wish to change the default behaviour: Use a field with the same name.
+     * <p>
+     * Note that one of {@code field} or {@code method} should be set, or an error is generated.
+     * <p>
+     * The default behaviour is to obtain a value by referencing the name of the parameter as a field on 'this'.
+     */
+    @Target({FIELD, PARAMETER})
+    @Retention(SOURCE)
+    public @interface ObtainVia {
+        /**
+         * @return Tells lombok to obtain a value with the expression {@code this.value}.
+         */
+        String field() default "";
+
+        /**
+         * @return Tells lombok to obtain a value with the expression {@code this.method()}.
+         */
+        String method() default "";
+
+        /**
+         * @return Tells lombok to obtain a value with the expression {@code SelfType.method(this)}; requires {@code method} to be set.
+         */
+        boolean isStatic() default false;
+    }
 }
