@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2025 The Project Lombok Authors.
+ * Copyright (C) 2025 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,24 @@
  */
 package lombok.eclipse;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.junit.Assume.assumeTrue;
 
-import lombok.eclipse.cleanup.CleanupTest;
-import lombok.eclipse.compile.NoErrorsTest;
-import lombok.eclipse.edit.FoldingTest;
-import lombok.eclipse.edit.SelectTest;
-import lombok.eclipse.misc.DelegateTest;
-import lombok.eclipse.misc.JavadocTest;
-import lombok.eclipse.refactoring.ExtractInterfaceTest;
-import lombok.eclipse.refactoring.ExtractVariableTest;
-import lombok.eclipse.refactoring.InlineTest;
-import lombok.eclipse.refactoring.RenameTest;
-import lombok.eclipse.references.FindReferencesTest;
+import org.eclipse.core.runtime.adaptor.EclipseStarter;
+import org.osgi.framework.Bundle;
 
-@RunWith(Suite.class)
-@SuiteClasses({ExtractInterfaceTest.class, RenameTest.class, SelectTest.class, CleanupTest.class, FindReferencesTest.class, InlineTest.class, NoErrorsTest.class, JavadocTest.class, DelegateTest.class, ExtractVariableTest.class, FoldingTest.class})
-public class EclipseTests {
+public class TestUtils {
+	public static void assumeMinJdtVersion(int version) {
+		Bundle coreBundle = getBundle("org.eclipse.jdt.core");
+		
+		assumeTrue(coreBundle.getVersion().getMinor() >= version);
+	}
 	
+	public static Bundle getBundle(String name) {
+		for (Bundle bundle : EclipseStarter.getSystemBundleContext().getBundles()) {
+			if (bundle.getSymbolicName().equals(name)) {
+				return bundle;
+			}
+		}
+		return null;
+	}
 }
