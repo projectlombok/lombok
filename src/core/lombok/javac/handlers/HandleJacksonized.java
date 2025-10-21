@@ -60,6 +60,24 @@ import lombok.spi.Provides;
 @HandlerPriority(-512) // Above Handle(Super)Builder's level (builders must be already generated), but before all handlers generating getters/setters.
 public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	
+	private static enum JacksonAnnotations {
+		JSON_POJO_BUILDER("com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder"),
+		JSON_DESERIALIZE("com.fasterxml.jackson.databind.annotation.JsonDeserialize"),
+		JSON_PROPERTY("com.fasterxml.jackson.annotation.JsonProperty"),
+		JSON_IGNORE("com.fasterxml.jackson.annotation.JsonIgnore");
+		
+		private final String qualifiedName;
+		private final String[] chainedDots;
+		private JacksonAnnotations(final String qualifiedName) {
+			this.qualifiedName = qualifiedName;
+			this.chainedDots = qualifiedName.split("\\.");
+		}
+		
+		private boolean isAnnotating(JavacNode node) {
+			return hasAnnotation(this.qualifiedName, node);
+		}
+	}
+	
 	@Override public void handle(AnnotationValues<Jacksonized> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.JACKSONIZED_FLAG_USAGE, "@Jacksonized");
 		
@@ -100,22 +118,37 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			return;
 		}
 		
-		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
+		// Add @JsonProperty to all non-transient fields. It will be automatically copied to the getter/setters later.
+		// Add @JsonIgnore to all transient fields. It will be automatically copied to the getter/setters later.
 		for (JavacNode javacNode : tdNode.down()) {
 			if (javacNode.getKind() == Kind.FIELD) {
-				createJsonPropertyForField(javacNode, annotationNode);
+				if (JacksonAnnotations.JSON_PROPERTY.isAnnotating(javacNode) || 
+					JacksonAnnotations.JSON_IGNORE.isAnnotating(javacNode)) {
+					return;
+				} else if (javacNode.isTransient()) {
+					createJsonIgnoreForField(javacNode, annotationNode);
+				} else {
+					createJsonPropertyForField(javacNode, annotationNode);
+				}
 			}
 		}
 	}
 	
 	private void createJsonPropertyForField(JavacNode fieldNode, JavacNode annotationNode) {
-		if (hasAnnotation("com.fasterxml.jackson.annotation.JsonProperty", fieldNode)) {
-			return;
-		}
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
-		JCExpression jsonPropertyType = chainDots(fieldNode, "com", "fasterxml", "jackson", "annotation", "JsonProperty");
+		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotations.JSON_PROPERTY.chainedDots);
 		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.<JCExpression>of(maker.Literal(fieldNode.getName())));
+		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
+		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
+		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);
+	}
+	
+	private void createJsonIgnoreForField(JavacNode fieldNode, JavacNode annotationNode) {
+		JavacTreeMaker maker = fieldNode.getTreeMaker();
+		
+		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotations.JSON_IGNORE.chainedDots);
+		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.<JCExpression>nil());
 		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
 		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
 		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);
@@ -164,11 +197,11 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		
 		// Insert @JsonDeserialize on annotated class.
-		if (hasAnnotation("com.fasterxml.jackson.databind.annotation.JsonDeserialize", tdNode)) {
+		if (JacksonAnnotations.JSON_DESERIALIZE.isAnnotating(tdNode)) {
 			annotationNode.addError("@JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.");
 			return;
 		}
-		JCExpression jsonDeserializeType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonDeserialize");
+		JCExpression jsonDeserializeType = chainDots(annotatedNode, JacksonAnnotations.JSON_DESERIALIZE.chainedDots);
 		JCExpression builderClassExpression = namePlusTypeParamsToTypeReference(maker, tdNode, annotationNode.toName(builderClassName), false, List.<JCTypeParameter>nil());
 		JCFieldAccess builderClassReference = maker.Select(builderClassExpression, annotatedNode.toName("class"));
 		JCExpression assign = maker.Assign(maker.Ident(annotationNode.toName("builder")), builderClassReference);
@@ -185,7 +218,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		builderClass.mods.annotations = builderClass.mods.annotations.appendList(copiedAnnotations);
 		
 		// Insert @JsonPOJOBuilder on the builder class.
-		JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, "com", "fasterxml", "jackson", "databind", "annotation", "JsonPOJOBuilder");
+		JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, JacksonAnnotations.JSON_POJO_BUILDER.chainedDots);
 		JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
 		JCExpression buildMethodNameExpr = maker.Assign(maker.Ident(annotationNode.toName("buildMethodName")), maker.Literal(buildMethodName));
 		JCAnnotation annotationJsonPOJOBuilder = maker.Annotation(jsonPOJOBuilderType, List.of(withPrefixExpr, buildMethodNameExpr));
