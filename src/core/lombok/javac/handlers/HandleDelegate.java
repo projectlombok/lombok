@@ -34,11 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -71,6 +67,7 @@ import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
+import lombok.core.handlers.HandlerUtil;
 import lombok.experimental.Delegate;
 import lombok.javac.FindTypeVarScanner;
 import lombok.javac.JavacAnnotationHandler;
@@ -295,16 +292,20 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		
 		JavacTreeMaker maker = annotation.getTreeMaker();
 		
-		com.sun.tools.javac.util.List<JCAnnotation> annotations;
+		ArrayList<JCAnnotation> methodAnnotationsToCopy = new ArrayList<JCAnnotation>();
 		if (sig.isDeprecated) {
-			annotations = com.sun.tools.javac.util.List.of(maker.Annotation(
+			methodAnnotationsToCopy.add(maker.Annotation(
 					genJavaLangTypeRef(annotation, "Deprecated"),
 					com.sun.tools.javac.util.List.<JCExpression>nil()));
-		} else {
-			annotations = com.sun.tools.javac.util.List.nil();
 		}
-		
-		JCModifiers mods = maker.Modifiers(PUBLIC, annotations);
+		Set<String> copyableAnnotations = JavacHandlerUtil.getCopyableAnnotationsForDelegate(annotation);
+		for (Compound sigAnnotation : sig.annotations) {
+			if (copyableAnnotations.contains(sigAnnotation.type.tsym.flatName().toString())) {
+				methodAnnotationsToCopy.add(maker.Annotation(sigAnnotation));
+			}
+		}
+
+		JCModifiers mods = maker.Modifiers(PUBLIC, com.sun.tools.javac.util.List.from(methodAnnotationsToCopy.toArray(new JCAnnotation[0])));
 		JCExpression returnType = JavacResolution.typeToJCTree((Type) sig.type.getReturnType(), annotation.getAst(), true);
 		boolean useReturn = sig.type.getReturnType().getKind() != TypeKind.VOID;
 		ListBuffer<JCVariableDecl> params = sig.type.getParameterTypes().isEmpty() ? null : new ListBuffer<JCVariableDecl>();
@@ -329,18 +330,26 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		for (TypeMirror ex : sig.type.getThrownTypes()) {
 			thrown.append(JavacResolution.typeToJCTree((Type) ex, annotation.getAst(), true));
 		}
-		
-		int idx = 0;
-		String[] paramNames = sig.getParameterNames();
+
 		boolean varargs = sig.elem.isVarArgs();
-		for (TypeMirror param : sig.type.getParameterTypes()) {
+		ParameterSig[] paramSigs = sig.getParameters();
+		for (int idx = 0; idx < paramSigs.length; idx++) {
+			ParameterSig paramSig = paramSigs[idx];
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, annotation.getContext());
-			JCModifiers paramMods = maker.Modifiers(flags);
-			Name name = annotation.toName(paramNames[idx++]);
-			if (varargs && idx == paramNames.length) {
+
+			List<JCAnnotation> paramAnnotationsToCopy = new ArrayList<JCAnnotation>();
+			for (AnnotationMirror b : paramSig.annotations) {
+				String fqn = ((TypeElement) b.getAnnotationType().asElement()).getQualifiedName().toString();
+				if (copyableAnnotations.contains(fqn)) {
+					paramAnnotationsToCopy.add(maker.Annotation((Compound) b));
+				}
+			}
+			JCModifiers paramMods = maker.Modifiers(flags, com.sun.tools.javac.util.List.from(paramAnnotationsToCopy.toArray(new JCAnnotation[0])));
+			Name name = annotation.toName(paramSig.name);
+			if (varargs && idx == paramSigs.length - 1) {
 				paramMods.flags |= VARARGS;
 			}
-			params.append(maker.VarDef(paramMods, name, JavacResolution.typeToJCTree((Type) param, annotation.getAst(), true), null));
+			params.append(maker.VarDef(paramMods, name, JavacResolution.typeToJCTree((Type) paramSig.type, annotation.getAst(), true), null));
 			args.append(maker.Ident(name));
 		}
 		
@@ -369,6 +378,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		if (tsym == null) return;
 		
 		for (Symbol member : tsym.getEnclosedElements()) {
+			ArrayList<Compound> annotations = new ArrayList<Compound>();
 			for (Compound am : member.getAnnotationMirrors()) {
 				String name = null;
 				try {
@@ -378,6 +388,9 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 				if ("lombok.Delegate".equals(name) || "lombok.experimental.Delegate".equals(name)) {
 					throw new DelegateRecursion(ct.tsym.name.toString(), member.name.toString());
 				}
+
+				annotations.add(am);
+
 			}
 			if (member.getKind() != ElementKind.METHOD) continue;
 			if (member.isStatic()) continue;
@@ -388,7 +401,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			String sig = printSig(methodType, member.name, types);
 			if (!banList.add(sig)) continue; //If add returns false, it was already in there
 			boolean isDeprecated = (member.flags() & DEPRECATED) != 0;
-			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem));
+			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem, annotations));
 		}
 
 		for (Type type : types.directSupertypes(ct)) {
@@ -403,28 +416,47 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		final ExecutableType type;
 		final boolean isDeprecated;
 		final ExecutableElement elem;
-		
-		MethodSig(Name name, ExecutableType type, boolean isDeprecated, ExecutableElement elem) {
+		final List<Compound> annotations;
+
+		MethodSig(Name name, ExecutableType type, boolean isDeprecated, ExecutableElement elem, List<Compound> annotations) {
 			this.name = name;
 			this.type = type;
 			this.isDeprecated = isDeprecated;
 			this.elem = elem;
+			this.annotations = annotations;
 		}
 		
-		String[] getParameterNames() {
-			List<? extends VariableElement> paramList = elem.getParameters();
-			String[] paramNames = new String[paramList.size()];
-			for (int i = 0; i < paramNames.length; i++) {
-				paramNames[i] = paramList.get(i).getSimpleName().toString();
+		ParameterSig[] getParameters() {
+			VariableElement[] params = elem.getParameters().toArray(new VariableElement[0]);
+			TypeMirror[] paramTypes = type.getParameterTypes().toArray(new TypeMirror[0]);
+			ParameterSig[] parameterSigs = new ParameterSig[params.length];
+			for (int i = 0; i < parameterSigs.length; i++) {
+				parameterSigs[i] = new ParameterSig(
+						params[i].getSimpleName().toString(),
+						paramTypes[i],
+						params[i].getAnnotationMirrors()
+				);
 			}
-			return paramNames;
+			return parameterSigs;
 		}
 		
 		@Override public String toString() {
 			return (isDeprecated ? "@Deprecated " : "") + name + " " + type;
 		}
 	}
-	
+
+	public static class ParameterSig {
+		final String name;
+		final TypeMirror type;
+		final List<? extends AnnotationMirror> annotations;
+
+		ParameterSig(String name, TypeMirror type, List<? extends AnnotationMirror> annotations) {
+			this.name = name;
+			this.type = type;
+			this.annotations = annotations;
+		}
+	}
+
 	public static String printSig(ExecutableType method, Name name, JavacTypes types) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name.toString()).append("(");
