@@ -52,6 +52,7 @@ import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -167,13 +168,18 @@ public class EclipseJavaUtilOptionalSingularizer extends EclipseSingularizer {
 	}
 
 	private void generateClearMethod(CheckerFrameworkVersion cfv, boolean deprecate, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, SingularData data, EclipseNode builderType, AccessLevel access) {
+		char[] valueFieldName = (new String(data.getSingularName()) + "$value").toCharArray();
 		char[] setFieldName = (new String(data.getSingularName()) + "$set").toCharArray();
 
 		List<Statement> statements = new ArrayList<Statement>();
 
+		FieldReference thisDotValueField = new FieldReference(valueFieldName, 0L);
+		thisDotValueField.receiver = new ThisReference(0, 0);
+
 		FieldReference thisDotSetField = new FieldReference(setFieldName, 0L);
 		thisDotSetField.receiver = new ThisReference(0, 0);
 
+		statements.add(new Assignment(thisDotValueField, new NullLiteral(0, 0), 0));
 		statements.add(new Assignment(thisDotSetField, new FalseLiteral(0, 0), 0));
 
 		Statement returnStatement = returnStatementMaker.make();

@@ -135,9 +135,13 @@ public class JavacJavaUtilOptionalSingularizer extends JavacSingularizer {
 	private void generateClearMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JavacNode source, AccessLevel access) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 
+		Name valueFieldName = builderType.toName(data.getSingularName() + "$value");
 		Name setFieldName = builderType.toName(data.getSingularName() + "$set");
+
+		JCExpression thisDotValueField = maker.Select(maker.Ident(builderType.toName("this")), valueFieldName);
 		JCExpression thisDotSetField = maker.Select(maker.Ident(builderType.toName("this")), setFieldName);
 
+		statements.append(maker.Exec(maker.Assign(thisDotValueField, maker.Literal(CTC_BOT, null))));
 		statements.append(maker.Exec(maker.Assign(thisDotSetField, maker.Literal(CTC_BOOLEAN, 0))));
 
 		if (returnStatement != null) statements.append(returnStatement);
@@ -156,9 +160,16 @@ public class JavacJavaUtilOptionalSingularizer extends JavacSingularizer {
 	}
 
 	@Override protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType) {
+		Name valueFieldName = builderType.toName(data.getSingularName() + "$value");
 		Name setFieldName = builderType.toName(data.getSingularName() + "$set");
+
+		JCExpression thisDotValueField = maker.Select(maker.Ident(builderType.toName("this")), valueFieldName);
 		JCExpression thisDotSetField = maker.Select(maker.Ident(builderType.toName("this")), setFieldName);
-		return maker.Exec(maker.Assign(thisDotSetField, maker.Literal(CTC_BOOLEAN, 0)));
+
+		JCStatement clearValue = maker.Exec(maker.Assign(thisDotValueField, maker.Literal(CTC_BOT, null)));
+		JCStatement clearSet = maker.Exec(maker.Assign(thisDotSetField, maker.Literal(CTC_BOOLEAN, 0)));
+
+		return maker.Block(0, List.of(clearValue, clearSet));
 	}
 
 	@Override protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {

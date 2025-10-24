@@ -37,6 +37,7 @@ class BuilderSingularOptional<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOptional.BuilderSingularOptionalBuilder<T> clearValue() {
+			this.value$value = null;
 			this.value$set = false;
 			return this;
 		}
@@ -50,6 +51,7 @@ class BuilderSingularOptional<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOptional.BuilderSingularOptionalBuilder<T> clearName() {
+			this.name$value = null;
 			this.name$set = false;
 			return this;
 		}

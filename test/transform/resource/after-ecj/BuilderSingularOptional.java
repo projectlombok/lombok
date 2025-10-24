@@ -15,6 +15,7 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularOptional.BuilderSingularOptionalBuilder<T> clearValue() {
+      this.value$value = null;
       this.value$set = false;
       return this;
     }
@@ -24,6 +25,7 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") @lombok.Generated BuilderSingularOptional.BuilderSingularOptionalBuilder<T> clearName() {
+      this.name$value = null;
       this.name$set = false;
       return this;
     }
