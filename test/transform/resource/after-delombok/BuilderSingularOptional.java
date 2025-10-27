@@ -16,13 +16,7 @@ class BuilderSingularOptional<T> {
 		private T value$value;
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
-		private boolean value$set;
-		@java.lang.SuppressWarnings("all")
-		@lombok.Generated
 		private String name$value;
-		@java.lang.SuppressWarnings("all")
-		@lombok.Generated
-		private boolean name$set;
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		BuilderSingularOptionalBuilder() {
@@ -31,37 +25,31 @@ class BuilderSingularOptional<T> {
 		@lombok.Generated
 		public BuilderSingularOptional.BuilderSingularOptionalBuilder<T> value(final T value) {
 			this.value$value = value;
-			this.value$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOptional.BuilderSingularOptionalBuilder<T> clearValue() {
 			this.value$value = null;
-			this.value$set = false;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOptional.BuilderSingularOptionalBuilder<T> name(final String name) {
 			this.name$value = name;
-			this.name$set = true;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOptional.BuilderSingularOptionalBuilder<T> clearName() {
 			this.name$value = null;
-			this.name$set = false;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOptional<T> build() {
-			java.util.Optional<T> value;
-			if (this.value$set) value = java.util.Optional.ofNullable(this.value$value); else value = java.util.Optional.empty();
-			java.util.Optional<String> name;
-			if (this.name$set) name = java.util.Optional.ofNullable(this.name$value); else name = java.util.Optional.empty();
+			java.util.Optional<T> value = java.util.Optional.ofNullable(this.value$value);
+			java.util.Optional<String> name = java.util.Optional.ofNullable(this.name$value);
 			return new BuilderSingularOptional<T>(value, name);
 		}
 		@java.lang.Override

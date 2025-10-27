@@ -48,11 +48,11 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -77,8 +77,7 @@ public class EclipseJavaUtilOptionalSingularizer extends EclipseSingularizer {
 
 	@Override public List<char[]> listFieldsToBeGenerated(SingularData data, EclipseNode builderType) {
 		char[] valueFieldName = (new String(data.getSingularName()) + "$value").toCharArray();
-		char[] setFieldName = (new String(data.getSingularName()) + "$set").toCharArray();
-		return Arrays.asList(valueFieldName, setFieldName);
+		return Collections.singletonList(valueFieldName);
 	}
 
 	@Override public List<char[]> listMethodsToBeGenerated(SingularData data, EclipseNode builderType) {
@@ -90,7 +89,6 @@ public class EclipseJavaUtilOptionalSingularizer extends EclipseSingularizer {
 
 	@Override public List<EclipseNode> generateFields(SingularData data, EclipseNode builderType) {
 		char[] valueFieldName = (new String(data.getSingularName()) + "$value").toCharArray();
-		char[] setFieldName = (new String(data.getSingularName()) + "$set").toCharArray();
 
 		FieldDeclaration valueField = new FieldDeclaration(valueFieldName, 0, 0);
 		valueField.type = cloneParamType(0, data.getTypeArgs(), builderType);
@@ -99,14 +97,7 @@ public class EclipseJavaUtilOptionalSingularizer extends EclipseSingularizer {
 		EclipseNode valueFieldNode = injectFieldAndMarkGenerated(builderType, valueField);
 		data.setGeneratedByRecursive(valueField);
 
-		FieldDeclaration setField = new FieldDeclaration(setFieldName, 0, 0);
-		setField.type = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
-		setField.modifiers = ClassFileConstants.AccPrivate;
-		setField.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		EclipseNode setFieldNode = injectFieldAndMarkGenerated(builderType, setField);
-		data.setGeneratedByRecursive(setField);
-
-		return Arrays.asList(valueFieldNode, setFieldNode);
+		return Collections.singletonList(valueFieldNode);
 	}
 
 	@Override public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
@@ -116,20 +107,15 @@ public class EclipseJavaUtilOptionalSingularizer extends EclipseSingularizer {
 
 	private void generateSingularMethod(CheckerFrameworkVersion cfv, boolean deprecate, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, SingularData data, EclipseNode builderType, boolean fluent, AccessLevel access) {
 		char[] valueFieldName = (new String(data.getSingularName()) + "$value").toCharArray();
-		char[] setFieldName = (new String(data.getSingularName()) + "$set").toCharArray();
 
 		List<Statement> statements = new ArrayList<Statement>();
 
 		FieldReference thisDotValueField = new FieldReference(valueFieldName, 0L);
 		thisDotValueField.receiver = new ThisReference(0, 0);
 
-		FieldReference thisDotSetField = new FieldReference(setFieldName, 0L);
-		thisDotSetField.receiver = new ThisReference(0, 0);
-
 		SingleNameReference paramRef = new SingleNameReference(data.getSingularName(), 0L);
 
 		statements.add(new Assignment(thisDotValueField, paramRef, 0));
-		statements.add(new Assignment(thisDotSetField, new TrueLiteral(0, 0), 0));
 
 		Statement returnStatement = returnStatementMaker.make();
 		if (returnStatement != null) statements.add(returnStatement);
@@ -169,18 +155,13 @@ public class EclipseJavaUtilOptionalSingularizer extends EclipseSingularizer {
 
 	private void generateClearMethod(CheckerFrameworkVersion cfv, boolean deprecate, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, SingularData data, EclipseNode builderType, AccessLevel access) {
 		char[] valueFieldName = (new String(data.getSingularName()) + "$value").toCharArray();
-		char[] setFieldName = (new String(data.getSingularName()) + "$set").toCharArray();
 
 		List<Statement> statements = new ArrayList<Statement>();
 
 		FieldReference thisDotValueField = new FieldReference(valueFieldName, 0L);
 		thisDotValueField.receiver = new ThisReference(0, 0);
 
-		FieldReference thisDotSetField = new FieldReference(setFieldName, 0L);
-		thisDotSetField.receiver = new ThisReference(0, 0);
-
 		statements.add(new Assignment(thisDotValueField, new NullLiteral(0, 0), 0));
-		statements.add(new Assignment(thisDotSetField, new FalseLiteral(0, 0), 0));
 
 		Statement returnStatement = returnStatementMaker.make();
 		if (returnStatement != null) statements.add(returnStatement);
@@ -205,36 +186,23 @@ public class EclipseJavaUtilOptionalSingularizer extends EclipseSingularizer {
 	}
 
 	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable) {
-		char[] setFieldName = (new String(data.getSingularName()) + "$set").toCharArray();
 		char[] valueFieldName = (new String(data.getSingularName()) + "$value").toCharArray();
 
 		TypeReference optionalType = new QualifiedTypeReference(JAVA_UTIL_OPTIONAL, NULL_POSS);
 		optionalType = addTypeArgs(1, false, builderType, optionalType, data.getTypeArgs());
 
-		LocalDeclaration varDefStat = new LocalDeclaration(data.getPluralName(), 0, 0);
-		varDefStat.type = optionalType;
-		statements.add(varDefStat);
-
-		FieldReference setFieldRef = new FieldReference(setFieldName, 0L);
-		setFieldRef.receiver = new SingleNameReference(builderVariable.toCharArray(), 0L);
-
 		FieldReference valueFieldRef = new FieldReference(valueFieldName, 0L);
 		valueFieldRef.receiver = new SingleNameReference(builderVariable.toCharArray(), 0L);
-
-		MessageSend emptyCall = new MessageSend();
-		emptyCall.receiver = new QualifiedNameReference(JAVA_UTIL_OPTIONAL, NULL_POSS, 0, 0);
-		emptyCall.selector = "empty".toCharArray();
 
 		MessageSend ofNullableCall = new MessageSend();
 		ofNullableCall.receiver = new QualifiedNameReference(JAVA_UTIL_OPTIONAL, NULL_POSS, 0, 0);
 		ofNullableCall.selector = "ofNullable".toCharArray();
 		ofNullableCall.arguments = new Expression[] {valueFieldRef};
 
-		Assignment assignValue = new Assignment(new SingleNameReference(data.getPluralName(), 0), ofNullableCall, 0);
-		Assignment assignEmpty = new Assignment(new SingleNameReference(data.getPluralName(), 0), emptyCall, 0);
-
-		IfStatement ifStat = new IfStatement(setFieldRef, assignValue, assignEmpty, 0, 0);
-		statements.add(ifStat);
+		LocalDeclaration varDefStat = new LocalDeclaration(data.getPluralName(), 0, 0);
+		varDefStat.type = optionalType;
+		varDefStat.initialization = ofNullableCall;
+		statements.add(varDefStat);
 	}
 
 	@Override public boolean shadowedDuringBuild() {

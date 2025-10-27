@@ -59,8 +59,7 @@ public class JavacJavaUtilOptionalSingularizer extends JavacSingularizer {
 
 	@Override public java.util.List<Name> listFieldsToBeGenerated(SingularData data, JavacNode builderType) {
 		Name valueFieldName = builderType.toName(data.getSingularName() + "$value");
-		Name setFieldName = builderType.toName(data.getSingularName() + "$set");
-		return java.util.Arrays.asList(valueFieldName, setFieldName);
+		return Collections.singletonList(valueFieldName);
 	}
 
 	@Override public java.util.List<Name> listMethodsToBeGenerated(SingularData data, JavacNode builderType) {
@@ -78,34 +77,30 @@ public class JavacJavaUtilOptionalSingularizer extends JavacSingularizer {
 		JCVariableDecl valueField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), builderType.toName(data.getSingularName() + "$value"), type, null);
 		JavacNode valueFieldNode = injectFieldAndMarkGenerated(builderType, valueField);
 
-		JCExpression boolType = maker.TypeIdent(CTC_BOOLEAN);
-		JCVariableDecl setField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), builderType.toName(data.getSingularName() + "$set"), boolType, null);
-		JavacNode setFieldNode = injectFieldAndMarkGenerated(builderType, setField);
-
-		return java.util.Arrays.asList(valueFieldNode, setFieldNode);
+		return Collections.singletonList(valueFieldNode);
 	}
 
 	@Override public void generateMethods(CheckerFrameworkVersion cfv, SingularData data, boolean deprecate, JavacNode builderType, JavacNode source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
-		JCExpression returnType = returnTypeMaker.make();
-		JCStatement returnStatement = returnStatementMaker.make();
 
-		generateSingularMethod(cfv, deprecate, maker, returnType, returnStatement, data, builderType, source, fluent, access);
-		generateClearMethod(cfv, deprecate, maker, returnType, returnStatement, data, builderType, source, access);
+		JCExpression returnType1 = returnTypeMaker.make();
+		JCStatement returnStatement1 = returnStatementMaker.make();
+		generateSingularMethod(cfv, deprecate, maker, returnType1, returnStatement1, data, builderType, source, fluent, access);
+
+		JCExpression returnType2 = returnTypeMaker.make();
+		JCStatement returnStatement2 = returnStatementMaker.make();
+		generateClearMethod(cfv, deprecate, maker, returnType2, returnStatement2, data, builderType, source, access);
 	}
 
 	private void generateSingularMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JavacNode source, boolean fluent, AccessLevel access) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 
 		Name valueFieldName = builderType.toName(data.getSingularName() + "$value");
-		Name setFieldName = builderType.toName(data.getSingularName() + "$set");
 		Name paramName = data.getSingularName();
 
 		JCExpression thisDotValueField = maker.Select(maker.Ident(builderType.toName("this")), valueFieldName);
-		JCExpression thisDotSetField = maker.Select(maker.Ident(builderType.toName("this")), setFieldName);
 
 		statements.append(maker.Exec(maker.Assign(thisDotValueField, maker.Ident(paramName))));
-		statements.append(maker.Exec(maker.Assign(thisDotSetField, maker.Literal(CTC_BOOLEAN, 1))));
 
 		if (returnStatement != null) statements.append(returnStatement);
 
@@ -136,13 +131,9 @@ public class JavacJavaUtilOptionalSingularizer extends JavacSingularizer {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 
 		Name valueFieldName = builderType.toName(data.getSingularName() + "$value");
-		Name setFieldName = builderType.toName(data.getSingularName() + "$set");
-
 		JCExpression thisDotValueField = maker.Select(maker.Ident(builderType.toName("this")), valueFieldName);
-		JCExpression thisDotSetField = maker.Select(maker.Ident(builderType.toName("this")), setFieldName);
 
 		statements.append(maker.Exec(maker.Assign(thisDotValueField, maker.Literal(CTC_BOT, null))));
-		statements.append(maker.Exec(maker.Assign(thisDotSetField, maker.Literal(CTC_BOOLEAN, 0))));
 
 		if (returnStatement != null) statements.append(returnStatement);
 
@@ -161,15 +152,8 @@ public class JavacJavaUtilOptionalSingularizer extends JavacSingularizer {
 
 	@Override protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType) {
 		Name valueFieldName = builderType.toName(data.getSingularName() + "$value");
-		Name setFieldName = builderType.toName(data.getSingularName() + "$set");
-
 		JCExpression thisDotValueField = maker.Select(maker.Ident(builderType.toName("this")), valueFieldName);
-		JCExpression thisDotSetField = maker.Select(maker.Ident(builderType.toName("this")), setFieldName);
-
-		JCStatement clearValue = maker.Exec(maker.Assign(thisDotValueField, maker.Literal(CTC_BOT, null)));
-		JCStatement clearSet = maker.Exec(maker.Assign(thisDotSetField, maker.Literal(CTC_BOOLEAN, 0)));
-
-		return maker.Block(0, List.of(clearValue, clearSet));
+		return maker.Exec(maker.Assign(thisDotValueField, maker.Literal(CTC_BOT, null)));
 	}
 
 	@Override protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
@@ -192,27 +176,18 @@ public class JavacJavaUtilOptionalSingularizer extends JavacSingularizer {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
 
-		Name setFieldName = builderType.toName(data.getSingularName() + "$set");
 		Name valueFieldName = builderType.toName(data.getSingularName() + "$value");
 
 		JCExpression optionalType = chainDots(builderType, "java", "util", "Optional");
 		optionalType = addTypeArgs(1, false, builderType, optionalType, data.getTypeArgs(), source);
 
-		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0L), data.getPluralName(), optionalType, null);
-		statements.append(varDefStat);
-
 		Name builderVarName = builderType.toName(builderVariable);
-		JCExpression thisDotSetField = maker.Select(maker.Ident(builderVarName), setFieldName);
 		JCExpression thisDotValueField = maker.Select(maker.Ident(builderVarName), valueFieldName);
 
-		JCExpression emptyOptional = maker.Apply(jceBlank, chainDots(builderType, "java", "util", "Optional", "empty"), jceBlank);
-		JCStatement assignEmpty = maker.Exec(maker.Assign(maker.Ident(data.getPluralName()), emptyOptional));
-
 		JCExpression ofNullableCall = maker.Apply(jceBlank, chainDots(builderType, "java", "util", "Optional", "ofNullable"), List.of(thisDotValueField));
-		JCStatement assignValue = maker.Exec(maker.Assign(maker.Ident(data.getPluralName()), ofNullableCall));
 
-		JCStatement ifStat = maker.If(thisDotSetField, assignValue, assignEmpty);
-		statements.append(ifStat);
+		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0L), data.getPluralName(), optionalType, ofNullableCall);
+		statements.append(varDefStat);
 	}
 
 	@Override public boolean shadowedDuringBuild() {
