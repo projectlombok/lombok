@@ -66,6 +66,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface CustomLog {
 	/**
+	 * Sets the access level of the generated log field.
+	 * Default: {@code AccessLevel.PRIVATE}.
+	 * 
+	 * @return The constructed Logger method will be generated with this access modifier.
+	 */
+	AccessLevel access() default AccessLevel.PRIVATE;
+	
+	/**
 	 * 
 	 * Sets a custom topic/category. Note that this requires you to specify a parameter configuration for your custom logger that includes {@code TOPIC}.
 	 * 

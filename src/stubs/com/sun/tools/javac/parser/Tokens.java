@@ -14,6 +14,8 @@ public class Tokens {
 		
 		String getText();
 		
+		Comment stripIndent();
+		
 		JCDiagnostic.DiagnosticPosition getPos();
 		
 		int getSourcePos(int index);
