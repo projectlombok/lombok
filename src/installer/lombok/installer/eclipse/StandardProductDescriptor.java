@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Project Lombok Authors.
+ * Copyright (C) 2016-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@ package lombok.installer.eclipse;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -133,8 +132,17 @@ public class StandardProductDescriptor implements EclipseProductDescriptor {
 	}
 	
 	private static List<String> executableNames(String baseName) {
-		String base = baseName.toLowerCase();
-		return Collections.unmodifiableList(Arrays.asList(base, base + ".app", base + ".exe", base + "c.exe"));
+		String[] bases = new String[] {baseName, baseName.toLowerCase()};
+		String[] suffixes = new String[] {"", ".app", ".exe", "c.exe"};
+		
+		List<String> result = new ArrayList<String>();
+		
+		for (String base : bases) {
+			for (String suffix : suffixes) {
+				result.add(base + suffix);
+			}
+		}
+		return Collections.unmodifiableList(result);
 	}
 	
 	private static List<String> generateAlternatives(String[] roots, String pathSeparator, Collection<String> alternatives) {
