@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.43 "Edgy Guinea Pig"
-* No changes since v1.18.42 yet.
+* BUGFIX: On JDK25, `val` and `@ExtensionMethod` could sometimes cause erroneous errors (in that you see errors but compilation succeeds anyway) using javac. [#3947](https://github.com/projectlombok/lombok/issues/3947).
 
 ### v1.18.42 (September 18th, 2025)
 * FEATURE: All the various `@Log` annotations now allow you to change their access level (they still default to `private`). [#2280](https://github.com/projectlombok/lombok/issues/2280). Thanks to new contributor Liam Pace!
