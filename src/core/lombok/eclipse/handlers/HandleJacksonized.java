@@ -43,10 +43,10 @@ import lombok.Builder;
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
+import lombok.core.JacksonAnnotationType;
 import lombok.core.AST.Kind;
 import lombok.core.configuration.JacksonVersion;
 import lombok.core.handlers.HandlerUtil;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
@@ -62,23 +62,8 @@ import lombok.spi.Provides;
 @Provides
 @HandlerPriority(-512) // Above Handle(Super)Builder's level (builders must be already generated).
 public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
-
-	private static enum JacksonAnnotations {
-		JSON_POJO_BUILDER("com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder"),
-		JSON_DESERIALIZE("com.fasterxml.jackson.databind.annotation.JsonDeserialize"),
-		JSON_PROPERTY("com.fasterxml.jackson.annotation.JsonProperty"),
-		JSON_IGNORE("com.fasterxml.jackson.annotation.JsonIgnore");
-		
-		
-		private final String qualifiedName;
-		private final char[][] annotation;
-		private JacksonAnnotations(final String qualifiedName) {
-			this.qualifiedName = qualifiedName;
-			this.annotation = Eclipse.fromQualifiedName(qualifiedName);
-		}
-		private boolean isAnnotating(EclipseNode node) {
-			return hasAnnotation(this.qualifiedName, node);
-		}
+	static boolean hasAnnotation(EclipseNode node, JacksonAnnotationType annotation) {
+		return EclipseHandlerUtil.hasAnnotation(annotation.getQualifiedName(), node);
 	}
 	
 	@Override public void handle(AnnotationValues<Jacksonized> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -147,14 +132,11 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		}
 		
 		// Insert @JsonDeserialize on annotated class.
-		if (JacksonAnnotations.JSON_DESERIALIZE.isAnnotating(tdNode)) {
+		if (hasAnnotation(tdNode, JacksonAnnotationType.JSON_DESERIALIZE2) || hasAnnotation(tdNode, JacksonAnnotationType.JSON_DESERIALIZE3)) {
 			annotationNode.addError("@JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.");
 			return;
 		}
-		if (hasAnnotation("tools.jackson.databind.annotation.JsonDeserialize", tdNode)) {
-			annotationNode.addError("@JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.");
-			return;
-		}
+		
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
 		TypeReference builderClassExpression = namePlusTypeParamsToTypeReference(builderClassNode, null, p);
 		ClassLiteralAccess builderClassLiteralAccess = new ClassLiteralAccess(td.sourceEnd, builderClassExpression);
@@ -167,10 +149,10 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		}
 
 		if (jacksonVersion.useJackson2()) {
-			td.annotations = addAnnotation(td, td.annotations, JACKSON2_JSON_DESERIALIZE_ANNOTATION, builderMvp);
+			td.annotations = addAnnotation(td, td.annotations, JacksonAnnotationType.JSON_DESERIALIZE2.getQualifiednameAsCharArrayArray(), builderMvp);
 		}
 		if (jacksonVersion.useJackson3()) {
-			td.annotations = addAnnotation(td, td.annotations, JACKSON3_JSON_DESERIALIZE_ANNOTATION, builderMvp);
+			td.annotations = addAnnotation(td, td.annotations, JacksonAnnotationType.JSON_DESERIALIZE3.getQualifiednameAsCharArrayArray(), builderMvp);
 		}
 		// Copy annotations from the class to the builder class.
 		Annotation[] copyableAnnotations = findJacksonAnnotationsOnClass(td, tdNode);
@@ -183,10 +165,10 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		MemberValuePair buildMethodNameMvp = new MemberValuePair("buildMethodName".toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, buildMethodNameLiteral);
 		
 		if (jacksonVersion.useJackson2()) {
-			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JACKSON2_JSON_POJO_BUILDER_ANNOTATION, withPrefixMvp, buildMethodNameMvp);
+			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JacksonAnnotationType.JSON_POJO_BUILDER2.getQualifiednameAsCharArrayArray(), withPrefixMvp, buildMethodNameMvp);
 		}
 		if (jacksonVersion.useJackson3()) {
-			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JACKSON3_JSON_POJO_BUILDER_ANNOTATION, withPrefixMvp, buildMethodNameMvp);
+			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JacksonAnnotationType.JSON_POJO_BUILDER3.getQualifiednameAsCharArrayArray(), withPrefixMvp, buildMethodNameMvp);
 		}
 		// @SuperBuilder? Make it package-private!
 		if (superBuilderAnnotationNode != null) 
@@ -209,8 +191,8 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
 		for (EclipseNode eclipseNode : tdNode.down()) {
 			if (eclipseNode.getKind() == Kind.FIELD) {
-				if (JacksonAnnotations.JSON_PROPERTY.isAnnotating(eclipseNode) || 
-					JacksonAnnotations.JSON_IGNORE.isAnnotating(eclipseNode)) {
+				if (hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_PROPERTY2) || 
+					hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_IGNORE2)) {
 					return;
 				} else if (eclipseNode.isTransient()) {
 					createJsonIgnoreForField(eclipseNode, annotationNode);
@@ -227,7 +209,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		if (astNode instanceof FieldDeclaration) {
 			FieldDeclaration fd = (FieldDeclaration)astNode;
 			StringLiteral fieldName = new StringLiteral(fd.name, 0, 0, 0);
-			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotations.JSON_PROPERTY.annotation, fieldName);
+			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotationType.JSON_PROPERTY2.getQualifiednameAsCharArrayArray(), fieldName);
 		}
 	}
 	
@@ -235,7 +217,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		ASTNode astNode = fieldNode.get();
 		if (astNode instanceof FieldDeclaration) {
 			FieldDeclaration fd = (FieldDeclaration)astNode;
-			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotations.JSON_IGNORE.annotation);
+			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotationType.JSON_IGNORE2.getQualifiednameAsCharArrayArray());
 		}
 	}
 	
