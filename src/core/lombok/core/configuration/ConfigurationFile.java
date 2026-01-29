@@ -97,7 +97,7 @@ public abstract class ConfigurationFile {
 		return file.exists() && file.isFile();
 	}
 	
-	private static String read(InputStream is) throws IOException {
+	static String read(InputStream is) throws IOException {
 		byte[] b = buffers.get();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		while (true) {
@@ -111,7 +111,7 @@ public abstract class ConfigurationFile {
 	private static class RegularConfigurationFile extends ConfigurationFile {
 		private final File file;
 		private ConfigurationFile parent;
-
+		
 		private RegularConfigurationFile(File file) {
 			super(file.getPath());
 			this.file = file;
@@ -172,7 +172,7 @@ public abstract class ConfigurationFile {
 				is.close();
 			}
 		}
-
+		
 		@Override ConfigurationFile parent() {
 			if (parent == null) {
 				File parentFile = file.getParentFile().getParentFile();
@@ -322,15 +322,15 @@ public abstract class ConfigurationFile {
 		@Override CharSequence contents() throws IOException {
 			return contents;
 		}
-
+		
 		@Override boolean exists() {
 			return true;
 		}
-
+		
 		@Override public ConfigurationFile resolve(String path) {
 			return null;
 		}
-
+		
 		@Override ConfigurationFile parent() {
 			return null;
 		}
