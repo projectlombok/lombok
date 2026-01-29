@@ -15,6 +15,9 @@ public @ExtensionMethod(value = ExtensionMethodInLambda.Extensions.class) class 
       return "0";
     }
   }
+  private static final Function<String, String> testStatic = (<no type> s) -> ExtensionMethodInLambda.Extensions.reverse(s);
+  <clinit>() {
+  }
   public ExtensionMethodInLambda() {
     super();
   }

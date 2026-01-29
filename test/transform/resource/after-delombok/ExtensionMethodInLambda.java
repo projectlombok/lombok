@@ -2,6 +2,8 @@
 import java.util.function.Function;
 
 public class ExtensionMethodInLambda {
+	private static final Function<String, String> testStatic = s -> ExtensionMethodInLambda.Extensions.reverse(s);
+	
 	public void testSimple() {
 		String test = "test";
 		test = ExtensionMethodInLambda.Extensions.map(test, s -> ExtensionMethodInLambda.Extensions.reverse(s));
