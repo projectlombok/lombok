@@ -220,6 +220,7 @@ public final class HandleLockedUtil {
 		tryStatement.tryBlock = block;
 		tryStatement.finallyBlock = new Block(0);
 		tryStatement.finallyBlock.statements = new Statement[] { unLock };
+		setGeneratedBy(tryStatement, source);
 		
 		method.statements = new Statement[] { acquireLock, tryStatement };
 		
