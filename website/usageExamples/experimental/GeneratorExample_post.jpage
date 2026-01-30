@@ -1,0 +1,28 @@
+import lombok.experimental.Generator;
+
+public class GeneratorExample {
+	@Generator
+	public Iterable<Integer> range(int from, int to) {
+		class __Generator extends lombok.Lombok.Generator<Integer> {
+			protected void advance() {
+				for (int i = from; i < to; i++) {
+					yieldThis(i);
+				}
+			}
+		}
+		return new __Generator();
+	}
+
+	@SafeVarargs
+	@Generator
+	public final <T> Iterable<T> join(Iterable<T>... iters) {
+		class __Generator extends lombok.Lombok.Generator<T> {
+			protected void advance() {
+				for (Iterable<T> iter : iters) {
+					yieldAll(iter);
+				}
+			}
+		}
+		return new __Generator();
+	}
+}
