@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -444,33 +443,33 @@ class ShadowClassLoader extends ClassLoader {
 		// * We need to return an enumeration.
 		// * We can't make one on the fly.
 		// * ArrayList can't make these.
-		Vector<URL> vector = new Vector<URL>();
+		List<URL> urls = new ArrayList<>();
 		
 		for (File ce : override) {
 			URL url = getResourceFromLocation(name, altName, ce);
-			if (url != null) vector.add(url);
+			if (url != null) urls.add(url);
 		}
 		
 		if (override.isEmpty()) {
 			URL fromSelf = getResourceFromLocation(name, altName, SELF_BASE_FILE);
-			if (fromSelf != null) vector.add(fromSelf);
+			if (fromSelf != null) urls.add(fromSelf);
 		}
 		
 		Enumeration<URL> sec = super.getResources(name);
 		while (sec.hasMoreElements()) {
 			URL item = sec.nextElement();
-			if (isPartOfShadowSuffix(item.toString(), name, sclSuffix)) vector.add(item);
+			if (isPartOfShadowSuffix(item.toString(), name, sclSuffix)) urls.add(item);
 		}
 		
 		if (altName != null) {
 			Enumeration<URL> tern = super.getResources(altName);
 			while (tern.hasMoreElements()) {
 				URL item = tern.nextElement();
-				if (isPartOfShadowSuffix(item.toString(), altName, sclSuffix)) vector.add(item);
+				if (isPartOfShadowSuffix(item.toString(), altName, sclSuffix)) urls.add(item);
 			}
 		}
-		
-		return vector.elements();
+
+		return Collections.enumeration(urls);
 	}
 	
 	@Override public URL getResource(String name) {
