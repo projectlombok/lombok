@@ -24,6 +24,9 @@ package lombok.javac.handlers;
 import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -194,16 +197,12 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			return;
 		}
 		
-		JacksonVersion jacksonVersion = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, JacksonVersion.getDefault());
-		if (jacksonVersion == null || !jacksonVersion.isValid()) {
-			annotationNode.addError("No valid jackson version selected.");
-			return;
-		}
-		if (jacksonVersion.useJackson2()) {
+		Collection<JacksonVersion> jacksonVersions = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, Arrays.<JacksonVersion>asList());
+		if (jacksonVersions.contains(JacksonVersion.TWO) || jacksonVersions.isEmpty()) {
 			JCExpression jsonDeserializeType = chainDots(annotatedNode, JacksonAnnotationType.JSON_DESERIALIZE2);
 			insertJsonDeserializeAnnotation(annotationNode, annotatedNode, tdNode, td, maker, builderClassName, jsonDeserializeType);
 		}
-		if (jacksonVersion.useJackson3()) {
+		if (jacksonVersions.contains(JacksonVersion.THREE)) {
 			JCExpression jsonDeserializeType = chainDots(annotatedNode, JacksonAnnotationType.JSON_DESERIALIZE3);
 			insertJsonDeserializeAnnotation(annotationNode, annotatedNode, tdNode, td, maker, builderClassName, jsonDeserializeType);
 		}
@@ -216,25 +215,29 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		builderClass.mods.annotations = builderClass.mods.annotations.appendList(copiedAnnotations);
 		
-		if (jacksonVersion.useJackson2()) {
-			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, JacksonAnnotationType.JSON_POJO_BUILDER2);
-			insertJsonPojoAnnotation(annotationNode, annotatedNode, setPrefix, buildMethodName, maker, builderClass, jsonPOJOBuilderType);
+		if (jacksonVersions.contains(JacksonVersion.TWO) || jacksonVersions.isEmpty()) {
+			JCExpression jsonPojoBuilderType = chainDots(annotatedNode, JacksonAnnotationType.JSON_POJO_BUILDER2);
+			insertJsonPojoAnnotation(annotationNode, annotatedNode, setPrefix, buildMethodName, maker, builderClass, jsonPojoBuilderType);
 		}
-		if (jacksonVersion.useJackson3()) {
-			JCExpression jsonPOJOBuilderType = chainDots(annotatedNode, JacksonAnnotationType.JSON_POJO_BUILDER3);
-			insertJsonPojoAnnotation(annotationNode, annotatedNode, setPrefix, buildMethodName, maker, builderClass, jsonPOJOBuilderType);
+		if (jacksonVersions.contains(JacksonVersion.THREE)) {
+			JCExpression jsonPojoBuilderType = chainDots(annotatedNode, JacksonAnnotationType.JSON_POJO_BUILDER3);
+			insertJsonPojoAnnotation(annotationNode, annotatedNode, setPrefix, buildMethodName, maker, builderClass, jsonPojoBuilderType);
 		}
 		// @SuperBuilder? Make it package-private!
 		if (superBuilderAnnotationNode != null) builderClass.mods.flags = builderClass.mods.flags & ~Flags.PRIVATE;
+		
+		if (jacksonVersions.isEmpty()) {
+			annotationNode.addWarning("Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized");
+		}
 	}
 	
 	// Insert @JsonPOJOBuilder on the builder class.
-	private void insertJsonPojoAnnotation(JavacNode annotationNode, JavacNode annotatedNode, String setPrefix, String buildMethodName, JavacTreeMaker maker, JCClassDecl builderClass, JCExpression jsonPOJOBuilderType) {
+	private void insertJsonPojoAnnotation(JavacNode annotationNode, JavacNode annotatedNode, String setPrefix, String buildMethodName, JavacTreeMaker maker, JCClassDecl builderClass, JCExpression jsonPojoBuilderType) {
 		JCExpression withPrefixExpr = maker.Assign(maker.Ident(annotationNode.toName("withPrefix")), maker.Literal(setPrefix));
 		JCExpression buildMethodNameExpr = maker.Assign(maker.Ident(annotationNode.toName("buildMethodName")), maker.Literal(buildMethodName));
-		JCAnnotation annotationJsonPOJOBuilder = maker.Annotation(jsonPOJOBuilderType, List.of(withPrefixExpr, buildMethodNameExpr));
-		recursiveSetGeneratedBy(annotationJsonPOJOBuilder, annotatedNode);
-		builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPOJOBuilder);
+		JCAnnotation annotationJsonPojoBuilder = maker.Annotation(jsonPojoBuilderType, List.of(withPrefixExpr, buildMethodNameExpr));
+		recursiveSetGeneratedBy(annotationJsonPojoBuilder, annotatedNode);
+		builderClass.mods.annotations = builderClass.mods.annotations.append(annotationJsonPojoBuilder);
 	}
 
 	// Insert @JsonDeserialize on the class.

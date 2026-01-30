@@ -702,7 +702,7 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @WithBy} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> WITHBY_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.withBy.flagUsage", "Emit a warning or error if @WithBy is used.") {};
-
+	
 	// ----- Jacksonized -----
 	
 	/**
@@ -712,15 +712,16 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> JACKSONIZED_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.jacksonized.flagUsage", "Emit a warning or error if @Jacksonized is used.") {};
 	
-
+	
 	/**
-	 * lombok configuration: {@code lombok.jacksonized.jacksonVersion} = {@code 2} | {@code 3} | {@code 2_3}.
-	 *
-	 * The jackson major version to use.
+	 * lombok configuration: {@code lombok.jacksonized.jacksonVersion} += {@code 2} / {@code 3}.
+	 * 
+	 * Which version of the jackson annotations to generate.
+	 * 
+	 * If no values specified: Generate version 2 and emit a warning to explicitly choose a jackson version in your {@code lombok.config}.
 	 */
-	public static final ConfigurationKey<JacksonVersion> JACKSONIZED_JACKSON_VERSION = new ConfigurationKey<JacksonVersion>("lombok.jacksonized.jacksonVersion", "Select the jackson major version to use (default: 2)") {};
-
-
+	public static final ConfigurationKey<List<JacksonVersion>> JACKSONIZED_JACKSON_VERSION = new ConfigurationKey<List<JacksonVersion>>("lombok.jacksonized.jacksonVersion", "The jackson major version(s) to generate (default: warn)") {};
+	
 	// ----- Configuration System -----
 	
 	/**

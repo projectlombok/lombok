@@ -142,16 +142,12 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		ClassLiteralAccess builderClassLiteralAccess = new ClassLiteralAccess(td.sourceEnd, builderClassExpression);
 		MemberValuePair builderMvp = new MemberValuePair("builder".toCharArray(), td.sourceStart, td.sourceEnd, builderClassLiteralAccess);
 		
-		JacksonVersion jacksonVersion = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, JacksonVersion.getDefault());
-		if (jacksonVersion == null || !jacksonVersion.isValid()) {
-			annotationNode.addError("No valid jackson version selected.");
-			return;
-		}
-
-		if (jacksonVersion.useJackson2()) {
+		List<JacksonVersion> jacksonVersions = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, Arrays.<JacksonVersion>asList());
+		
+		if (jacksonVersions.contains(JacksonVersion.TWO) || jacksonVersions.isEmpty()) {
 			td.annotations = addAnnotation(td, td.annotations, JacksonAnnotationType.JSON_DESERIALIZE2.getQualifiednameAsCharArrayArray(), builderMvp);
 		}
-		if (jacksonVersion.useJackson3()) {
+		if (jacksonVersions.contains(JacksonVersion.THREE)) {
 			td.annotations = addAnnotation(td, td.annotations, JacksonAnnotationType.JSON_DESERIALIZE3.getQualifiednameAsCharArrayArray(), builderMvp);
 		}
 		// Copy annotations from the class to the builder class.
@@ -164,15 +160,18 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		StringLiteral buildMethodNameLiteral = new StringLiteral(buildMethodName.toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, 0);
 		MemberValuePair buildMethodNameMvp = new MemberValuePair("buildMethodName".toCharArray(), builderClass.sourceStart, builderClass.sourceEnd, buildMethodNameLiteral);
 		
-		if (jacksonVersion.useJackson2()) {
+		if (jacksonVersions.contains(JacksonVersion.TWO) || jacksonVersions.isEmpty()) {
 			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JacksonAnnotationType.JSON_POJO_BUILDER2.getQualifiednameAsCharArrayArray(), withPrefixMvp, buildMethodNameMvp);
 		}
-		if (jacksonVersion.useJackson3()) {
+		if (jacksonVersions.contains(JacksonVersion.THREE)) {
 			builderClass.annotations = addAnnotation(builderClass, builderClass.annotations, JacksonAnnotationType.JSON_POJO_BUILDER3.getQualifiednameAsCharArrayArray(), withPrefixMvp, buildMethodNameMvp);
 		}
 		// @SuperBuilder? Make it package-private!
-		if (superBuilderAnnotationNode != null) 
-			builderClass.modifiers = builderClass.modifiers & ~ClassFileConstants.AccPrivate;
+		if (superBuilderAnnotationNode != null) builderClass.modifiers = builderClass.modifiers & ~ClassFileConstants.AccPrivate;
+		
+		if (jacksonVersions.isEmpty()) {
+			annotationNode.addWarning("Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized");
+		}
 	}
 	
 	private void handleJacksonizedAccessors(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode accessorsAnnotationNode, boolean jacksonizedBuilder) {

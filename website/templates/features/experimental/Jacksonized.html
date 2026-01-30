@@ -39,6 +39,20 @@ public class JacksonExample {
 		</p>
 	</@f.overview>
 	
+	<@f.confKeys>
+		<dt>
+			<code>lombok.jacksonized.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@Jacksonized</code> as a warning or error if configured.
+		</dd><dt>
+			<code>lombok.jacksonized.jacksonVersion</code> += <code>version</code> (default: 2 + generate warning)
+		</dt><dd>
+			(Since 1.18.44) Jackson now has 2 different major versions: Jackson2, and Jackson3. Specify which version of the jackson annotations to generate.<br />
+			If no version is chosen, lombok will generate Jackson v2 annotations and emit a warning that you should add this config key to pick which jackson version you want.<br />
+			If transitioning from Jackson2 to Jackson3, you can ask lombok to emit both variants. See: <a href="/features/configuration">Lombok configuration system</a>.
+		</dd>
+	</@f.confKeys>
+	
 	<@f.smallPrint>
  		<p>
 			In particular, the annotation does the following for <code>@(Super)Builder</code>:
