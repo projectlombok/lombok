@@ -61,7 +61,7 @@
 		<dependency org="com.hierynomus" name="sshj" rev="0.26.0" conf="buildtools->default" />
 		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="buildtools->build" />
 		<dependency org="de.java2html" name="java2html" rev="5.0" conf="buildtools->default" />
-		<dependency org="org.freemarker" name="freemarker" rev="2.3.28" conf="buildtools->default" />
+		<dependency org="org.freemarker" name="freemarker" rev="2.3.34" conf="buildtools->default" />
 		<dependency org="com.sparkjava" name="spark-core" rev="2.9.2" conf="buildtools->default" />
 		<dependency org="software.amazon.awssdk" name="s3" rev="2.19.29" conf="buildtools->default" />
 		<dependency org="com.sun.xml.bind" name="jaxb-impl" rev="2.3.9" conf="buildtools->default" />
