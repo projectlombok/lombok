@@ -47,8 +47,8 @@
 		<dependency org="log4j" name="log4j" rev="1.2.17" conf="test->default; sources" />
 		<dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.17.1" conf="test->default; sources" />
 		<dependency org="commons-logging" name="commons-logging" rev="1.2" conf="test->default; sources" />
-		<dependency org="org.slf4j" name="slf4j-api" rev="2.0.17" conf="test->default; sources" />
-		<dependency org="org.slf4j" name="slf4j-ext" rev="2.0.17" conf="test->default; sources" />
+		<dependency org="org.slf4j" name="slf4j-api" rev="1.8.0-beta4" conf="test->default; sources" />
+		<dependency org="org.slf4j" name="slf4j-ext" rev="1.8.0-beta4" conf="test->default; sources" />
 		<dependency org="org.jboss.logging" name="jboss-logging" rev="3.3.0.Final" conf="test->default; sources" />
 		<dependency org="com.google.flogger" name="flogger" rev="0.2" conf="test->default; sources" />
 		<dependency org="com.google.guava" name="guava" rev="18.0" conf="test->default; sources" />
