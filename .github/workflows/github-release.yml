@@ -1,0 +1,21 @@
+name: Create GitHub Release
+# This workflow creates a GitHub release when a tag is pushed, such that folks can subscribe to releases in GitHub
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${{ github.ref_name }}" \
+              --generate-notes
