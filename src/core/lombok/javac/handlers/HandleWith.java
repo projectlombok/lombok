@@ -281,15 +281,16 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod, maker);
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(source);
 		if (checkerFramework.generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
-		
+
 		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
-		
+
 		if (makeAbstract) access |= Flags.ABSTRACT;
 		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		boolean makeFinal = shouldMakeFinal(field, accessors);
 		if (makeFinal) access |= Flags.FINAL;
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
+		addCheckReturnValue(decl.mods, field, source);
 		copyJavadoc(field, decl, CopyJavadoc.WITH);
 		return decl;
 	}

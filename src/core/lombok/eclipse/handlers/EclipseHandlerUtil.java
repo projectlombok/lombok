@@ -2096,6 +2096,7 @@ public class EclipseHandlerUtil {
 	private static final char[][] JAKARTA_ANNOTATION_GENERATED = Eclipse.fromQualifiedName("jakarta.annotation.Generated");
 	private static final char[][] LOMBOK_GENERATED = Eclipse.fromQualifiedName("lombok.Generated");
 	private static final char[][] EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS = Eclipse.fromQualifiedName("edu.umd.cs.findbugs.annotations.SuppressFBWarnings");
+	private static final char[][] LOMBOK_CHECK_RETURN_VALUE = Eclipse.fromQualifiedName("lombok.CheckReturnValue");
 	
 	public static Annotation[] addSuppressWarningsAll(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
 		Annotation[] anns = originalAnnotationArray;
@@ -2126,6 +2127,11 @@ public class EclipseHandlerUtil {
 		return result;
 	}
 	
+	public static Annotation[] addCheckReturnValue(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
+		if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_CHECK_RETURN_VALUE_ANNOTATIONS))) return originalAnnotationArray;
+		return addAnnotation(source, originalAnnotationArray, LOMBOK_CHECK_RETURN_VALUE);
+	}
+
 	static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn) {
 		return addAnnotation(source, originalAnnotationArray, annotationTypeFqn, (ASTNode[]) null);
 	}
