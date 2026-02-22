@@ -334,6 +334,7 @@ public class HandleWithBy extends JavacAnnotationHandler<WithBy> {
 		createRelevantNonNullAnnotation(source, param);
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
+		addCheckReturnValue(decl.mods, field, source);
 		copyJavadoc(field, decl, CopyJavadoc.WITH_BY);
 		createRelevantNonNullAnnotation(source, decl);
 		return decl;
