@@ -2128,7 +2128,7 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static Annotation[] addCheckReturnValue(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
-		if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_CHECK_RETURN_VALUE_ANNOTATIONS))) return originalAnnotationArray;
+		if (!Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_CHECK_RETURN_VALUE_ANNOTATIONS))) return originalAnnotationArray;
 		return addAnnotation(source, originalAnnotationArray, LOMBOK_CHECK_RETURN_VALUE);
 	}
 

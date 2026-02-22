@@ -1,3 +1,4 @@
+//CONF: lombok.addCheckReturnValueAnnotation = true
 import lombok.With;
 class CheckReturnValueWith {
 	@With final int x;
