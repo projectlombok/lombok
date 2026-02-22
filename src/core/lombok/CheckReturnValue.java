@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * Static analysis tools (Error Prone, IntelliJ, SpotBugs) recognize {@code @CheckReturnValue}
  * by simple class name, regardless of package, and will warn when the return value is discarded.
  * <p>
- * If you want to opt out, you can add {@code lombok.addCheckReturnValueAnnotation = false} to
+ * If you want to opt in, you can add {@code lombok.addCheckReturnValueAnnotation = true} to
  * {@code lombok.config}.
  */
 @Target({ElementType.METHOD})

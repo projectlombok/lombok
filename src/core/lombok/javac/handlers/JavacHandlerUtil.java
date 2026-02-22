@@ -1555,7 +1555,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static void addCheckReturnValue(JCModifiers mods, JavacNode node, JavacNode source) {
-		if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_CHECK_RETURN_VALUE_ANNOTATIONS))) return;
+		if (!Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_CHECK_RETURN_VALUE_ANNOTATIONS))) return;
 		addAnnotation(mods, node, source, "lombok.CheckReturnValue", null);
 	}
 

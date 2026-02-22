@@ -96,7 +96,7 @@ public class ConfigurationKeys {
 	 * If {@code true}, lombok generates {@code @lombok.CheckReturnValue} on generated methods where the return value should not be ignored,
 	 * such as {@code @With} methods and {@code @Builder}'s {@code build()} method.
 	 */
-	public static final ConfigurationKey<Boolean> ADD_CHECK_RETURN_VALUE_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addCheckReturnValueAnnotation", "Generate @lombok.CheckReturnValue on generated methods where the return value should not be ignored (default: true).") {};
+	public static final ConfigurationKey<Boolean> ADD_CHECK_RETURN_VALUE_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addCheckReturnValueAnnotation", "Generate @lombok.CheckReturnValue on generated methods where the return value should not be ignored (default: false).") {};
 
 	/**
 	 * lombok configuration: {@code lombok.extern.findbugs.addSuppressFBWarnings} = {@code true} | {@code false}.
