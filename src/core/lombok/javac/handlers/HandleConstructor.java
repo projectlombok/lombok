@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2010-2024 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -65,10 +65,10 @@ public class HandleConstructor {
 	public static class HandleNoArgsConstructor extends JavacAnnotationHandler<NoArgsConstructor> {
 		private static final String NAME = NoArgsConstructor.class.getSimpleName();
 		private HandleConstructor handleConstructor = new HandleConstructor();
-		
+
 		@Override public void handle(AnnotationValues<NoArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.NO_ARGS_CONSTRUCTOR_FLAG_USAGE, "@NoArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
-			
+
 			deleteAnnotationIfNeccessary(annotationNode, NoArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
@@ -85,15 +85,15 @@ public class HandleConstructor {
 			handleConstructor.generateConstructor(typeNode, level, onConstructor, List.<JavacNode>nil(), force, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
-	
+
 	@Provides
 	public static class HandleRequiredArgsConstructor extends JavacAnnotationHandler<RequiredArgsConstructor> {
 		private static final String NAME = RequiredArgsConstructor.class.getSimpleName();
 		private HandleConstructor handleConstructor = new HandleConstructor();
-		
+
 		@Override public void handle(AnnotationValues<RequiredArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.REQUIRED_ARGS_CONSTRUCTOR_FLAG_USAGE, "@RequiredArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
-			
+
 			deleteAnnotationIfNeccessary(annotationNode, RequiredArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
@@ -109,19 +109,19 @@ public class HandleConstructor {
 			if (annotation.isExplicit("suppressConstructorProperties")) {
 				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
-			
+
 			handleConstructor.generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
-	
+
 	@Provides
 	public static class HandleAllArgsConstructor extends JavacAnnotationHandler<AllArgsConstructor> {
 		private static final String NAME = AllArgsConstructor.class.getSimpleName();
 		private HandleConstructor handleConstructor = new HandleConstructor();
-		
+
 		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.ALL_ARGS_CONSTRUCTOR_FLAG_USAGE, "@AllArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
-			
+
 			deleteAnnotationIfNeccessary(annotationNode, AllArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
@@ -140,15 +140,15 @@ public class HandleConstructor {
 			handleConstructor.generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
-	
+
 	public static List<JavacNode> findRequiredFields(JavacNode typeNode) {
 		return findFields(typeNode, true);
 	}
-	
+
 	public static List<JavacNode> findFinalFields(JavacNode typeNode) {
 		return findFields(typeNode, false);
 	}
-	
+
 	public static List<JavacNode> findFields(JavacNode typeNode, boolean nullMarked) {
 		ListBuffer<JavacNode> fields = new ListBuffer<JavacNode>();
 		for (JavacNode child : typeNode.down()) {
@@ -165,11 +165,11 @@ public class HandleConstructor {
 		}
 		return fields.toList();
 	}
-	
+
 	public static List<JavacNode> findAllFields(JavacNode typeNode) {
 		return findAllFields(typeNode, false);
 	}
-	
+
 	public static List<JavacNode> findAllFields(JavacNode typeNode, boolean evenFinalInitialized) {
 		ListBuffer<JavacNode> fields = new ListBuffer<JavacNode>();
 		for (JavacNode child : typeNode.down()) {
@@ -186,51 +186,51 @@ public class HandleConstructor {
 		}
 		return fields.toList();
 	}
-	
+
 	public static boolean checkLegality(JavacNode typeNode, JavacNode errorNode, String name) {
 		if (!isClassOrEnum(typeNode)) {
 			errorNode.addError(name + " is only supported on a class or an enum.");
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	public enum SkipIfConstructorExists {
 		YES, NO, I_AM_BUILDER;
 	}
-	
+
 	public void generateExtraNoArgsConstructor(JavacNode typeNode, JavacNode source) {
 		if (!isDirectDescendantOfObject(typeNode)) return;
-		
+
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
 		if (v == null || !v) return;
-		
+
 		generate(typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), List.<JavacNode>nil(), true, null, SkipIfConstructorExists.NO, source, true);
 	}
-	
+
 	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
 		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, source);
 	}
-	
+
 	public void generateAllArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
 		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findAllFields(typeNode), false, staticName, skipIfConstructorExists, source);
 	}
-	
+
 	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
 		generate(typeNode, level, onConstructor, fields, allToDefault, staticName, skipIfConstructorExists, source, false);
 	}
 
 	private void generate(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source, boolean noArgs) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
-		
+
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
 					boolean skipGeneration = annotationTypeMatches(NoArgsConstructor.class, child) ||
 						annotationTypeMatches(AllArgsConstructor.class, child) ||
 						annotationTypeMatches(RequiredArgsConstructor.class, child);
-					
+
 					if (!skipGeneration && skipIfConstructorExists == SkipIfConstructorExists.YES) {
 						skipGeneration = annotationTypeMatches(Builder.class, child);
 					}
@@ -247,9 +247,9 @@ public class HandleConstructor {
 				}
 			}
 		}
-		
+
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
-		
+
 		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
 			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
 			generateConstructorJavadoc(constr, typeNode, fields);
@@ -257,7 +257,7 @@ public class HandleConstructor {
 		}
 		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source);
 	}
-	
+
 	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, JavacNode source) {
 		if (staticConstrRequired) {
 			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source);
@@ -265,10 +265,10 @@ public class HandleConstructor {
 			injectMethod(typeNode, staticConstr);
 		}
 	}
-	
+
 	private static boolean noArgsConstructorExists(JavacNode node) {
 		node = upToTypeNode(node);
-		
+
 		if (node != null && node.get() instanceof JCClassDecl) {
 			for (JCTree def : ((JCClassDecl) node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
@@ -277,16 +277,16 @@ public class HandleConstructor {
 				}
 			}
 		}
-		
+
 		for (JavacNode child : node.down()) {
 			if (annotationTypeMatches(NoArgsConstructor.class, child)) return true;
 			if (annotationTypeMatches(RequiredArgsConstructor.class, child) && findRequiredFields(node).isEmpty()) return true;
 			if (annotationTypeMatches(AllArgsConstructor.class, child) && findAllFields(node).isEmpty()) return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	public static void addConstructorProperties(JCModifiers mods, JavacNode node, List<JavacNode> fields) {
 		if (fields.isEmpty()) return;
 		JavacTreeMaker maker = node.getTreeMaker();
@@ -300,18 +300,18 @@ public class HandleConstructor {
 		JCAnnotation annotation = maker.Annotation(constructorPropertiesType, List.of(fieldNamesArray));
 		mods.annotations = mods.annotations.append(annotation);
 	}
-	
+
 	@SuppressWarnings("deprecation") public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fieldsToParam, boolean forceDefaults, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
-		
+
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
 		if (isEnum) level = AccessLevel.PRIVATE;
-		
+
 		boolean addConstructorProperties;
-		
+
 		List<JavacNode> fieldsToDefault = fieldsNeedingBuilderDefaults(typeNode, fieldsToParam);
 		List<JavacNode> fieldsToExplicit = forceDefaults ? fieldsNeedingExplicitDefaults(typeNode, fieldsToParam) : List.<JavacNode>nil();
-		
+
 		if (fieldsToParam.isEmpty()) {
 			addConstructorProperties = false;
 		} else {
@@ -319,11 +319,11 @@ public class HandleConstructor {
 			addConstructorProperties = v != null ? v.booleanValue() :
 				Boolean.FALSE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
 		}
-		
+
 		ListBuffer<JCStatement> nullChecks = new ListBuffer<JCStatement>();
 		ListBuffer<JCStatement> assigns = new ListBuffer<JCStatement>();
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
-		
+
 		for (JavacNode fieldNode : fieldsToParam) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
@@ -341,7 +341,7 @@ public class HandleConstructor {
 			JCExpression assign = maker.Assign(thisX, maker.Ident(fieldName));
 			assigns.append(maker.Exec(assign));
 		}
-		
+
 		for (JavacNode fieldNode : fieldsToExplicit) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name rawName = field.name;
@@ -349,7 +349,7 @@ public class HandleConstructor {
 			JCExpression assign = maker.Assign(thisX, getDefaultExpr(maker, field.vartype));
 			assigns.append(maker.Exec(assign));
 		}
-		
+
 		for (JavacNode fieldNode : fieldsToDefault) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name rawName = field.name;
@@ -359,7 +359,7 @@ public class HandleConstructor {
 			JCExpression assign = maker.Assign(thisX, maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(((JCClassDecl) typeNode.get()).name), nameOfDefaultProvider), List.<JCExpression>nil()));
 			assigns.append(maker.Exec(assign));
 		}
-		
+
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
 		if (addConstructorProperties && !isLocalType(typeNode) && LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
 			addConstructorProperties(mods, typeNode, fieldsToParam);
@@ -369,7 +369,7 @@ public class HandleConstructor {
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
 			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source);
 	}
-	
+
 	/**
 	 * For each field which is not final and has no initializer that gets 'removed' by {@code @Builder.Default} there is no need to
 	 * write an explicit 'this.x = foo' in the constructor, so strip them away here.
@@ -386,7 +386,7 @@ public class HandleConstructor {
 		}
 		return out.toList();
 	}
-	
+
 	/**
 	 * Return each field which is final and has no initializer, and which is not already a parameter.
 	 */
@@ -405,7 +405,7 @@ public class HandleConstructor {
 		}
 		return out.toList();
 	}
-	
+
 	private static JCExpression getDefaultExpr(JavacTreeMaker maker, JCExpression type) {
 		if (type instanceof JCPrimitiveTypeTree) {
 			switch (((JCPrimitiveTypeTree) type).getPrimitiveTypeKind()) {
@@ -426,30 +426,30 @@ public class HandleConstructor {
 				return maker.Literal(CTC_DOUBLE, 0D);
 			}
 		}
-		
+
 		return maker.Literal(CTC_BOT, null);
-		
+
 	}
-	
+
 	public static boolean isLocalType(JavacNode type) {
 		Kind kind = type.up().getKind();
 		if (kind == Kind.COMPILATION_UNIT) return false;
 		if (kind == Kind.TYPE) return isLocalType(type.up());
 		return true;
 	}
-	
+
 	public JCMethodDecl createStaticConstructor(String name, AccessLevel level, JavacNode typeNode, List<JavacNode> fields, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
-		
+
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | toJavacModifier(level));
-		
+
 		JCExpression returnType, constructorType;
-		
+
 		ListBuffer<JCTypeParameter> typeParams = new ListBuffer<JCTypeParameter>();
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
-		
+
 		if (!type.typarams.isEmpty()) {
 			for (JCTypeParameter param : type.typarams) {
 				typeParams.append(maker.TypeParameter(param.name, cloneTypes(maker, param.bounds, source)));
@@ -459,7 +459,7 @@ public class HandleConstructor {
 		if (getCheckerFrameworkVersion(typeNode).generateUnique()) annsOnReturnType = List.of(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
 		returnType = namePlusTypeParamsToTypeReference(maker, typeNode, type.typarams, annsOnReturnType);
 		constructorType = namePlusTypeParamsToTypeReference(maker, typeNode, type.typarams);
-		
+
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
@@ -472,15 +472,15 @@ public class HandleConstructor {
 		}
 		JCReturn returnStatement = maker.Return(maker.NewClass(null, List.<JCExpression>nil(), constructorType, args.toList(), null));
 		JCBlock body = maker.Block(0, List.<JCStatement>of(returnStatement));
-		
+
 		JCMethodDecl methodDef = maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(typeNode, methodDef);
 		return recursiveSetGeneratedBy(methodDef, source);
 	}
-	
+
 	private void generateConstructorJavadoc(JCMethodDecl constructor, JavacNode typeNode, List<JavacNode> fields) {
 		if (fields.isEmpty()) return;
-		
+
 		JCCompilationUnit cu = ((JCCompilationUnit) typeNode.top().get());
 		String constructorJavadoc = getConstructorJavadocHeader(typeNode.getName());
 		boolean fieldDescriptionAdded = false;
@@ -488,13 +488,13 @@ public class HandleConstructor {
 			String paramName = removePrefixFromField(fieldNode).toString();
 			String fieldJavadoc = getDocComment(cu, fieldNode.get());
 			String paramJavadoc = getConstructorParameterJavadoc(paramName, fieldJavadoc);
-			
+
 			if (paramJavadoc == null) {
 				paramJavadoc = "@param " + paramName;
 			} else {
 				fieldDescriptionAdded = true;
 			}
-			
+
 			constructorJavadoc = addJavadocLine(constructorJavadoc, paramJavadoc);
 		}
 		if (fieldDescriptionAdded) {
