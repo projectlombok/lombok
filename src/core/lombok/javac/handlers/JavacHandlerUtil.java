@@ -119,8 +119,38 @@ public class JavacHandlerUtil {
 	private JavacHandlerUtil() {
 		//Prevent instantiation
 	}
-	
-  private static class MarkingScanner extends TreeScanner {
+
+	static boolean hasNullableAnnotations(JavacNode fieldNode) {
+		return hasAnnotation("org.jspecify.annotations.Nullable", fieldNode);
+	}
+
+	static boolean isNullMarked(JavacNode typeNode) {
+		return hasAnnotation("org.jspecify.annotations.NullMarked", typeNode);
+	}
+
+	/**
+	 * Find the parent class or interface
+	 */
+  static JavacNode getParentTypeNode(JavacNode childOfType) {
+		JavacNode typeNode = childOfType;
+		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
+		return typeNode;
+	}
+
+	/**
+	 * Return true if the specified field or parameter node is determined as non-null according
+	 * to JSpecify rules.
+	 * Currently supports @NullMarked on class. To support annotations on package-info.java, we
+	 * would need to place each type node under a package node. Supporting NullMarked on the type
+	 * seems adequate for now, and gives the option opt-in to null assertions on a per class basis
+	 * (i.e. have NullMarked be the default but allow a custom annotation to trigger null checks at
+	 * system boundaries only).
+	 */
+	static boolean isJSpecifyNonNull(boolean isNullMarked, JavacNode node) {
+		return isNullMarked && !hasNullableAnnotations(node);
+	}
+
+	private static class MarkingScanner extends TreeScanner {
 		private final JavacNode source;
 
 		MarkingScanner(JavacNode source) {
@@ -796,9 +826,8 @@ public class JavacHandlerUtil {
 	}
 
 	public static JCExpression cloneSelfType(JavacNode childOfType) {
-		JavacNode typeNode = childOfType;
 		JavacTreeMaker maker = childOfType.getTreeMaker();
-		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
+		JavacNode typeNode = getParentTypeNode(childOfType);
 		return JavacHandlerUtil.namePlusTypeParamsToTypeReference(maker, typeNode, ((JCClassDecl) typeNode.get()).typarams);
 	}
 
@@ -1716,17 +1745,17 @@ public class JavacHandlerUtil {
 				for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	public static boolean hasNonNullAnnotations(JavacNode node, List<JCAnnotation> anns) {
 		if (anns == null) return false;
 		for (JCAnnotation ann : anns) {
 			String annotationTypeName = getTypeName(ann.annotationType);
 			for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
 		}
-		
+
 		return false;
 	}
 

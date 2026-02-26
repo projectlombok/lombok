@@ -324,6 +324,8 @@ public class HandleConstructor {
 		ListBuffer<JCStatement> assigns = new ListBuffer<JCStatement>();
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 
+		boolean isNullMarked = isNullMarked(typeNode);
+
 		for (JavacNode fieldNode : fieldsToParam) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
@@ -333,7 +335,7 @@ public class HandleConstructor {
 			JCExpression pType = cloneType(fieldNode.getTreeMaker(), field.vartype, source);
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, pType, null);
 			params.append(param);
-			if (hasNonNullAnnotations(fieldNode)) {
+			if (hasNonNullAnnotations(fieldNode) || isJSpecifyNonNull(isNullMarked, fieldNode)) {
 				JCStatement nullCheck = generateNullCheck(maker, param, source);
 				if (nullCheck != null) nullChecks.append(nullCheck);
 			}
