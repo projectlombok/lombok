@@ -132,9 +132,9 @@ public class StandardProductDescriptor implements EclipseProductDescriptor {
 		}
 	}
 	
-	private static List<String> executableNames(String baseName) {
+	private List<String> executableNames(String baseName) {
 		String base = baseName.toLowerCase();
-		return Collections.unmodifiableList(Arrays.asList(base, base + ".app", base + ".exe", base + "c.exe"));
+		return Collections.unmodifiableList(Arrays.asList(base, getMacAppName(), getWindowsExecutableName(), base + "c.exe"));
 	}
 	
 	private static List<String> generateAlternatives(String[] roots, String pathSeparator, Collection<String> alternatives) {
