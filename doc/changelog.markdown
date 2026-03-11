@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.43 "Edgy Guinea Pig"
+### v1.18.44 (March 11th, 2026)
 * FEATURE: `@Jacksonized` now supports both Jackson2 and Jackson3; you'll get a warning until you configure which one (or even both!) you want lombok to generate. [#3950](https://github.com/projectlombok/lombok/issues/3950).
 * BUGFIX: On JDK25, `val` and `@ExtensionMethod` could sometimes cause erroneous errors (in that you see errors but compilation succeeds anyway) using javac. [#3947](https://github.com/projectlombok/lombok/issues/3947).
 * BUGFIX: `@Jacksonized` + fields marked `transient` would result in those transient fields being serialised which is surprising (and thus undesired) behaviour. [#3936](https://github.com/projectlombok/lombok/issues/3936).
