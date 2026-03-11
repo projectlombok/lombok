@@ -921,6 +921,16 @@ public class EclipseHandlerUtil {
 		return result;
 	}
 	
+	public static TypeReference cloneSelfTypeForConstructor(EclipseNode context, ASTNode source) {
+		TypeReference result = cloneSelfType(context, source);
+		if (result instanceof ParameterizedQualifiedTypeReference) {
+			ParameterizedQualifiedTypeReference parameterizedQualifiedTypeReference = (ParameterizedQualifiedTypeReference) result;
+			result = new QualifiedTypeReference(parameterizedQualifiedTypeReference.tokens, parameterizedQualifiedTypeReference.sourcePositions);
+		}
+		if (result != null && source != null) setGeneratedBy(result, source);
+		return result;
+	}
+	
 	public static TypeReference generateParameterizedTypeReference(EclipseNode type, TypeReference[] typeParams, long p) {
 		TypeDeclaration td = (TypeDeclaration) type.get();
 		char[][] tn = getQualifiedInnerName(type.up(), td.name);
