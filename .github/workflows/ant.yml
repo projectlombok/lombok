@@ -180,8 +180,11 @@ jobs:
     needs: build
     strategy: 
       matrix: 
-        jdk: [8, 11, 17, 21, 25]
-        dir: [compileTests]
+        jdk: [11, 17, 21, 25]
+        dir: [compileTests, multiReleaseJar, moduleBasedMultiProject]
+        include:
+          - jdk: 8
+            dir: compileTests
       fail-fast: false
     
     steps:
@@ -193,7 +196,20 @@ jobs:
         with:
           java-version: ${{ matrix.jdk }}
           distribution: 'zulu'
-          
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ivyCache
+            lib
+          key: ivy-${{ hashFiles('**/ivy.xml') }}
+          restore-keys: |
+            ivy-
+
+      - name: Download dependencies
+        run: ant -noinput deps
+
       - uses: actions/download-artifact@v4
         with:
           name: lombok.jar

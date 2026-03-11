@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+set -euo pipefail
 echo 'This will build, module-style, 2 modules with lombok dependencies. If the compilation works without error or warning, lombok is working as designed.'
 mkdir -p out/projA
 mkdir -p out/projB
