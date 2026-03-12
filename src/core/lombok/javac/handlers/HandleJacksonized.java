@@ -114,11 +114,12 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		
 		// Add @JsonProperty to all non-transient fields. It will be automatically copied to the getter/setters later.
 		// Add @JsonIgnore to all transient fields. It will be automatically copied to the getter/setters later.
+		readConfiguredJacksonVersions(annotationNode);
 		for (JavacNode javacNode : tdNode.down()) {
 			if (javacNode.getKind() == Kind.FIELD) {
 				if (hasAnnotation(javacNode, JacksonAnnotationType.JSON_PROPERTY2) ||
 					hasAnnotation(javacNode, JacksonAnnotationType.JSON_IGNORE2)) {
-					
+
 					return;
 				} else if (javacNode.isTransient()) {
 					createJsonIgnoreForField(javacNode, annotationNode);
@@ -131,22 +132,21 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	
 	private void createJsonPropertyForField(JavacNode fieldNode, JavacNode annotationNode) {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
-		
-		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotationType.JSON_PROPERTY2);
-		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.<JCExpression>of(maker.Literal(fieldNode.getName())));
-		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
-		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
-		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);
+		List<JCExpression> args = List.<JCExpression>of(maker.Literal(fieldNode.getName()));
+		addFieldAnnotation(fieldNode, annotationNode, JacksonAnnotationType.JSON_PROPERTY2, args);
 	}
-	
+
 	private void createJsonIgnoreForField(JavacNode fieldNode, JavacNode annotationNode) {
+		addFieldAnnotation(fieldNode, annotationNode, JacksonAnnotationType.JSON_IGNORE2, List.<JCExpression>nil());
+	}
+
+	private void addFieldAnnotation(JavacNode fieldNode, JavacNode annotationNode, JacksonAnnotationType annotationType, List<JCExpression> args) {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
-		
-		JCExpression jsonPropertyType = chainDots(fieldNode, JacksonAnnotationType.JSON_IGNORE2);
-		JCAnnotation annotationJsonProperty = maker.Annotation(jsonPropertyType, List.<JCExpression>nil());
-		recursiveSetGeneratedBy(annotationJsonProperty, annotationNode);
-		JCVariableDecl fieldDecl = ((JCVariableDecl)fieldNode.get());
-		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotationJsonProperty);
+		JCExpression type = chainDots(fieldNode, annotationType);
+		JCAnnotation annotation = maker.Annotation(type, args);
+		recursiveSetGeneratedBy(annotation, annotationNode);
+		JCVariableDecl fieldDecl = (JCVariableDecl) fieldNode.get();
+		fieldDecl.mods.annotations = fieldDecl.mods.annotations.append(annotation);
 	}
 	
 	private void handleJacksonizedBuilder(JavacNode annotationNode, JavacNode annotatedNode, JavacNode tdNode, JCClassDecl td, JavacNode builderAnnotationNode, JavacNode superBuilderAnnotationNode) {
@@ -191,17 +191,12 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			return;
 		}
 		
+		Collection<JacksonVersion> jacksonVersions = readConfiguredJacksonVersions(annotationNode);
+
 		// Insert @JsonDeserialize on annotated class.
 		if (hasAnnotation(tdNode, JacksonAnnotationType.JSON_DESERIALIZE2) || hasAnnotation(tdNode, JacksonAnnotationType.JSON_DESERIALIZE3)) {
 			annotationNode.addError("@JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.");
 			return;
-		}
-		
-		Collection<JacksonVersion> jacksonVersions = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, Arrays.<JacksonVersion>asList());
-		
-		if (jacksonVersions.isEmpty()) {
-			annotationNode.addWarning("Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized");
-			jacksonVersions = Arrays.asList(JacksonVersion.TWO);
 		}
 		
 		if (jacksonVersions.contains(JacksonVersion.TWO)) {
@@ -278,6 +273,13 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		if (builderAnnotation == null) builderClassName += "Impl"; // For @SuperBuilder, all Jackson annotations must be put on the BuilderImpl class.
 		
 		return builderClassName;
+	}
+	
+	private Collection<JacksonVersion> readConfiguredJacksonVersions(JavacNode annotationNode) {
+		Collection<JacksonVersion> jacksonVersions = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, Arrays.<JacksonVersion>asList());
+		if (!jacksonVersions.isEmpty()) return jacksonVersions;
+		annotationNode.addWarning("Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized");
+		return Arrays.asList(JacksonVersion.TWO);
 	}
 	
 	private static List<JCAnnotation> findJacksonAnnotationsOnClass(JavacNode node) {
