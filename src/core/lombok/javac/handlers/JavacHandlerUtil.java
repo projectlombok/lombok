@@ -2323,6 +2323,12 @@ public class JavacHandlerUtil {
 				if (!sectionBased) {
 					out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.PARAM);
 				}
+				if (!JavadocTag.RETURN.isPartOf(out)) {
+					String mainSentence = getMainSentenceOfJavaDoc(out);
+					if (mainSentence != null && !mainSentence.isEmpty()) {
+						out = addJavadocLine(out, "@return " + mainSentence);
+					}
+				}
 				node.getAst().cleanupTask("javadocfilter-getter", n, new CleanupTask() {
 					@Override public void cleanup() {
 						String javadoc = Javac.getDocComment(cu, n);
@@ -2363,6 +2369,12 @@ public class JavacHandlerUtil {
 			final boolean sectionBased = out != null;
 			if (!sectionBased) {
 				out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.RETURN);
+			}
+			if (!JavadocTag.PARAM.isPartOf(out)) {
+				String mainSentence = getMainSentenceOfJavaDoc(out);
+				if (mainSentence != null && !mainSentence.isEmpty()) {
+					out = addJavadocLine(out, "@param " + node.getName() + ' ' + mainSentence);
+				}
 			}
 			node.getAst().cleanupTask("javadocfilter-setter", n, new CleanupTask() {
 				@Override public void cleanup() {
