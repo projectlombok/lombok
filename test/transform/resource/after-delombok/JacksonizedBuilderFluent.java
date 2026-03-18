@@ -7,6 +7,7 @@ public class JacksonizedBuilderFluent {
 	private String fieldName1;
 	@JsonProperty("FieldName2")
 	private String fieldName2;
+	@com.fasterxml.jackson.annotation.JsonProperty("fieldName3")
 	private String fieldName3;
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated

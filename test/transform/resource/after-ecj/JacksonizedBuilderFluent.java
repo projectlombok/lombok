@@ -37,7 +37,7 @@ public @lombok.extern.jackson.Jacksonized @lombok.experimental.Accessors(fluent 
   }
   private @com.fasterxml.jackson.annotation.JsonProperty("fieldName1") String fieldName1;
   private @JsonProperty("FieldName2") String fieldName2;
-  private String fieldName3;
+  private @com.fasterxml.jackson.annotation.JsonProperty("fieldName3") String fieldName3;
   @java.lang.SuppressWarnings("all") @lombok.Generated JacksonizedBuilderFluent(final String fieldName1, final String fieldName2, final String fieldName3) {
     super();
     this.fieldName1 = fieldName1;
