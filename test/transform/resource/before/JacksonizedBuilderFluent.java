@@ -1,3 +1,4 @@
+//version 8: Jackson deps are at least Java7+.
 //CONF: lombok.jacksonized.jacksonVersion += 2
 //CONF: lombok.jacksonized.jacksonVersion += 3
 import com.fasterxml.jackson.annotation.JsonProperty;
