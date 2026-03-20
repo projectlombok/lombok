@@ -45,6 +45,7 @@ import lombok.core.AST;
 import lombok.core.AnnotationValues;
 import lombok.core.JavaIdentifiers;
 import lombok.core.LombokNode;
+import lombok.core.TypeLibrary;
 import lombok.core.configuration.AllowHelper;
 import lombok.core.configuration.CapitalizationStrategy;
 import lombok.core.configuration.ConfigurationKey;
@@ -80,6 +81,7 @@ public class HandlerUtil {
 	}
 	
 	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, JACKSON_COPY_TO_GETTER_ANNOTATIONS, JACKSON_COPY_TO_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
+	public static final TypeLibrary NONNULL_TYPE_LIBRARY;
 	static {
 		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
 		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
@@ -120,7 +122,12 @@ public class HandlerUtil {
 			"org.springframework.lang.NonNull",
 			"reactor.util.annotation.NonNull",
 		}));
-		
+
+		TypeLibrary nonnullTypeLib = new TypeLibrary();
+		for (String ann : NONNULL_ANNOTATIONS) nonnullTypeLib.addType(ann);
+		nonnullTypeLib.lock();
+		NONNULL_TYPE_LIBRARY = nonnullTypeLib;
+
 		// This is a list of annotations that lombok will automatically 'copy' - be it to the method (when generating a getter for a field annotated with one of these), or to a parameter (generating a setter, with-er, or builder 'setter').
 		// You can't disable this behaviour, so the list should only contain annotations where 'copy it!' is the desired behaviour in at least 95%, preferably 98%, of all non-buggy usages.
 		// As a general rule, lombok takes on maintenance of adding all nullity-related annotations here, _if_ they fit the definition of language-level nullity as per {@see #NONNULL_ANNOTATIONS}. As a consequence, everything from the NONNULL list should probably
