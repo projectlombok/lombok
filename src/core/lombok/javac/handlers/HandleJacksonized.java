@@ -116,13 +116,13 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		// Add @JsonIgnore to all transient fields. It will be automatically copied to the getter/setters later.
 		for (JavacNode javacNode : tdNode.down()) {
 			if (javacNode.getKind() == Kind.FIELD) {
-				if (!hasAnnotation(javacNode, JacksonAnnotationType.JSON_PROPERTY2) &&
-					!hasAnnotation(javacNode, JacksonAnnotationType.JSON_IGNORE2)) {
-					if (javacNode.isTransient()) {
-						createJsonIgnoreForField(javacNode, annotationNode);
-					} else {
-						createJsonPropertyForField(javacNode, annotationNode);
-					}
+				if (hasAnnotation(javacNode, JacksonAnnotationType.JSON_PROPERTY2) ||
+					hasAnnotation(javacNode, JacksonAnnotationType.JSON_IGNORE2)) {
+					continue;
+				} else if (javacNode.isTransient()) {
+					createJsonIgnoreForField(javacNode, annotationNode);
+				} else {
+					createJsonPropertyForField(javacNode, annotationNode);
 				}
 			}
 		}

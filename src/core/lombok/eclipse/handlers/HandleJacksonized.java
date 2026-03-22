@@ -193,13 +193,14 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
 		for (EclipseNode eclipseNode : tdNode.down()) {
 			if (eclipseNode.getKind() == Kind.FIELD) {
-				if (!hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_PROPERTY2) &&
-					!hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_IGNORE2)) {
-					if (eclipseNode.isTransient()) {
-						createJsonIgnoreForField(eclipseNode, annotationNode);
-					} else {
-						createJsonPropertyForField(eclipseNode, annotationNode);
-					}
+				if (hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_PROPERTY2) ||
+					hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_IGNORE2)) {
+					continue;
+				}
+				else if (eclipseNode.isTransient()) {
+					createJsonIgnoreForField(eclipseNode, annotationNode);
+				} else {
+					createJsonPropertyForField(eclipseNode, annotationNode);
 				}
 			}
 		}
