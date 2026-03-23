@@ -196,7 +196,8 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 				if (hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_PROPERTY2) ||
 					hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_IGNORE2)) {
 					continue;
-				} else if (eclipseNode.isTransient()) {
+				}
+				if (eclipseNode.isTransient()) {
 					createJsonIgnoreForField(eclipseNode, annotationNode);
 				} else {
 					createJsonPropertyForField(eclipseNode, annotationNode);
