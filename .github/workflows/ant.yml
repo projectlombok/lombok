@@ -11,13 +11,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 11
-      
+
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
@@ -27,43 +27,38 @@ jobs:
           key: ivy-${{ hashFiles('**/ivy.xml') }}
           restore-keys: |
             ivy-
-        
+
       - name: Build with Ant
         run: ant -noinput dist
-        
+
       - uses: actions/upload-artifact@v4
         with:
           name: lombok.jar
           path: dist/lombok.jar
-    
-  
+
+
   test-javac:
     runs-on: ubuntu-24.04
     needs: build
     env:
       EA_JDK: 25
-    strategy: 
-      matrix: 
+    strategy:
+      matrix:
         jdk: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
         goal: [javacCurrent]
-        include:
-          - jdk: 11
-            goal: javac6
-          - jdk: 11
-            goal: javac8
       fail-fast: false
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK ${{ matrix.jdk }}
         if: ${{ matrix.jdk < env.EA_JDK }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.jdk }}
           distribution: 'zulu'
-      
+
       - name: Set up JDK ${{ matrix.jdk }} Early Access release
         if: ${{ matrix.jdk >= env.EA_JDK }}
         uses: oracle-actions/setup-java@v1
@@ -71,7 +66,7 @@ jobs:
           website: jdk.java.net
           release: ${{ matrix.jdk }}
           version: latest
-      
+
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
@@ -81,15 +76,15 @@ jobs:
           key: ivy-${{ hashFiles('**/ivy.xml') }}
           restore-keys: |
             ivy-
-        
+
       - name: Run tests
         run: ant -noinput test.${{ matrix.goal }}
-  
+
   test-eclipse:
     runs-on: ubuntu-24.04
     needs: build
-    strategy: 
-      matrix: 
+    strategy:
+      matrix:
         version:
           - eclipse-oxygen
           - eclipse-202006
@@ -109,7 +104,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -141,17 +136,17 @@ jobs:
           path: |
             testenv
           key: ${{ matrix.version }}-testenv-${{ hashFiles('**/setup.ant.xml') }}
-          
+
       - name: Build with Ant
         run: xvfb-run ant -noinput dist test.${{ matrix.version }}
-        
+
   docker-integration-test:
     runs-on: ubuntu-24.04
     needs: build
-    strategy: 
-      matrix: 
-        jdk: [8, 11, 17, 21, 25]
-        tool: 
+    strategy:
+      matrix:
+        jdk: [11, 17, 21, 25]
+        tool:
           - {name: "maven",  cmd: "mvn compile"}
           - {name: "gradle", cmd: "gradle assemble", buildArgs: {"25": "--build-arg gradle=9.1.0"}}
           - {name: "ant",    cmd: "ant dist"}
@@ -159,46 +154,46 @@ jobs:
       fail-fast: false
     env:
       IMAGE_NAME: lombok-${{ matrix.tool.name }}-jdk${{ matrix.jdk }}
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - uses: actions/download-artifact@v4
         with:
           name: lombok.jar
-        
+
       - name: Build container
         working-directory: ./docker
         run: docker build --build-arg jdk=${{ matrix.jdk }} ${{ matrix.tool.buildArgs[matrix.jdk] }} -t $IMAGE_NAME -f ${{ matrix.tool.name }}/Dockerfile .
-        
+
       - name: Compile in container
         run: docker run --entrypoint="" -v $(pwd)/lombok.jar:/workspace/lombok.jar $IMAGE_NAME /bin/bash -c "cd classpath; ${{ matrix.tool.cmd }}"
-  
+
   manual-tests:
     runs-on: ubuntu-24.04
     needs: build
-    strategy: 
-      matrix: 
+    strategy:
+      matrix:
         jdk: [8, 11, 17, 21, 25]
         dir: [compileTests]
       fail-fast: false
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Set up JDK ${{ matrix.jdk }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.jdk }}
           distribution: 'zulu'
-          
+
       - uses: actions/download-artifact@v4
         with:
           name: lombok.jar
           path: dist
-          
+
       - name: Run tests
         working-directory: ./test/manual/${{ matrix.dir }}/
         run: ./runTests.sh
