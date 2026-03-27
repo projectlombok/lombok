@@ -22,7 +22,7 @@
 		<conf name="javac7" />
 		<conf name="javac8" />
 		
-		<conf name="ecj8" />
+
 		<conf name="ecj11" />
 		<conf name="ecj14" />
 		<conf name="ecj16" />
@@ -77,10 +77,7 @@
 		<dependency org="org.eclipse.jdt" name="ecj" rev="3.25.0" conf="ecj16->master" />
 		<dependency org="org.eclipse.jdt" name="ecj" rev="3.22.0" conf="ecj14->master" />
 		<dependency org="org.eclipse.jdt" name="ecj" rev="3.16.0" conf="ecj11->master" />
-		<!-- until oct 2016, ecj was released under org 'org.eclipse.jdt.core.compiler', and the versioning followed eclipse's versions. -->
-		<!-- after that, it switched to group 'org.eclipse.jdt', and follows its own version. That means 3.16.0 is a later release than 4.6.1 on the old group! -->
-		<dependency org="org.eclipse.jdt.core.compiler" name="ecj" rev="4.4.2" conf="ecj8->master" />
-		
+
 		<!-- eclipses -->
 		
 		<dependency org="org.eclipse.platform" name="org.eclipse.core.runtime" rev="3.13.0" conf="eclipse-oxygen->default" transitive="false" />

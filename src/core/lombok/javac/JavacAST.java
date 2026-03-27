@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2009-2025 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -84,10 +84,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private final Context context;
 	private static final URI NOT_CALCULATED_MARKER = URI.create("https://projectlombok.org/not/calculated");
 	private URI memoizedAbsoluteFileLocation = NOT_CALCULATED_MARKER;
-	
+
 	/**
 	 * Creates a new JavacAST of the provided Compilation Unit.
-	 * 
+	 *
 	 * @param errorLog A logger for warning and error reporting.
 	 * @param context A Context object for interfacing with the compiler.
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
@@ -105,18 +105,18 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.cleanup = cleanup;
 		clearChanged();
 	}
-	
+
 	@Override public URI getAbsoluteFileLocation() {
 		if (memoizedAbsoluteFileLocation == NOT_CALCULATED_MARKER) {
 			memoizedAbsoluteFileLocation = getAbsoluteFileLocation((JCCompilationUnit) top().get());
 		}
 		return memoizedAbsoluteFileLocation;
 	}
-	
+
 	private static Class<?> wrappedFileObjectClass, sbtJavaFileObjectClass, sbtMappedVirtualFileClass, sbtOptionClass;
 	private static Field wrappedFileObjectField, sbtJavaFileObjectField, sbtMappedVirtualFilePathField, sbtMappedVirtualFileRootsField, sbtOptionField;
 	private static Method sbtMapGetMethod;
-	
+
 	public static URI getAbsoluteFileLocation(JCCompilationUnit cu) {
 		try {
 			URI uri = cu.sourcefile.toUri();
@@ -129,7 +129,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			return null;
 		}
 	}
-	
+
 	private static URI tryGetSbtFile(JavaFileObject sourcefile) {
 		try {
 			return tryGetSbtFile_(sourcefile);
@@ -137,22 +137,22 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			return null;
 		}
 	}
-	
+
 	private static URI tryGetSbtFile_(JavaFileObject sourcefile) throws Exception {
 		Class<?> c = sourcefile.getClass();
 		String cn;
-		
+
 		if (wrappedFileObjectClass == null) {
 			if (!c.getName().equals("com.sun.tools.javac.api.ClientCodeWrapper$WrappedJavaFileObject")) return null;
 			wrappedFileObjectClass = c;
 		}
 		if (c != wrappedFileObjectClass) return null;
-		
+
 		if (wrappedFileObjectField == null) wrappedFileObjectField = Permit.permissiveGetField(wrappedFileObjectClass.getSuperclass(), "clientFileObject");
 		if (wrappedFileObjectField == null) return null;
 		Object fileObject = wrappedFileObjectField.get(sourcefile);
 		c = fileObject.getClass();
-		
+
 		if (sbtJavaFileObjectClass == null) {
 			cn = c.getName();
 			if (!cn.startsWith("sbt.") || !cn.endsWith("JavaFileObject")) return null;
@@ -161,10 +161,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (sbtJavaFileObjectClass != c) return null;
 		if (sbtJavaFileObjectField == null) sbtJavaFileObjectField = Permit.permissiveGetField(sbtJavaFileObjectClass, "underlying");
 		if (sbtJavaFileObjectField == null) return null;
-		
+
 		Object mappedVirtualFile = sbtJavaFileObjectField.get(fileObject);
 		c = mappedVirtualFile.getClass();
-		
+
 		if (sbtMappedVirtualFileClass == null) {
 			cn = c.getName();
 			if (!cn.startsWith("sbt.") || !cn.endsWith("MappedVirtualFile")) return null;
@@ -174,7 +174,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (sbtMappedVirtualFilePathField == null) return null;
 		if (sbtMappedVirtualFileRootsField == null) sbtMappedVirtualFileRootsField = Permit.permissiveGetField(sbtMappedVirtualFileClass, "rootPathsMap");
 		if (sbtMappedVirtualFileRootsField == null) return null;
-		
+
 		String encodedPath = (String) sbtMappedVirtualFilePathField.get(mappedVirtualFile);
 		if (!encodedPath.startsWith("${")) {
 			File maybeAbsoluteFile = new File(encodedPath);
@@ -190,7 +190,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		Object roots = sbtMappedVirtualFileRootsField.get(mappedVirtualFile);
 		if (sbtMapGetMethod == null) sbtMapGetMethod = Permit.getMethod(roots.getClass(), "get", Object.class);
 		if (sbtMapGetMethod == null) return null;
-		
+
 		Object option = sbtMapGetMethod.invoke(roots, base);
 		c = option.getClass();
 		if (sbtOptionClass == null) {
@@ -199,19 +199,19 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (c != sbtOptionClass) return null;
 		if (sbtOptionField == null) sbtOptionField = Permit.permissiveGetField(sbtOptionClass, "value");
 		if (sbtOptionField == null) return null;
-		
+
 		Object path = sbtOptionField.get(option);
 		return new File(path.toString() + encodedPath.substring(idx + 1)).toURI();
 	}
-	
+
 	private static String sourceName(JCCompilationUnit cu) {
 		return cu.sourcefile == null ? null : cu.sourcefile.toString();
 	}
-	
+
 	public Context getContext() {
 		return context;
 	}
-	
+
 	/**
 	 * Runs through the entire AST, starting at the compilation unit, calling the provided visitor's visit methods
 	 * for each node, depth first.
@@ -219,11 +219,11 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	public void traverse(JavacASTVisitor visitor) {
 		top().traverse(visitor);
 	}
-	
+
 	void traverseChildren(JavacASTVisitor visitor, JavacNode node) {
 		for (JavacNode child : node.down()) child.traverse(visitor);
 	}
-	
+
 	@Override public int getSourceVersion() {
 		try {
 			String nm = Source.instance(context).name();
@@ -234,38 +234,38 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		} catch (Exception ignore) {}
 		return 6;
 	}
-	
+
 	@Override public int getLatestJavaSpecSupported() {
 		return Javac.getJavaCompilerVersion();
 	}
-	
+
 	public void cleanupTask(String key, JCTree target, CleanupTask task) {
 		cleanup.registerTask(key, target, task);
 	}
-	
+
 	/** @return A Name object generated for the proper name table belonging to this AST. */
 	public Name toName(String name) {
 		return elements.getName(name);
 	}
-	
+
 	/** @return A TreeMaker instance that you can use to create new AST nodes. */
 	public JavacTreeMaker getTreeMaker() {
 		treeMaker.at(-1);
 		return treeMaker;
 	}
-	
+
 	/** @return The symbol table used by this AST for symbols. */
 	public Symtab getSymbolTable() {
 		return symtab;
 	}
-	
+
 	/**
 	 * @return The implementation of {@link javax.lang.model.util.Types} of javac. Contains a few extra methods beyond
 	 * the ones listed in the official annotation API interface. */
 	public JavacTypes getTypesUtil() {
 		return javacTypes;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override protected JavacNode buildTree(JCTree node, Kind kind) {
 		switch (kind) {
@@ -293,7 +293,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			throw new AssertionError("Did not expect: " + kind);
 		}
 	}
-	
+
 	private JavacNode buildCompilationUnit(JCCompilationUnit top) {
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		for (JCTree s : top.defs) {
@@ -301,14 +301,14 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				addIfNotNull(childNodes, buildType((JCClassDecl) s));
 			} // else they are import statements, which we don't care about. Or Skip objects, whatever those are.
 		}
-		
+
 		return new JavacNode(this, top, childNodes, Kind.COMPILATION_UNIT);
 	}
-	
+
 	private JavacNode buildType(JCClassDecl type) {
 		if (setAndGetAsHandled(type)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
-		
+
 		for (JCAnnotation annotation : type.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation, false));
 		for (JCTree def : type.defs) {
 			/* A def can be:
@@ -322,10 +322,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			else if (def instanceof JCVariableDecl) addIfNotNull(childNodes, buildField((JCVariableDecl) def));
 			else if (def instanceof JCBlock) addIfNotNull(childNodes, buildInitializer((JCBlock) def));
 		}
-		
+
 		return putInMap(new JavacNode(this, type, childNodes, Kind.TYPE));
 	}
-	
+
 	private JavacNode buildField(JCVariableDecl field) {
 		if (setAndGetAsHandled(field)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
@@ -334,7 +334,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		addIfNotNull(childNodes, buildExpression(field.init));
 		return putInMap(new JavacNode(this, field, childNodes, Kind.FIELD));
 	}
-	
+
 	private JavacNode buildLocalVar(JCVariableDecl local, Kind kind) {
 		if (setAndGetAsHandled(local)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
@@ -343,71 +343,71 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		addIfNotNull(childNodes, buildExpression(local.init));
 		return putInMap(new JavacNode(this, local, childNodes, kind));
 	}
-	
+
 	private JavacNode buildTypeUse(JCTree typeUse) {
 		if (setAndGetAsHandled(typeUse)) return null;
-		
+
 		if (typeUse == null) return null;
-		
+
 		if (typeUse.getClass().getName().equals("com.sun.tools.javac.tree.JCTree$JCAnnotatedType")) {
 			initJcAnnotatedType(typeUse.getClass());
 			Collection<?> anns = Permit.permissiveReadField(Collection.class, JCANNOTATEDTYPE_ANNOTATIONS, typeUse);
 			JCExpression underlying = Permit.permissiveReadField(JCExpression.class, JCANNOTATEDTYPE_UNDERLYINGTYPE, typeUse);
-			
+
 			List<JavacNode> childNodes = new ArrayList<JavacNode>();
 			if (anns != null) for (Object annotation : anns) if (annotation instanceof JCAnnotation) addIfNotNull(childNodes, buildAnnotation((JCAnnotation) annotation, true));
 			addIfNotNull(childNodes, buildTypeUse(underlying));
 			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
 		}
-		
+
 		if (typeUse instanceof JCWildcard) {
 			JCTree inner = ((JCWildcard) typeUse).inner;
 			List<JavacNode> childNodes = inner == null ? Collections.<JavacNode>emptyList() : new ArrayList<JavacNode>();
 			if (inner != null) addIfNotNull(childNodes, buildTypeUse(inner));
 			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
 		}
-		
+
 		if (typeUse instanceof JCArrayTypeTree) {
 			JCTree inner = ((JCArrayTypeTree) typeUse).elemtype;
 			List<JavacNode> childNodes = inner == null ? Collections.<JavacNode>emptyList() : new ArrayList<JavacNode>();
 			if (inner != null) addIfNotNull(childNodes, buildTypeUse(inner));
 			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
 		}
-		
+
 		if (typeUse instanceof JCFieldAccess) {
 			JCTree inner = ((JCFieldAccess) typeUse).selected;
 			List<JavacNode> childNodes = inner == null ? Collections.<JavacNode>emptyList() : new ArrayList<JavacNode>();
 			if (inner != null) addIfNotNull(childNodes, buildTypeUse(inner));
 			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
 		}
-		
+
 		if (typeUse instanceof JCIdent) {
 			return putInMap(new JavacNode(this, typeUse, Collections.<JavacNode>emptyList(), Kind.TYPE_USE));
 		}
-		
+
 		return null;
 	}
-	
+
 	private static boolean JCTRY_RESOURCES_FIELD_INITIALIZED = false;
 	private static Field JCTRY_RESOURCES_FIELD;
-	
+
 	@SuppressWarnings("unchecked")
 	private static List<JCTree> getResourcesForTryNode(JCTry tryNode) {
 		if (!JCTRY_RESOURCES_FIELD_INITIALIZED) {
 			JCTRY_RESOURCES_FIELD = Permit.permissiveGetField(JCTry.class, "resources");
 			JCTRY_RESOURCES_FIELD_INITIALIZED = true;
 		}
-		
+
 		if (JCTRY_RESOURCES_FIELD == null) return Collections.emptyList();
 		Object rv = null;
 		try {
 			rv = JCTRY_RESOURCES_FIELD.get(tryNode);
 		} catch (Exception ignore) {}
-		
+
 		if (rv instanceof List) return (List<JCTree>) rv;
 		return Collections.emptyList();
 	}
-	
+
 	private static boolean JCANNOTATEDTYPE_FIELDS_INITIALIZED = false;
 	private static Field JCANNOTATEDTYPE_ANNOTATIONS, JCANNOTATEDTYPE_UNDERLYINGTYPE;
 	private static void initJcAnnotatedType(Class<?> context) {
@@ -416,7 +416,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		JCANNOTATEDTYPE_UNDERLYINGTYPE = Permit.permissiveGetField(context, "underlyingType");
 		JCANNOTATEDTYPE_FIELDS_INITIALIZED = true;
 	}
-	
+
 	private static Field JCENHANCEDFORLOOP_VARORRECORDPATTERN_FIELD = Permit.permissiveGetField(JCEnhancedForLoop.class, "varOrRecordPattern");
 	private static JCTree getVarOrRecordPattern(JCEnhancedForLoop loop) {
 		if (JCENHANCEDFORLOOP_VARORRECORDPATTERN_FIELD == null) {
@@ -427,7 +427,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		} catch (Exception ignore) {}
 		return null;
 	}
-	
+
 	private JavacNode buildTry(JCTry tryNode) {
 		if (setAndGetAsHandled(tryNode)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
@@ -441,14 +441,14 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		addIfNotNull(childNodes, buildStatement(tryNode.finalizer));
 		return putInMap(new JavacNode(this, tryNode, childNodes, Kind.STATEMENT));
 	}
-	
+
 	private JavacNode buildInitializer(JCBlock initializer) {
 		if (setAndGetAsHandled(initializer)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		for (JCStatement statement: initializer.stats) addIfNotNull(childNodes, buildStatement(statement));
 		return putInMap(new JavacNode(this, initializer, childNodes, Kind.INITIALIZER));
 	}
-	
+
 	private JavacNode buildMethod(JCMethodDecl method) {
 		if (setAndGetAsHandled(method)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
@@ -459,7 +459,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		}
 		return putInMap(new JavacNode(this, method, childNodes, Kind.METHOD));
 	}
-	
+
 	private JavacNode buildAnnotation(JCAnnotation annotation, boolean varDecl) {
 		boolean handled = setAndGetAsHandled(annotation);
 		if (!varDecl && handled) {
@@ -468,15 +468,15 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		}
 		return putInMap(new JavacNode(this, annotation, null, Kind.ANNOTATION));
 	}
-	
+
 	private JavacNode buildExpression(JCExpression expression) {
 		return buildStatementOrExpression(expression);
 	}
-	
+
 	private JavacNode buildStatement(JCStatement statement) {
 		return buildStatementOrExpression(statement);
 	}
-	
+
 	private JavacNode buildStatementOrExpression(JCTree statement) {
 		if (statement == null) return null;
 		if (statement instanceof JCAnnotation) return null;
@@ -486,20 +486,20 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (statement.getClass().getName().equals("com.sun.tools.javac.tree.JCTree$JCLambda")) return buildLambda(statement);
 		if (statement instanceof JCEnhancedForLoop) return buildEnhancedForLoop((JCEnhancedForLoop) statement);
 		if (setAndGetAsHandled(statement)) return null;
-		
+
 		return drill(statement);
 	}
-	
+
 	private JavacNode buildLambda(JCTree jcTree) {
 		return buildStatementOrExpression(getBody(jcTree));
 	}
-	
+
 	private JCTree getBody(JCTree jcTree) {
 		return (JCTree) Permit.invokeSneaky(getBodyMethod(jcTree.getClass()), jcTree);
 	}
-	
+
 	private final static ConcurrentMap<Class<?>, Method> getBodyMethods = new ConcurrentHashMap<Class<?>, Method>();
-	
+
 	private Method getBodyMethod(Class<?> c) {
 		Method m = getBodyMethods.get(c);
 		if (m != null) {
@@ -513,19 +513,19 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		getBodyMethods.putIfAbsent(c, m);
 		return getBodyMethods.get(c);
 	}
-	
+
 	private JavacNode buildEnhancedForLoop(JCEnhancedForLoop loop) {
 		if (setAndGetAsHandled(loop)) return null;
-		
+
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		// The order of the child elements is important and must be kept
 		addIfNotNull(childNodes, buildTree(getVarOrRecordPattern(loop), Kind.STATEMENT));
 		addIfNotNull(childNodes, buildTree(loop.expr, Kind.STATEMENT));
 		addIfNotNull(childNodes, buildStatement(loop.body));
-		
+
 		return putInMap(new JavacNode(this, loop, childNodes, Kind.STATEMENT));
 	}
-	
+
 	private JavacNode drill(JCTree statement) {
 		try {
 			List<JavacNode> childNodes = new ArrayList<JavacNode>();
@@ -540,7 +540,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			throw newError;
 		}
 	}
-	
+
 	/* For javac, both JCExpression and JCStatement are considered as valid children types. */
 	private static Collection<Class<? extends JCTree>> statementTypes() {
 		Collection<Class<? extends JCTree>> collection = new ArrayList<Class<? extends JCTree>>(3);
@@ -549,11 +549,11 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		collection.add(JCCatch.class);
 		return collection;
 	}
-	
+
 	private static void addIfNotNull(Collection<JavacNode> nodes, JavacNode node) {
 		if (node != null) nodes.add(node);
 	}
-	
+
 	/**
 	 * Attempts to remove any compiler errors generated by java whose reporting position is located anywhere between the start and end of the supplied node.
 	 */
@@ -562,7 +562,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		JCCompilationUnit top = (JCCompilationUnit) top().get();
 		removeFromDeferredDiagnostics(pos.getStartPosition(), Javac.getEndPosition(pos, top));
 	}
-	
+
 	/** Supply either a position or a node (in that case, position of the node is used) */
 	void printMessage(Diagnostic.Kind kind, String message, JavacNode node, DiagnosticPosition pos, boolean attemptToRemoveErrorsInRange) {
 		JavaFileObject oldSource = null;
@@ -594,19 +594,19 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			if (newSource != null) errorLogger.useSource(oldSource);
 		}
 	}
-	
+
 	public void removeFromDeferredDiagnostics(int startPos, int endPos) {
 		if (startPos == Position.NOPOS || endPos == Position.NOPOS) return;
 		JCCompilationUnit self = (JCCompilationUnit) top().get();
 		new CompilerMessageSuppressor(getContext()).removeAllBetween(self.sourcefile, startPos, endPos);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override protected void setElementInASTCollection(Field field, Object refField, List<Collection<?>> chain, Collection<?> collection, int idx, JCTree newN) throws IllegalAccessException {
 		com.sun.tools.javac.util.List<?> list = setElementInConsList(chain, collection, ((List<?>)collection).get(idx), newN);
 		field.set(refField, list);
 	}
-	
+
 	private com.sun.tools.javac.util.List<?> setElementInConsList(List<Collection<?>> chain, Collection<?> current, Object oldO, Object newO) {
 		com.sun.tools.javac.util.List<?> oldL = (com.sun.tools.javac.util.List<?>) current;
 		com.sun.tools.javac.util.List<?> newL = replaceInConsList(oldL, oldO, newO);
@@ -615,7 +615,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		Collection<?> newCurrent = reducedChain.remove(reducedChain.size() -1);
 		return setElementInConsList(reducedChain, newCurrent, oldL, newL);
 	}
-	
+
 	private com.sun.tools.javac.util.List<?> replaceInConsList(com.sun.tools.javac.util.List<?> oldL, Object oldO, Object newO) {
 		boolean repl = false;
 		Object[] a = oldL.toArray();
@@ -625,42 +625,42 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				repl = true;
 			}
 		}
-		
+
 		if (repl) return com.sun.tools.javac.util.List.<Object>from(a);
 		return oldL;
 	}
-	
+
 	abstract static class ErrorLog {
 		final Log log;
 		private final Messager messager;
 		private final Field errorCount;
 		private final Field warningCount;
-		
+
 		private ErrorLog(Log log, Messager messager, Field errorCount, Field warningCount) {
 			this.log = log;
 			this.messager = messager;
 			this.errorCount = errorCount;
 			this.warningCount = warningCount;
 		}
-		
+
 		final JavaFileObject useSource(JavaFileObject file) {
 			return log.useSource(file);
 		}
-		
+
 		final void error(DiagnosticPosition pos, String message) {
 			increment(errorCount);
 			error1(pos, message);
 		}
-		
+
 		final void warning(DiagnosticPosition pos, String message) {
 			increment(warningCount);
 			warning1(pos, message);
 		}
-		
+
 		abstract void error1(DiagnosticPosition pos, String message);
 		abstract void warning1(DiagnosticPosition pos, String message);
 		abstract void note(DiagnosticPosition pos, String message);
-		
+
 		private void increment(Field field) {
 			if (field == null) return;
 			try {
@@ -670,7 +670,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.
 			}
 		}
-		
+
 		static ErrorLog create(Messager messager, Context context) {
 			Field errorCount; try {
 				errorCount = Permit.getField(messager.getClass(), "errorCount");
@@ -678,77 +678,46 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				errorCount = null;
 			}
 			Log log = Log.instance(context);
-			boolean hasMultipleErrors = false;
-			for (Field field : log.getClass().getFields()) {
-				if (field.getName().equals("multipleErrors")) {
-					hasMultipleErrors = true;
-				}
-			}
-			if (hasMultipleErrors) return new JdkBefore9(log, messager, errorCount);
-			
+
 			Field warningCount; try {
 				warningCount = Permit.getField(messager.getClass(), "warningCount");
 			} catch (Throwable t) {
 				warningCount = null;
 			}
-			
+
 			return new Jdk9Plus(log, messager, errorCount, warningCount);
 		}
 	}
-	
-	static class JdkBefore9 extends ErrorLog {
-		private JdkBefore9(Log log, Messager messager, Field errorCount) {
-			super(log, messager, errorCount, null);
-		}
-		
-		@Override void error1(DiagnosticPosition pos, String message) {
-			boolean prev = log.multipleErrors;
-			log.multipleErrors = true;
-			try {
-				log.error(pos, "proc.messager", message);
-			} finally {
-				log.multipleErrors = prev;
-			}
-		}
-		
-		@Override void warning1(DiagnosticPosition pos, String message) {
-			log.warning(pos, "proc.messager", message);
-		}
-		
-		@Override void note(DiagnosticPosition pos, String message) {
-			log.note(pos, "proc.messager", message);
-		}
-	}
-	
+
 	static class Jdk9Plus extends ErrorLog {
 		private static final String PROC_MESSAGER = "proc.messager";
 		private Object multiple;
 		private Method errorMethod, warningMethod, noteMethod;
 		private Method errorKey, warningKey, noteKey;
 		private JCDiagnostic.Factory diags;
-		
+
 		private Jdk9Plus(Log log, Messager messager, Field errorCount, Field warningCount) {
 			super(log, messager, errorCount, warningCount);
-			
+
 			try {
 				final String jcd = "com.sun.tools.javac.util.JCDiagnostic";
 				Class<?> df = Class.forName(jcd + "$DiagnosticFlag");
 				for (Object constant : df.getEnumConstants()) {
 					if (constant.toString().equals("MULTIPLE")) this.multiple = constant;
 				}
-				
+
 				Class<?> errorCls = Class.forName(jcd + "$Error");
 				Class<?> warningCls = Class.forName(jcd + "$Warning");
 				Class<?> noteCls = Class.forName(jcd + "$Note");
-				
+
 				Class<?> lc = log.getClass();
 				this.errorMethod = Permit.getMethod(lc, "error", df, DiagnosticPosition.class, errorCls);
 				this.warningMethod = Permit.getMethod(lc, "warning", DiagnosticPosition.class, warningCls);
 				this.noteMethod = Permit.getMethod(lc, "note", DiagnosticPosition.class, noteCls);
-				
+
 				Field diagsField = Permit.getField(lc.getSuperclass(), "diags");
 				this.diags = (JCDiagnostic.Factory) diagsField.get(log);
-				
+
 				Class<?> dc = this.diags.getClass();
 				this.errorKey = Permit.getMethod(dc, "errorKey", String.class, Object[].class);
 				this.warningKey = Permit.permissiveGetMethod(dc, "warningKey", String.class, Object[].class);
@@ -760,12 +729,12 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				//t.printStackTrace();
 			}
 		}
-		
+
 		@Override void error1(DiagnosticPosition pos, String message) {
 			Object error = Permit.invokeSneaky(this.errorKey, diags, PROC_MESSAGER, new Object[] { message });
 			if (error != null) Permit.invokeSneaky(errorMethod, log, multiple, pos, error);
 		}
-		
+
 		@Override
 		void warning1(DiagnosticPosition pos, String message) {
 			Object warning;
@@ -776,7 +745,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			}
 			if (warning != null) Permit.invokeSneaky(warningMethod, log, pos, warning);
 		}
-		
+
 		@Override
 		void note(DiagnosticPosition pos, String message) {
 			Object note = Permit.invokeSneaky(this.noteKey, diags, PROC_MESSAGER, new Object[] { message });
