@@ -160,7 +160,7 @@ This buildfile is part of projectlombok.org. It takes care of compiling and buil
 			<exclude name="lombok/javac/**" />
 			<classpath location="build/lombok-utils" />
 			<classpath refid="cp.javac6" />
-			<classpath refid="cp.ecj8" />
+			<classpath refid="cp.ecj11" />
 		</ivy:compile>
 		<ivy:compile destdir="build/lombok-utils6" source="1.6" target="1.6" ecj="true">
 			<bootclasspath location="build/stubs" />
