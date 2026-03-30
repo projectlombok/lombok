@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2015 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,17 +32,13 @@ import java.util.zip.ZipEntry;
 
 /**
  * Contains all the code to be transplanted into eclipse.
- * 
+ *
  * Do not use:
- * 
- * * Annotations
- * * Generics
- * * Varargs
- * * Auto (un)boxing
+ *
  * * class literals
- * 
- * The above because this code is compiled with -source 1.4, and is transplanted.
- * 
+ *
+ * The above because this code is compiled with -source 1.6, and is transplanted.
+ *
  * NB: The suppress warnings will be stripped out before compilation.
  */
 @SuppressWarnings("all")
@@ -50,7 +46,7 @@ public class EclipseLoaderPatcherTransplants {
 	public static boolean overrideLoadDecide(ClassLoader original, String name, boolean resolve) {
 		return name.startsWith("lombok.");
 	}
-	
+
 	public static Class overrideLoadResult(ClassLoader original, String name, boolean resolve) throws ClassNotFoundException {
 		boolean bootstrap = name.equals("lombok.launch.PackageShader") || name.equals("lombok.launch.ClassFileMetaData");
 		try {
@@ -82,17 +78,17 @@ public class EclipseLoaderPatcherTransplants {
 									if (len == bytes.length) throw new IllegalStateException((bootstrap ? name : "lombok.launch.ShadowClassLoader") + " too large.");
 								}
 								in.close();
-								
+
 								try {
-									/* Since Java 16 reflective access to ClassLoader.defineClass is no longer permitted. The recommended solution 
+									/* Since Java 16 reflective access to ClassLoader.defineClass is no longer permitted. The recommended solution
 									 * is to use MethodHandles.lookup().defineClass which is useless here because it is limited to classes in the
 									 * same package. Fortunately this code gets transplanted into a ClassLoader and we can call the parent method
 									 * using a MethodHandle. To support old Java versions we use a reflective version of the code snippet below.
-									 * 
+									 *
 									 * Lookup lookup = MethodHandles.lookup();
 									 * MethodType type = MethodType.methodType(Class.class, new Class[] {String.class, byte[].class, int.class, int.class});
 									 * MethodHandle method = lookup.findVirtual(original.getClass(), "defineClass", type);
-									 * shadowClassLoaderClass = (Class) method.invokeWithArguments(original, "lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)}) 
+									 * shadowClassLoaderClass = (Class) method.invokeWithArguments(original, "lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)})
 									 */
 									Class methodHandles = Class.forName("java.lang.invoke.MethodHandles");
 									Class methodHandle = Class.forName("java.lang.invoke.MethodHandle");
@@ -102,7 +98,7 @@ public class EclipseLoaderPatcherTransplants {
 									Method methodTypeMethod = methodType.getDeclaredMethod("methodType", new Class[] {Class.class, Class[].class});
 									Method findVirtualMethod = methodHandlesLookup.getDeclaredMethod("findVirtual", new Class[] {Class.class, String.class, methodType});
 									Method invokeMethod = methodHandle.getDeclaredMethod("invokeWithArguments", new Class[] {Object[].class});
-									
+
 									Object lookup = lookupMethod.invoke(null, null);
 									Object type = methodTypeMethod.invoke(null, new Object[] {Class.class, new Class[] {String.class, byte[].class, int.class, int.class}});
 									Object method = findVirtualMethod.invoke(lookup, new Object[] {original.getClass(), "defineClass", type});
@@ -143,7 +139,7 @@ public class EclipseLoaderPatcherTransplants {
 					}
 				}
 			}
-			
+
 			if (resolve) {
 				Class[] paramTypes = new Class[2];
 				paramTypes[0] = "".getClass();
