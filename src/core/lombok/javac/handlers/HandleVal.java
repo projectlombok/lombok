@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,6 +123,7 @@ public class HandleVal extends JavacASTAdapter {
 		if (localNode.getSourceVersion() >= 10) {
 			local.vartype = null;
 			localNode.getAst().setChanged();
+			VarDeclDeclKind.setDeclKindToVar(local);
 			return;
 		}
 		
@@ -209,6 +210,19 @@ public class HandleVal extends JavacASTAdapter {
 				return (JCTree) varOrRecordPattern.get(loop);
 			} catch (Exception ignore) {}
 			return null;
+		}
+	}
+	
+	private static class VarDeclDeclKind {
+		private static final Field declKind = Permit.permissiveGetField(JCVariableDecl.class, "declKind");
+		private static final Field typePos = Permit.permissiveGetField(JCVariableDecl.class, "typePos");
+		private static final Enum<?> DECL_KIND_VAR = Permit.enumValue(JCVariableDecl.class.getName() + "$DeclKind", "VAR");
+		
+		private static void setDeclKindToVar(JCVariableDecl decl) {
+			if (declKind != null) {
+				Permit.permissiveSet(declKind, decl, DECL_KIND_VAR);
+				Permit.permissiveSet(typePos, decl, decl.pos);
+			}
 		}
 	}
 }
