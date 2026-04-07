@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.18.45 "Edgy Guinea Pig"
 * PLATFORM: JDK26 support added [#4019](https://github.com/projectlombok/lombok/issues/4019).
+* PLATFORM: Spring Tools Suite 5 supported [#3985](https://github.com/projectlombok/lombok/issues/3985).
 
 ### v1.18.44 (March 11th, 2026)
 * FEATURE: `@Jacksonized` now supports both Jackson2 and Jackson3; you'll get a warning until you configure which one (or even both!) you want lombok to generate. [#3950](https://github.com/projectlombok/lombok/issues/3950).
