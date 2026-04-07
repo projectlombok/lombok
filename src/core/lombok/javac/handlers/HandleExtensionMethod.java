@@ -26,19 +26,19 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static lombok.javac.handlers.JavacResolver.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.ElementKind;
 
 import lombok.ConfigurationKeys;
+import lombok.core.AST;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
+import lombok.core.configuration.TypeName;
 import lombok.experimental.ExtensionMethod;
-import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.Javac;
+import lombok.javac.JavacASTAdapter;
+import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
 import lombok.spi.Provides;
@@ -55,6 +55,7 @@ import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.code.Type.ForAll;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -62,41 +63,68 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.util.Convert;
+import com.sun.tools.javac.util.Name;
 
 /**
  * Handles the {@link ExtensionMethod} annotation for javac.
  */
-@Provides
+@Provides(JavacASTVisitor.class)
 @HandlerPriority(66560) // 2^16 + 2^10; we must run AFTER HandleVal which is at 2^16
-public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMethod> {
-	@Override
-	public void handle(final AnnotationValues<ExtensionMethod> annotation, final JCAnnotation source, final JavacNode annotationNode) {
-		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.EXTENSION_METHOD_FLAG_USAGE, "@ExtensionMethod");
-		
-		deleteAnnotationIfNeccessary(annotationNode, ExtensionMethod.class);
-		JavacNode typeNode = annotationNode.up();
+public class HandleExtensionMethod extends JavacASTAdapter {
+	@Override public void visitType(JavacNode typeNode, JCClassDecl type) {
 		boolean isClassEnumInterfaceOrRecord = isClassEnumInterfaceOrRecord(typeNode);
-		
-		if (!isClassEnumInterfaceOrRecord) {
-			annotationNode.addError("@ExtensionMethod can only be used on a class, an enum, an interface or a record");
+
+		AnnotationValues<ExtensionMethod> extensionMethod = null;
+		JavacNode source = typeNode;
+
+		boolean suppressBaseMethodsIsExplicit = false;
+		ExtensionMethod em = null;
+		for (JavacNode jn : typeNode.down()) {
+			if (jn.getKind() != AST.Kind.ANNOTATION) continue;
+			JCAnnotation ann = (JCAnnotation) jn.get();
+			JCTree typeTree = ann.annotationType;
+			if (typeTree == null) continue;
+			String typeTreeToString = typeTree.toString();
+			if (!typeTreeToString.equals("ExtensionMethod") && !typeTreeToString.equals("lombok.experimental.ExtensionMethod")) continue;
+			if (!typeMatches(ExtensionMethod.class, jn, typeTree)) continue;
+
+			source = jn;
+			extensionMethod = createAnnotation(ExtensionMethod.class, jn);
+			deleteAnnotationIfNeccessary(jn, ExtensionMethod.class);
+
+			suppressBaseMethodsIsExplicit = extensionMethod.isExplicit("suppressBaseMethods");
+
+			handleExperimentalFlagUsage(jn, ConfigurationKeys.EXTENSION_METHOD_FLAG_USAGE, "@ExtensionMethod");
+
+			em = extensionMethod.getInstance();
+			if (!isClassEnumInterfaceOrRecord) {
+				jn.addError("@ExtensionMethod can only be used on a class, an enum, an interface or a record");
+				return;
+			}
+			break;
+		}
+
+		boolean defaultSuppressBaseMethods = suppressBaseMethodsIsExplicit ? true : !Boolean.FALSE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.EXTENSION_METHOD_SUPPRESS_BASE_METHODS));
+		List<Extension> defaultExtensions = findDefaultExtensions(typeNode);
+
+		List<Object> extensionProviders = extensionMethod != null ? extensionMethod.getActualExpressions("value") : Collections.emptyList();
+		if (extensionMethod != null && extensionProviders.isEmpty() && !defaultExtensions.isEmpty()) {
+			source.addWarning("@ExtensionMethod has no effect since no extension types were specified.");
 			return;
 		}
-		
-		boolean suppressBaseMethods = annotation.getInstance().suppressBaseMethods();
-		
-		List<Object> extensionProviders = annotation.getActualExpressions("value");
-		if (extensionProviders.isEmpty()) {
-			annotationNode.addError(String.format("@%s has no effect since no extension types were specified.", ExtensionMethod.class.getName()));
-			return;
-		}
-		final List<Extension> extensions = getExtensions(annotationNode, extensionProviders);
-		if (extensions.isEmpty()) return;
-		
-		new ExtensionMethodReplaceVisitor(annotationNode, extensions, suppressBaseMethods).replace();
-		
-		annotationNode.rebuild();
+
+		final List<Extension> extensions = getExtensions(source, extensionProviders);
+		if (extensions.isEmpty() && defaultExtensions.isEmpty()) return;
+        extensions.addAll(defaultExtensions);
+
+		boolean emSuppressBaseMethods = (extensionMethod != null && suppressBaseMethodsIsExplicit) ? em.suppressBaseMethods() : defaultSuppressBaseMethods;
+
+		new ExtensionMethodReplaceVisitor(source, extensions, emSuppressBaseMethods).replace();
+
+		source.rebuild();
 	}
-	
+
 	
 	public List<Extension> getExtensions(final JavacNode typeNode, final List<Object> extensionProviders) {
 		List<Extension> extensions = new ArrayList<Extension>();
@@ -125,6 +153,29 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			extensionMethods.add(method);
 		}
 		return new Extension(extensionMethods, tsym);
+	}
+
+	public List<Extension> findDefaultExtensions(JavacNode typeNode) {
+		java.util.List<TypeName> configuredDefaults = typeNode.getAst().readConfiguration(ConfigurationKeys.EXTENSION_METHOD_DEFAULT_EXTENSIONS);
+		if (configuredDefaults.isEmpty()) return Collections.<Extension>emptyList();
+
+		List<Extension> extensions = new ArrayList<Extension>();
+		for (TypeName cn : configuredDefaults) {
+			Name name = typeNode.toName(cn.getName());
+
+			Object module = null;
+			if (Javac.getJavaCompilerVersion() >= 9) {
+				module = typeNode.getSymbolTable().inferModule(Convert.packagePart(name));
+				if (module == null) {
+					module = typeNode.getSymbolTable().unnamedModule;
+				}
+			}
+			ClassSymbol classSymbol = Javac.resolveIdent(JavaCompiler.instance(typeNode.getContext()), module, cn.getName());
+			if ((classSymbol.flags() & (INTERFACE | ANNOTATION)) != 0) continue;
+
+			extensions.add(getExtension(typeNode, (ClassType) classSymbol.type));
+		}
+		return extensions;
 	}
 	
 	private static class Extension {
