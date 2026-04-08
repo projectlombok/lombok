@@ -771,21 +771,28 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static boolean hasNonNullAnnotations(EclipseNode node) {
+		TypeResolver resolver = node.getImportListAsTypeResolver();
 		for (EclipseNode child : node.down()) {
 			if (child.getKind() != Kind.ANNOTATION) continue;
 			Annotation annotation = (Annotation) child.get();
-			for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, annotation.type)) return true;
+			TypeReference typeRef = annotation.type;
+			if (typeRef == null) continue;
+			char[][] tn = typeRef.getTypeName();
+			if (tn == null || tn.length == 0) continue;
+			if (resolver.typeRefToFullyQualifiedName(node, NONNULL_TYPE_LIBRARY, toQualifiedName(tn)) != null) return true;
 		}
 		return false;
 	}
-	
+
 	public static boolean hasNonNullAnnotations(EclipseNode node, List<Annotation> anns) {
 		if (anns == null) return false;
+		TypeResolver resolver = node.getImportListAsTypeResolver();
 		for (Annotation annotation : anns) {
 			TypeReference typeRef = annotation.type;
-			if (typeRef != null && typeRef.getTypeName() != null) {
-				for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) return true;
-			}
+			if (typeRef == null) continue;
+			char[][] tn = typeRef.getTypeName();
+			if (tn == null || tn.length == 0) continue;
+			if (resolver.typeRefToFullyQualifiedName(node, NONNULL_TYPE_LIBRARY, toQualifiedName(tn)) != null) return true;
 		}
 		return false;
 	}

@@ -1709,24 +1709,26 @@ public class JavacHandlerUtil {
 	}
 	
 	public static boolean hasNonNullAnnotations(JavacNode node) {
+		TypeResolver resolver = node.getImportListAsTypeResolver();
 		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
 				String annotationTypeName = getTypeName(annotation.annotationType);
-				for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
+				if (resolver.typeRefToFullyQualifiedName(node, NONNULL_TYPE_LIBRARY, annotationTypeName) != null) return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	public static boolean hasNonNullAnnotations(JavacNode node, List<JCAnnotation> anns) {
 		if (anns == null) return false;
+		TypeResolver resolver = node.getImportListAsTypeResolver();
 		for (JCAnnotation ann : anns) {
 			String annotationTypeName = getTypeName(ann.annotationType);
-			for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
+			if (resolver.typeRefToFullyQualifiedName(node, NONNULL_TYPE_LIBRARY, annotationTypeName) != null) return true;
 		}
-		
+
 		return false;
 	}
 	
