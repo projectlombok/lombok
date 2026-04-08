@@ -131,7 +131,7 @@ public class JavacHandlerUtil {
 	/**
 	 * Find the parent class or interface
 	 */
-  static JavacNode getParentTypeNode(JavacNode childOfType) {
+	static JavacNode getParentTypeNode(JavacNode childOfType) {
 		JavacNode typeNode = childOfType;
 		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
 		return typeNode;
