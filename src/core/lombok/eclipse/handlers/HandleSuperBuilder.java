@@ -894,6 +894,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		statements.add(new ReturnStatement(allocationStatement, 0, 0));
 		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
 		out.receiver = HandleBuilder.generateBuildReceiver(job);
+		out.annotations = addCheckReturnValue(job.builderType, job.source, out.annotations);
 		createRelevantNonNullAnnotation(job.builderType, out);
 		out.traverse(new SetGeneratedByVisitor(job.source), (ClassScope) null);
 		return out;
