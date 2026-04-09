@@ -56,6 +56,7 @@
 		<dependency org="org.springframework" name="spring-core" rev="5.3.4" conf="test->master" />
 		<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.10.0" conf="test->master" />
 		<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.10.0" conf="test->master" />
+		<dependency org="org.jetbrains" name="annotations" rev="24.0.1" conf="test->master" />
 		
 		<!-- build tooling -->
 		<dependency org="com.hierynomus" name="sshj" rev="0.26.0" conf="buildtools->default" />
