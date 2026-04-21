@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.47 "Edgy Guinea Pig"
+* No changes since v1.18.46 yet.
+
 ### v1.18.46 (April 22nd, 2026)
 * PLATFORM: JDK26 support added [#4019](https://github.com/projectlombok/lombok/issues/4019).
 * PLATFORM: Spring Tools Suite 5 supported [#3985](https://github.com/projectlombok/lombok/issues/3985).
