@@ -188,7 +188,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
 		for (EclipseNode eclipseNode : tdNode.down()) {
 			if (eclipseNode.getKind() == Kind.FIELD) {
-				if (hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_PROPERTY2) ||
+				if (hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_PROPERTY2) || 
 					hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_IGNORE2)) {
 					continue;
 				}
@@ -210,7 +210,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			fd.annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotationType.JSON_PROPERTY2.getQualifiednameAsCharArrayArray(), fieldName);
 		}
 	}
-
+	
 	private void createJsonIgnoreForField(EclipseNode fieldNode, EclipseNode annotationNode) {
 		ASTNode astNode = fieldNode.get();
 		if (astNode instanceof FieldDeclaration) {
@@ -218,7 +218,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			fd.annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotationType.JSON_IGNORE2.getQualifiednameAsCharArrayArray());
 		}
 	}
-
+	
 	private String getBuilderClassName(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, TypeDeclaration td, AnnotationValues<Builder> builderAnnotation) {
 		String builderClassName = builderAnnotation != null ? 
 			builderAnnotation.getInstance().builderClassName() : null;
@@ -246,7 +246,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 	private List<JacksonVersion> readConfiguredJacksonVersions(EclipseNode annotationNode) {
 		List<JacksonVersion> jacksonVersions = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, Arrays.<JacksonVersion>asList());
 		if (!jacksonVersions.isEmpty()) return jacksonVersions;
-		annotationNode.addWarning("Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized");
+		annotationNode.addWarning(JacksonVersion.AMBIGUOUS_JACKSON_VERSION_WARNING_TEXT);
 		return Arrays.asList(JacksonVersion.TWO);
 	}
 	

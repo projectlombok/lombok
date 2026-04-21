@@ -135,11 +135,11 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		List<JCExpression> args = List.<JCExpression>of(maker.Literal(fieldNode.getName()));
 		addFieldAnnotation(fieldNode, annotationNode, JacksonAnnotationType.JSON_PROPERTY2, args);
 	}
-
+	
 	private void createJsonIgnoreForField(JavacNode fieldNode, JavacNode annotationNode) {
 		addFieldAnnotation(fieldNode, annotationNode, JacksonAnnotationType.JSON_IGNORE2, List.<JCExpression>nil());
 	}
-
+	
 	private void addFieldAnnotation(JavacNode fieldNode, JavacNode annotationNode, JacksonAnnotationType annotationType, List<JCExpression> args) {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		JCExpression type = chainDots(fieldNode, annotationType);
@@ -192,7 +192,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 		}
 		
 		Collection<JacksonVersion> jacksonVersions = readConfiguredJacksonVersions(annotationNode);
-
+		
 		// Insert @JsonDeserialize on annotated class.
 		if (hasAnnotation(tdNode, JacksonAnnotationType.JSON_DESERIALIZE2) || hasAnnotation(tdNode, JacksonAnnotationType.JSON_DESERIALIZE3)) {
 			annotationNode.addError("@JsonDeserialize already exists on class. Either delete @JsonDeserialize, or remove @Jacksonized and manually configure Jackson.");
@@ -278,7 +278,7 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 	private Collection<JacksonVersion> readConfiguredJacksonVersions(JavacNode annotationNode) {
 		Collection<JacksonVersion> jacksonVersions = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, Arrays.<JacksonVersion>asList());
 		if (!jacksonVersions.isEmpty()) return jacksonVersions;
-		annotationNode.addWarning("Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized");
+		annotationNode.addWarning(JacksonVersion.AMBIGUOUS_JACKSON_VERSION_WARNING_TEXT);
 		return Arrays.asList(JacksonVersion.TWO);
 	}
 	
