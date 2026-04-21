@@ -434,7 +434,7 @@ class ShadowClassLoader extends ClassLoader {
 		return "SCL." + sclSuffix + "/" + name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
 	}
 	
-	@Override public Enumeration<URL> getResources(String name) throws IOException {
+	@SuppressWarnings({"all", "rawtypes", "unchecked"}) @Override public Enumeration<URL> getResources(String name) throws IOException {
 		String altName = null;
 		if (name.endsWith(".class")) altName = toSclResourceName(name);
 		
@@ -443,7 +443,7 @@ class ShadowClassLoader extends ClassLoader {
 		// * We need to return an enumeration.
 		// * We can't make one on the fly.
 		// * ArrayList can't make these.
-		List<URL> urls = new ArrayList<>();
+		List urls = new ArrayList();
 		
 		for (File ce : override) {
 			URL url = getResourceFromLocation(name, altName, ce);
