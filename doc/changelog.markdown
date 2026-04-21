@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.45 "Edgy Guinea Pig"
+### v1.18.46 (April 22nd, 2026)
 * PLATFORM: JDK26 support added [#4019](https://github.com/projectlombok/lombok/issues/4019).
 * PLATFORM: Spring Tools Suite 5 supported [#3985](https://github.com/projectlombok/lombok/issues/3985).
 * BUGFIX: `@Jacksonized` no longer stops generating `@JsonProperty` once an explicit `@JsonIgnore` annotations is encountered [#4022](https://github.com/projectlombok/lombok/issues/4022).
