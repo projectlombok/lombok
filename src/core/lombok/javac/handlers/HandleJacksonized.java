@@ -118,9 +118,9 @@ public class HandleJacksonized extends JavacAnnotationHandler<Jacksonized> {
 			if (javacNode.getKind() == Kind.FIELD) {
 				if (hasAnnotation(javacNode, JacksonAnnotationType.JSON_PROPERTY2) ||
 					hasAnnotation(javacNode, JacksonAnnotationType.JSON_IGNORE2)) {
-					
-					return;
-				} else if (javacNode.isTransient()) {
+					continue;
+				}
+				if (javacNode.isTransient()) {
 					createJsonIgnoreForField(javacNode, annotationNode);
 				} else {
 					createJsonPropertyForField(javacNode, annotationNode);
