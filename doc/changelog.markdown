@@ -6,6 +6,7 @@ Lombok Changelog
 * PLATFORM: Spring Tools Suite 5 supported [#3985](https://github.com/projectlombok/lombok/issues/3985).
 * BUGFIX: `@Jacksonized` no longer stops generating `@JsonProperty` once an explicit `@JsonIgnore` annotations is encountered [#4022](https://github.com/projectlombok/lombok/issues/4022).
 * BUGFIX: In eclipse, mixing `@Jacksonized` and `fluent = true` no longer causes the error `com.fasterxml.jackson.annotation.JsonProperty is not a repeatable annotation interface`. [#3934](https://github.com/projectlombok/lombok/issues/3934).
+* BUGFIX: Some finishing touches for v1.18.44's support of Jackson3 [#4004](https://github.com/projectlombok/lombok/issues/4004).
 
 ### v1.18.44 (March 11th, 2026)
 * FEATURE: `@Jacksonized` now supports both Jackson2 and Jackson3; you'll get a warning until you configure which one (or even both!) you want lombok to generate. [#3950](https://github.com/projectlombok/lombok/issues/3950).
