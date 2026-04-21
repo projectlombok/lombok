@@ -889,11 +889,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			out.annotations = new Annotation[] {generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
 		}
 		out.receiver = generateBuildReceiver(job);
+		out.annotations = addCheckReturnValue(job.builderType, job.source, out.annotations);
 		if (staticName == null) createRelevantNonNullAnnotation(job.builderType, out);
 		out.traverse(new SetGeneratedByVisitor(job.source), (ClassScope) null);
 		return out;
 	}
-	
+
 	private TypeReference[] typeParameterNames(TypeParameter[] typeParameters) {
 		if (typeParameters == null) return null;
 		

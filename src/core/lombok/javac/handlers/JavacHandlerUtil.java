@@ -1554,6 +1554,11 @@ public class JavacHandlerUtil {
 		}
 	}
 	
+	public static void addCheckReturnValue(JCModifiers mods, JavacNode node, JavacNode source) {
+		if (!Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_CHECK_RETURN_VALUE_ANNOTATIONS))) return;
+		addAnnotation(mods, node, source, "lombok.CheckReturnValue", null);
+	}
+
 	public static void addAnnotation(JCModifiers mods, JavacNode node, JavacNode source, String annotationTypeFqn, JCExpression arg) {
 		boolean isJavaLangBased;
 		String simpleName; {
