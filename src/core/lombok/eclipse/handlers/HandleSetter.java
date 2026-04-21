@@ -111,13 +111,6 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			return;
 		}
 		
-		// If a fluent setter should be generated, force-copy annotations from the field.
-		AnnotationValues<Accessors> accessorsForField = EclipseHandlerUtil.getAccessorsForField(fieldNode);
-		// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
-		Annotation[] copyableToSetterAnnotations = findCopyableToSetterAnnotations(fieldNode, accessorsForField.isExplicit("fluent"));
-		onMethod = new ArrayList<Annotation>(onMethod);
-		onMethod.addAll(Arrays.asList(copyableToSetterAnnotations));
-		
 		createSetterForField(level, fieldNode, sourceNode, false, onMethod, onParam);
 	}
 	
@@ -170,6 +163,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		AnnotationValues<Accessors> accessors = getAccessorsForField(fieldNode);
 		String setterName = toSetterName(fieldNode, isBoolean, accessors);
 		boolean shouldReturnThis = shouldReturnThis(fieldNode, accessors);
+		boolean fluent = accessors.isExplicit("fluent");	
 		
 		if (setterName == null) {
 			fieldNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
@@ -196,11 +190,11 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			}
 		}
 		
-		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), false, fieldNode, setterName, null, null, shouldReturnThis, modifier, sourceNode, onMethod, onParam);
+		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), false, fieldNode, setterName, null, null, shouldReturnThis, modifier, sourceNode, onMethod, onParam, fluent);
 		injectMethod(fieldNode.up(), method);
 	}
 
-	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam, boolean fluent) {
 		ASTNode source = sourceNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
@@ -213,11 +207,11 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			returnThis = new ReturnStatement(thisRef, pS, pE);
 		}
 		
-		MethodDeclaration d = createSetter(parent, deprecate, fieldNode, name, paramName, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam);
+		MethodDeclaration d = createSetter(parent, deprecate, fieldNode, name, paramName, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam, fluent);
 		return d;
 	}
 	
-	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, TypeReference returnType, Statement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] paramName, char[] booleanFieldToSet, TypeReference returnType, Statement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam, boolean fluent) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		if (paramName == null) paramName = field.name;
 		ASTNode source = sourceNode.get();
@@ -237,7 +231,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		if (isFieldDeprecated(fieldNode) || deprecate) {
 			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
-		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated, findCopyableToSetterAnnotations(fieldNode, false));
+		// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
+		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated, findCopyableToSetterAnnotations(fieldNode, fluent));
 		Argument param = new Argument(paramName, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		method.arguments = new Argument[] { param };
