@@ -90,9 +90,11 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 			return;
 		}
 		
+		List<JacksonVersion> jacksonVersions = readConfiguredJacksonVersions(annotationNode);
+		
 		boolean jacksonizedBuilder = builderAnnotationNode != null || superBuilderAnnotationNode != null;
 		if (jacksonizedBuilder) {
-			handleJacksonizedBuilder(ast, annotationNode, annotatedNode, tdNode, td, builderAnnotationNode, superBuilderAnnotationNode);
+			handleJacksonizedBuilder(ast, annotationNode, annotatedNode, tdNode, td, builderAnnotationNode, superBuilderAnnotationNode, jacksonVersions);
 		}
 		
 		if (accessorsAnnotationNode != null) {
@@ -100,7 +102,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		}
 	}
 	
-	private void handleJacksonizedBuilder(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode builderAnnotationNode, EclipseNode superBuilderAnnotationNode) {
+	private void handleJacksonizedBuilder(Annotation ast, EclipseNode annotationNode, EclipseNode annotatedNode, EclipseNode tdNode, TypeDeclaration td, EclipseNode builderAnnotationNode, EclipseNode superBuilderAnnotationNode, List<JacksonVersion> jacksonVersions) {
 		boolean isAbstract = (td.modifiers & ClassFileConstants.AccAbstract) != 0;
 		if (isAbstract) {
 			annotationNode.addError("Builders on abstract classes cannot be @Jacksonized (the builder would never be used).");
@@ -140,13 +142,6 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		TypeReference builderClassExpression = namePlusTypeParamsToTypeReference(builderClassNode, null, p);
 		ClassLiteralAccess builderClassLiteralAccess = new ClassLiteralAccess(td.sourceEnd, builderClassExpression);
 		MemberValuePair builderMvp = new MemberValuePair("builder".toCharArray(), td.sourceStart, td.sourceEnd, builderClassLiteralAccess);
-		
-		List<JacksonVersion> jacksonVersions = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, Arrays.<JacksonVersion>asList());
-		
-		if (jacksonVersions.isEmpty()) {
-			annotationNode.addWarning("Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized");
-			jacksonVersions = Arrays.asList(JacksonVersion.TWO);
-		}
 		
 		if (jacksonVersions.contains(JacksonVersion.TWO)) {
 			td.annotations = addAnnotation(td, td.annotations, JacksonAnnotationType.JSON_DESERIALIZE2.getQualifiednameAsCharArrayArray(), builderMvp);
@@ -193,7 +188,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		// Add @JsonProperty to all fields. It will be automatically copied to the getter/setters later.
 		for (EclipseNode eclipseNode : tdNode.down()) {
 			if (eclipseNode.getKind() == Kind.FIELD) {
-				if (hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_PROPERTY2) ||
+				if (hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_PROPERTY2) || 
 					hasAnnotation(eclipseNode, JacksonAnnotationType.JSON_IGNORE2)) {
 					continue;
 				}
@@ -212,7 +207,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		if (astNode instanceof FieldDeclaration) {
 			FieldDeclaration fd = (FieldDeclaration) astNode;
 			StringLiteral fieldName = new StringLiteral(fd.name, 0, 0, 0);
-			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotationType.JSON_PROPERTY2.getQualifiednameAsCharArrayArray(), fieldName);
+			fd.annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotationType.JSON_PROPERTY2.getQualifiednameAsCharArrayArray(), fieldName);
 		}
 	}
 	
@@ -220,7 +215,7 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		ASTNode astNode = fieldNode.get();
 		if (astNode instanceof FieldDeclaration) {
 			FieldDeclaration fd = (FieldDeclaration) astNode;
-			((FieldDeclaration) astNode).annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotationType.JSON_IGNORE2.getQualifiednameAsCharArrayArray());
+			fd.annotations = addAnnotation(fieldNode.get(), fd.annotations, JacksonAnnotationType.JSON_IGNORE2.getQualifiednameAsCharArrayArray());
 		}
 	}
 	
@@ -246,6 +241,13 @@ public class HandleJacksonized extends EclipseAnnotationHandler<Jacksonized> {
 		if (builderAnnotation == null) builderClassName += "Impl"; // For @SuperBuilder, all Jackson annotations must be put on the BuilderImpl class.
 		
 		return builderClassName;
+	}
+	
+	private List<JacksonVersion> readConfiguredJacksonVersions(EclipseNode annotationNode) {
+		List<JacksonVersion> jacksonVersions = annotationNode.getAst().readConfigurationOr(ConfigurationKeys.JACKSONIZED_JACKSON_VERSION, Arrays.<JacksonVersion>asList());
+		if (!jacksonVersions.isEmpty()) return jacksonVersions;
+		annotationNode.addWarning(JacksonVersion.AMBIGUOUS_JACKSON_VERSION_WARNING_TEXT);
+		return Arrays.asList(JacksonVersion.TWO);
 	}
 	
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];

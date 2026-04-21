@@ -26,6 +26,9 @@ public enum JacksonVersion implements MappedConfigEnum {
 	THREE,
 	;
 	
+	public static final String AMBIGUOUS_JACKSON_VERSION_WARNING_TEXT =
+		"Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized";
+	
 	@Override public boolean matches(String value) {
 		if (this == TWO) return "2".equals(value);
 		return "3".equals(value);
