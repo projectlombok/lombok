@@ -601,7 +601,21 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @ExtensionMethod} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> EXTENSION_METHOD_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.extensionMethod.flagUsage", "Emit a warning or error if @ExtensionMethod is used.") {};
-	
+
+	/**
+	 * lombok configuration: {@code lombok.extensionMethod.defaultSuppressBaseMethods} = {@code true} | {@code false}.
+	 *
+	 * For any class without an {@code @ExtensionMethod} that explicitly defines the {@code suppressBaseMethods} option, this value is used (default = true).
+	 */
+	public static final ConfigurationKey<Boolean> EXTENSION_METHOD_SUPPRESS_BASE_METHODS = new ConfigurationKey<Boolean>("lombok.extensionMethod.suppressBaseMethods", "If true, an applicable extension method is used (if found) even if the method call already was compilable (this is the default). If false, an extension method is only used if the method call is not also defined by the type itself..") {};
+
+	/**
+	 * lombok configuration: {@code lombok.extensionMethod.defaultExtensions} += &lt;TypeName: fully-qualified annotation class name&gt;.
+	 *
+	 * All types whose static methods will be exposed as extension methods.
+	 */
+	public static final ConfigurationKey<List<TypeName>> EXTENSION_METHOD_DEFAULT_EXTENSIONS = new ConfigurationKey<List<TypeName>>("lombok.extensionMethod.defaultExtensions", "All types whose static methods will be exposed as extension methods.") {};
+
 	// ----- FieldDefaults -----
 	
 	/**

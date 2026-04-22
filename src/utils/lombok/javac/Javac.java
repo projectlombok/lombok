@@ -39,6 +39,7 @@ import javax.lang.model.type.TypeVisitor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Source;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.main.JavaCompiler;
@@ -211,7 +212,7 @@ public class Javac {
 	public static final TreeTag CTC_POSTINC = treeTag("POSTINC");
 	public static final TreeTag CTC_POSTDEC = treeTag("POSTDEC");
 	
-	private static final Method getExtendsClause, getEndPosition, storeEnd;
+	private static final Method getExtendsClause, getEndPosition, storeEnd, resolveIdent;
 	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
@@ -242,7 +243,12 @@ public class Javac {
 			}
 			storeEnd = storeEndMethodTemp;
 		}
-		Permit.setAccessible(getEndPosition);
+        if (getJavaCompilerVersion() >= 9) {
+            resolveIdent = getMethod(JavaCompiler.class, "resolveIdent", Symbol.ModuleSymbol.class, String.class);
+        } else {
+            resolveIdent = getMethod(JavaCompiler.class, "resolveIdent", String.class);
+        }
+        Permit.setAccessible(getEndPosition);
 		Permit.setAccessible(storeEnd);
 	}
 	
@@ -437,6 +443,20 @@ public class Javac {
 			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
 			if (endPositions == null) return;
 			storeEnd.invoke(endPositions, tree, pos);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw sneakyThrow(e.getCause());
+		}
+	}
+
+	public static Symbol.ClassSymbol resolveIdent(JavaCompiler javaCompiler, Object module, String name) {
+		try {
+			if (getJavaCompilerVersion() >= 9) {
+				return (Symbol.ClassSymbol) resolveIdent.invoke(javaCompiler, module, name);
+			} else {
+				return (Symbol.ClassSymbol) resolveIdent.invoke(javaCompiler, name);
+			}
 		} catch (IllegalAccessException e) {
 			throw sneakyThrow(e);
 		} catch (InvocationTargetException e) {

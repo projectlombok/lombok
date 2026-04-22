@@ -21,6 +21,7 @@ public class JavaCompiler {
 	
 	public JavaCompiler(Context context) {}
 	public int errorCount() { return 0; }
+	public static JavaCompiler instance(Context context) {return null;}
 	public static String version() { return "<stub>"; }
 	public JCCompilationUnit parse(String fileName) throws IOException { return null; }
 	public List<JCCompilationUnit> enterTrees(List<JCCompilationUnit> roots) {return null;}
