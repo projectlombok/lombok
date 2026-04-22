@@ -1,0 +1,12 @@
+3 The import java.util.SequencedCollection cannot be resolved
+4 The import java.util.SequencedMap cannot be resolved
+5 The import java.util.SequencedSet cannot be resolved
+10 SequencedCollection cannot be resolved to a type
+10 SequencedMap cannot be resolved to a type
+10 SequencedSet cannot be resolved to a type
+10 java.util.SequencedCollection cannot be resolved to a type
+10 java.util.SequencedMap cannot be resolved to a type
+10 java.util.SequencedSet cannot be resolved to a type
+12 SequencedCollection cannot be resolved to a type
+13 SequencedMap cannot be resolved to a type
+14 SequencedSet cannot be resolved to a type
