@@ -556,17 +556,22 @@ public class JavacHandlerUtil {
 		}
 	}
 	
+	public static void deleteImportFromCompilationUnit(JavacNode node, Class<?> annotationType) {
+		deleteImportFromCompilationUnit(node, annotationType.getName());
+	}
+	
 	public static void deleteImportFromCompilationUnit(JavacNode node, String name) {
 		if (inNetbeansEditor(node)) return;
 		if (!node.shouldDeleteLombokAnnotations()) return;
 		
 		JCCompilationUnit unit = (JCCompilationUnit) node.top().get();
 		
+		String importName = name.replace('$', '.');
 		for (JCTree def : unit.defs) {
 			if (!(def instanceof JCImport)) continue;
 			JCImport imp0rt = (JCImport) def;
 			if (imp0rt.staticImport) continue;
-			if (!Javac.getQualid(imp0rt).toString().equals(name)) continue;
+			if (!Javac.getQualid(imp0rt).toString().equals(importName)) continue;
 			JavacAugments.JCImport_deletable.set(imp0rt, true);
 		}
 	}
