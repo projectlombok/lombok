@@ -154,7 +154,7 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 	}
 	
 	private List<JCStatement> createThrowStatement(JavacNode typeNode, JavacTreeMaker maker) {
-		JCExpression exceptionType = genJavaLangTypeRef(typeNode, "UnsupportedOperationException");
+		JCExpression exceptionType = genJavaLangTypeRef(typeNode, "AssertionError");
 		List<JCExpression> jceBlank = List.nil();
 		JCExpression message = maker.Literal("This is a utility class and cannot be instantiated");
 		JCExpression exceptionInstance = maker.NewClass(null, jceBlank, exceptionType, List.of(message), null);
