@@ -25,6 +25,7 @@ import java.util.List;
 
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.CapitalizationStrategy;
+import lombok.core.configuration.CheckReturnValueFlavor;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
@@ -91,12 +92,13 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<Boolean> ADD_LOMBOK_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addLombokGeneratedAnnotation", "Generate @lombok.Generated on all generated code (default: true).") {};
 
 	/**
-	 * lombok configuration: {@code lombok.addCheckReturnValueAnnotation} = {@code true} | {@code false}.
+	 * lombok configuration: {@code lombok.checkReturnValueAnnotation} = [{@code none} | {@code lombok}].
 	 *
-	 * If {@code true}, lombok generates {@code @lombok.CheckReturnValue} on generated methods where the return value should not be ignored,
+	 * If set to {@code lombok}, lombok generates {@code @lombok.CheckReturnValue} on generated methods where the return value should not be ignored,
 	 * such as {@code @With} methods and {@code @Builder}'s {@code build()} method.
+	 * If set to {@code none} (the current default), no such annotation is emitted. A future lombok release may flip the default to {@code lombok}.
 	 */
-	public static final ConfigurationKey<Boolean> ADD_CHECK_RETURN_VALUE_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addCheckReturnValueAnnotation", "Generate @lombok.CheckReturnValue on generated methods where the return value should not be ignored (default: false).") {};
+	public static final ConfigurationKey<CheckReturnValueFlavor> CHECK_RETURN_VALUE_ANNOTATION = new ConfigurationKey<CheckReturnValueFlavor>("lombok.checkReturnValueAnnotation", "Which @CheckReturnValue annotation flavor to emit on generated methods. Values: none, lombok (default: none).") {};
 
 	/**
 	 * lombok configuration: {@code lombok.extern.findbugs.addSuppressFBWarnings} = {@code true} | {@code false}.

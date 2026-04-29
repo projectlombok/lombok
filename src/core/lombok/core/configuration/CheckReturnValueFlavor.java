@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Project Lombok Authors.
+ * Copyright (C) 2026 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,26 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok;
+package lombok.core.configuration;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/**
- * Lombok adds this annotation to generated methods where the return value should not be ignored.
- * <p>
- * For example, {@code @With} methods return a new instance, so ignoring the return value is always a bug.
- * Similarly, {@code @Builder}'s {@code build()} method produces the built object.
- * <p>
- * Static analysis tools (Error Prone, IntelliJ, SpotBugs) recognize {@code @CheckReturnValue}
- * by simple class name, regardless of package, and will warn when the return value is discarded.
- * <p>
- * If you want to opt in, you can add {@code lombok.checkReturnValueAnnotation = lombok} to
- * {@code lombok.config}.
- */
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.CLASS)
-public @interface CheckReturnValue {
+/** Used for lombok configuration to select which {@code @CheckReturnValue} annotation flavor to emit on generated methods. */
+public enum CheckReturnValueFlavor {
+	NONE, LOMBOK;
 }
