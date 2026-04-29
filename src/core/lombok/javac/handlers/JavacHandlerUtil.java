@@ -96,6 +96,7 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.CleanupTask;
 import lombok.core.LombokImmutableList;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.CheckReturnValueFlavor;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -1555,8 +1556,16 @@ public class JavacHandlerUtil {
 	}
 	
 	public static void addCheckReturnValue(JCModifiers mods, JavacNode node, JavacNode source) {
-		if (!Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_CHECK_RETURN_VALUE_ANNOTATIONS))) return;
-		addAnnotation(mods, node, source, "lombok.CheckReturnValue", null);
+		CheckReturnValueFlavor flavor = node.getAst().readConfiguration(ConfigurationKeys.CHECK_RETURN_VALUE_ANNOTATION);
+		if (flavor == null) flavor = CheckReturnValueFlavor.NONE;
+		switch (flavor) {
+		case LOMBOK:
+			addAnnotation(mods, node, source, "lombok.CheckReturnValue", null);
+			return;
+		case NONE:
+		default:
+			return;
+		}
 	}
 
 	public static void addAnnotation(JCModifiers mods, JavacNode node, JavacNode source, String annotationTypeFqn, JCExpression arg) {

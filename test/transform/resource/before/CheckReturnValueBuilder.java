@@ -1,4 +1,4 @@
-//CONF: lombok.addCheckReturnValueAnnotation = true
+//CONF: lombok.checkReturnValueAnnotation = lombok
 @lombok.Builder
 class CheckReturnValueBuilder {
 	private final int x;

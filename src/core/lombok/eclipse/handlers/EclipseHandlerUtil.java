@@ -116,6 +116,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.LombokImmutableList;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.CheckReturnValueFlavor;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -2128,8 +2129,15 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static Annotation[] addCheckReturnValue(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
-		if (!Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_CHECK_RETURN_VALUE_ANNOTATIONS))) return originalAnnotationArray;
-		return addAnnotation(source, originalAnnotationArray, LOMBOK_CHECK_RETURN_VALUE);
+		CheckReturnValueFlavor flavor = node.getAst().readConfiguration(ConfigurationKeys.CHECK_RETURN_VALUE_ANNOTATION);
+		if (flavor == null) flavor = CheckReturnValueFlavor.NONE;
+		switch (flavor) {
+		case LOMBOK:
+			return addAnnotation(source, originalAnnotationArray, LOMBOK_CHECK_RETURN_VALUE);
+		case NONE:
+		default:
+			return originalAnnotationArray;
+		}
 	}
 
 	static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn) {
