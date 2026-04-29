@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,6 +91,16 @@ public class Installer {
 	static void autoDiscover(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
 		for (IdeLocationProvider provider : locationProviders) {
 			provider.findIdes(locations, problems);
+		}
+		// Search in lombok.jar directory
+		File ourJar = IdeLocation.findOurJar();
+		try {
+			IdeLocation location = tryAllProviders(ourJar.getParent());
+			if (location != null) {
+				locations.add(location);
+			}
+		} catch (CorruptedIdeLocationException e) {
+			problems.add(e);
 		}
 	}
 	

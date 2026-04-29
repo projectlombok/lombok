@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2025 The Project Lombok Authors.
+ * Copyright (C) 2018-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
 // sunapi suppresses javac's warning about using Unsafe; 'all' suppresses eclipse's warning about the unspecified 'sunapi' key. Leave them both.
@@ -334,6 +335,15 @@ public class Permit {
 		}
 	}
 	
+	public static boolean permissiveSet(Field f, Object receiver, Object newValue) {
+		try {
+			set(f, receiver, newValue);
+			return true;
+		} catch (Exception ignore) {
+			return false;
+		}
+	}
+	
 	public static void reportReflectionProblem(Throwable initError, String msg) {
 		if (!isDebugReflection()) return;
 		System.err.println("** LOMBOK REFLECTION issue: " + msg);
@@ -348,9 +358,16 @@ public class Permit {
 		return Permit.<RuntimeException>sneakyThrow0(t);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private static <T extends Throwable> T sneakyThrow0(Throwable t) throws T {
 		throw (T)t;
 	}
 	
+	public static Enum<?> enumValue(String enumTypeName, String enumValueName) {
+		try {
+			Class c = Class.forName(enumTypeName);
+			return Enum.valueOf(c, enumValueName);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 }

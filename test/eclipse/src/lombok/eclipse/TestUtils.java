@@ -1,16 +1,16 @@
 /*
- * Copyright (C) 2026 The Project Lombok Authors.
- * 
+ * Copyright (C) 2025 The Project Lombok Authors.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,23 +19,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core.configuration;
+package lombok.eclipse;
 
-public enum JacksonVersion implements MappedConfigEnum {
-	TWO,
-	THREE,
-	;
-	
-	public static final String AMBIGUOUS_JACKSON_VERSION_WARNING_TEXT =
-		"Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized";
-	
-	@Override public boolean matches(String value) {
-		if (this == TWO) return "2".equals(value);
-		return "3".equals(value);
+import static org.junit.Assume.assumeTrue;
+
+import org.eclipse.core.runtime.adaptor.EclipseStarter;
+import org.osgi.framework.Bundle;
+
+public class TestUtils {
+	public static void assumeMinJdtVersion(int version) {
+		Bundle coreBundle = getBundle("org.eclipse.jdt.core");
+		
+		assumeTrue(coreBundle.getVersion().getMinor() >= version);
 	}
 	
-	@Override public String toString() {
-		if (this == TWO) return "2";
-		return "3";
+	public static Bundle getBundle(String name) {
+		for (Bundle bundle : EclipseStarter.getSystemBundleContext().getBundles()) {
+			if (bundle.getSymbolicName().equals(name)) {
+				return bundle;
+			}
+		}
+		return null;
 	}
 }

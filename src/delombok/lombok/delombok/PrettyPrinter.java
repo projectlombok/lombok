@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2025 The Project Lombok Authors.
+ * Copyright (C) 2016-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -714,7 +714,9 @@ public class PrettyPrinter extends JCTree.Visitor {
 			if (tree.vartype == null || tree.vartype.pos == -1 || endPos(tree.vartype) == -1) {
 				print("var");
 			} else {
-				print(tree.vartype);
+				Object kind = readObject(tree, "declKind", null);
+				if (kind instanceof Enum<?> && "VAR".equals(((Enum<?>) kind).name())) print("var");
+				else print(tree.vartype);
 			}
 		} finally {
 			innermostArrayBracketsAreVarargs = false;

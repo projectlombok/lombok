@@ -1,7 +1,17 @@
 Lombok Changelog
 ----------------
 
-### v1.18.43 "Edgy Guinea Pig"
+### v1.18.47 "Edgy Guinea Pig"
+* No changes since v1.18.46 yet.
+
+### v1.18.46 (April 22nd, 2026)
+* PLATFORM: JDK26 support added [#4019](https://github.com/projectlombok/lombok/issues/4019).
+* PLATFORM: Spring Tools Suite 5 supported [#3985](https://github.com/projectlombok/lombok/issues/3985).
+* BUGFIX: `@Jacksonized` no longer stops generating `@JsonProperty` once an explicit `@JsonIgnore` annotations is encountered [#4022](https://github.com/projectlombok/lombok/issues/4022).
+* BUGFIX: In eclipse, mixing `@Jacksonized` and `fluent = true` no longer causes the error `com.fasterxml.jackson.annotation.JsonProperty is not a repeatable annotation interface`. [#3934](https://github.com/projectlombok/lombok/issues/3934).
+* BUGFIX: Some finishing touches for v1.18.44's support of Jackson3 [#4004](https://github.com/projectlombok/lombok/issues/4004).
+
+### v1.18.44 (March 11th, 2026)
 * FEATURE: `@Jacksonized` now supports both Jackson2 and Jackson3; you'll get a warning until you configure which one (or even both!) you want lombok to generate. [#3950](https://github.com/projectlombok/lombok/issues/3950).
 * BUGFIX: On JDK25, `val` and `@ExtensionMethod` could sometimes cause erroneous errors (in that you see errors but compilation succeeds anyway) using javac. [#3947](https://github.com/projectlombok/lombok/issues/3947).
 * BUGFIX: `@Jacksonized` + fields marked `transient` would result in those transient fields being serialised which is surprising (and thus undesired) behaviour. [#3936](https://github.com/projectlombok/lombok/issues/3936).

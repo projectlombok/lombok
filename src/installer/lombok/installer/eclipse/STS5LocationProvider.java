@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2026 The Project Lombok Authors.
+ * Copyright (C) 2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,23 +19,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core.configuration;
+package lombok.installer.eclipse;
 
-public enum JacksonVersion implements MappedConfigEnum {
-	TWO,
-	THREE,
-	;
+import java.util.Arrays;
+import java.util.Collections;
+
+import lombok.installer.IdeLocationProvider;
+import lombok.spi.Provides;
+
+@Provides(IdeLocationProvider.class)
+public class STS5LocationProvider extends EclipseProductLocationProvider {
 	
-	public static final String AMBIGUOUS_JACKSON_VERSION_WARNING_TEXT =
-		"Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized";
+	private static final EclipseProductDescriptor STS5 = new StandardProductDescriptor("Spring Tools Suite 5",
+			"SpringToolsForEclipse",
+			"sts",
+			STS5LocationProvider.class.getResource("STS.png"),
+			Collections.unmodifiableList(Arrays.asList("springsource", "spring-tool-suite"))
+	);
 	
-	@Override public boolean matches(String value) {
-		if (this == TWO) return "2".equals(value);
-		return "3".equals(value);
-	}
-	
-	@Override public String toString() {
-		if (this == TWO) return "2";
-		return "3";
+	public STS5LocationProvider() {
+		super(STS5);
 	}
 }

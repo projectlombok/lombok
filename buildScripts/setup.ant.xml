@@ -172,6 +172,10 @@ This buildfile is part of projectlombok.org. It sets up the build itself.
 		<fetchdep.eclipse.osgi name="2025-03" version="4.35" />
 	</target>
 	
+	<target name="deps.eclipse.202509" depends="deps.rtstubs18, compile.support">
+		<fetchdep.eclipse.osgi name="2025-09" version="4.37" />
+	</target>
+	
 	<target name="deps.eclipse.integration" depends="deps.rtstubs18, compile.support">
 		<fetchdep.eclipse.osgi name="I-build" version="I-builds" />
 	</target>

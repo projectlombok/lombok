@@ -5,7 +5,7 @@ public @lombok.extern.jackson.Jacksonized @lombok.experimental.Accessors(fluent 
   public JacksonizedAccessorsTransient() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @lombok.Generated int intValue() {
+  public @com.fasterxml.jackson.annotation.JsonIgnore @java.lang.SuppressWarnings("all") @lombok.Generated int intValue() {
     return this.intValue;
   }
   public @com.fasterxml.jackson.annotation.JsonIgnore @java.lang.SuppressWarnings("all") @lombok.Generated long longValue() {
@@ -17,7 +17,7 @@ public @lombok.extern.jackson.Jacksonized @lombok.experimental.Accessors(fluent 
   /**
    * @return {@code this}.
    */
-  public @java.lang.SuppressWarnings("all") @lombok.Generated JacksonizedAccessorsTransient intValue(final int intValue) {
+  public @com.fasterxml.jackson.annotation.JsonIgnore @java.lang.SuppressWarnings("all") @lombok.Generated JacksonizedAccessorsTransient intValue(final int intValue) {
     this.intValue = intValue;
     return this;
   }
