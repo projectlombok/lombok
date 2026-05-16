@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.18.47 "Edgy Guinea Pig"
 * FEATURE: New [config key](https://projectlombok.org/features/configuration) `lombok.checkReturnValueAnnotation` (values: `none`, `lombok`; default: `none`) lets lombok generate `@lombok.CheckReturnValue` on generated methods where the return value should not be ignored, such as `@With` methods and `@Builder.build()`. A future lombok release may flip the default to `lombok`. [#4013](https://github.com/projectlombok/lombok/pull/4013).
+* BUGFIX: `@SneakyThrows` usage on JDK26 no longer results in class files that require `lombok.jar` to be on the runtime classpath (which should not be neccessary). [#4040](https://github.com/projectlombok/lombok/issues/4022).
 
 ### v1.18.46 (April 22nd, 2026)
 * PLATFORM: JDK26 support added [#4019](https://github.com/projectlombok/lombok/issues/4019).

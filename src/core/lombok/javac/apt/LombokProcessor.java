@@ -56,6 +56,7 @@ import com.sun.tools.javac.processing.JavacFiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Context.Key;
 
 import lombok.Lombok;
 import lombok.core.CleanupRegistry;
@@ -171,17 +172,19 @@ public class LombokProcessor extends AbstractProcessor {
 				Field filerFileManagerField = Permit.getField(JavacFiler.class, "fileManager");
 				filerFileManagerField.set(javacFiler, newFilerManager);
 				
-				if (lombok.javac.Javac.getJavaCompilerVersion() > 8
-						&& !lombok.javac.handlers.JavacHandlerUtil.inNetbeansCompileOnSave(context)) {
-					replaceFileManagerJdk9(context, newFilerManager);
-				}
+				if (lombok.javac.handlers.JavacHandlerUtil.inNetbeansCompileOnSave(context)) return;
+				
+				replaceFileManagerJdk(context, newFilerManager);
 			}
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
 		}
 	}
 
-	private void replaceFileManagerJdk9(Context context, JavaFileManager newFiler) {
+	private void replaceFileManagerJdk(Context context, JavaFileManager newFiler) {
+		int v = lombok.javac.Javac.getJavaCompilerVersion();
+		if (v < 9) return;
+		
 		try {
 			JavaCompiler compiler = (JavaCompiler) Permit.invoke(Permit.getMethod(JavaCompiler.class, "instance", Context.class), null, context);
 			try {
@@ -191,15 +194,33 @@ public class LombokProcessor extends AbstractProcessor {
 			catch (Exception e) {}
 			
 			try {
-				Field writerField = Permit.getField(JavaCompiler.class, "writer");
-				ClassWriter writer = (ClassWriter) writerField.get(compiler);
-				Field fileManagerField = Permit.getField(ClassWriter.class, "fileManager");
-				Permit.set(fileManagerField, writer, newFiler);
+				if (v > 25) replaceFileManagerJdk26(context, compiler, newFiler);
+				else replaceFileManagerJdk9(context, compiler, newFiler);
 			}
 			catch (Exception e) {}
 		}
 		catch (Exception e) {
 		}
+	}
+	
+	private void replaceFileManagerJdk9(Context context, JavaCompiler compiler, JavaFileManager newFiler) throws NoSuchFieldException, IllegalAccessException {
+		Field writerField = Permit.getField(JavaCompiler.class, "writer");
+		ClassWriter writer = (ClassWriter) writerField.get(compiler);
+		
+		Field fileManagerField = Permit.getField(ClassWriter.class, "fileManager");
+		Permit.set(fileManagerField, writer, newFiler);
+	}
+	
+	private void replaceFileManagerJdk26(Context context, JavaCompiler compiler, JavaFileManager newFiler) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		Field writerField = Permit.getField(JavaCompiler.class, "writer");
+		
+		// Setting final fields is... tricky on JDK26+
+		@SuppressWarnings("unchecked")
+		Context.Key<ClassWriter> classWriterKey = (Key<ClassWriter>) Permit.getField(ClassWriter.class, "classWriterKey").get(null);
+		context.put(classWriterKey, (ClassWriter) null);
+		ClassWriter writer = ClassWriter.instance(context);
+		context.put(ClassWriter.class, writer);
+		writerField.set(compiler, writer);
 	}
 	
 	private void forceMultipleRoundsInNetBeansEditor() {
