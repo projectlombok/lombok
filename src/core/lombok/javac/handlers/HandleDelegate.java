@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2023 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@ import javax.lang.model.type.TypeMirror;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
@@ -177,9 +178,16 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		Set<String> banList = new HashSet<String>();
 		banList.addAll(METHODS_IN_OBJECT);
 		
+		
 		// Add already implemented methods to ban list
 		JavacNode typeNode = upToTypeNode(annotationNode);
-		for (Symbol m : ((JCClassDecl)typeNode.get()).sym.getEnclosedElements()) {
+		JCClassDecl classDecl = ((JCClassDecl)typeNode.get());
+		ClassSymbol targetSymbol = classDecl.sym;
+		if (targetSymbol == null) {
+			// Local classes and anonymous classes needs to be resolved
+			targetSymbol = (ClassSymbol) reso.resolveMethodMember(typeNode).get(classDecl).type.tsym;
+		}
+		for (Symbol m : targetSymbol.getEnclosedElements()) {
 			if (m instanceof MethodSymbol) {
 				banList.add(printSig((ExecutableType) m.asType(), m.name, annotationNode.getTypesUtil()));
 			}
