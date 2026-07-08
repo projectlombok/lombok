@@ -187,6 +187,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		job.parentType = parent;
 		TypeDeclaration td = (TypeDeclaration) parent.get();
+		job.builderAbstractClassName = job.builderClassName = job.replaceBuilderClassName(td.name);
+		job.builderAbstractClassNameArr = job.builderClassNameArr = job.builderAbstractClassName.toCharArray();
+		job.builderImplClassName = job.builderAbstractClassName + "Impl";
+		job.builderImplClassNameArr = job.builderImplClassName.toCharArray();
+		if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
+		if (!checkBuilderClassNameAnnotationConflict("SuperBuilder", "lombok.SuperBuilder", job.builderClassName, ast, annotationNode)) return;
 		
 		// Gather all fields of the class that should be set by the builder.
 		List<EclipseNode> allFields = new ArrayList<EclipseNode>();
@@ -309,11 +315,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			
 			superclassBuilderClass = new ParameterizedQualifiedTypeReference(tokens, typeArgsForTokens, 0, poss);
 		}
-		job.builderAbstractClassName = job.builderClassName = job.replaceBuilderClassName(td.name);
-		job.builderAbstractClassNameArr = job.builderClassNameArr = job.builderAbstractClassName.toCharArray();
-		job.builderImplClassName = job.builderAbstractClassName + "Impl";
-		job.builderImplClassNameArr = job.builderImplClassName.toCharArray();
-		
 		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.
 		// You can use it to check whether to inherit or not.
 		

@@ -96,13 +96,23 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	static final String VALUE_PREFIX = "$value";
 	static final String BUILDER_TEMP_VAR = "builder";
 	static final String TO_BUILDER_NOT_SUPPORTED = "@Builder(toBuilder=true) is only supported if you return your own type.";
-	
+	static final String BUILDER_CLASS_NAME_ANNOTATION_CONFLICT = "builderClassName cannot be \"%s\" when using @%s; use @%s or choose another builder class name.";
+
 	private static final boolean toBoolean(Object expr, boolean defaultValue) {
 		if (expr == null) return defaultValue;
 		if (expr instanceof JCLiteral) return ((Integer) ((JCLiteral) expr).value) != 0;
 		return ((Boolean) expr).booleanValue();
 	}
-	
+
+	static boolean checkBuilderClassNameAnnotationConflict(String annotationName, String qualifiedAnnotationName, String builderClassName, JCAnnotation ast, JavacNode annotationNode) {
+		if (annotationName.equals(builderClassName) && !(ast.annotationType instanceof JCFieldAccess)) {
+			annotationNode.addError(String.format(BUILDER_CLASS_NAME_ANNOTATION_CONFLICT, builderClassName, annotationName, qualifiedAnnotationName));
+			return false;
+		}
+
+		return true;
+	}
+
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
 		JavacNode parentType;
@@ -251,6 +261,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			job.parentType = parent;
 			job.checkReturnValue = true;
 			JCClassDecl td = (JCClassDecl) parent.get();
+			job.builderClassName = job.replaceBuilderClassName(td.name);
+			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
+			if (!checkBuilderClassNameAnnotationConflict("Builder", "lombok.Builder", job.builderClassName, ast, annotationNode)) return;
 			
 			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
@@ -308,8 +321,6 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			job.typeParams = job.builderTypeParams = td.typarams;
 			buildMethodThrownExceptions = List.nil();
 			nameOfBuilderMethod = null;
-			job.builderClassName = job.replaceBuilderClassName(td.name);
-			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 		} else if (fillParametersFrom != null && fillParametersFrom.getName().toString().equals("<init>")) {
 			JCMethodDecl jmd = (JCMethodDecl) fillParametersFrom.get();
 			if (!jmd.typarams.isEmpty()) {
@@ -419,7 +430,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
-		
+
+		if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
+		if (!checkBuilderClassNameAnnotationConflict("Builder", "lombok.Builder", job.builderClassName, ast, annotationNode)) return;
+
 		if (fillParametersFrom != null) {
 			for (JavacNode param : fillParametersFrom.down()) {
 				if (param.getKind() != Kind.ARGUMENT) continue;

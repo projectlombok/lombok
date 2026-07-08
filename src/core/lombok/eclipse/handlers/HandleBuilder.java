@@ -114,14 +114,25 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	static final char[] BUILDER_TEMP_VAR = {'b', 'u', 'i', 'l', 'd', 'e', 'r'};
 	static final AbstractMethodDeclaration[] EMPTY_METHODS = {};
 	static final String TO_BUILDER_NOT_SUPPORTED = "@Builder(toBuilder=true) is only supported if you return your own type.";
-	
+	static final String BUILDER_CLASS_NAME_ANNOTATION_CONFLICT = "builderClassName cannot be \"%s\" when using @%s; use @%s or choose another builder class name.";
+
 	private static final boolean toBoolean(Object expr, boolean defaultValue) {
 		if (expr == null) return defaultValue;
 		if (expr instanceof FalseLiteral) return false;
 		if (expr instanceof TrueLiteral) return true;
 		return ((Boolean) expr).booleanValue();
 	}
-	
+
+	static boolean checkBuilderClassNameAnnotationConflict(String annotationName, String qualifiedAnnotationName, String builderClassName, Annotation ast, EclipseNode annotationNode) {
+		char[][] typeName = ast.type == null ? null : ast.type.getTypeName();
+		if (annotationName.equals(builderClassName) && (typeName == null || typeName.length == 1)) {
+			annotationNode.addError(String.format(BUILDER_CLASS_NAME_ANNOTATION_CONFLICT, builderClassName, annotationName, qualifiedAnnotationName));
+			return false;
+		}
+
+		return true;
+	}
+
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
 		EclipseNode parentType;
@@ -308,6 +319,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			
 			job.parentType = parent;
 			TypeDeclaration td = (TypeDeclaration) parent.get();
+			job.setBuilderClassName(job.replaceBuilderClassName(td.name));
+			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
+			if (!checkBuilderClassNameAnnotationConflict("Builder", "lombok.Builder", job.builderClassName, ast, annotationNode)) return;
 			
 			List<EclipseNode> allFields = new ArrayList<EclipseNode>();
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
@@ -365,8 +379,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			buildMethodReturnType = job.createBuilderParentTypeReference();
 			buildMethodThrownExceptions = null;
 			nameOfBuilderMethod = null;
-			job.setBuilderClassName(job.replaceBuilderClassName(td.name));
-			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 		} else if (parent.get() instanceof ConstructorDeclaration) {
 			job.checkReturnValue = true;
 			ConstructorDeclaration cd = (ConstructorDeclaration) parent.get();
@@ -477,7 +489,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
 			return;
 		}
-		
+
+		if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
+		if (!checkBuilderClassNameAnnotationConflict("Builder", "lombok.Builder", job.builderClassName, ast, annotationNode)) return;
+
 		if (fillParametersFrom != null) {
 			for (EclipseNode param : fillParametersFrom.down()) {
 				if (param.getKind() != Kind.ARGUMENT) continue;
