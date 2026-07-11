@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.18.47 "Edgy Guinea Pig"
 * BUGFIX: `@SneakyThrows` usage on JDK26 no longer results in class files that require `lombok.jar` to be on the runtime classpath (which should not be neccessary). [#4040](https://github.com/projectlombok/lombok/issues/4022).
+* BUGFIX: Eclipse/VSCode: handlers such as `@Value` no longer crash with `ClassCastException` on JDT `CompletionOnFieldType` nodes during autocompletion (e.g. `@Jacksonized` + `@Builder` on an inner class of a sealed interface). [#4051](https://github.com/projectlombok/lombok/issues/4051).
 
 ### v1.18.46 (April 22nd, 2026)
 * PLATFORM: JDK26 support added [#4019](https://github.com/projectlombok/lombok/issues/4019).

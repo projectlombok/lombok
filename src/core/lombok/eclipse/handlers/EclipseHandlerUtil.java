@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2025 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2775,13 +2775,16 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
-	 * Returns {@code true) if the provided node is a type declaration <em>and</em> is <strong>not</strong> of any kind indicated by the flags (the intent is to pass flags usch as `ClassFileConstants.AccEnum`).
+	 * Returns {@code true} if the provided node is a type declaration <em>and</em> is <strong>not</strong> of any kind indicated by the flags (the intent is to pass flags such as `ClassFileConstants.AccEnum`).
+	 * Returns {@code false} if the node is not a {@link TypeDeclaration} at all (e.g. a field, or JDT completion nodes such as {@code CompletionOnFieldType}).
+	 * 
+	 * @see lombok.javac.handlers.JavacHandlerUtil#isClassAndDoesNotHaveFlags
 	 */
 	static boolean isTypeAndDoesNotHaveFlags(EclipseNode typeNode, long flags) {
-		TypeDeclaration typeDecl = null;
-		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
-		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-		return (modifiers & flags) == 0;
+		if (!(typeNode.get() instanceof TypeDeclaration)) return false;
+		
+		TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
+		return (typeDecl.modifiers & flags) == 0;
 	}
 	
 	/**
