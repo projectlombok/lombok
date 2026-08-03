@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.18.47 "Edgy Guinea Pig"
 * BUGFIX: `@SneakyThrows` usage on JDK26 no longer results in class files that require `lombok.jar` to be on the runtime classpath (which should not be neccessary). [#4040](https://github.com/projectlombok/lombok/issues/4022).
+* BUGFIX: `lombok.config` is no longer intermittently ignored in Eclipse and JDT LS after an Equinox class loader API change. [#4058](https://github.com/projectlombok/lombok/issues/4058).
 
 ### v1.18.46 (April 22nd, 2026)
 * PLATFORM: JDK26 support added [#4019](https://github.com/projectlombok/lombok/issues/4019).
