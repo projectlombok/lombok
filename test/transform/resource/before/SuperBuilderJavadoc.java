@@ -17,7 +17,7 @@ public abstract class SuperBuilderJavadoc {
 	 */
 	@lombok.Getter
 	@lombok.Setter
-	@lombok.experimental.Wither
+	@lombok.With
 	private int getsetwith;
 
 	/**

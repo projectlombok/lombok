@@ -42,7 +42,7 @@ public abstract @lombok.SuperBuilder class SuperBuilderJavadoc {
     }
   }
   private final int basic;
-  private @lombok.Getter @lombok.Setter @lombok.experimental.Wither int getsetwith;
+  private @lombok.Getter @lombok.Setter @lombok.With int getsetwith;
   private final int predef;
   private final int predefWithJavadoc;
   protected @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderJavadoc(final SuperBuilderJavadoc.SuperBuilderJavadocBuilder<?, ?> b) {

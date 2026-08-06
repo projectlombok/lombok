@@ -9,7 +9,7 @@ class Tolerate {
 	}
 }
 
-@lombok.Getter @lombok.experimental.Wither @lombok.AllArgsConstructor
+@lombok.Getter @lombok.With @lombok.AllArgsConstructor
 class Tolerate2 {
 	private final Pattern pattern;
 	
