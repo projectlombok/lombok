@@ -48,7 +48,7 @@ class BuilderSingularRedirectToGuava {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearDangerMice() {
-			this.dangerMice = null;
+			this.dangerMice = com.google.common.collect.ImmutableSet.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -71,7 +71,7 @@ class BuilderSingularRedirectToGuava {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearThings() {
-			this.things = null;
+			this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -94,7 +94,7 @@ class BuilderSingularRedirectToGuava {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularRedirectToGuava.BuilderSingularRedirectToGuavaBuilder clearDoohickeys() {
-			this.doohickeys = null;
+			this.doohickeys = com.google.common.collect.ImmutableList.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

@@ -49,7 +49,7 @@ class BuilderSingularGuavaMaps<K, V> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularGuavaMaps.BuilderSingularGuavaMapsBuilder<K, V> clearBattleaxes() {
-			this.battleaxes = null;
+			this.battleaxes = com.google.common.collect.ImmutableMap.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -72,7 +72,7 @@ class BuilderSingularGuavaMaps<K, V> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularGuavaMaps.BuilderSingularGuavaMapsBuilder<K, V> clearVertices() {
-			this.vertices = null;
+			this.vertices = com.google.common.collect.ImmutableSortedMap.naturalOrder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -95,7 +95,7 @@ class BuilderSingularGuavaMaps<K, V> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularGuavaMaps.BuilderSingularGuavaMapsBuilder<K, V> clearRawMap() {
-			this.rawMap = null;
+			this.rawMap = com.google.common.collect.ImmutableBiMap.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

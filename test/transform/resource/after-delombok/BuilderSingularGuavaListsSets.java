@@ -61,7 +61,7 @@ class BuilderSingularGuavaListsSets<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> clearCards() {
-			this.cards = null;
+			this.cards = com.google.common.collect.ImmutableList.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -84,7 +84,7 @@ class BuilderSingularGuavaListsSets<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> clearFrogs() {
-			this.frogs = null;
+			this.frogs = com.google.common.collect.ImmutableList.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -107,7 +107,7 @@ class BuilderSingularGuavaListsSets<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> clearRawSet() {
-			this.rawSet = null;
+			this.rawSet = com.google.common.collect.ImmutableSet.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -130,7 +130,7 @@ class BuilderSingularGuavaListsSets<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> clearPasses() {
-			this.passes = null;
+			this.passes = com.google.common.collect.ImmutableSortedSet.naturalOrder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -153,7 +153,7 @@ class BuilderSingularGuavaListsSets<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder<T> clearUsers() {
-			this.users = null;
+			this.users = com.google.common.collect.ImmutableTable.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

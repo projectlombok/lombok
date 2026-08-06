@@ -121,12 +121,13 @@ public class JavacSingularsRecipes {
 		private final JavacSingularizer singularizer;
 		private final String setterPrefix;
 		private final boolean ignoreNullCollections;
+		private final boolean preserveNull;
 		
-		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, boolean ignoreNullCollections) {
-			this(annotation, singularName, pluralName, typeArgs, targetFqn, singularizer, ignoreNullCollections, "");
+		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, boolean ignoreNullCollections, boolean preserveNull) {
+			this(annotation, singularName, pluralName, typeArgs, targetFqn, singularizer, ignoreNullCollections, preserveNull, "");
 		}
 		
-		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, boolean ignoreNullCollections, String setterPrefix) {
+		public SingularData(JavacNode annotation, Name singularName, Name pluralName, List<JCExpression> typeArgs, String targetFqn, JavacSingularizer singularizer, boolean ignoreNullCollections, boolean preserveNull, String setterPrefix) {
 			this.annotation = annotation;
 			this.singularName = singularName;
 			this.pluralName = pluralName;
@@ -135,6 +136,7 @@ public class JavacSingularsRecipes {
 			this.singularizer = singularizer;
 			this.setterPrefix = setterPrefix;
 			this.ignoreNullCollections = ignoreNullCollections;
+			this.preserveNull = preserveNull;
 		}
 		
 		public JavacNode getAnnotation() {
@@ -168,6 +170,8 @@ public class JavacSingularsRecipes {
 		public boolean isIgnoreNullCollections() {
 			return ignoreNullCollections;
 		}
+
+		public boolean isPreserveNull() { return preserveNull; }
 		
 		public String getTargetSimpleType() {
 			int idx = targetFqn.lastIndexOf(".");
@@ -271,6 +275,7 @@ public class JavacSingularsRecipes {
 			generateSingularMethod(cfv, deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent, access);
 			generatePluralMethod(cfv, deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent, access);
 			generateClearMethod(cfv, deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, access);
+			if (data.isPreserveNull()) generateUnsetMethod(cfv, deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, access);
 		}
 		
 		private void finishAndInjectMethod(CheckerFrameworkVersion cfv, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JavacNode source, boolean deprecate, ListBuffer<JCStatement> statements, Name methodName, List<JCVariableDecl> jcVariableDecls, List<JCAnnotation> methodAnnotations, AccessLevel access, Boolean ignoreNullCollections) {
@@ -296,7 +301,7 @@ public class JavacSingularsRecipes {
 		}
 		
 		private void generateClearMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JavacNode source, AccessLevel access) {
-			JCStatement clearStatement = generateClearStatements(maker, data, builderType);
+			JCStatement clearStatement = generateClearStatements(maker, data, builderType, source);
 			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 			statements.append(clearStatement);
 			
@@ -304,7 +309,16 @@ public class JavacSingularsRecipes {
 			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil(), List.<JCAnnotation>nil(), access, null);
 		}
 		
-		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);
+		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source);
+
+		private void generateUnsetMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JavacNode source, AccessLevel access) {
+			ListBuffer<JCStatement> statements = generateUnsetStatements(maker, data, builderType, source);
+
+			Name methodName = builderType.toName(HandlerUtil.buildAccessorName(source, "unset", data.getPluralName().toString()));
+			finishAndInjectMethod(cfv, maker, returnType, returnStatement, data, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil(), List.<JCAnnotation>nil(), access, null);
+		}
+
+		protected abstract ListBuffer<JCStatement> generateUnsetStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source);
 		
 		private void generateSingularMethod(CheckerFrameworkVersion cfv, boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JavacNode source, boolean fluent, AccessLevel access) {
 			ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
@@ -378,7 +392,7 @@ public class JavacSingularsRecipes {
 		}
 		
 		protected abstract JCExpression getPluralMethodParamType(JavacNode builderType);
-		
+
 		protected abstract JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source);
 		
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JavacNode source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
@@ -462,17 +476,39 @@ public class JavacSingularsRecipes {
 			
 			return arguments.toList();
 		}
+
+		public static enum GetSizeNullBehaviour {
+			/** Generate '<em>builderVariable</em>.<em>name</em>.size()' as is, without any null checks. Same as legacy 'nullGuard = true'*/
+			NONE,
+			/** Generate '<em>builderVariable</em>.<em>name</em> == null ? 0 : <em>builderVariable</em>.<em>name</em>.size()' to return zero if null. Same as legacy 'nullGuard = true'*/
+			EMPTY,
+			/** Generate '<em>builderVariable</em>.<em>name</em> == null ? -1 : <em>builderVariable</em>.<em>name</em>.size()' to return negative one if null*/
+			NEGATIVE;
+
+			public static GetSizeNullBehaviour ofNullGuard(boolean nullGuard) {
+				return nullGuard ? EMPTY : NONE;
+			}
+		}
 		
-		/** Generates '<em>builderVariable</em>.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */
-		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, boolean nullGuard, boolean parens, String builderVariable) {
+		/** Generates '<em>builderVariable</em>.<em>name</em>.size()' as an expression; Look at GetSizeNullBehaviour for null behaviour. */
+		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, GetSizeNullBehaviour nullBehaviour, boolean parens, String builderVariable) {
 			Name thisName = builderType.toName(builderVariable);
 			JCExpression fn = maker.Select(maker.Select(maker.Ident(thisName), name), builderType.toName("size"));
 			JCExpression sizeInvoke = maker.Apply(List.<JCExpression>nil(), fn, List.<JCExpression>nil());
-			if (nullGuard) {
-				JCExpression isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(thisName), name), maker.Literal(CTC_BOT, null));
-				JCExpression out = maker.Conditional(isNull, maker.Literal(CTC_INT, 0), sizeInvoke);
-				if (parens) return maker.Parens(out);
-				return out;
+			switch (nullBehaviour) {
+				case EMPTY: {
+					JCExpression isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(thisName), name), maker.Literal(CTC_BOT, null));
+					JCExpression out = maker.Conditional(isNull, maker.Literal(CTC_INT, 0), sizeInvoke);
+					if (parens) return maker.Parens(out);
+					return out;
+				}
+				case NEGATIVE: {
+					JCExpression isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(thisName), name), maker.Literal(CTC_BOT, null));
+					JCExpression out = maker.Conditional(isNull, maker.Literal(CTC_INT, -1), sizeInvoke);
+					if (parens) return maker.Parens(out);
+					return out;
+				}
+				case NONE:
 			}
 			return sizeInvoke;
 		}

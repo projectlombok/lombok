@@ -52,7 +52,8 @@ class Book {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public Book.BookBuilder clearAuthors() {
-			if (this.authors != null) this.authors.clear();
+			if (this.authors == null) this.authors = new java.util.ArrayList<String>();
+			 else this.authors.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

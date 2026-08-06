@@ -38,4 +38,7 @@ public @interface Singular {
 	
 	/** @return If true, the plural variant (which takes a collection and adds each element inside) will treat {@code null} as an empty collection, i.e. do nothing. If {@code false} (the default), it is null checked as if annotated with {@code @lombok.NonNull}. */
 	boolean ignoreNullCollections() default false;
+
+	/** @return If true, allows the field to be {@code null} if not assigned to or cleared by builder methods. If false, this field will be set to an empty collection if not assigned to or cleared by builder methods. */
+	boolean preserveNull() default false;
 }

@@ -55,7 +55,8 @@ public record JacksonizedOnRecord(@JsonProperty("test") @Nullable String string,
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public JacksonizedOnRecord.JacksonizedOnRecordBuilder clearValues() {
-			if (this.values != null) this.values.clear();
+			if (this.values == null) this.values = new java.util.ArrayList<String>();
+			 else this.values.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

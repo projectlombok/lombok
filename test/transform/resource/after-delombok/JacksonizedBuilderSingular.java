@@ -79,7 +79,10 @@ public class JacksonizedBuilderSingular {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder clearAny() {
-			if (this.any$key != null) {
+			if (this.any$key == null) {
+				this.any$key = new java.util.ArrayList<String>();
+				this.any$value = new java.util.ArrayList<Object>();
+			} else {
 				this.any$key.clear();
 				this.any$value.clear();
 			}
@@ -106,7 +109,8 @@ public class JacksonizedBuilderSingular {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder clearValues() {
-			if (this.values != null) this.values.clear();
+			if (this.values == null) this.values = new java.util.ArrayList<String>();
+			 else this.values.clear();
 			return this;
 		}
 		@JsonAnySetter
@@ -130,7 +134,7 @@ public class JacksonizedBuilderSingular {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder clearGuavaAny() {
-			this.guavaAny = null;
+			this.guavaAny = com.google.common.collect.ImmutableMap.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -154,7 +158,7 @@ public class JacksonizedBuilderSingular {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public JacksonizedBuilderSingular.JacksonizedBuilderSingularBuilder clearGuavaValues() {
-			this.guavaValues = null;
+			this.guavaValues = com.google.common.collect.ImmutableList.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

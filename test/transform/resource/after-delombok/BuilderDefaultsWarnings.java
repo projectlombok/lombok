@@ -65,7 +65,8 @@ public class BuilderDefaultsWarnings {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderDefaultsWarnings.BuilderDefaultsWarningsBuilder clearItems() {
-			if (this.items != null) this.items.clear();
+			if (this.items == null) this.items = new java.util.ArrayList<String>();
+			 else this.items.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

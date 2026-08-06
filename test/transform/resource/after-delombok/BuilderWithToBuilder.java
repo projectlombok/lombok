@@ -81,7 +81,8 @@ class BuilderWithToBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderWithToBuilder.BuilderWithToBuilderBuilder<T> clearBars() {
-			if (this.bars != null) this.bars.clear();
+			if (this.bars == null) this.bars = new java.util.ArrayList<T>();
+			 else this.bars.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

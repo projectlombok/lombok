@@ -45,7 +45,8 @@ class BuilderWithJavaBeansSpecCapitalization {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderWithJavaBeansSpecCapitalization.BuilderWithJavaBeansSpecCapitalizationBuilder clearA() {
-			if (this.a != null) this.a.clear();
+			if (this.a == null) this.a = new java.util.ArrayList<String>();
+			 else this.a.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -68,7 +69,8 @@ class BuilderWithJavaBeansSpecCapitalization {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderWithJavaBeansSpecCapitalization.BuilderWithJavaBeansSpecCapitalizationBuilder clearaField() {
-			if (this.aField != null) this.aField.clear();
+			if (this.aField == null) this.aField = new java.util.ArrayList<String>();
+			 else this.aField.clear();
 			return this;
 		}
 		/**

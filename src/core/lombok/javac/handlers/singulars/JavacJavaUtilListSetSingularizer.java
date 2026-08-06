@@ -71,17 +71,27 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	}
 	
 	@Override
-	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType) {
+	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		List<JCExpression> jceBlank = List.nil();
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
 		JCExpression thisDotFieldDotClear = maker.Select(maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName()), builderType.toName("clear"));
 		
 		JCStatement clearCall = maker.Exec(maker.Apply(jceBlank, thisDotFieldDotClear, jceBlank));
-		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotField, maker.Literal(CTC_BOT, null));
+		JCStatement buildCall = createConstructBuilderVar(maker, data, builderType, false, source);
+		JCExpression cond = maker.Binary(CTC_EQUAL, thisDotField, maker.Literal(CTC_BOT, null));
 		
-		return maker.If(cond, clearCall, null);
+		return maker.If(cond, buildCall, clearCall);
 	}
-	
+
+	@Override
+	protected ListBuffer<JCStatement> generateUnsetStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
+		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
+		JCStatement unset = maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+		statements.append(unset);
+		return statements;
+	}
+
 	@Override
 	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		return new ListBuffer<JCStatement>()
@@ -98,7 +108,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	protected JCExpression getPluralMethodParamType(JavacNode builderType) {
 		return chainDots(builderType, "java", "util", "Collection");
 	}
-	
+
 	@Override
 	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		return createConstructBuilderVarIfNeeded(maker, data, builderType, false, source);

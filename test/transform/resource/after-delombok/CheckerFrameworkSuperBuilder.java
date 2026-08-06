@@ -78,7 +78,8 @@ class CheckerFrameworkSuperBuilder {
 			@java.lang.SuppressWarnings("all")
 			@lombok.Generated
 			public @org.checkerframework.common.returnsreceiver.qual.This B clearNames() {
-				if (this.names != null) this.names.clear();
+				if (this.names == null) this.names = new java.util.ArrayList<String>();
+				 else this.names.clear();
 				return self();
 			}
 			@org.checkerframework.dataflow.qual.Pure

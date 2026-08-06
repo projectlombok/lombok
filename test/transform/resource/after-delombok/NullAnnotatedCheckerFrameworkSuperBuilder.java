@@ -84,7 +84,8 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
 			@java.lang.SuppressWarnings("all")
 			@lombok.Generated
 			public B clearNames() {
-				if (this.names != null) this.names.clear();
+				if (this.names == null) this.names = new java.util.ArrayList<String>();
+				 else this.names.clear();
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")

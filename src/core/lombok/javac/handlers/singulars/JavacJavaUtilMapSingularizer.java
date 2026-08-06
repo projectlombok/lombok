@@ -101,7 +101,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	}
 	
 	@Override
-	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType) {
+	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		List<JCExpression> jceBlank = List.nil();
 		
 		JCExpression thisDotKeyField = chainDots(builderType, "this", data.getPluralName() + "$key");
@@ -109,11 +109,25 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression thisDotValueFieldDotClear = chainDots(builderType, "this", data.getPluralName() + "$value", "clear");
 		JCStatement clearKeyCall = maker.Exec(maker.Apply(jceBlank, thisDotKeyFieldDotClear, jceBlank));
 		JCStatement clearValueCall = maker.Exec(maker.Apply(jceBlank, thisDotValueFieldDotClear, jceBlank));
-		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotKeyField, maker.Literal(CTC_BOT, null));
+		JCExpression cond = maker.Binary(CTC_EQUAL, thisDotKeyField, maker.Literal(CTC_BOT, null));
 		JCBlock clearCalls = maker.Block(0, List.of(clearKeyCall, clearValueCall));
-		return maker.If(cond, clearCalls, null);
+		JCStatement buildCall = createConstructBuilderVar(maker, data, builderType, true, source);
+		return maker.If(cond, buildCall, clearCalls);
 	}
-	
+
+	@Override
+	protected ListBuffer<JCStatement> generateUnsetStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
+		JCExpression thisDotKeyField = chainDots(builderType, "this", data.getPluralName() + "$key");
+		JCExpression thisDotValueField = chainDots(builderType, "this", data.getPluralName() + "$value");
+		JCStatement unsetKey = maker.Exec(maker.Assign(thisDotKeyField, maker.Literal(CTC_BOT, null)));
+		JCStatement unsetValue = maker.Exec(maker.Assign(thisDotValueField, maker.Literal(CTC_BOT, null)));
+
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+		statements.append(unsetKey);
+		statements.append(unsetValue);
+		return statements;
+	}
+
 	@Override
 	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
@@ -172,7 +186,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		if (data.getTargetFqn().equals("java.util.Map")) {
 			statements.appendList(createJavaUtilSetMapInitialCapacitySwitchStatements(maker, data, builderType, true, "emptyMap", "singletonMap", "LinkedHashMap", source, builderVariable));
 		} else {
-			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, true, true, false, true, "TreeMap", source, builderVariable));
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, true, true, false, true, data.isPreserveNull(), "TreeMap", source, builderVariable));
 		}
 	}
 	

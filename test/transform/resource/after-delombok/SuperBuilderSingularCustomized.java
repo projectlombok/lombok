@@ -28,7 +28,8 @@ class SuperBuilderSingularCustomized {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public B clearFoos() {
-			if (this.foos != null) this.foos.clear();
+			if (this.foos == null) this.foos = new java.util.ArrayList<String>();
+			 else this.foos.clear();
 			return self();
 		}
 		@java.lang.SuppressWarnings("all")

@@ -50,7 +50,7 @@ public class JavacJavaUtilSetSingularizer extends JavacJavaUtilListSetSingulariz
 		if (data.getTargetFqn().equals("java.util.Set")) {
 			statements.appendList(createJavaUtilSetMapInitialCapacitySwitchStatements(maker, data, builderType, false, "emptySet", "singleton", "LinkedHashSet", source, builderVariable));
 		} else {
-			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, false, true, false, true, "TreeSet", source, builderVariable));
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, false, true, false, true, data.isPreserveNull(), "TreeSet", source, builderVariable));
 		}
 	}
 }

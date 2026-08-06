@@ -53,7 +53,8 @@ class BuilderSingularSetsWithSetterPrefix<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> clearDangerMice() {
-			if (this.dangerMice != null) this.dangerMice.clear();
+			if (this.dangerMice == null) this.dangerMice = new java.util.ArrayList<T>();
+			 else this.dangerMice.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -76,7 +77,8 @@ class BuilderSingularSetsWithSetterPrefix<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> clearOctopodes() {
-			if (this.octopodes != null) this.octopodes.clear();
+			if (this.octopodes == null) this.octopodes = new java.util.ArrayList<Number>();
+			 else this.octopodes.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -99,7 +101,8 @@ class BuilderSingularSetsWithSetterPrefix<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> clearRawSet() {
-			if (this.rawSet != null) this.rawSet.clear();
+			if (this.rawSet == null) this.rawSet = new java.util.ArrayList<java.lang.Object>();
+			 else this.rawSet.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -122,7 +125,8 @@ class BuilderSingularSetsWithSetterPrefix<T> {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularSetsWithSetterPrefix.BuilderSingularSetsWithSetterPrefixBuilder<T> clearStringSet() {
-			if (this.stringSet != null) this.stringSet.clear();
+			if (this.stringSet == null) this.stringSet = new java.util.ArrayList<String>();
+			 else this.stringSet.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

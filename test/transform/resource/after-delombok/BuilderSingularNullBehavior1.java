@@ -41,7 +41,8 @@ class BuilderSingularNullBehavior1 {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder clearNames() {
-			if (this.names != null) this.names.clear();
+			if (this.names == null) this.names = new java.util.ArrayList<String>();
+			 else this.names.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -63,7 +64,8 @@ class BuilderSingularNullBehavior1 {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularNullBehavior1.@org.checkerframework.checker.nullness.qual.NonNull BuilderSingularNullBehavior1Builder clearLocations() {
-			if (this.locations != null) this.locations.clear();
+			if (this.locations == null) this.locations = new java.util.ArrayList<String>();
+			 else this.locations.clear();
 			return this;
 		}
 		@org.checkerframework.checker.nullness.qual.NonNull

@@ -42,7 +42,8 @@ class BuilderSingularWildcardListsWithToBuilder {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearObjects() {
-			if (this.objects != null) this.objects.clear();
+			if (this.objects == null) this.objects = new java.util.ArrayList<java.lang.Object>();
+			 else this.objects.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -65,7 +66,8 @@ class BuilderSingularWildcardListsWithToBuilder {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularWildcardListsWithToBuilder.BuilderSingularWildcardListsWithToBuilderBuilder clearNumbers() {
-			if (this.numbers != null) this.numbers.clear();
+			if (this.numbers == null) this.numbers = new java.util.ArrayList<Number>();
+			 else this.numbers.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

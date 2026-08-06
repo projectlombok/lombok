@@ -38,7 +38,8 @@ public record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends 
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> clearChildren() {
-			if (this.children != null) this.children.clear();
+			if (this.children == null) this.children = new java.util.ArrayList<T>();
+			 else this.children.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -61,7 +62,8 @@ public record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends 
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> clearScarves() {
-			if (this.scarves != null) this.scarves.clear();
+			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
+			 else this.scarves.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -84,7 +86,8 @@ public record BuilderSingularOnRecord<T>(List<T> children, Collection<? extends 
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularOnRecord.BuilderSingularOnRecordBuilder<T> clearRawList() {
-			if (this.rawList != null) this.rawList.clear();
+			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
+			 else this.rawList.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

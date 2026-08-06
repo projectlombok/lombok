@@ -52,7 +52,14 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();
-		
+
+		 if (data.isPreserveNull()) { /* case -1: (null); break; */
+			JCStatement assignStat = maker.Exec(maker.Assign(maker.Ident(data.getPluralName()), maker.Literal(CTC_BOT, null)));
+			JCStatement breakStat = maker.Break(null);
+			JCCase emptyCase = maker.Case(maker.Literal(CTC_INT, -1), List.of(assignStat, breakStat));
+			cases.append(emptyCase);
+		}
+
 		/* case 0: (empty); break; */ {
 			JCStatement assignStat; {
 				// pluralName = java.util.Collections.emptyList();
@@ -83,8 +90,9 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 			JCCase defaultCase = maker.Case(null, defStats);
 			cases.append(defaultCase);
 		}
-		
-		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, data.getPluralName(), true, false, builderVariable), cases.toList());
+
+		GetSizeNullBehaviour nullBehaviour = data.isPreserveNull() ? GetSizeNullBehaviour.NEGATIVE : GetSizeNullBehaviour.EMPTY;
+		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, data.getPluralName(), nullBehaviour, false, builderVariable), cases.toList());
 		JCExpression localShadowerType = chainDotsString(builderType, data.getTargetFqn());
 		localShadowerType = addTypeArgs(1, false, builderType, localShadowerType, data.getTypeArgs(), source);
 		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0L), data.getPluralName(), localShadowerType, null);

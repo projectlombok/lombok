@@ -38,7 +38,8 @@ class BuilderSingularNullBehavior2 {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularNullBehavior2.BuilderSingularNullBehavior2Builder clearLocations() {
-			if (this.locations != null) this.locations.clear();
+			if (this.locations == null) this.locations = new java.util.ArrayList<String>();
+			 else this.locations.clear();
 			return this;
 		}
 		@org.springframework.lang.NonNull

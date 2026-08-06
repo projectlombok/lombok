@@ -62,7 +62,8 @@ public class BuilderWithDeprecatedAnnOnly {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderWithDeprecatedAnnOnly.BuilderWithDeprecatedAnnOnlyBuilder clearStrings() {
-			if (this.strings != null) this.strings.clear();
+			if (this.strings == null) this.strings = new java.util.ArrayList<String>();
+			 else this.strings.clear();
 			return this;
 		}
 		@java.lang.Deprecated
@@ -88,7 +89,7 @@ public class BuilderWithDeprecatedAnnOnly {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderWithDeprecatedAnnOnly.BuilderWithDeprecatedAnnOnlyBuilder clearNumbers() {
-			this.numbers = null;
+			this.numbers = com.google.common.collect.ImmutableList.builder();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

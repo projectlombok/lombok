@@ -1,21 +1,27 @@
-//version 8:
+
+//VERSION 8:
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.Set;
 import java.util.Map;
 import lombok.NonNull;
+
 @Target(ElementType.TYPE_USE)
 @interface MyAnnotation {
 }
+
 class BuilderSingularAnnotatedTypes {
 	private Set<@MyAnnotation @NonNull String> foos;
 	private Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars;
+
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	BuilderSingularAnnotatedTypes(final Set<@MyAnnotation @NonNull String> foos, final Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars) {
 		this.foos = foos;
 		this.bars = bars;
 	}
+
+
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	public static class BuilderSingularAnnotatedTypesBuilder {
@@ -28,10 +34,12 @@ class BuilderSingularAnnotatedTypes {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		private java.util.ArrayList<@MyAnnotation @NonNull Integer> bars$value;
+
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		BuilderSingularAnnotatedTypesBuilder() {
 		}
+
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder foo(@MyAnnotation @NonNull final String foo) {
@@ -42,6 +50,7 @@ class BuilderSingularAnnotatedTypes {
 			this.foos.add(foo);
 			return this;
 		}
+
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder foos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
@@ -52,12 +61,15 @@ class BuilderSingularAnnotatedTypes {
 			this.foos.addAll(foos);
 			return this;
 		}
+
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder clearFoos() {
-			if (this.foos != null) this.foos.clear();
+			if (this.foos == null) this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
+			 else this.foos.clear();
 			return this;
 		}
+
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder bar(@MyAnnotation @NonNull final String barKey, @MyAnnotation @NonNull final Integer barValue) {
@@ -75,6 +87,7 @@ class BuilderSingularAnnotatedTypes {
 			this.bars$value.add(barValue);
 			return this;
 		}
+
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder bars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
@@ -91,15 +104,20 @@ class BuilderSingularAnnotatedTypes {
 			}
 			return this;
 		}
+
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder clearBars() {
-			if (this.bars$key != null) {
+			if (this.bars$key == null) {
+				this.bars$key = new java.util.ArrayList<@MyAnnotation @NonNull String>();
+				this.bars$value = new java.util.ArrayList<@MyAnnotation @NonNull Integer>();
+			} else {
 				this.bars$key.clear();
 				this.bars$value.clear();
 			}
 			return this;
 		}
+
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypes build() {
@@ -131,6 +149,7 @@ class BuilderSingularAnnotatedTypes {
 			}
 			return new BuilderSingularAnnotatedTypes(foos, bars);
 		}
+
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
@@ -138,6 +157,7 @@ class BuilderSingularAnnotatedTypes {
 			return "BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder(foos=" + this.foos + ", bars$key=" + this.bars$key + ", bars$value=" + this.bars$value + ")";
 		}
 	}
+
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	public static BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder builder() {

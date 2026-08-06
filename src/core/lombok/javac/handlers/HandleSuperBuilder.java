@@ -1035,7 +1035,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				return null;
 			}
 			
-			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, singularInstance.ignoreNullCollections(), setterPrefix);
+			return new SingularData(child, singularName, pluralName, typeArgs, targetFqn, singularizer, singularInstance.ignoreNullCollections(), singularInstance.preserveNull(), setterPrefix);
 		}
 		
 		return null;

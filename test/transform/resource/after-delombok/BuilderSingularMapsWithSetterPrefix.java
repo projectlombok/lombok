@@ -61,7 +61,10 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearWomen() {
-			if (this.women$key != null) {
+			if (this.women$key == null) {
+				this.women$key = new java.util.ArrayList<K>();
+				this.women$value = new java.util.ArrayList<V>();
+			} else {
 				this.women$key.clear();
 				this.women$value.clear();
 			}
@@ -94,7 +97,10 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearMen() {
-			if (this.men$key != null) {
+			if (this.men$key == null) {
+				this.men$key = new java.util.ArrayList<K>();
+				this.men$value = new java.util.ArrayList<Number>();
+			} else {
 				this.men$key.clear();
 				this.men$value.clear();
 			}
@@ -126,7 +132,10 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearRawMap() {
-			if (this.rawMap$key != null) {
+			if (this.rawMap$key == null) {
+				this.rawMap$key = new java.util.ArrayList<Object>();
+				this.rawMap$value = new java.util.ArrayList<Object>();
+			} else {
 				this.rawMap$key.clear();
 				this.rawMap$value.clear();
 			}
@@ -159,7 +168,10 @@ class BuilderSingularMapsWithSetterPrefix<K, V> {
 		}
 		@SuppressWarnings("all")
 		public BuilderSingularMapsWithSetterPrefix.BuilderSingularMapsWithSetterPrefixBuilder<K, V> clearStringMap() {
-			if (this.stringMap$key != null) {
+			if (this.stringMap$key == null) {
+				this.stringMap$key = new java.util.ArrayList<String>();
+				this.stringMap$value = new java.util.ArrayList<V>();
+			} else {
 				this.stringMap$key.clear();
 				this.stringMap$value.clear();
 			}

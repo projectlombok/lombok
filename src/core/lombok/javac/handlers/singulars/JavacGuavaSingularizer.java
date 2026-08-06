@@ -76,9 +76,17 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 	
 	@Override
-	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType) {
+	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
+		return createConstructBuilderVar(maker, data, builderType, source);
+	}
+
+	@Override
+	protected ListBuffer<JCStatement> generateUnsetStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
-		return maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
+		JCStatement unset = maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+		statements.append(unset);
+		return statements;
 	}
 	
 	@Override
@@ -132,10 +140,14 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		varType = addTypeArgs(argumentsCount, false, builderType, varType, data.getTypeArgs(), source);
 		
 		JCExpression empty; {
-			//ImmutableX.of()
-			JCExpression emptyMethod = chainDots(builderType, "com", "google", "common", "collect", getSimpleTargetTypeName(data), "of");
-			List<JCExpression> invokeTypeArgs = createTypeArgs(argumentsCount, false, builderType, data.getTypeArgs(), source);
-			empty = maker.Apply(invokeTypeArgs, emptyMethod, jceBlank);
+			//ImmutableX.of() or null if "preserve null"
+			if (data.isPreserveNull()) {
+				empty = maker.Literal(CTC_BOT, null);
+			} else {
+				JCExpression emptyMethod = chainDots(builderType, "com", "google", "common", "collect", getSimpleTargetTypeName(data), "of");
+				List<JCExpression> invokeTypeArgs = createTypeArgs(argumentsCount, false, builderType, data.getTypeArgs(), source);
+				empty = maker.Apply(invokeTypeArgs, emptyMethod, jceBlank);
+			}
 		}
 		
 		JCExpression invokeBuild; {
@@ -147,24 +159,29 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 			//this.pluralName == null
 			isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(builderType.toName(builderVariable)), data.getPluralName()), maker.Literal(CTC_BOT, null));
 		}
-		
+
 		JCExpression init = maker.Conditional(isNull, empty, invokeBuild); // this.pluralName == null ? ImmutableX.of() : this.pluralName.build()
 		
 		JCStatement jcs = maker.VarDef(maker.Modifiers(0L), data.getPluralName(), varType, init);
 		statements.append(jcs);
 	}
 
+	protected JCStatement createConstructBuilderVar(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
+		List<JCExpression> jceBlank = List.nil();
+
+		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
+		JCExpression create = maker.Apply(jceBlank, chainDots(builderType, "com", "google", "common", "collect", getSimpleTargetTypeName(data), getBuilderMethodName(data)), jceBlank);
+
+		return maker.Exec(maker.Assign(thisDotField, create));
+	}
+
 	@Override
 	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JavacNode source) {
-		List<JCExpression> jceBlank = List.nil();
-		
+		JCStatement thenPart = createConstructBuilderVar(maker, data, builderType, source);
+
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
-		JCExpression thisDotField2 = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
 		JCExpression cond = maker.Binary(CTC_EQUAL, thisDotField, maker.Literal(CTC_BOT, null));
-		
-		JCExpression create = maker.Apply(jceBlank, chainDots(builderType, "com", "google", "common", "collect", getSimpleTargetTypeName(data), getBuilderMethodName(data)), jceBlank);
-		JCStatement thenPart = maker.Exec(maker.Assign(thisDotField2, create));
-		
+
 		return maker.If(cond, thenPart, null);
 	}
 	

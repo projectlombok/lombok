@@ -66,7 +66,10 @@ public class SuperBuilderWithGenericsAndToBuilder {
 			@java.lang.SuppressWarnings("all")
 			@lombok.Generated
 			public B clearItems() {
-				if (this.items$key != null) {
+				if (this.items$key == null) {
+					this.items$key = new java.util.ArrayList<Integer>();
+					this.items$value = new java.util.ArrayList<String>();
+				} else {
 					this.items$key.clear();
 					this.items$value.clear();
 				}

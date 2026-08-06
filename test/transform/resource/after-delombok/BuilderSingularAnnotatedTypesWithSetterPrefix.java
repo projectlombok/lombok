@@ -55,7 +55,8 @@ class BuilderSingularAnnotatedTypesWithSetterPrefix {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypesWithSetterPrefix.BuilderSingularAnnotatedTypesWithSetterPrefixBuilder clearFoos() {
-			if (this.foos != null) this.foos.clear();
+			if (this.foos == null) this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
+			 else this.foos.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -94,7 +95,10 @@ class BuilderSingularAnnotatedTypesWithSetterPrefix {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularAnnotatedTypesWithSetterPrefix.BuilderSingularAnnotatedTypesWithSetterPrefixBuilder clearBars() {
-			if (this.bars$key != null) {
+			if (this.bars$key == null) {
+				this.bars$key = new java.util.ArrayList<@MyAnnotation @NonNull String>();
+				this.bars$value = new java.util.ArrayList<@MyAnnotation @NonNull Integer>();
+			} else {
 				this.bars$key.clear();
 				this.bars$value.clear();
 			}

@@ -35,7 +35,8 @@ class BuilderSingularWithPrefixesWithSetterPrefix {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularWithPrefixesWithSetterPrefix.BuilderSingularWithPrefixesWithSetterPrefixBuilder clearElems() {
-			if (this.elems != null) this.elems.clear();
+			if (this.elems == null) this.elems = new java.util.ArrayList<String>();
+			 else this.elems.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

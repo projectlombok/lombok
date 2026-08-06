@@ -42,7 +42,8 @@ public class SuperBuilderWithCustomBuilderMethod {
 			@java.lang.SuppressWarnings("all")
 			@lombok.Generated
 			public B clearItems() {
-				if (this.items != null) this.items.clear();
+				if (this.items == null) this.items = new java.util.ArrayList<String>();
+				 else this.items.clear();
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")

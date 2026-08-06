@@ -47,7 +47,8 @@ class BuilderSingularNoAuto {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearThings() {
-			if (this.things != null) this.things.clear();
+			if (this.things == null) this.things = new java.util.ArrayList<String>();
+			 else this.things.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -70,7 +71,8 @@ class BuilderSingularNoAuto {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearWidgets() {
-			if (this.widgets != null) this.widgets.clear();
+			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
+			 else this.widgets.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -93,7 +95,8 @@ class BuilderSingularNoAuto {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public BuilderSingularNoAuto.BuilderSingularNoAutoBuilder clearItems() {
-			if (this.items != null) this.items.clear();
+			if (this.items == null) this.items = new java.util.ArrayList<String>();
+			 else this.items.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
