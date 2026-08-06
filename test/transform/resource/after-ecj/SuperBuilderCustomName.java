@@ -1,5 +1,5 @@
 import java.util.List;
-@lombok.experimental.SuperBuilder class SuperBuilderCustomName<T> {
+@lombok.SuperBuilder class SuperBuilderCustomName<T> {
   public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class SimpleTestBuilder<T, C extends SuperBuilderCustomName<T>, B extends SuperBuilderCustomName.SimpleTestBuilder<T, C, B>> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated int field;
     public SimpleTestBuilder() {

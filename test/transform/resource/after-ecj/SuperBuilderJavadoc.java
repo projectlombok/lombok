@@ -1,5 +1,5 @@
 import java.util.List;
-public abstract @lombok.experimental.SuperBuilder class SuperBuilderJavadoc {
+public abstract @lombok.SuperBuilder class SuperBuilderJavadoc {
   public static abstract class SuperBuilderJavadocBuilder<C extends SuperBuilderJavadoc, B extends SuperBuilderJavadocBuilder<C, B>> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated int basic;
     private @java.lang.SuppressWarnings("all") @lombok.Generated int getsetwith;

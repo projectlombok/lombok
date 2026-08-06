@@ -1,13 +1,13 @@
 import java.util.List;
 
 public class SuperBuilderWithDefaults {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent<N extends Number> {
 		@lombok.Builder.Default private long millis = System.currentTimeMillis();
 		@lombok.Builder.Default private N numberField = null;
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Child extends Parent<Integer> {
 		@lombok.Builder.Default private double doubleField = Math.PI;
 	}

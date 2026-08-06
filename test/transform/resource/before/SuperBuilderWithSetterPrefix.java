@@ -1,7 +1,7 @@
 import java.util.List;
 
 public class SuperBuilderWithSetterPrefix {
-	@lombok.experimental.SuperBuilder(toBuilder=true, setterPrefix = "with")
+	@lombok.SuperBuilder(toBuilder=true, setterPrefix = "with")
 	public static class Parent {
 		private int field1;
 		@lombok.Builder.ObtainVia(field="field1")
@@ -21,7 +21,7 @@ public class SuperBuilderWithSetterPrefix {
 		}
 	}
 	
-	@lombok.experimental.SuperBuilder(toBuilder=true, setterPrefix = "set")
+	@lombok.SuperBuilder(toBuilder=true, setterPrefix = "set")
 	public static class Child extends Parent {
 		private double field3;
 	}

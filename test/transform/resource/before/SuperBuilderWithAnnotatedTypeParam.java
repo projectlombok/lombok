@@ -13,12 +13,12 @@ public class SuperBuilderWithAnnotatedTypeParam {
 	public @interface MyAnnotation {
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent<A> {
 		A field1;
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Child extends Parent<@MyAnnotation String> {
 		double field3;
 	}

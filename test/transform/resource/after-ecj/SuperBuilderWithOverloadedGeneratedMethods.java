@@ -1,5 +1,5 @@
 public class SuperBuilderWithOverloadedGeneratedMethods {
-  public static @lombok.experimental.SuperBuilder class Parent {
+  public static @lombok.SuperBuilder class Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<C extends SuperBuilderWithOverloadedGeneratedMethods.Parent, B extends SuperBuilderWithOverloadedGeneratedMethods.Parent.ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated int self;
       public ParentBuilder() {
@@ -38,7 +38,7 @@ public class SuperBuilderWithOverloadedGeneratedMethods {
       return new SuperBuilderWithOverloadedGeneratedMethods.Parent.ParentBuilderImpl();
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child extends Parent {
+  public static @lombok.SuperBuilder class Child extends Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderWithOverloadedGeneratedMethods.Child, B extends SuperBuilderWithOverloadedGeneratedMethods.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double build;
       public ChildBuilder() {

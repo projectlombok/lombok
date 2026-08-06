@@ -1,6 +1,6 @@
 //version 8:
 public class SuperBuilderWithArrayTypeParam {
-  public static @lombok.experimental.SuperBuilder class Parent<A> {
+  public static @lombok.SuperBuilder class Parent<A> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<A, C extends SuperBuilderWithArrayTypeParam.Parent<A>, B extends SuperBuilderWithArrayTypeParam.Parent.ParentBuilder<A, C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated A field1;
       public ParentBuilder() {
@@ -39,7 +39,7 @@ public class SuperBuilderWithArrayTypeParam {
       return new SuperBuilderWithArrayTypeParam.Parent.ParentBuilderImpl<A>();
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child extends Parent<Integer[]> {
+  public static @lombok.SuperBuilder class Child extends Parent<Integer[]> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderWithArrayTypeParam.Child, B extends SuperBuilderWithArrayTypeParam.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<Integer[], C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double field3;
       public ChildBuilder() {

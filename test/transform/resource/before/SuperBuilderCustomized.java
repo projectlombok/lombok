@@ -2,7 +2,7 @@
 import java.util.List;
 
 public class SuperBuilderCustomized {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent {
 		public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
 			public B resetToDefault() {
@@ -27,7 +27,7 @@ public class SuperBuilderCustomized {
 		}
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Child extends Parent {
 		private static final class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
 			@Override

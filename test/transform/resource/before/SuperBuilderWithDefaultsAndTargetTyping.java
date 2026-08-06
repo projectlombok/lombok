@@ -2,12 +2,12 @@ import java.util.Arrays;
 import lombok.Builder;
 
 public class SuperBuilderWithDefaultsAndTargetTyping {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent {
 		@lombok.Builder.Default private String foo = doSth(Arrays.asList(1), Arrays.asList('a'));
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Child extends Parent {
 		@lombok.Builder.Default private String foo = doSth(Arrays.asList(1), Arrays.asList('a'));
 	}

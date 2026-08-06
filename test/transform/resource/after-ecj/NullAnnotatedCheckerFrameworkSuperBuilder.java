@@ -1,7 +1,7 @@
 import java.util.List;
 import lombok.Singular;
 class NullAnnotatedCheckerFrameworkSuperBuilder {
-  public static @lombok.experimental.SuperBuilder class Parent {
+  public static @lombok.SuperBuilder class Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<C extends NullAnnotatedCheckerFrameworkSuperBuilder.Parent, B extends NullAnnotatedCheckerFrameworkSuperBuilder.Parent.ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated int x$value;
       private @java.lang.SuppressWarnings("all") @lombok.Generated boolean x$set;
@@ -103,7 +103,7 @@ class NullAnnotatedCheckerFrameworkSuperBuilder {
       return new NullAnnotatedCheckerFrameworkSuperBuilder.Parent.ParentBuilderImpl();
     }
   }
-  public static @lombok.experimental.SuperBuilder class ZChild extends Parent {
+  public static @lombok.SuperBuilder class ZChild extends Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ZChildBuilder<C extends NullAnnotatedCheckerFrameworkSuperBuilder.ZChild, B extends NullAnnotatedCheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated int a$value;
       private @java.lang.SuppressWarnings("all") @lombok.Generated boolean a$set;

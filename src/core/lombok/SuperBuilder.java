@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.experimental;
+package lombok;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
@@ -27,13 +27,9 @@ import static java.lang.annotation.RetentionPolicy.*;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import lombok.Singular;
-
 /**
  * The SuperBuilder annotation creates a so-called 'builder' aspect to the class that is annotated with {@code @SuperBuilder}, but which works well when extending.
  * It is similar to {@code @Builder}, except it is only legal on types, is less configurable, but allows you to {@code extends} other builder-able classes.
- * <p>
- * <strong>NB: {@code @SuperBuilder} has been moved to the main package; update your lombok dependencies and search/replace all {@code import lombok.experimental.SuperBuilder} to {@code import lombok.SuperBuilder}.</strong>
  * <p>
  * All classes in the hierarchy must be annotated with {@code @SuperBuilder}.
  * <p>
@@ -48,7 +44,6 @@ import lombok.Singular;
  *
  * @see Singular
  */
-// @Deprecated // First release on or after 2027-06-01: Deprecate this type, with text: @deprecated {@code SuperBuilder} has been promoted to the main package; use {@link lombok.SuperBuilder} instead.
 @Target(TYPE)
 @Retention(SOURCE)
 public @interface SuperBuilder {

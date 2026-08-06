@@ -1,4 +1,4 @@
-@lombok.experimental.SuperBuilder
+@lombok.SuperBuilder
 public class SuperBuilderWithExistingConstructor {
 	public SuperBuilderWithExistingConstructor() {
 	}
