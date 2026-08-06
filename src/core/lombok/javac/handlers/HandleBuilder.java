@@ -105,7 +105,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
 		JavacNode parentType;
-		String builderMethodName, buildMethodName;
+		String builderMethodName, buildMethodName, toBuilderMethodName;
 		boolean isStatic;
 		List<JCTypeParameter> typeParams;
 		List<JCTypeParameter> builderTypeParams;
@@ -133,10 +133,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			buildMethodName = ann.buildMethodName();
 			builderClassName = getBuilderClassNameTemplate(node, ann.builderClassName());
 			toBuilder = ann.toBuilder();
+			toBuilderMethodName = ann.toBuilderMethodName();
 			
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
 			if (builderClassName == null) builderClassName = "";
+			if (toBuilderMethodName == null) toBuilderMethodName = TO_BUILDER_METHOD_NAME;
 		}
 		
 		static String getBuilderClassNameTemplate(JavacNode node, String override) {
@@ -526,9 +528,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (job.toBuilder) {
-			switch (methodExists(TO_BUILDER_METHOD_NAME, job.parentType, 0)) {
+			switch (methodExists(job.toBuilderMethodName, job.parentType, 0)) {
 			case EXISTS_BY_USER:
-				annotationNode.addWarning("Not generating toBuilder() as it already exists.");
+				annotationNode.addWarning("Not generating " + job.toBuilderMethodName + "() as it already exists.");
 				return;
 			case NOT_EXISTS:
 				List<JCTypeParameter> tps = job.typeParams;
@@ -689,7 +691,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCBlock body = maker.Block(0, statements.toList());
 		List<JCAnnotation> annsOnParamType = List.nil();
 		if (job.checkerFramework.generateUnique()) annsOnParamType = List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
-		JCMethodDecl methodDef = maker.MethodDef(maker.Modifiers(toJavacModifier(job.accessOuters)), job.toName(TO_BUILDER_METHOD_NAME), namePlusTypeParamsToTypeReference(maker, job.parentType, job.getBuilderClassName(), !job.isStatic, typeParameters, annsOnParamType), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		JCMethodDecl methodDef = maker.MethodDef(maker.Modifiers(toJavacModifier(job.accessOuters)), job.toName(job.toBuilderMethodName), namePlusTypeParamsToTypeReference(maker, job.parentType, job.getBuilderClassName(), !job.isStatic, typeParameters, annsOnParamType), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(job.parentType, methodDef);
 		return methodDef;
 	}

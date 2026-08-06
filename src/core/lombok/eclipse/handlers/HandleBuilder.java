@@ -125,7 +125,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
 		EclipseNode parentType;
-		String builderMethodName, buildMethodName;
+		String builderMethodName, buildMethodName, toBuilderMethodName;
 		boolean isStatic;
 		TypeParameter[] typeParams;
 		TypeParameter[] builderTypeParams;
@@ -185,9 +185,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			buildMethodName = ann.buildMethodName();
 			setBuilderClassName(getBuilderClassNameTemplate(node, ann.builderClassName()));
 			toBuilder = ann.toBuilder();
-			
+			toBuilderMethodName = ann.toBuilderMethodName();
+
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
+			if (toBuilderMethodName == null) toBuilderMethodName = TO_BUILDER_METHOD_NAME_STRING;
 		}
 		
 		static String getBuilderClassNameTemplate(EclipseNode node, String override) {
@@ -586,9 +588,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (md != null) injectMethod(job.parentType, md);
 		}
 		
-		if (job.toBuilder) switch (methodExists(TO_BUILDER_METHOD_NAME_STRING, job.parentType, 0)) {
+		if (job.toBuilder) switch (methodExists(job.toBuilderMethodName, job.parentType, 0)) {
 		case EXISTS_BY_USER:
-			annotationNode.addWarning("Not generating toBuilder() as it already exists.");
+			annotationNode.addWarning("Not generating " + job.toBuilderMethodName + "() as it already exists.");
 			break;
 		case NOT_EXISTS:
 			TypeParameter[] tps = job.typeParams;
@@ -645,7 +647,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		long p = job.getPos();
 		
 		MethodDeclaration out = job.createNewMethodDeclaration();
-		out.selector = TO_BUILDER_METHOD_NAME;
+		out.selector = job.toBuilderMethodName.toCharArray();
 		out.modifiers = toEclipseModifier(job.accessOuters);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		

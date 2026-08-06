@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.47 "Edgy Guinea Pig"
+* FEATURE: `@Builder(toBuilder = true)` now lets you customize the generated method's name via `toBuilderMethodName`.
 * BUGFIX: `@SneakyThrows` usage on JDK26 no longer results in class files that require `lombok.jar` to be on the runtime classpath (which should not be neccessary). [#4040](https://github.com/projectlombok/lombok/issues/4022).
 
 ### v1.18.46 (April 22nd, 2026)
