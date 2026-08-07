@@ -125,7 +125,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
 		EclipseNode parentType;
-		String builderMethodName, buildMethodName, toBuilderMethodName;
+		String builderMethodName, buildMethodName;
 		boolean isStatic;
 		TypeParameter[] typeParams;
 		TypeParameter[] builderTypeParams;
@@ -134,7 +134,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		List<BuilderFieldData> builderFields;
 		AccessLevel accessInners, accessOuters;
 		boolean oldFluent, oldChain, toBuilder;
-		
+
+		String toBuilderMethodName;
+		char[] toBuilderMethodNameArr;
+
 		EclipseNode builderType;
 		String builderClassName;
 		char[] builderClassNameArr;
@@ -142,6 +145,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		void setBuilderClassName(String builderClassName) {
 			this.builderClassName = builderClassName;
 			this.builderClassNameArr = builderClassName.toCharArray();
+		}
+
+		void setToBuilderMethodName(String toBuilderMethodName) {
+			this.toBuilderMethodName = toBuilderMethodName;
+			this.toBuilderMethodNameArr = toBuilderMethodName.toCharArray();
 		}
 		
 		TypeParameter[] copyTypeParams() {
@@ -185,11 +193,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			buildMethodName = ann.buildMethodName();
 			setBuilderClassName(getBuilderClassNameTemplate(node, ann.builderClassName()));
 			toBuilder = ann.toBuilder();
-			toBuilderMethodName = ann.toBuilderMethodName();
+			setToBuilderMethodName(getToBuilderMethodName(node, ann.toBuilderMethodName()));
 
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
-			if (toBuilderMethodName == null) toBuilderMethodName = TO_BUILDER_METHOD_NAME_STRING;
 		}
 		
 		static String getBuilderClassNameTemplate(EclipseNode node, String override) {
@@ -197,6 +204,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			override = node.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
 			if (override != null && !override.isEmpty()) return override;
 			return "*Builder";
+		}
+
+		static String getToBuilderMethodName(EclipseNode node, String override) {
+			if (override != null && !override.isEmpty()) return override;
+			override = node.getAst().readConfiguration(ConfigurationKeys.TO_BUILDER_METHOD_NAME);
+			if (override != null && !override.isEmpty()) return override;
+			return TO_BUILDER_METHOD_NAME_STRING;
 		}
 		
 		MethodDeclaration createNewMethodDeclaration() {
@@ -647,7 +661,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		long p = job.getPos();
 		
 		MethodDeclaration out = job.createNewMethodDeclaration();
-		out.selector = job.toBuilderMethodName.toCharArray();
+		out.selector = job.toBuilderMethodNameArr;
 		out.modifiers = toEclipseModifier(job.accessOuters);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		

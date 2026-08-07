@@ -317,7 +317,14 @@ public class ConfigurationKeys {
 	 * For any usage of the {@code @Builder} annotation without an explicit {@code builderClassName} parameter, this value is used to determine the name of the builder class to generate (or to adapt if such an inner class already exists).
 	 */
 	public static final ConfigurationKey<String> BUILDER_CLASS_NAME = new ConfigurationKey<String>("lombok.builder.className", "Default name of the generated builder class. A * is replaced with the name of the relevant type (default = *Builder).") {};
-	
+
+	/**
+	 * lombok configuration: {@code lombok.builder.toBuilderMethodName} = &lt;String: aJavaIdentifier&gt; (Default: {@code toBuilder}).
+	 *
+	 * For any usage of the {@code @Builder(toBuilder = true)} annotation without an explicit {@code toBuilderMethodName} parameter, this value is used to determine the name of the generated toBuilder method (default: {@code toBuilder}).
+	 */
+	public static final ConfigurationKey<String> TO_BUILDER_METHOD_NAME = new ConfigurationKey<String>("lombok.builder.toBuilderMethodName", "Default name of the generated toBuilder method (default = toBuilder).") {};
+
 	/**
 	 * lombok configuration: {@code lombok.builder.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 

@@ -151,7 +151,7 @@ public @interface Builder {
 	 *
 	 * @return Name of the generated {@code toBuilder} method.
 	 */
-	String toBuilderMethodName() default "toBuilder";
+	String toBuilderMethodName() default "";
 
 	/**
 	 * Sets the access level of the generated builder class. By default, generated builder classes are {@code public}.

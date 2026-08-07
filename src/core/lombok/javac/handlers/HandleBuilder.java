@@ -133,12 +133,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			buildMethodName = ann.buildMethodName();
 			builderClassName = getBuilderClassNameTemplate(node, ann.builderClassName());
 			toBuilder = ann.toBuilder();
-			toBuilderMethodName = ann.toBuilderMethodName();
+			toBuilderMethodName = getToBuilderMethodName(node, ann.toBuilderMethodName());
 			
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
 			if (builderClassName == null) builderClassName = "";
-			if (toBuilderMethodName == null) toBuilderMethodName = TO_BUILDER_METHOD_NAME;
 		}
 		
 		static String getBuilderClassNameTemplate(JavacNode node, String override) {
@@ -146,6 +145,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			override = node.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
 			if (override != null && !override.isEmpty()) return override;
 			return "*Builder";
+		}
+
+		static String getToBuilderMethodName(JavacNode node, String override) {
+			if (override != null && !override.isEmpty()) return override;
+			override = node.getAst().readConfiguration(ConfigurationKeys.TO_BUILDER_METHOD_NAME);
+			if (override != null && !override.isEmpty()) return override;
+			return TO_BUILDER_METHOD_NAME;
 		}
 		
 		String replaceBuilderClassName(Name name) {
