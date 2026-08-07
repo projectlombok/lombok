@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 
 import lombok.Builder;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 
 /**
  * The {@code @Jacksonized} annotation is an add-on annotation for

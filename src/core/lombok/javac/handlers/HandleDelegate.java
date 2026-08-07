@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 The Project Lombok Authors.
+ * Copyright (C) 2010-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@ import static com.sun.tools.javac.code.Flags.*;
 import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,8 +108,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	@Override public void handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.DELEGATE_FLAG_USAGE, "@Delegate");
 		
-		@SuppressWarnings("deprecation") Class<? extends Annotation> oldDelegate = lombok.Delegate.class;
-		deleteAnnotationIfNeccessary(annotationNode, Delegate.class, oldDelegate);
+		deleteAnnotationIfNeccessary(annotationNode, Delegate.class, "lombok.Delegate");
 		
 		Type delegateType;
 		Name delegateName = annotationNode.toName(annotationNode.up().getName());

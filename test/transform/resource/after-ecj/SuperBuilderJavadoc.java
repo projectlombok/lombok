@@ -1,5 +1,5 @@
 import java.util.List;
-public abstract @lombok.experimental.SuperBuilder class SuperBuilderJavadoc {
+public abstract @lombok.SuperBuilder class SuperBuilderJavadoc {
   public static abstract class SuperBuilderJavadocBuilder<C extends SuperBuilderJavadoc, B extends SuperBuilderJavadocBuilder<C, B>> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated int basic;
     private @java.lang.SuppressWarnings("all") @lombok.Generated int getsetwith;
@@ -42,7 +42,7 @@ public abstract @lombok.experimental.SuperBuilder class SuperBuilderJavadoc {
     }
   }
   private final int basic;
-  private @lombok.Getter @lombok.Setter @lombok.experimental.Wither int getsetwith;
+  private @lombok.Getter @lombok.Setter @lombok.With int getsetwith;
   private final int predef;
   private final int predefWithJavadoc;
   protected @java.lang.SuppressWarnings("all") @lombok.Generated SuperBuilderJavadoc(final SuperBuilderJavadoc.SuperBuilderJavadocBuilder<?, ?> b) {

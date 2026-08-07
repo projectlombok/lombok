@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
     return this.pattern;
   }
 }
-@lombok.Getter @lombok.experimental.Wither @lombok.AllArgsConstructor class Tolerate2 {
+@lombok.Getter @lombok.With @lombok.AllArgsConstructor class Tolerate2 {
   private final Pattern pattern;
   public @lombok.experimental.Tolerate Tolerate2 withPattern(String pattern) {
     return withPattern(Pattern.compile(pattern));

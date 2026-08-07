@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.Singular;
 @Target(ElementType.TYPE_USE) @interface MyAnnotation {
 }
-@lombok.experimental.SuperBuilder class SuperBuilderSingularAnnotatedTypes {
+@lombok.SuperBuilder class SuperBuilderSingularAnnotatedTypes {
   public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class SuperBuilderSingularAnnotatedTypesBuilder<C extends SuperBuilderSingularAnnotatedTypes, B extends SuperBuilderSingularAnnotatedTypes.SuperBuilderSingularAnnotatedTypesBuilder<C, B>> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<@MyAnnotation @NonNull String> foos;
     private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<@MyAnnotation @NonNull String> bars$key;

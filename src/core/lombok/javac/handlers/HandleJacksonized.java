@@ -49,7 +49,7 @@ import lombok.core.JacksonAnnotationType;
 import lombok.core.configuration.JacksonVersion;
 import lombok.core.handlers.HandlerUtil;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;

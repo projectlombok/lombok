@@ -31,7 +31,7 @@ import lombok.Builder;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.spi.Provides;
@@ -44,7 +44,7 @@ public class HandleBuilderDefault extends JavacAnnotationHandler<Builder.Default
 		if (annotatedField.getKind() != Kind.FIELD) return;
 		JavacNode classWithAnnotatedField = annotatedField.up();
 		if (!hasAnnotation(Builder.class, classWithAnnotatedField) && !hasAnnotation("lombok.experimental.Builder", classWithAnnotatedField)
-				&& !hasAnnotation(SuperBuilder.class, classWithAnnotatedField)) {
+				&& !hasAnnotation(SuperBuilder.class, classWithAnnotatedField) && !hasAnnotation("lombok.experimental.SuperBuilder", classWithAnnotatedField)) {
 			annotationNode.addWarning("@Builder.Default requires @Builder or @SuperBuilder on the class for it to mean anything.");
 			deleteAnnotationIfNeccessary(annotationNode, Builder.Default.class);
 		}

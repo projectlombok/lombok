@@ -1,5 +1,5 @@
 public class SuperBuilderNameClashes {
-  public static @lombok.experimental.SuperBuilder class GenericsClash<B, C, C2> {
+  public static @lombok.SuperBuilder class GenericsClash<B, C, C2> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class GenericsClashBuilder<B, C, C2, C3 extends SuperBuilderNameClashes.GenericsClash<B, C, C2>, B2 extends SuperBuilderNameClashes.GenericsClash.GenericsClashBuilder<B, C, C2, C3, B2>> {
       public GenericsClashBuilder() {
         super();
@@ -28,7 +28,7 @@ public class SuperBuilderNameClashes {
       return new SuperBuilderNameClashes.GenericsClash.GenericsClashBuilderImpl<B, C, C2>();
     }
   }
-  public static @lombok.experimental.SuperBuilder class B {
+  public static @lombok.SuperBuilder class B {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class BBuilder<C extends SuperBuilderNameClashes.B, B2 extends SuperBuilderNameClashes.B.BBuilder<C, B2>> {
       public BBuilder() {
         super();
@@ -62,7 +62,7 @@ public class SuperBuilderNameClashes {
       super();
     }
   }
-  public static @lombok.experimental.SuperBuilder class C {
+  public static @lombok.SuperBuilder class C {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class CBuilder<C3 extends SuperBuilderNameClashes.C, B extends SuperBuilderNameClashes.C.CBuilder<C3, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated C2 c2;
       public CBuilder() {
@@ -107,7 +107,7 @@ public class SuperBuilderNameClashes {
   }
   interface B3<Y> {
   }
-  public static @lombok.experimental.SuperBuilder class ExtendsClauseCollision extends B implements B2.B4<Object>, B3<Object> {
+  public static @lombok.SuperBuilder class ExtendsClauseCollision extends B implements B2.B4<Object>, B3<Object> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ExtendsClauseCollisionBuilder<C extends SuperBuilderNameClashes.ExtendsClauseCollision, B4 extends SuperBuilderNameClashes.ExtendsClauseCollision.ExtendsClauseCollisionBuilder<C, B4>> extends B.BBuilder<C, B4> {
       public ExtendsClauseCollisionBuilder() {
         super();

@@ -1,13 +1,13 @@
 import java.util.List;
 
 public class SuperBuilderWithGenerics {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent<A> {
 		A field1;
 		@lombok.Singular List<String> items;
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Child<A> extends Parent<A> {
 		double field3;
 	}

@@ -1,11 +1,11 @@
 //version 8:
 public class SuperBuilderWithArrayTypeParam {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent<A> {
 		A field1;
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Child extends Parent<Integer[]> {
 		double field3;
 	}

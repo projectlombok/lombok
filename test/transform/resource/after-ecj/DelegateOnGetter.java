@@ -1,4 +1,4 @@
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 import lombok.Getter;
 class DelegateOnGetter {
   private interface Bar {

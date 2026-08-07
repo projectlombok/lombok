@@ -1,6 +1,6 @@
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.Builder;
 
 @NoArgsConstructor

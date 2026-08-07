@@ -1,5 +1,5 @@
 public class SuperBuilderSingularToBuilderGuava {
-  public static @lombok.experimental.SuperBuilder(toBuilder = true) class Parent<T> {
+  public static @lombok.SuperBuilder(toBuilder = true) class Parent<T> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<T, C extends SuperBuilderSingularToBuilderGuava.Parent<T>, B extends SuperBuilderSingularToBuilderGuava.Parent.ParentBuilder<T, C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.collect.ImmutableList.Builder<T> cards;
       private @java.lang.SuppressWarnings("all") @lombok.Generated com.google.common.collect.ImmutableList.Builder<Number> frogs;
@@ -162,7 +162,7 @@ public class SuperBuilderSingularToBuilderGuava {
       return new SuperBuilderSingularToBuilderGuava.Parent.ParentBuilderImpl<T>();
     }
   }
-  public static @lombok.experimental.SuperBuilder(toBuilder = true) class Child<T> extends Parent<T> {
+  public static @lombok.SuperBuilder(toBuilder = true) class Child<T> extends Parent<T> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<T, C extends SuperBuilderSingularToBuilderGuava.Child<T>, B extends SuperBuilderSingularToBuilderGuava.Child.ChildBuilder<T, C, B>> extends Parent.ParentBuilder<T, C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double field3;
       public ChildBuilder() {

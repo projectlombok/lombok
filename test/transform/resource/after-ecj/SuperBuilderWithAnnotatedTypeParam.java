@@ -8,7 +8,7 @@ import java.util.List;
 public class SuperBuilderWithAnnotatedTypeParam {
   public @Documented @Target({ElementType.TYPE_USE, ElementType.ANNOTATION_TYPE}) @Retention(RetentionPolicy.RUNTIME) @interface MyAnnotation {
   }
-  public static @lombok.experimental.SuperBuilder class Parent<A> {
+  public static @lombok.SuperBuilder class Parent<A> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<A, C extends SuperBuilderWithAnnotatedTypeParam.Parent<A>, B extends SuperBuilderWithAnnotatedTypeParam.Parent.ParentBuilder<A, C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated A field1;
       public ParentBuilder() {
@@ -47,7 +47,7 @@ public class SuperBuilderWithAnnotatedTypeParam {
       return new SuperBuilderWithAnnotatedTypeParam.Parent.ParentBuilderImpl<A>();
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child extends Parent<@MyAnnotation String> {
+  public static @lombok.SuperBuilder class Child extends Parent<@MyAnnotation String> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderWithAnnotatedTypeParam.Child, B extends SuperBuilderWithAnnotatedTypeParam.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<@MyAnnotation String, C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double field3;
       public ChildBuilder() {
