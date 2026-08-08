@@ -60,6 +60,7 @@ import org.eclipse.jdt.internal.compiler.ast.Reference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
+import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 
 import java.lang.reflect.Modifier;
@@ -90,10 +91,10 @@ public final class HandleLockedUtil {
 		EclipseNode typeNode = upToTypeNode(annotationNode);
 		if (isRecord(typeNode)) return;
 		
-		createLockField(annotationValue, annotationNode, lockTypeClass, lockImplClass, new AtomicBoolean(method.isStatic()), false);
+		createLockField(annotationValue, annotationNode, lockTypeClass, lockImplClass, new AtomicBoolean(method.isStatic()), false, getFairness(annotationNode));
 	}
-	
-	private static char[] createLockField(String name, EclipseNode annotationNode, char[][] lockTypeClass, char[][] lockImplClass, AtomicBoolean isStatic, boolean reportErrors) {
+
+	private static char[] createLockField(String name, EclipseNode annotationNode, char[][] lockTypeClass, char[][] lockImplClass, AtomicBoolean isStatic, boolean reportErrors, boolean fairness) {
 		char[] lockName = name.toCharArray();
 		
 		Annotation source = (Annotation) annotationNode.get();
@@ -138,6 +139,9 @@ public final class HandleLockedUtil {
 			
 			AllocationExpression lockAlloc = setGeneratedBy(new AllocationExpression(), source);
 			lockAlloc.type = setGeneratedBy(new QualifiedTypeReference(lockImplClass, new long[] { 0, 0, 0, 0, 0 }), source);
+			if (fairness) {
+				lockAlloc.arguments = new Expression[] { new TrueLiteral(0, 0) };
+			}
 			fieldDecl.type = setGeneratedBy(new QualifiedTypeReference(lockTypeClass, new long[] { 0, 0, 0, 0, 0 }), source);
 			fieldDecl.initialization = lockAlloc;
 			injectFieldAndMarkGenerated(annotationNode.up().up(), fieldDecl);
@@ -201,7 +205,7 @@ public final class HandleLockedUtil {
 		}
 		
 		AtomicBoolean isStatic = new AtomicBoolean(method.isStatic());
-		char[] lockName = createLockField(annotationValue, annotationNode, lockTypeClass, lockImplClass, isStatic, true);
+		char[] lockName = createLockField(annotationValue, annotationNode, lockTypeClass, lockImplClass, isStatic, true, getFairness(annotationNode));
 		if (lockName == null) return;
 		if (method.statements == null) return;
 		
@@ -231,6 +235,11 @@ public final class HandleLockedUtil {
 		methodNode.rebuild();
 	}
 	
+	private static boolean getFairness(EclipseNode annotationNode) {
+		EclipseNode policyNode = findAnnotation(lombok.Locked.Policy.class, upToTypeNode(annotationNode));
+		return policyNode != null && createAnnotation(lombok.Locked.Policy.class, policyNode).getInstance().fairness();
+	}
+
 	private static Statement getLockingStatement(ASTNode source, EclipseNode typeNode, char[] lockMethod,
 		char[] lockableObjectName, char[] lockableMethodName, boolean isStatic, int p1, int p2, long pos) {
 		

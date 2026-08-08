@@ -53,7 +53,7 @@ public final class HandleLockedUtil {
 	 * {@code lockableMethodName = null}.
 	 */
 	public static <T extends Annotation> void handle(String annotationValue, JCTree.JCAnnotation ast, JavacNode annotationNode, Class<T> annotationClass, String annotationName, String[] lockTypeClass, String[] lockImplClass) {
-		handle(annotationValue, ast, annotationNode, annotationClass, annotationName, lockTypeClass, lockImplClass, null);
+		handle(annotationValue, ast, annotationNode, annotationClass, annotationName, lockTypeClass, lockImplClass, null, getFairness(annotationNode));
 	}
 	
 	/**
@@ -79,9 +79,14 @@ public final class HandleLockedUtil {
 	 * @param lockableMethodName The name of the method in the {@code lockClass} that returns a
 	 * {@link java.util.concurrent.locks.Lock} object. When this is {@code null}, it is assumed that {@code lockClass}
 	 * itself can be locked/unlocked.
+	 * @param fairness Whether a generated lock should use fair ordering.
 	 * @param <T> The annotation type.
 	 */
 	public static <T extends Annotation> void handle(String annotationValue, JCTree.JCAnnotation ast, JavacNode annotationNode, Class<T> annotationClass, String annotationName, String[] lockTypeClass, String[] lockImplClass, String lockableMethodName) {
+		handle(annotationValue, ast, annotationNode, annotationClass, annotationName, lockTypeClass, lockImplClass, lockableMethodName, getFairness(annotationNode));
+	}
+
+	public static <T extends Annotation> void handle(String annotationValue, JCTree.JCAnnotation ast, JavacNode annotationNode, Class<T> annotationClass, String annotationName, String[] lockTypeClass, String[] lockImplClass, String lockableMethodName, boolean fairness) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.LOCKED_FLAG_USAGE, annotationName);
 		
 		if (inNetbeansEditor(annotationNode)) return;
@@ -149,7 +154,7 @@ public final class HandleLockedUtil {
 				return;
 			}
 			JCExpression lockImplType = chainDots(methodNode, ast.pos, null, null, lockImplClass);
-			JCNewClass lockInstance = maker.NewClass(null, NIL_EXPRESSION, lockImplType, NIL_EXPRESSION, null);
+			JCNewClass lockInstance = maker.NewClass(null, NIL_EXPRESSION, lockImplType, fairness ? List.<JCExpression>of(maker.Literal(true)) : NIL_EXPRESSION, null);
 			JCVariableDecl newLockField = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 				methodNode.toName(lockName), lockVarType, lockInstance), annotationNode);
@@ -173,6 +178,11 @@ public final class HandleLockedUtil {
 		method.body = setGeneratedBy(maker.Block(0, List.<JCStatement>of(recursiveSetGeneratedBy(acquireLock, annotationNode), tryBlock)), annotationNode);
 		
 		methodNode.rebuild();
+	}
+
+	private static boolean getFairness(JavacNode annotationNode) {
+		JavacNode policyNode = findAnnotation(Locked.Policy.class, upToTypeNode(annotationNode));
+		return policyNode != null && createAnnotation(Locked.Policy.class, policyNode).getInstance().fairness();
 	}
 	
 	private static JCExpression getLockable(JavacTreeMaker maker, JavacNode typeNode, JavacNode methodNode, String lockableMethodName, JCExpression lockNode) {
