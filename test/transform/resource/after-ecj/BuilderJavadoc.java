@@ -43,7 +43,7 @@ import java.util.List;
     }
   }
   private final int basic;
-  private @lombok.Getter @lombok.Setter @lombok.experimental.Wither int getsetwith;
+  private @lombok.Getter @lombok.Setter @lombok.With int getsetwith;
   private final int predef;
   private final int predefWithJavadoc;
   /**

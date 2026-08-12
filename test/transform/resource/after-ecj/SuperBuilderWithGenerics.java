@@ -1,6 +1,6 @@
 import java.util.List;
 public class SuperBuilderWithGenerics {
-  public static @lombok.experimental.SuperBuilder class Parent<A> {
+  public static @lombok.SuperBuilder class Parent<A> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<A, C extends SuperBuilderWithGenerics.Parent<A>, B extends SuperBuilderWithGenerics.Parent.ParentBuilder<A, C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated A field1;
       private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> items;
@@ -74,7 +74,7 @@ public class SuperBuilderWithGenerics {
       return new SuperBuilderWithGenerics.Parent.ParentBuilderImpl<A>();
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child<A> extends Parent<A> {
+  public static @lombok.SuperBuilder class Child<A> extends Parent<A> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<A, C extends SuperBuilderWithGenerics.Child<A>, B extends SuperBuilderWithGenerics.Child.ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double field3;
       public ChildBuilder() {

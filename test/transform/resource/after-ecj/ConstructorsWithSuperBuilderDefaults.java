@@ -1,6 +1,6 @@
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.Builder;
 @NoArgsConstructor @AllArgsConstructor @SuperBuilder class ConstructorsWithSuperBuilderDefaults {
   public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ConstructorsWithSuperBuilderDefaultsBuilder<C extends ConstructorsWithSuperBuilderDefaults, B extends ConstructorsWithSuperBuilderDefaults.ConstructorsWithSuperBuilderDefaultsBuilder<C, B>> {

@@ -1,7 +1,7 @@
 import java.util.List;
 
 public class SuperBuilderBasicToBuilder {
-	@lombok.experimental.SuperBuilder(toBuilder=true)
+	@lombok.SuperBuilder(toBuilder=true)
 	public static class Parent {
 		private int field1;
 		@lombok.Builder.ObtainVia(field="field1")
@@ -21,7 +21,7 @@ public class SuperBuilderBasicToBuilder {
 		}
 	}
 	
-	@lombok.experimental.SuperBuilder(toBuilder=true)
+	@lombok.SuperBuilder(toBuilder=true)
 	public static class Child extends Parent {
 		private double field3;
 	}

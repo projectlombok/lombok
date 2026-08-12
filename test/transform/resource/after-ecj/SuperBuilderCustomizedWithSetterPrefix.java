@@ -1,6 +1,6 @@
 import java.util.List;
 public class SuperBuilderCustomizedWithSetterPrefix {
-  public static @lombok.experimental.SuperBuilder(setterPrefix = "set") class Parent {
+  public static @lombok.SuperBuilder(setterPrefix = "set") class Parent {
     public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated int field1;
       public ParentBuilder() {

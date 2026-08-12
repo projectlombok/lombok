@@ -1,4 +1,4 @@
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 class SuperBuilderInitializer {
   public static @SuperBuilder class One {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class OneBuilder<C extends SuperBuilderInitializer.One, B extends SuperBuilderInitializer.One.OneBuilder<C, B>> {

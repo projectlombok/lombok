@@ -1,5 +1,5 @@
 public class SuperBuilderSingularToBuilderGuava {
-	@lombok.experimental.SuperBuilder(toBuilder=true)
+	@lombok.SuperBuilder(toBuilder=true)
 	public static class Parent<T> {
 		@lombok.Singular private com.google.common.collect.ImmutableList<T> cards;
 		@lombok.Singular private com.google.common.collect.ImmutableCollection<? extends Number> frogs;
@@ -8,7 +8,7 @@ public class SuperBuilderSingularToBuilderGuava {
 		@lombok.Singular private com.google.common.collect.ImmutableTable<? extends Number, ? extends Number, String> users;
 	}
 	
-	@lombok.experimental.SuperBuilder(toBuilder=true)
+	@lombok.SuperBuilder(toBuilder=true)
 	public static class Child<T> extends Parent<T> {
 		private double field3;
 	}

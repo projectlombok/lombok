@@ -1,6 +1,6 @@
 import java.util.List;
 public class SuperBuilderWithNonNull {
-  public static @lombok.experimental.SuperBuilder class Parent {
+  public static @lombok.SuperBuilder class Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<C extends SuperBuilderWithNonNull.Parent, B extends SuperBuilderWithNonNull.Parent.ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated String nonNullParentField$value;
       private @java.lang.SuppressWarnings("all") @lombok.Generated boolean nonNullParentField$set;
@@ -55,7 +55,7 @@ public class SuperBuilderWithNonNull {
       return new SuperBuilderWithNonNull.Parent.ParentBuilderImpl();
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child extends Parent {
+  public static @lombok.SuperBuilder class Child extends Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderWithNonNull.Child, B extends SuperBuilderWithNonNull.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated String nonNullChildField;
       public ChildBuilder() {

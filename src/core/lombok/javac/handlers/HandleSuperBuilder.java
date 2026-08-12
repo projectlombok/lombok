@@ -71,7 +71,7 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.HandlerUtil.FieldAccess;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.experimental.NonFinal;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -132,7 +132,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	
 	@Override
 	public void handle(AnnotationValues<SuperBuilder> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
 		SuperBuilderJob job = new SuperBuilderJob();
 		job.sourceNode = annotationNode;
 		job.checkerFramework = getCheckerFrameworkVersion(annotationNode);

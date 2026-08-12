@@ -1,15 +1,15 @@
 public class SuperBuilderAbstract {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent {
 		int parentField;
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public abstract static class Child extends Parent {
 		double childField;
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class GrandChild extends Child {
 		String grandChildField;
 	}

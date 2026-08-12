@@ -1,4 +1,4 @@
-public @lombok.experimental.SuperBuilder class SuperBuilderWithExistingConstructor {
+public @lombok.SuperBuilder class SuperBuilderWithExistingConstructor {
   public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class SuperBuilderWithExistingConstructorBuilder<C extends SuperBuilderWithExistingConstructor, B extends SuperBuilderWithExistingConstructor.SuperBuilderWithExistingConstructorBuilder<C, B>> {
     public SuperBuilderWithExistingConstructorBuilder() {
       super();

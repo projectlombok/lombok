@@ -1,7 +1,7 @@
 import java.util.Arrays;
 import lombok.Builder;
 public class SuperBuilderWithDefaultsAndTargetTyping {
-  public static @lombok.experimental.SuperBuilder class Parent {
+  public static @lombok.SuperBuilder class Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<C extends SuperBuilderWithDefaultsAndTargetTyping.Parent, B extends SuperBuilderWithDefaultsAndTargetTyping.Parent.ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated String foo$value;
       private @java.lang.SuppressWarnings("all") @lombok.Generated boolean foo$set;
@@ -48,7 +48,7 @@ public class SuperBuilderWithDefaultsAndTargetTyping {
       return new SuperBuilderWithDefaultsAndTargetTyping.Parent.ParentBuilderImpl();
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child extends Parent {
+  public static @lombok.SuperBuilder class Child extends Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderWithDefaultsAndTargetTyping.Child, B extends SuperBuilderWithDefaultsAndTargetTyping.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated String foo$value;
       private @java.lang.SuppressWarnings("all") @lombok.Generated boolean foo$set;

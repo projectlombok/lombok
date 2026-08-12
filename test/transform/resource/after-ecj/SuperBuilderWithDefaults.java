@@ -1,6 +1,6 @@
 import java.util.List;
 public class SuperBuilderWithDefaults {
-  public static @lombok.experimental.SuperBuilder class Parent<N extends Number> {
+  public static @lombok.SuperBuilder class Parent<N extends Number> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<N extends Number, C extends SuperBuilderWithDefaults.Parent<N>, B extends SuperBuilderWithDefaults.Parent.ParentBuilder<N, C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated long millis$value;
       private @java.lang.SuppressWarnings("all") @lombok.Generated boolean millis$set;
@@ -65,7 +65,7 @@ public class SuperBuilderWithDefaults {
       return new SuperBuilderWithDefaults.Parent.ParentBuilderImpl<N>();
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child extends Parent<Integer> {
+  public static @lombok.SuperBuilder class Child extends Parent<Integer> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderWithDefaults.Child, B extends SuperBuilderWithDefaults.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<Integer, C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double doubleField$value;
       private @java.lang.SuppressWarnings("all") @lombok.Generated boolean doubleField$set;

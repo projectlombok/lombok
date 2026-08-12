@@ -1,4 +1,4 @@
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 
 public class SuperBuilderInAnonymousClass {
 	Object annonymous = new Object() {

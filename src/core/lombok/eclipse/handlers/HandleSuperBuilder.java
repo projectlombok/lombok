@@ -100,7 +100,7 @@ import lombok.eclipse.handlers.EclipseSingularsRecipes.TypeReferenceMaker;
 import lombok.eclipse.handlers.HandleBuilder.BuilderFieldData;
 import lombok.eclipse.handlers.HandleBuilder.BuilderJob;
 import lombok.experimental.NonFinal;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.spi.Provides;
 
 @Provides
@@ -151,7 +151,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	}
 	
 	@Override public void handle(AnnotationValues<SuperBuilder> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
 		SuperBuilderJob job = new SuperBuilderJob();
 		job.sourceNode = annotationNode;
 		job.source = ast;

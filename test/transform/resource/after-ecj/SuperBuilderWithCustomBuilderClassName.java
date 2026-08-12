@@ -1,5 +1,5 @@
 class SuperBuilderWithCustomBuilderClassName {
-  static @lombok.experimental.SuperBuilder class SuperClass {
+  static @lombok.SuperBuilder class SuperClass {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class Builder<C extends SuperBuilderWithCustomBuilderClassName.SuperClass, B extends SuperBuilderWithCustomBuilderClassName.SuperClass.Builder<C, B>> {
       public Builder() {
         super();
@@ -28,7 +28,7 @@ class SuperBuilderWithCustomBuilderClassName {
       return new SuperBuilderWithCustomBuilderClassName.SuperClass.BuilderImpl();
     }
   }
-  static @lombok.experimental.SuperBuilder class SubClass extends SuperClass {
+  static @lombok.SuperBuilder class SubClass extends SuperClass {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class Builder<C extends SuperBuilderWithCustomBuilderClassName.SubClass, B extends SuperBuilderWithCustomBuilderClassName.SubClass.Builder<C, B>> extends SuperClass.Builder<C, B> {
       public Builder() {
         super();

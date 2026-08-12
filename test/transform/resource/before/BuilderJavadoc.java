@@ -17,7 +17,7 @@ class BuilderJavadoc<T> {
 	 */
 	@lombok.Getter
 	@lombok.Setter
-	@lombok.experimental.Wither
+	@lombok.With
 	private int getsetwith;
 
 	/**

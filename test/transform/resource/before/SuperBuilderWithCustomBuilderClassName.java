@@ -1,9 +1,9 @@
 //CONF: lombok.builder.className=Builder
 class SuperBuilderWithCustomBuilderClassName {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	static class SuperClass {
 	}
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	static class SubClass extends SuperClass {
 	}
 }
