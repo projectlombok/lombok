@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.18.47 "Edgy Guinea Pig"
 * BUGFIX: `@SneakyThrows` usage on JDK26 no longer results in class files that require `lombok.jar` to be on the runtime classpath (which should not be neccessary). [#4040](https://github.com/projectlombok/lombok/issues/4022).
+* BUGFIX: Eclipse/VSCode: handlers such as `@Value` no longer crash with `ClassCastException` on JDT `CompletionOnFieldType` nodes during autocompletion (e.g. `@Jacksonized` + `@Builder` on an inner class of a sealed interface). [#4051](https://github.com/projectlombok/lombok/issues/4051).
 * PROMOTION: `@SuperBuilder` has been promoted to the main package. Otherwise, no changes have been made to the annotation. The old experimental annotation will remain for a few versions, at which point it will be marked as a deprecated annotation. Eventually it'll be removed. If you had `lombok.config` configuration for this annotation, the configuration keys for this feature have been renamed.
 * OLD-CRUFT: `lombok.experimental.Wither` and `lombok.Delegate` are deprecated remnants; these features were moved (to respectively `lombok.With` and `lombok.experimental.Delegate` over 5 years ago. They are now removed entirely. If your project is dependent on an older version of lombok which still has those; fret not, lombok still processes these annotations. It just no longer includes them in the jar.
 
