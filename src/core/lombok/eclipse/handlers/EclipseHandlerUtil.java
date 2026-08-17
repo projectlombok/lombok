@@ -177,11 +177,26 @@ public class EclipseHandlerUtil {
 		return node;
 	}
 	
-	public static MarkerAnnotation generateDeprecatedAnnotation(ASTNode source) {
+	private static final char[] DEPRECATED_SINCE = {'s', 'i', 'n', 'c', 'e'};
+	private static final char[] DEPRECATED_FOR_REMOVAL = {'f', 'o', 'r', 'R', 'e', 'm', 'o', 'v', 'a', 'l'};
+	
+	public static Annotation generateDeprecatedAnnotation(ASTNode source) {
+		return generateDeprecatedAnnotation(source, null);
+	}
+	
+	public static Annotation generateDeprecatedAnnotation(ASTNode source, EclipseNode fieldNode) {
 		QualifiedTypeReference qtr = new QualifiedTypeReference(new char[][] {
 				{'j', 'a', 'v', 'a'}, {'l', 'a', 'n', 'g'}, {'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd'}}, poss(source, 3));
 		setGeneratedBy(qtr, source);
-		MarkerAnnotation ma = new MarkerAnnotation(qtr, source.sourceStart);
+		MemberValuePair[] pairs = copyDeprecatedMemberValuePairs(fieldNode);
+		Annotation ann;
+		if (pairs != null) {
+			NormalAnnotation na = new NormalAnnotation(qtr, source.sourceStart);
+			na.memberValuePairs = pairs;
+			ann = na;
+		} else {
+			ann = new MarkerAnnotation(qtr, source.sourceStart);
+		}
 		// No matter what value you input for sourceEnd, the AST->DOM converter of eclipse will reparse to find the end, and will fail as
 		// it can't find code that isn't really there. This results in the end position being set to 2 or 0 or some weird magic value, and thus,
 		// length, as calculated by end-start, is all screwed up, resulting in IllegalArgumentException during a setSourceRange call MUCH later in the process.
@@ -189,9 +204,28 @@ public class EclipseHandlerUtil {
 		// by eclipse. For some reason.
 		// TL;DR: Don't change 1. 1 is sacred. Trust the 1.
 		// issue: #408.
-		ma.sourceStart = 1;
-		setGeneratedBy(ma, source);
-		return ma;
+		ann.sourceStart = 1;
+		setGeneratedBy(ann, source);
+		return ann;
+	}
+	
+	private static MemberValuePair[] copyDeprecatedMemberValuePairs(EclipseNode fieldNode) {
+		if (fieldNode == null) return null;
+		for (EclipseNode child : fieldNode.down()) {
+			if (!annotationTypeMatches(Deprecated.class, child)) continue;
+			Annotation original = (Annotation) child.get();
+			if (!(original instanceof NormalAnnotation)) return null;
+			MemberValuePair[] inPairs = ((NormalAnnotation) original).memberValuePairs;
+			if (inPairs == null || inPairs.length == 0) return null;
+			List<MemberValuePair> out = new ArrayList<MemberValuePair>();
+			for (MemberValuePair in : inPairs) {
+				if (in.name == null) continue;
+				if (!CharOperation.equals(in.name, DEPRECATED_SINCE) && !CharOperation.equals(in.name, DEPRECATED_FOR_REMOVAL)) continue;
+				out.add(new MemberValuePair(in.name, in.sourceStart, in.sourceEnd, copyAnnotationMemberValue(in.value)));
+			}
+			return out.isEmpty() ? null : out.toArray(new MemberValuePair[0]);
+		}
+		return null;
 	}
 	
 	public static MarkerAnnotation generateNamedAnnotation(ASTNode source, String typeName) {

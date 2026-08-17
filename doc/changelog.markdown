@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.47 "Edgy Guinea Pig"
+* BUGFIX: Generated getters, setters, withers, and builder methods now copy `@Deprecated(since, forRemoval)` from the field. [#3107](https://github.com/projectlombok/lombok/issues/3107).
 * BUGFIX: `@SneakyThrows` usage on JDK26 no longer results in class files that require `lombok.jar` to be on the runtime classpath (which should not be neccessary). [#4040](https://github.com/projectlombok/lombok/issues/4022).
 * FEATURE: New [config key](https://projectlombok.org/features/configuration) `lombok.checkReturnValueAnnotation` (values: `none`, `lombok`; default: `none`) lets lombok generate `@lombok.CheckReturnValue` on generated methods where the return value should not be ignored, such as `@With` methods and `@Builder.build()`. A future lombok release may flip the default to `lombok`. [#4013](https://github.com/projectlombok/lombok/pull/4013).
 * PROMOTION: `@SuperBuilder` has been promoted to the main package. Otherwise, no changes have been made to the annotation. The old experimental annotation will remain for a few versions, at which point it will be marked as a deprecated annotation. Eventually it'll be removed. If you had `lombok.config` configuration for this annotation, the configuration keys for this feature have been renamed.

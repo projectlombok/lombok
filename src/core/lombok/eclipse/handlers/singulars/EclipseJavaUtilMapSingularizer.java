@@ -190,7 +190,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.statements = returnStatement != null ? new Statement[] {clearStatement, returnStatement} : new Statement[] {clearStatement};
 		md.returnType = returnType;
 		addCheckerFrameworkReturnsReceiver(md.returnType, data.getSource(), cfv);
-		md.annotations = generateSelfReturnAnnotations(deprecate, data.getSource());
+		md.annotations = generateSelfReturnAnnotations(deprecate, data, data.getSource());
 		
 		if (returnStatement != null) createRelevantNonNullAnnotation(builderType, md);
 		data.setGeneratedByRecursive(md);
@@ -254,7 +254,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		String setterName = HandlerUtil.buildAccessorName(builderType, setterPrefix, name);
 		
 		md.selector = setterName.toCharArray();
-		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
+		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data, data.getSource());
 		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToBuilderSingularSetterAnnotations(data.getAnnotation().up()));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 		
@@ -331,7 +331,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		String setterName = HandlerUtil.buildAccessorName(builderType, setterPrefix, name);
 		
 		md.selector = setterName.toCharArray();
-		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data.getSource());
+		Annotation[] selfReturnAnnotations = generateSelfReturnAnnotations(deprecate, data, data.getSource());
 		Annotation[] copyToSetterAnnotations = copyAnnotations(md, findCopyableToSetterAnnotations(data.getAnnotation().up(), true));
 		md.annotations = concat(selfReturnAnnotations, copyToSetterAnnotations, Annotation.class);
 		

@@ -264,7 +264,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		} else {
 			if (getCheckerFrameworkVersion(field).generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genTypeRef(field, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		}
-		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
+		if (isFieldDeprecated(field)) annsOnMethod = annsOnMethod.prepend(generateDeprecatedAnnotation(field));
 		JCModifiers mods = treeMaker.Modifiers(access, annsOnMethod);
 		addCheckReturnValue(mods, field, source);
 		

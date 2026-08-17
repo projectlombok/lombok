@@ -357,6 +357,25 @@ public class JavacHandlerUtil {
 		return false;
 	}
 	
+	/**
+	 * Creates {@code @java.lang.Deprecated} for a generated accessor, copying {@code since} and {@code forRemoval} from the field when present.
+	 */
+	public static JCAnnotation generateDeprecatedAnnotation(JavacNode field) {
+		JavacTreeMaker maker = field.getTreeMaker();
+		List<JCExpression> args = List.nil();
+		for (JavacNode child : field.down()) {
+			if (!annotationTypeMatches(Deprecated.class, child)) continue;
+			JCAnnotation orig = (JCAnnotation) child.get();
+			if (orig.args != null && !orig.args.isEmpty()) {
+				ListBuffer<JCExpression> copied = new ListBuffer<JCExpression>();
+				for (JCExpression arg : orig.args) copied.append(copyExpression(arg, maker));
+				args = copied.toList();
+			}
+			break;
+		}
+		return maker.Annotation(genJavaLangTypeRef(field, "Deprecated"), args);
+	}
+	
 	public static CheckerFrameworkVersion getCheckerFrameworkVersion(JavacNode node) {
 		CheckerFrameworkVersion cfv = node.getAst().readConfiguration(ConfigurationKeys.CHECKER_FRAMEWORK);
 		return cfv == null ? CheckerFrameworkVersion.NONE : cfv;
