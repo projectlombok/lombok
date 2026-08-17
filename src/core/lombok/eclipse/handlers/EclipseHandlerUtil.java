@@ -188,7 +188,7 @@ public class EclipseHandlerUtil {
 		QualifiedTypeReference qtr = new QualifiedTypeReference(new char[][] {
 				{'j', 'a', 'v', 'a'}, {'l', 'a', 'n', 'g'}, {'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd'}}, poss(source, 3));
 		setGeneratedBy(qtr, source);
-		MemberValuePair[] pairs = copyDeprecatedMemberValuePairs(fieldNode);
+		MemberValuePair[] pairs = copyDeprecatedMemberValuePairs(fieldNode, source);
 		Annotation ann;
 		if (pairs != null) {
 			NormalAnnotation na = new NormalAnnotation(qtr, source.sourceStart);
@@ -209,7 +209,7 @@ public class EclipseHandlerUtil {
 		return ann;
 	}
 	
-	private static MemberValuePair[] copyDeprecatedMemberValuePairs(EclipseNode fieldNode) {
+	private static MemberValuePair[] copyDeprecatedMemberValuePairs(EclipseNode fieldNode, ASTNode source) {
 		if (fieldNode == null) return null;
 		for (EclipseNode child : fieldNode.down()) {
 			if (!annotationTypeMatches(Deprecated.class, child)) continue;
@@ -221,7 +221,12 @@ public class EclipseHandlerUtil {
 			for (MemberValuePair in : inPairs) {
 				if (in.name == null) continue;
 				if (!CharOperation.equals(in.name, DEPRECATED_SINCE) && !CharOperation.equals(in.name, DEPRECATED_FOR_REMOVAL)) continue;
-				out.add(new MemberValuePair(in.name, in.sourceStart, in.sourceEnd, copyAnnotationMemberValue(in.value)));
+				Expression value = copyAnnotationMemberValue(in.value);
+				setGeneratedBy(value, source);
+				// Zero-length range: generated nodes must not reuse field source positions (see #408).
+				MemberValuePair pair = new MemberValuePair(in.name, 0, 0, value);
+				setGeneratedBy(pair, source);
+				out.add(pair);
 			}
 			return out.isEmpty() ? null : out.toArray(new MemberValuePair[0]);
 		}
