@@ -245,7 +245,8 @@ public class ConfigurationApp extends LombokApp {
 		} else if (value instanceof List<?>) {
 			List<?> list = (List<?>)value;
 			if (list.isEmpty()) out.printf("clear %s%n", key.getKeyName());
-			for (Object element : list) out.printf("%s += %s%n", key.getKeyName(), element);
+			else if (list.size() == 1) out.printf("%s = %s%n", key.getKeyName(), list.get(0));
+			else for (Object element : list) out.printf("%s += %s%n", key.getKeyName(), element);
 		} else {
 			out.printf("%s = %s%n", key.getKeyName(), value);
 		}

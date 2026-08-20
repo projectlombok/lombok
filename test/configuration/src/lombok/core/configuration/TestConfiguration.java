@@ -45,7 +45,14 @@ public class TestConfiguration {
 		String baseName = "test/configuration/resource/configurationRoot/";
 		File directory = new File(baseName);
 		String normalizedName = new File(directory.getAbsoluteFile().toURI().normalize()).toString().replace('\\', '/') + "/";
-		Collection<String> paths = Arrays.asList(normalizedName + "d1/d11", normalizedName + "d1/d12", normalizedName + "d1/d11/d111", normalizedName + "d1/d11/d111/f1.txt", normalizedName + "features/annotations");
+		Collection<String> paths = Arrays.asList(
+			normalizedName + "d1/d11",
+			normalizedName + "d1/d12",
+			normalizedName + "d1/d11/d111",
+			normalizedName + "d1/d11/d111/f1.txt",
+			normalizedName + "d1/d11/d111/directory/setlist",
+			normalizedName + "features/annotations"
+		);
 		
 		ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
 		ByteArrayOutputStream rawErr = new ByteArrayOutputStream();
