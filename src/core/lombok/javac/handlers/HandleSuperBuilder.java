@@ -261,6 +261,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(superclassName.toString(), builderClassNameTemplate);
 			superclassBuilderClass = parent.getTreeMaker().Select(cloneType(maker, (JCFieldAccess) extendsClause, annotationNode), parent.toName(superclassBuilderClassName));
+		} else if (extendsClause instanceof JCIdent) {
+			// Use the identifier Name, not Tree.toString(): javac pretty-prints non-ASCII
+			// names as \\uXXXX escapes, which then become the builder type's simple name.
+			Name superclassName = ((JCIdent) extendsClause).getName();
+			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
+			String superclassBuilderClassName = job.replaceBuilderClassName(superclassName.toString(), builderClassNameTemplate);
+			superclassBuilderClass = chainDots(parent, superclassName.toString(), superclassBuilderClassName);
 		} else if (extendsClause != null) {
 			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(extendsClause.toString(), builderClassNameTemplate);
