@@ -21,7 +21,23 @@
  */
 package lombok.core.configuration;
 
-/** Used for lombok configuration to select which {@code @CheckReturnValue} annotation flavor to emit on generated methods. */
-public enum CheckReturnValueFlavor {
-	NONE, LOMBOK;
+/** Used for lombok configuration to select which {@code @CheckReturnValue} annotation flavor(s) to emit on generated methods. */
+public enum CheckReturnValueFlavor implements MappedConfigEnum {
+	LOMBOK,
+	ANDROIDX,
+	;
+	
+	@Override public boolean matches(String value) {
+		return value.equals(this.name().toLowerCase());
+	}
+	
+	@Override public String toString() {
+		return this.name().toLowerCase();
+	}
+	
+	public String getMarkerAnnotationFullyQualifiedName() {
+		if (this == LOMBOK) return "lombok.CheckReturnValue";
+		if (this == ANDROIDX) return "androidx.annotation.CheckResult";
+		throw new IllegalStateException("bug");
+	}
 }

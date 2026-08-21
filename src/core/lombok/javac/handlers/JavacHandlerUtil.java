@@ -1556,18 +1556,12 @@ public class JavacHandlerUtil {
 	}
 	
 	public static void addCheckReturnValue(JCModifiers mods, JavacNode node, JavacNode source) {
-		CheckReturnValueFlavor flavor = node.getAst().readConfiguration(ConfigurationKeys.CHECK_RETURN_VALUE_ANNOTATION);
-		if (flavor == null) flavor = CheckReturnValueFlavor.NONE;
-		switch (flavor) {
-		case LOMBOK:
-			addAnnotation(mods, node, source, "lombok.CheckReturnValue", null);
-			return;
-		case NONE:
-		default:
-			return;
+		java.util.List<CheckReturnValueFlavor> flavors = node.getAst().readConfiguration(ConfigurationKeys.CHECK_RETURN_VALUE_ANNOTATION);
+		for (CheckReturnValueFlavor flavor : flavors) {
+			addAnnotation(mods, node, source, flavor.getMarkerAnnotationFullyQualifiedName(), null);
 		}
 	}
-
+	
 	public static void addAnnotation(JCModifiers mods, JavacNode node, JavacNode source, String annotationTypeFqn, JCExpression arg) {
 		boolean isJavaLangBased;
 		String simpleName; {

@@ -298,6 +298,8 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		} else {
 			method.annotations = new Annotation[] { overrideAnnotation };
 		}
+		method.annotations = EclipseHandlerUtil.addCheckReturnValue(type, method, method.annotations);
+		
 		method.arguments = null;
 		method.selector = "toString".toCharArray();
 		method.thrownExceptions = null;

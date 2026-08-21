@@ -841,6 +841,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		} else {
 			methodDef = maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 		}
+		addCheckReturnValue(methodDef.mods, job.builderType, job.sourceNode);
 		return methodDef;
 	}
 	
@@ -873,7 +874,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		createRelevantNonNullAnnotation(job.builderType, methodDef);
 		return methodDef;
 	}
-
+	
 	private JCMethodDecl generateCleanMethod(java.util.List<BuilderFieldData> builderFields, JavacNode type, JavacNode source) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();

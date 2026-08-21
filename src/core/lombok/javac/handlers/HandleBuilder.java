@@ -347,7 +347,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			}
 			if (job.builderClassName.indexOf('*') > -1) {
 				String replStr = returnTypeToBuilderClassName(annotationNode, td, buildMethodReturnType, job.typeParams);
-				if (replStr == null) return; // shuold not happen
+				if (replStr == null) return; // should not happen
 				job.builderClassName = job.builderClassName.replace("*", replStr);
 			}
 			if (job.toBuilder) {
@@ -810,11 +810,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		} else {
 			methodDef = maker.MethodDef(maker.Modifiers(toJavacModifier(job.accessInners), annsOnMethod), job.toName(job.buildMethodName), returnTypeCopy, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 		}
-		addCheckReturnValue(methodDef.mods, job.builderType, job.sourceNode);
+		if (job.checkReturnValue) addCheckReturnValue(methodDef.mods, job.builderType, job.sourceNode);
 		if (staticName == null) createRelevantNonNullAnnotation(job.builderType, methodDef);
 		return methodDef;
 	}
-
+	
 	public static JCMethodDecl generateDefaultProvider(Name methodName, JavacNode fieldNode, List<JCTypeParameter> params, BuilderJob job) {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();

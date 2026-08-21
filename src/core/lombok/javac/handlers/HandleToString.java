@@ -153,6 +153,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		List<JCAnnotation> annsOnMethod = List.of(overrideAnnotation);
 		if (getCheckerFrameworkVersion(typeNode).generateSideEffectFree()) annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
+		addCheckReturnValue(mods, typeNode, source);
 		JCExpression returnType = genJavaLangTypeRef(typeNode, "String");
 		
 		boolean first = true;

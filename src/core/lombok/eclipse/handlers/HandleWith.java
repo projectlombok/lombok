@@ -293,7 +293,7 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 		
 		EclipseHandlerUtil.createRelevantNonNullAnnotation(fieldNode, method);
 		method.annotations = EclipseHandlerUtil.addCheckReturnValue(fieldNode, source, method.annotations);
-
+		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		copyJavadoc(fieldNode, method, CopyJavadoc.WITH);
 		return method;

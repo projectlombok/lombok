@@ -31,11 +31,13 @@ public enum JacksonVersion implements MappedConfigEnum {
 	
 	@Override public boolean matches(String value) {
 		if (this == TWO) return "2".equals(value);
-		return "3".equals(value);
+		if (this == THREE) return "3".equals(value);
+		throw new IllegalStateException("bug");
 	}
 	
 	@Override public String toString() {
 		if (this == TWO) return "2";
-		return "3";
+		if (this == THREE) return "3";
+		throw new IllegalStateException("bug");
 	}
 }
