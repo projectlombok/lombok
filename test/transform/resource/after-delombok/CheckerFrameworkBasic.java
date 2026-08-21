@@ -70,6 +70,7 @@ class CheckerFrameworkBasic {
 	public java.lang.String toString() {
 		return "CheckerFrameworkBasic(x=" + this.getX() + ", y=" + this.getY() + ", z=" + this.getZ() + ")";
 	}
+	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	public CheckerFrameworkBasic(final int x, final int y, final int z) {

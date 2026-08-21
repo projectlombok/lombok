@@ -45,6 +45,7 @@ class CheckReturnValueBuilder {
 			return new CheckReturnValueBuilder(this.x, this.name);
 		}
 		@java.lang.Override
+		@lombok.CheckReturnValue
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		public java.lang.String toString() {

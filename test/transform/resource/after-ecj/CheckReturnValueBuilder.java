@@ -22,7 +22,7 @@
     public @lombok.CheckReturnValue @java.lang.SuppressWarnings("all") @lombok.Generated CheckReturnValueBuilder build() {
       return new CheckReturnValueBuilder(this.x, this.name);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
+    public @java.lang.Override @lombok.CheckReturnValue @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
       return (((("CheckReturnValueBuilder.CheckReturnValueBuilderBuilder(x=" + this.x) + ", name=") + this.name) + ")");
     }
   }

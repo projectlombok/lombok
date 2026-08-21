@@ -100,6 +100,7 @@ class CheckerFrameworkSuperBuilder {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		private static final class ParentBuilderImpl extends CheckerFrameworkSuperBuilder.Parent.ParentBuilder<CheckerFrameworkSuperBuilder.Parent, CheckerFrameworkSuperBuilder.Parent.ParentBuilderImpl> {
+			@org.checkerframework.dataflow.qual.SideEffectFree
 			@java.lang.SuppressWarnings("all")
 			@lombok.Generated
 			private ParentBuilderImpl() {
@@ -207,6 +208,7 @@ class CheckerFrameworkSuperBuilder {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		private static final class ZChildBuilderImpl extends CheckerFrameworkSuperBuilder.ZChild.ZChildBuilder<CheckerFrameworkSuperBuilder.ZChild, CheckerFrameworkSuperBuilder.ZChild.ZChildBuilderImpl> {
+			@org.checkerframework.dataflow.qual.SideEffectFree
 			@java.lang.SuppressWarnings("all")
 			@lombok.Generated
 			private ZChildBuilderImpl() {
