@@ -66,6 +66,19 @@
 			<ol class="snippet example oneliner">
 				<li><code>lombok.accessors.prefix += m_</code></li>
 			</ol>
+			
+			If you want to override/force an existing list by a single item, you can <code>=</code> instead:
+			<ol class="snippet example">
+				<li><code># From other files</code></li>
+				<li><code>lombok.accessors.prefix += m_</code></li>
+				<li><code>lombok.accessors.prefix += f_</code></li>
+				<li><code></code></li>
+				<li><code># Reset to a single value</code></li>
+				<li><code>lombok.accessors.prefix = x_</code></li>
+				<li><code># Is shorthand for</code></li>
+				<li><code>clear lombok.accessors.prefix</code></li>
+				<li><code>lombok.accessors.prefix += x_</code></li>
+			</ol>
 		</p><p>
 			Comments can be included in <code>lombok.config</code> files; any line that starts with <code>#</code> is considered a comment.
 		</p>
