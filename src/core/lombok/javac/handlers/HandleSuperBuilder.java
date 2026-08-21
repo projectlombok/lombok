@@ -841,6 +841,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		} else {
 			methodDef = maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 		}
+		addCheckReturnValue(methodDef.mods, job.builderType, job.sourceNode);
 		return methodDef;
 	}
 	
@@ -869,6 +870,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		} else {
 			methodDef = maker.MethodDef(modifiers, job.toName(job.buildMethodName), cloneSelfType(job.parentType), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 		}
+		addCheckReturnValue(methodDef.mods, job.builderType, job.sourceNode);
 		createRelevantNonNullAnnotation(job.builderType, methodDef);
 		return methodDef;
 	}

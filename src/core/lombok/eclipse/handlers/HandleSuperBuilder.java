@@ -863,11 +863,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.returnType = new SingleTypeReference(classGenericName.toCharArray(), 0);
 		Annotation overrideAnn = override ? makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, job.source) : null;
-		Annotation sefAnn = job.checkerFramework.generateSideEffectFree() ? generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE): null;
+		Annotation sefAnn = job.checkerFramework.generateSideEffectFree() ? generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) : null;
 		if (overrideAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};
 		else if (overrideAnn != null) out.annotations = new Annotation[] {overrideAnn};
 		else if (sefAnn != null) out.annotations = new Annotation[] {sefAnn};
 		out.receiver = HandleBuilder.generateBuildReceiver(job);
+		out.annotations = addCheckReturnValue(job.builderType, job.source, out.annotations);
 		out.traverse(new SetGeneratedByVisitor(job.source), (ClassScope) null);
 		return out;
 	}
@@ -893,6 +894,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		statements.add(new ReturnStatement(allocationStatement, 0, 0));
 		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
 		out.receiver = HandleBuilder.generateBuildReceiver(job);
+		out.annotations = addCheckReturnValue(job.builderType, job.source, out.annotations);
 		createRelevantNonNullAnnotation(job.builderType, out);
 		out.traverse(new SetGeneratedByVisitor(job.source), (ClassScope) null);
 		return out;

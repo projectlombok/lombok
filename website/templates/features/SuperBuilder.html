@@ -86,6 +86,8 @@
 			For remarks on <code>@Singular</code>, see <a href="/features/Builder#small-print">the <code>@Builder</code> documentation's</a> small print.
 		</p><p>
 			Various well known annotations about nullity cause null checks to be inserted and will be copied to parameter of the builder's 'setter' method. See <a href="/features/GetterSetter#small-print">Getter/Setter documentation's small print</a> for more information.
+		</p><p>
+			The generated <code>build()</code> method will be annotated to indicate that callers must not ignore the returned value if you ask lombok to do this via the <a href="configuration"><code>lombok.checkReturnValueAnnotation</code></a> configuration key. While in theory constructors can have side effects, lombok always assumes they do not, and you cannot override this assumption.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

@@ -29,6 +29,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import java.util.ArrayList;
 
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
@@ -105,6 +106,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
 		JavacNode parentType;
+		boolean checkReturnValue;
 		String builderMethodName, buildMethodName;
 		boolean isStatic;
 		List<JCTypeParameter> typeParams;
@@ -247,6 +249,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			}
 			
 			job.parentType = parent;
+			job.checkReturnValue = true;
 			JCClassDecl td = (JCClassDecl) parent.get();
 			
 			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
@@ -315,6 +318,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			}
 			
 			job.parentType = parent.up();
+			job.checkReturnValue = true;
 			JCClassDecl td = (JCClassDecl) job.parentType.get();
 			job.typeParams = job.builderTypeParams = td.typarams;
 			buildMethodReturnType = job.createBuilderParentTypeReference();
@@ -326,6 +330,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			job.parentType = parent.up();
 			JCClassDecl td = (JCClassDecl) job.parentType.get();
 			JCMethodDecl jmd = (JCMethodDecl) fillParametersFrom.get();
+			if (jmd.restype instanceof JCPrimitiveTypeTree && ((JCPrimitiveTypeTree) jmd.restype).getPrimitiveTypeKind() == TypeKind.VOID) {
+				job.checkReturnValue = false;
+			} else {
+				job.checkReturnValue = hasCheckReturnValueImplicatingAnnotations(fillParametersFrom, jmd.mods.annotations);
+			}
 			job.isStatic = (jmd.mods.flags & Flags.STATIC) != 0;
 			
 			JCExpression fullReturnType = jmd.restype;
@@ -338,7 +347,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			}
 			if (job.builderClassName.indexOf('*') > -1) {
 				String replStr = returnTypeToBuilderClassName(annotationNode, td, buildMethodReturnType, job.typeParams);
-				if (replStr == null) return; // shuold not happen
+				if (replStr == null) return; // should not happen
 				job.builderClassName = job.builderClassName.replace("*", replStr);
 			}
 			if (job.toBuilder) {
@@ -792,7 +801,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JCBlock body = maker.Block(0, statements.toList());
 		
-		List<JCAnnotation> annsOnMethod = job.checkerFramework.generateSideEffectFree() ? List.of(maker.Annotation(genTypeRef(job.builderType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
+		List<JCAnnotation> annsOnMethod = (job.checkReturnValue && job.checkerFramework.generateSideEffectFree()) ? List.of(maker.Annotation(genTypeRef(job.builderType, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) : List.<JCAnnotation>nil();
 		JCVariableDecl recv = generateReceiver(job);
 		JCMethodDecl methodDef;
 		JCExpression returnTypeCopy = cloneType(maker, returnType, job.sourceNode);
@@ -801,6 +810,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		} else {
 			methodDef = maker.MethodDef(maker.Modifiers(toJavacModifier(job.accessInners), annsOnMethod), job.toName(job.buildMethodName), returnTypeCopy, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 		}
+		if (job.checkReturnValue) addCheckReturnValue(methodDef.mods, job.builderType, job.sourceNode);
 		if (staticName == null) createRelevantNonNullAnnotation(job.builderType, methodDef);
 		return methodDef;
 	}

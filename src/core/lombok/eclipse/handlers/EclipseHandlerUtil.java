@@ -116,6 +116,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.LombokImmutableList;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.CheckReturnValueFlavor;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -785,6 +786,17 @@ public class EclipseHandlerUtil {
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName() != null) {
 				for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) return true;
+			}
+		}
+		return false;
+	}
+	
+	public static boolean hasCheckReturnValueImplicatingAnnotations(EclipseNode node, Annotation[] anns) {
+		if (anns == null) return false;
+		for (Annotation annotation : anns) {
+			TypeReference typeRef = annotation.type;
+			if (typeRef != null && typeRef.getTypeName() != null) {
+				for (String bn : IMPLIES_CHECK_RETURN_VALUE_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) return true;
 			}
 		}
 		return false;
@@ -2096,6 +2108,7 @@ public class EclipseHandlerUtil {
 	private static final char[][] JAKARTA_ANNOTATION_GENERATED = Eclipse.fromQualifiedName("jakarta.annotation.Generated");
 	private static final char[][] LOMBOK_GENERATED = Eclipse.fromQualifiedName("lombok.Generated");
 	private static final char[][] EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS = Eclipse.fromQualifiedName("edu.umd.cs.findbugs.annotations.SuppressFBWarnings");
+	private static final Map<CheckReturnValueFlavor, char[][]> checkReturnValueQualifiedNameCache = new HashMap<CheckReturnValueFlavor, char[][]>();
 	
 	public static Annotation[] addSuppressWarningsAll(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
 		Annotation[] anns = originalAnnotationArray;
@@ -2124,6 +2137,18 @@ public class EclipseHandlerUtil {
 			result = addAnnotation(source, result, LOMBOK_GENERATED);
 		}
 		return result;
+	}
+	
+	public static Annotation[] addCheckReturnValue(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
+		Annotation[] out = originalAnnotationArray;
+		List<CheckReturnValueFlavor> flavors = node.getAst().readConfiguration(ConfigurationKeys.CHECK_RETURN_VALUE_ANNOTATION);
+		for (CheckReturnValueFlavor flavor : flavors) {
+			char[][] fqn = checkReturnValueQualifiedNameCache.get(flavor);
+			if (fqn == null) checkReturnValueQualifiedNameCache.put(flavor, fqn = Eclipse.fromQualifiedName(flavor.getMarkerAnnotationFullyQualifiedName()));
+			out = addAnnotation(source, out, fqn);
+		}
+		
+		return out;
 	}
 	
 	static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn) {

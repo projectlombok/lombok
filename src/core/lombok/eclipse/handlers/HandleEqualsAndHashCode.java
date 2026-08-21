@@ -272,6 +272,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		} else {
 			method.annotations = new Annotation[] { overrideAnnotation };
 		}
+		
+		method.annotations = EclipseHandlerUtil.addCheckReturnValue(type, method, method.annotations);
 		method.selector = "hashCode".toCharArray();
 		method.thrownExceptions = null;
 		method.typeParameters = null;
@@ -635,6 +637,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		} else {
 			method.annotations = new Annotation[] { overrideAnnotation };
 		}
+		method.annotations = EclipseHandlerUtil.addCheckReturnValue(type, method, method.annotations);
 		method.selector = "equals".toCharArray();
 		method.thrownExceptions = null;
 		method.typeParameters = null;

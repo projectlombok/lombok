@@ -291,6 +291,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 				findDelegatesAndMarkAsHandled(fieldNode),
 				checkerFramework,
 				deprecated);
+			method.annotations = EclipseHandlerUtil.addCheckReturnValue(fieldNode, method, method.annotations);
 		}
 		
 		if (addSuppressWarningsUnchecked) {

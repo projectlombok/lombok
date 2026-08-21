@@ -1,16 +1,16 @@
 /*
- * Copyright (C) 2026 The Project Lombok Authors.
- * 
+ * Copyright (C) 2025-2026 The Project Lombok Authors.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,25 +19,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core.configuration;
+package lombok;
 
-public enum JacksonVersion implements MappedConfigEnum {
-	TWO,
-	THREE,
-	;
-	
-	public static final String AMBIGUOUS_JACKSON_VERSION_WARNING_TEXT =
-		"Ambiguous: Jackson2 and Jackson3 exist; define which variant(s) you want in 'lombok.config'. See https://projectlombok.org/features/experimental/Jacksonized";
-	
-	@Override public boolean matches(String value) {
-		if (this == TWO) return "2".equals(value);
-		if (this == THREE) return "3".equals(value);
-		throw new IllegalStateException("bug");
-	}
-	
-	@Override public String toString() {
-		if (this == TWO) return "2";
-		if (this == THREE) return "3";
-		throw new IllegalStateException("bug");
-	}
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * Lombok adds this annotation to generated methods where the return value should not be ignored.
+ * <p>
+ * For example, {@code @With} methods return a new instance, so ignoring the return value is always a bug.
+ * Similarly, {@code @Builder}'s {@code build()} method produces the built object.
+ * <p>
+ * Static analysis tools (Error Prone, IntelliJ, SpotBugs) recognize {@code @CheckReturnValue}
+ * by simple class name, regardless of package, and will warn when the return value is discarded.
+ * <p>
+ * If you want to opt in, you can add {@code lombok.checkReturnValueAnnotation = lombok} to
+ * {@code lombok.config}.
+ */
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.CLASS)
+public @interface CheckReturnValue {
 }

@@ -11,6 +11,7 @@ class CheckerFrameworkBuilder {
 	private static int $default$x() {
 		return 5;
 	}
+	@org.checkerframework.dataflow.qual.SideEffectFree
 	@java.lang.SuppressWarnings("all")
 	@lombok.Generated
 	CheckerFrameworkBuilder(final int x, final int y, final int z, final List<String> names) {
@@ -37,6 +38,7 @@ class CheckerFrameworkBuilder {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		private java.util.ArrayList<String> names;
+		@org.checkerframework.dataflow.qual.SideEffectFree
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		CheckerFrameworkBuilderBuilder() {

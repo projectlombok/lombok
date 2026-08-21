@@ -475,9 +475,12 @@ public class HandleConstructor {
 			Annotation[] constructorProperties = null;
 			if (addConstructorProperties && !isLocalType(type)) constructorProperties = createConstructorProperties(source, fieldsToParam);
 			
+			Annotation[] checkerFramework = null;
+			if (getCheckerFrameworkVersion(type).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+			
 			constructor.annotations = copyAnnotations(source,
 				onConstructor.toArray(new Annotation[0]),
-				constructorProperties);
+				constructorProperties, checkerFramework);
 		}
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
@@ -570,7 +573,10 @@ public class HandleConstructor {
 			assigns.add(nameRef);
 			
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			parameter.annotations = copyAnnotations(source, findCopyableAnnotations(fieldNode));
+			Annotation[] checkerFramework = null;
+			if (getCheckerFrameworkVersion(type).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+			
+			parameter.annotations = copyAnnotations(source, findCopyableAnnotations(fieldNode), checkerFramework);
 			if (parameter.annotations != null) {
 				parameter.bits |= Eclipse.HasTypeAnnotations;
 				constructor.bits |= Eclipse.HasTypeAnnotations;
