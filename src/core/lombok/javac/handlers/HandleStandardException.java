@@ -209,7 +209,7 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(source);
 		List<JCAnnotation> anns = checkerFramework.generateSideEffectFree() ?
 			List.of(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) :
-			List.nil();
+			List.<JCAnnotation>nil();
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), anns);
 		if (addConstructorProperties) addConstructorProperties(mods, typeNode, msgParam, causeParam);
