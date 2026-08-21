@@ -79,7 +79,7 @@ public class HandlerUtil {
 		return 43;
 	}
 	
-	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, JACKSON_COPY_TO_GETTER_ANNOTATIONS, JACKSON_COPY_TO_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS;
+	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, JACKSON_COPY_TO_GETTER_ANNOTATIONS, JACKSON_COPY_TO_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS, IMPLIES_CHECK_RETURN_VALUE_ANNOTATIONS;
 	static {
 		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
 		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
@@ -496,6 +496,13 @@ public class HandlerUtil {
 			"com.fasterxml.jackson.annotation.JsonView",
 			"com.fasterxml.jackson.databind.annotation.JsonNaming",
 			"tools.jackson.databind.annotation.JsonNaming",
+		}));
+		IMPLIES_CHECK_RETURN_VALUE_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"lombok.CheckReturnValue",
+			"android.annotation.CheckResult",
+			"androidx.annotation.CheckResult",
+			"org.checkerframework.dataflow.qual.SideEffectFree",
+			"org.checkerframework.dataflow.qual.Pure",
 		}));
 	}
 	

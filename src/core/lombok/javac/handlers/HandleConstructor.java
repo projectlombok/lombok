@@ -360,7 +360,12 @@ public class HandleConstructor {
 			assigns.append(maker.Exec(assign));
 		}
 		
-		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
+		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(source);
+		List<JCAnnotation> anns = checkerFramework.generateSideEffectFree() ?
+			List.of(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) :
+			List.nil();
+		
+		JCModifiers mods = maker.Modifiers(toJavacModifier(level), anns);
 		if (addConstructorProperties && !isLocalType(typeNode) && LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
 			addConstructorProperties(mods, typeNode, fieldsToParam);
 		}
@@ -442,8 +447,6 @@ public class HandleConstructor {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
-		JCModifiers mods = maker.Modifiers(Flags.STATIC | toJavacModifier(level));
-		
 		JCExpression returnType, constructorType;
 		
 		ListBuffer<JCTypeParameter> typeParams = new ListBuffer<JCTypeParameter>();
@@ -472,6 +475,13 @@ public class HandleConstructor {
 		}
 		JCReturn returnStatement = maker.Return(maker.NewClass(null, List.<JCExpression>nil(), constructorType, args.toList(), null));
 		JCBlock body = maker.Block(0, List.<JCStatement>of(returnStatement));
+		
+		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(source);
+		List<JCAnnotation> anns = checkerFramework.generateSideEffectFree() ?
+			List.of(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) :
+			List.nil();
+		
+		JCModifiers mods = maker.Modifiers(Flags.STATIC | toJavacModifier(level), anns);
 		
 		JCMethodDecl methodDef = maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(typeNode, methodDef);

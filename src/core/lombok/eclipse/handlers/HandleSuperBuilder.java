@@ -863,7 +863,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.returnType = new SingleTypeReference(classGenericName.toCharArray(), 0);
 		Annotation overrideAnn = override ? makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, job.source) : null;
-		Annotation sefAnn = job.checkerFramework.generateSideEffectFree() ? generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE): null;
+		Annotation sefAnn = job.checkerFramework.generateSideEffectFree() ? generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) : null;
 		if (overrideAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};
 		else if (overrideAnn != null) out.annotations = new Annotation[] {overrideAnn};
 		else if (sefAnn != null) out.annotations = new Annotation[] {sefAnn};

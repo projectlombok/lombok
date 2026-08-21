@@ -1744,6 +1744,16 @@ public class JavacHandlerUtil {
 		return false;
 	}
 	
+	public static boolean hasCheckReturnValueImplicatingAnnotations(JavacNode node, List<JCAnnotation> anns) {
+		if (anns == null) return false;
+		for (JCAnnotation ann : anns) {
+			String annotationTypeName = getTypeName(ann.annotationType);
+			for (String nn : IMPLIES_CHECK_RETURN_VALUE_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Searches the given field node for annotations and returns each one that is 'copyable' (either via configuration or from the base list).
 	 */

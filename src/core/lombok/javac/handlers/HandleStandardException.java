@@ -31,6 +31,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.experimental.StandardException;
 import lombok.core.AST.Kind;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.AnnotationValues;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.javac.Javac;
@@ -205,7 +206,12 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 			params.append(param);
 		}
 		
-		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
+		CheckerFrameworkVersion checkerFramework = getCheckerFrameworkVersion(source);
+		List<JCAnnotation> anns = checkerFramework.generateSideEffectFree() ?
+			List.of(maker.Annotation(genTypeRef(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil())) :
+			List.nil();
+		
+		JCModifiers mods = maker.Modifiers(toJavacModifier(level), anns);
 		if (addConstructorProperties) addConstructorProperties(mods, typeNode, msgParam, causeParam);
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),

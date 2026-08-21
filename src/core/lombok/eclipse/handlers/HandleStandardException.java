@@ -25,6 +25,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.experimental.StandardException;
 import lombok.core.AST.Kind;
+import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -75,6 +76,9 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 		ExplicitConstructorCall explicitCall = new ExplicitConstructorCall(ExplicitConstructorCall.This);
 		explicitCall.arguments = new Expression[] {messageArgument, causeArgument};
 		ConstructorDeclaration constructor = createConstructor(level, typeNode, false, false, source, explicitCall, null);
+		Annotation[] checkerFramework = null;
+		if (getCheckerFrameworkVersion(typeNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source.get(), CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+		constructor.annotations = checkerFramework;
 		injectMethod(typeNode, constructor);
 	}
 	
@@ -88,6 +92,9 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 		ExplicitConstructorCall explicitCall = new ExplicitConstructorCall(ExplicitConstructorCall.This);
 		explicitCall.arguments = new Expression[] {messageArgument, causeArgument};
 		ConstructorDeclaration constructor = createConstructor(level, typeNode, true, false, source, explicitCall, null);
+		Annotation[] checkerFramework = null;
+		if (getCheckerFrameworkVersion(typeNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source.get(), CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+		constructor.annotations = checkerFramework;
 		injectMethod(typeNode, constructor);
 	}
 	
@@ -105,6 +112,9 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 		Expression messageExpr = new ConditionalExpression(causeNotNull, causeDotGetMessage, new NullLiteral(pS, pE));
 		explicitCall.arguments = new Expression[] {messageExpr, new SingleNameReference(CAUSE, p)};
 		ConstructorDeclaration constructor = createConstructor(level, typeNode, false, true, source, explicitCall, null);
+		Annotation[] checkerFramework = null;
+		if (getCheckerFrameworkVersion(typeNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source.get(), CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+		constructor.annotations = checkerFramework;
 		injectMethod(typeNode, constructor);
 	}
 	
@@ -123,6 +133,9 @@ public class HandleStandardException extends EclipseAnnotationHandler<StandardEx
 		causeDotInitCause.arguments = new Expression[] {new SingleNameReference(CAUSE, p)};
 		IfStatement ifs = new IfStatement(causeNotNull, causeDotInitCause, pS, pE);
 		ConstructorDeclaration constructor = createConstructor(level, typeNode, true, true, source, explicitCall, ifs);
+		Annotation[] checkerFramework = null;
+		if (getCheckerFrameworkVersion(typeNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source.get(), CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
+		constructor.annotations = checkerFramework;
 		injectMethod(typeNode, constructor);
 	}
 	

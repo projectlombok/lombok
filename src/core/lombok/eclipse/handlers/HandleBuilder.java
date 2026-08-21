@@ -125,6 +125,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
 		EclipseNode parentType;
+		boolean checkReturnValue;
 		String builderMethodName, buildMethodName;
 		boolean isStatic;
 		TypeParameter[] typeParams;
@@ -299,6 +300,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (parent.get() instanceof TypeDeclaration) {
+			job.checkReturnValue = true;
 			if (!isClass(parent) && !isRecord(parent)) {
 				annotationNode.addError(BUILDER_NODE_NOT_SUPPORTED_ERR);
 				return;
@@ -366,6 +368,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			job.setBuilderClassName(job.replaceBuilderClassName(td.name));
 			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 		} else if (parent.get() instanceof ConstructorDeclaration) {
+			job.checkReturnValue = true;
 			ConstructorDeclaration cd = (ConstructorDeclaration) parent.get();
 			if (cd.typeParameters != null && cd.typeParameters.length > 0) {
 				annotationNode.addError("@Builder is not supported on constructors with constructor type parameters.");
@@ -382,6 +385,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 		} else if (parent.get() instanceof MethodDeclaration) {
 			MethodDeclaration md = (MethodDeclaration) parent.get();
+			if (md.returnType != null && Arrays.equals(md.returnType.getLastToken(), TypeReference.VOID)) {
+				job.checkReturnValue = false;
+			} else {
+				job.checkReturnValue = hasCheckReturnValueImplicatingAnnotations(parent, md.annotations);
+			}
 			job.parentType = parent.up();
 			job.isStatic = md.isStatic();
 			
@@ -885,7 +893,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 		}
 		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
-		if (job.checkerFramework.generateSideEffectFree()) {
+		if (job.checkReturnValue && job.checkerFramework.generateSideEffectFree()) {
 			out.annotations = new Annotation[] {generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
 		}
 		out.receiver = generateBuildReceiver(job);

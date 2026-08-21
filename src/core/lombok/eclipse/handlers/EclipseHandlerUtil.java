@@ -791,6 +791,17 @@ public class EclipseHandlerUtil {
 		return false;
 	}
 	
+	public static boolean hasCheckReturnValueImplicatingAnnotations(EclipseNode node, Annotation[] anns) {
+		if (anns == null) return false;
+		for (Annotation annotation : anns) {
+			TypeReference typeRef = annotation.type;
+			if (typeRef != null && typeRef.getTypeName() != null) {
+				for (String bn : IMPLIES_CHECK_RETURN_VALUE_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) return true;
+			}
+		}
+		return false;
+	}
+	
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 	
 	/**
