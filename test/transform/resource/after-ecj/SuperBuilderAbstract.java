@@ -1,5 +1,5 @@
 public class SuperBuilderAbstract {
-  public static @lombok.experimental.SuperBuilder class Parent {
+  public static @lombok.SuperBuilder class Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<C extends SuperBuilderAbstract.Parent, B extends SuperBuilderAbstract.Parent.ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated int parentField;
       public ParentBuilder() {
@@ -38,7 +38,7 @@ public class SuperBuilderAbstract {
       return new SuperBuilderAbstract.Parent.ParentBuilderImpl();
     }
   }
-  public static abstract @lombok.experimental.SuperBuilder class Child extends Parent {
+  public static abstract @lombok.SuperBuilder class Child extends Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderAbstract.Child, B extends SuperBuilderAbstract.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double childField;
       public ChildBuilder() {
@@ -63,7 +63,7 @@ public class SuperBuilderAbstract {
       this.childField = b.childField;
     }
   }
-  public static @lombok.experimental.SuperBuilder class GrandChild extends Child {
+  public static @lombok.SuperBuilder class GrandChild extends Child {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class GrandChildBuilder<C extends SuperBuilderAbstract.GrandChild, B extends SuperBuilderAbstract.GrandChild.GrandChildBuilder<C, B>> extends Child.ChildBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated String grandChildField;
       public GrandChildBuilder() {

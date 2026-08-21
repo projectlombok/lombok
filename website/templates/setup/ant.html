@@ -5,7 +5,7 @@
 		<p>
 			This page explains how to compile your code when you use the <a href="https://ant.apache.org/">Apache Ant</a> build tool. We suggest you use <a href="http://ant.apache.org/ivy/">ivy</a>, the ant add-on that lets you fetch dependencies from the internet automatically.
 		</p><p>
-			Lombok just needs to be on the classpath when you compile your code to do its work, so all you have to ensure, is that lombok is on the classpath in your <code>&lt;javac&gt;</code> task.
+			Lombok needs to be available when you compile your code to do its work. For non-modular builds on JDK22 and below, it is enough to put lombok on the classpath in your <code>&lt;javac&gt;</code> task. On JDK23 and above, you also need to enable annotation processing explicitly.
 		</p>
 	</@s.introduction>
 
@@ -14,6 +14,13 @@
 			Assuming that you've put <code>lombok.jar</code> in a <code>lib</code> dir, your javac task would have to look like:<pre>
 &lt;javac srcdir="src" destdir="build" source="1.8"&gt;
 	&lt;classpath location="lib/lombok.jar" /&gt;
+&lt;/javac&gt;</pre>
+		</p><p>
+			When compiling with JDK23 or newer, you also need to enable annotation processing explicitly, for example by adding lombok to the processor path:<pre>
+&lt;javac srcdir="src" destdir="build" source="1.8"&gt;
+	&lt;classpath location="lib/lombok.jar" /&gt;
+	&lt;compilerarg value="-processorpath" /&gt;
+	&lt;compilerarg path="lib/lombok.jar" /&gt;
 &lt;/javac&gt;</pre>
 		</p>
 	</@s.section>
@@ -24,6 +31,8 @@
 &lt;dependencies&gt;
 	&lt;dependency org="org.projectlombok" name="lombok" rev="${version}" conf="build->master" /&gt;
 &lt;/dependencies&gt;</pre>
+		</p><p>
+			When compiling with JDK23 or newer, make sure the ivy-resolved lombok jar is also passed to javac as an annotation processor path, or enable annotation processing explicitly with <code>-proc:full</code>.
 		</p>
 	</@s.section>
 </@s.scaffold>

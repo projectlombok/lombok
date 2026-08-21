@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2025 The Project Lombok Authors.
+ * Copyright (C) 2018-2026 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@ import lombok.Singular;
  * The SuperBuilder annotation creates a so-called 'builder' aspect to the class that is annotated with {@code @SuperBuilder}, but which works well when extending.
  * It is similar to {@code @Builder}, except it is only legal on types, is less configurable, but allows you to {@code extends} other builder-able classes.
  * <p>
+ * <strong>NB: {@code @SuperBuilder} has been moved to the main package; update your lombok dependencies and search/replace all {@code import lombok.experimental.SuperBuilder} to {@code import lombok.SuperBuilder}.</strong>
+ * <p>
  * All classes in the hierarchy must be annotated with {@code @SuperBuilder}.
  * <p>
  * Lombok generates 2 inner 'builder' classes, which extend the parent class' builder class (unless your class doesn't have an extends clause).
@@ -42,10 +44,11 @@ import lombok.Singular;
  * constructor / method (each field, when annotating a class), which returns the builder itself.
  * The builder also has a {@code build()} method which returns a completed instance of the original type.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/SuperBuilder">the project lombok features page for &#64;SuperBuilder</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/SuperBuilder">the project lombok features page for &#64;SuperBuilder</a>.
  *
  * @see Singular
  */
+// @Deprecated // First release on or after 2027-06-01: Deprecate this type, with text: @deprecated {@code SuperBuilder} has been promoted to the main package; use {@link lombok.SuperBuilder} instead.
 @Target(TYPE)
 @Retention(SOURCE)
 public @interface SuperBuilder {

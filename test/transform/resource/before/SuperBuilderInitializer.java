@@ -1,4 +1,4 @@
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 
 class SuperBuilderInitializer {
 	@SuperBuilder

@@ -96,6 +96,7 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.CleanupTask;
 import lombok.core.LombokImmutableList;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.CheckReturnValueFlavor;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.NullAnnotationLibrary;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -1554,6 +1555,13 @@ public class JavacHandlerUtil {
 		}
 	}
 	
+	public static void addCheckReturnValue(JCModifiers mods, JavacNode node, JavacNode source) {
+		java.util.List<CheckReturnValueFlavor> flavors = node.getAst().readConfiguration(ConfigurationKeys.CHECK_RETURN_VALUE_ANNOTATION);
+		for (CheckReturnValueFlavor flavor : flavors) {
+			addAnnotation(mods, node, source, flavor.getMarkerAnnotationFullyQualifiedName(), null);
+		}
+	}
+	
 	public static void addAnnotation(JCModifiers mods, JavacNode node, JavacNode source, String annotationTypeFqn, JCExpression arg) {
 		boolean isJavaLangBased;
 		String simpleName; {
@@ -1725,6 +1733,16 @@ public class JavacHandlerUtil {
 		for (JCAnnotation ann : anns) {
 			String annotationTypeName = getTypeName(ann.annotationType);
 			for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean hasCheckReturnValueImplicatingAnnotations(JavacNode node, List<JCAnnotation> anns) {
+		if (anns == null) return false;
+		for (JCAnnotation ann : anns) {
+			String annotationTypeName = getTypeName(ann.annotationType);
+			for (String nn : IMPLIES_CHECK_RETURN_VALUE_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
 		}
 		
 		return false;

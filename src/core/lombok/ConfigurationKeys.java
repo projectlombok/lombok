@@ -25,6 +25,7 @@ import java.util.List;
 
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.CapitalizationStrategy;
+import lombok.core.configuration.CheckReturnValueFlavor;
 import lombok.core.configuration.CheckerFrameworkVersion;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
@@ -89,6 +90,21 @@ public class ConfigurationKeys {
 	 * If {@code true}, lombok generates {@code @lombok.Generated} on all fields, methods, and types that are generated.
 	 */
 	public static final ConfigurationKey<Boolean> ADD_LOMBOK_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addLombokGeneratedAnnotation", "Generate @lombok.Generated on all generated code (default: true).") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.checkReturnValueAnnotation} += {@code lombok} / {@code androidx}.
+	 *
+	 * If set, lombok generates all requested annotation flavors indicating that a caller must use the returned value on all methods where it is sensible, such as {@code @With} methods and {@code @Builder}'s {@code build()} method.
+	 * <p>
+	 * If value {@code lombok} is added, lombok generates {@code @lombok.CheckReturnValue}.
+	 * <p>
+	 * If value {@code androidx} is added, lombok generates {@code @androidx.annotation.CheckResult}.
+	 * <p>
+	 * The current default is no flavors (no annotations are added), but a future lombok release may flip the default {@code lombok}.
+	 * <p>
+	 * NB: {@code build()} methods only get these annotations if the thing they are building for is a type or constructor. Applying {@code @Builder} to a method will not result in these annotations unless that method is itself so annotated.
+	 */
+	public static final ConfigurationKey<List<CheckReturnValueFlavor>> CHECK_RETURN_VALUE_ANNOTATION = new ConfigurationKey<List<CheckReturnValueFlavor>>("lombok.checkReturnValueAnnotation", "Which @CheckReturnValue annotation flavor(s) to emit on generated methods. Values: lombok, androidx (default: none).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.extern.findbugs.addSuppressFBWarnings} = {@code true} | {@code false}.

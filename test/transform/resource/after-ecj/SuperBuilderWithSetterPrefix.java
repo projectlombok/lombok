@@ -1,6 +1,6 @@
 import java.util.List;
 public class SuperBuilderWithSetterPrefix {
-  public static @lombok.experimental.SuperBuilder(toBuilder = true,setterPrefix = "with") class Parent {
+  public static @lombok.SuperBuilder(toBuilder = true,setterPrefix = "with") class Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<C extends SuperBuilderWithSetterPrefix.Parent, B extends SuperBuilderWithSetterPrefix.Parent.ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated int field1;
       private @java.lang.SuppressWarnings("all") @lombok.Generated int obtainViaField;
@@ -124,7 +124,7 @@ public class SuperBuilderWithSetterPrefix {
       return new SuperBuilderWithSetterPrefix.Parent.ParentBuilderImpl();
     }
   }
-  public static @lombok.experimental.SuperBuilder(toBuilder = true,setterPrefix = "set") class Child extends Parent {
+  public static @lombok.SuperBuilder(toBuilder = true,setterPrefix = "set") class Child extends Parent {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<C extends SuperBuilderWithSetterPrefix.Child, B extends SuperBuilderWithSetterPrefix.Child.ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double field3;
       public ChildBuilder() {

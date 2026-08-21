@@ -71,7 +71,7 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.core.handlers.HandlerUtil.FieldAccess;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.experimental.NonFinal;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -132,7 +132,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	
 	@Override
 	public void handle(AnnotationValues<SuperBuilder> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
 		SuperBuilderJob job = new SuperBuilderJob();
 		job.sourceNode = annotationNode;
 		job.checkerFramework = getCheckerFrameworkVersion(annotationNode);
@@ -170,6 +169,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		job.parentType = parent;
 		JCClassDecl td = (JCClassDecl) parent.get();
+		job.builderClassName = job.replaceBuilderClassName(td.name);
+		if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
+		if (!checkBuilderClassNameAnnotationConflict("SuperBuilder", "lombok.SuperBuilder", job.builderClassName, ast, annotationNode)) return;
 		
 		// Gather all fields of the class that should be set by the builder.
 		ArrayList<JavacNode> nonFinalNonDefaultedFields = null;
@@ -218,8 +220,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		
 		job.typeParams = job.builderTypeParams = td.typarams;
-		job.builderClassName = job.replaceBuilderClassName(td.name);
-		if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 		
 		// <C, B> are the generics for our builder.
 		String classGenericName = "C";
@@ -842,6 +842,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		} else {
 			methodDef = maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 		}
+		addCheckReturnValue(methodDef.mods, job.builderType, job.sourceNode);
 		return methodDef;
 	}
 	
@@ -870,6 +871,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		} else {
 			methodDef = maker.MethodDef(modifiers, job.toName(job.buildMethodName), cloneSelfType(job.parentType), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 		}
+		addCheckReturnValue(methodDef.mods, job.builderType, job.sourceNode);
 		createRelevantNonNullAnnotation(job.builderType, methodDef);
 		return methodDef;
 	}

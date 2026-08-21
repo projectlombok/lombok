@@ -1,6 +1,6 @@
 package pkg;
 
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 
 @SuperBuilder
 public class A {

@@ -100,7 +100,7 @@ import lombok.eclipse.handlers.EclipseSingularsRecipes.TypeReferenceMaker;
 import lombok.eclipse.handlers.HandleBuilder.BuilderFieldData;
 import lombok.eclipse.handlers.HandleBuilder.BuilderJob;
 import lombok.experimental.NonFinal;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.spi.Provides;
 
 @Provides
@@ -151,7 +151,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	}
 	
 	@Override public void handle(AnnotationValues<SuperBuilder> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
 		SuperBuilderJob job = new SuperBuilderJob();
 		job.sourceNode = annotationNode;
 		job.source = ast;
@@ -188,6 +187,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		job.parentType = parent;
 		TypeDeclaration td = (TypeDeclaration) parent.get();
+		job.builderAbstractClassName = job.builderClassName = job.replaceBuilderClassName(td.name);
+		job.builderAbstractClassNameArr = job.builderClassNameArr = job.builderAbstractClassName.toCharArray();
+		job.builderImplClassName = job.builderAbstractClassName + "Impl";
+		job.builderImplClassNameArr = job.builderImplClassName.toCharArray();
+		if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
+		if (!checkBuilderClassNameAnnotationConflict("SuperBuilder", "lombok.SuperBuilder", job.builderClassName, ast, annotationNode)) return;
 		
 		// Gather all fields of the class that should be set by the builder.
 		List<EclipseNode> allFields = new ArrayList<EclipseNode>();
@@ -310,11 +315,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			
 			superclassBuilderClass = new ParameterizedQualifiedTypeReference(tokens, typeArgsForTokens, 0, poss);
 		}
-		job.builderAbstractClassName = job.builderClassName = job.replaceBuilderClassName(td.name);
-		job.builderAbstractClassNameArr = job.builderClassNameArr = job.builderAbstractClassName.toCharArray();
-		job.builderImplClassName = job.builderAbstractClassName + "Impl";
-		job.builderImplClassNameArr = job.builderImplClassName.toCharArray();
-		
 		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.
 		// You can use it to check whether to inherit or not.
 		
@@ -864,11 +864,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.returnType = new SingleTypeReference(classGenericName.toCharArray(), 0);
 		Annotation overrideAnn = override ? makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, job.source) : null;
-		Annotation sefAnn = job.checkerFramework.generateSideEffectFree() ? generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE): null;
+		Annotation sefAnn = job.checkerFramework.generateSideEffectFree() ? generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) : null;
 		if (overrideAnn != null && sefAnn != null) out.annotations = new Annotation[] {overrideAnn, sefAnn};
 		else if (overrideAnn != null) out.annotations = new Annotation[] {overrideAnn};
 		else if (sefAnn != null) out.annotations = new Annotation[] {sefAnn};
 		out.receiver = HandleBuilder.generateBuildReceiver(job);
+		out.annotations = addCheckReturnValue(job.builderType, job.source, out.annotations);
 		out.traverse(new SetGeneratedByVisitor(job.source), (ClassScope) null);
 		return out;
 	}
@@ -894,6 +895,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		statements.add(new ReturnStatement(allocationStatement, 0, 0));
 		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
 		out.receiver = HandleBuilder.generateBuildReceiver(job);
+		out.annotations = addCheckReturnValue(job.builderType, job.source, out.annotations);
 		createRelevantNonNullAnnotation(job.builderType, out);
 		out.traverse(new SetGeneratedByVisitor(job.source), (ClassScope) null);
 		return out;

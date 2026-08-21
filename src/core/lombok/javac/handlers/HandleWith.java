@@ -290,6 +290,7 @@ public class HandleWith extends JavacAnnotationHandler<With> {
 		if (makeFinal) access |= Flags.FINAL;
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
 			methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
+		addCheckReturnValue(decl.mods, field, source);
 		copyJavadoc(field, decl, CopyJavadoc.WITH);
 		return decl;
 	}

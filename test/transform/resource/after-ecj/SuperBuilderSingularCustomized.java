@@ -1,5 +1,5 @@
 import java.util.Set;
-@lombok.experimental.SuperBuilder class SuperBuilderSingularCustomized {
+@lombok.SuperBuilder class SuperBuilderSingularCustomized {
   public static abstract class SuperBuilderSingularCustomizedBuilder<C extends SuperBuilderSingularCustomized, B extends SuperBuilderSingularCustomized.SuperBuilderSingularCustomizedBuilder<C, B>> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> foos;
     public SuperBuilderSingularCustomizedBuilder() {

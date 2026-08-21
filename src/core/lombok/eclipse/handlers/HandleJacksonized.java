@@ -50,7 +50,7 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.spi.Provides;
 

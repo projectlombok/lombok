@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2020 The Project Lombok Authors.
+ * Copyright (C) 2014-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,10 +103,6 @@ public class ConfigurationParser {
 				reporter.report(context.description(), "'" + keyName + "' is not a list and doesn't support " + operator + " (only = and clear)", lineNumber, line);
 				continue;
 			}
-			if (operator.equals("=") && type.isList()) {
-				reporter.report(context.description(), "'" + keyName + "' is a list and cannot be assigned to (use +=, -= and clear instead)", lineNumber, line);
-				continue;
-			}
 			
 			Object value = null;
 			if (stringValue != null) try {
@@ -119,7 +115,13 @@ public class ConfigurationParser {
 			if (operator.equals("clear")) {
 				collector.clear(key, context, lineNumber);
 			} else if (operator.equals("=")) {
-				collector.set(key, value, context, lineNumber);
+				if (type.isList()) {
+					collector.clear(key, context, lineNumber);
+					collector.add(key, value, context, lineNumber);
+				}
+				else {
+					collector.set(key, value, context, lineNumber);
+				}
 			} else if (operator.equals("+=")) {
 				collector.add(key, value, context, lineNumber);
 			} else {

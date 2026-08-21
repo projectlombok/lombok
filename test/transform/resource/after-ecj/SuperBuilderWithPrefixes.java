@@ -1,4 +1,4 @@
-@lombok.experimental.SuperBuilder class SuperBuilderWithPrefixes {
+@lombok.SuperBuilder class SuperBuilderWithPrefixes {
   public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class SuperBuilderWithPrefixesBuilder<C extends SuperBuilderWithPrefixes, B extends SuperBuilderWithPrefixes.SuperBuilderWithPrefixesBuilder<C, B>> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated int field;
     private @java.lang.SuppressWarnings("all") @lombok.Generated int otherField;

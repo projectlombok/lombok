@@ -1,7 +1,7 @@
 // skip compare content
 // version 14:
 
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 
 @SuperBuilder
 record SuperBuilderOnRecord(String a, String b) {

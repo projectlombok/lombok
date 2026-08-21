@@ -1,4 +1,4 @@
-public @lombok.extern.jackson.Jacksonized @lombok.experimental.SuperBuilder @com.fasterxml.jackson.databind.annotation.JsonDeserialize class JacksonizedSuperBuilderWithJsonDeserialize {
+public @lombok.extern.jackson.Jacksonized @lombok.SuperBuilder @com.fasterxml.jackson.databind.annotation.JsonDeserialize class JacksonizedSuperBuilderWithJsonDeserialize {
   public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class JacksonizedSuperBuilderWithJsonDeserializeBuilder<C extends JacksonizedSuperBuilderWithJsonDeserialize, B extends JacksonizedSuperBuilderWithJsonDeserialize.JacksonizedSuperBuilderWithJsonDeserializeBuilder<C, B>> {
     private @java.lang.SuppressWarnings("all") @lombok.Generated int field1;
     public JacksonizedSuperBuilderWithJsonDeserializeBuilder() {

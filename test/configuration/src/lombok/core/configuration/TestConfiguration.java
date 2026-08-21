@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2025 The Project Lombok Authors.
+ * Copyright (C) 2014-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,14 @@ public class TestConfiguration {
 		String baseName = "test/configuration/resource/configurationRoot/";
 		File directory = new File(baseName);
 		String normalizedName = new File(directory.getAbsoluteFile().toURI().normalize()).toString().replace('\\', '/') + "/";
-		Collection<String> paths = Arrays.asList(normalizedName + "d1/d11", normalizedName + "d1/d12", normalizedName + "d1/d11/d111", normalizedName + "d1/d11/d111/f1.txt", normalizedName + "features/annotations");
+		Collection<String> paths = Arrays.asList(
+			normalizedName + "d1/d11",
+			normalizedName + "d1/d12",
+			normalizedName + "d1/d11/d111",
+			normalizedName + "d1/d11/d111/f1.txt",
+			normalizedName + "d1/d11/d111/directory/setlist",
+			normalizedName + "features/annotations"
+		);
 		
 		ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
 		ByteArrayOutputStream rawErr = new ByteArrayOutputStream();

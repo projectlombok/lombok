@@ -1,10 +1,10 @@
 public class SuperBuilderWithOverloadedGeneratedMethods {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent {
 		int self;
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Child extends Parent {
 		double build;
 	}

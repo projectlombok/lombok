@@ -28,7 +28,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import lombok.core.AlreadyHandledAnnotations;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.experimental.SuperBuilder;
+import lombok.SuperBuilder;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.spi.Provides;

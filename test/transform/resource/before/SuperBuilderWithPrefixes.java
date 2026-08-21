@@ -1,6 +1,6 @@
 //CONF: lombok.accessors.prefix += m
 //CONF: lombok.accessors.prefix += x
-@lombok.experimental.SuperBuilder
+@lombok.SuperBuilder
 class SuperBuilderWithPrefixes {
 	int mField;
 	int xOtherField;

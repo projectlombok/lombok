@@ -1,6 +1,6 @@
 import java.util.List;
 
-@lombok.experimental.SuperBuilder
+@lombok.SuperBuilder
 public abstract class SuperBuilderJavadoc {
 	/**
 	 * basic gets only a builder setter.
@@ -17,7 +17,7 @@ public abstract class SuperBuilderJavadoc {
 	 */
 	@lombok.Getter
 	@lombok.Setter
-	@lombok.experimental.Wither
+	@lombok.With
 	private int getsetwith;
 
 	/**

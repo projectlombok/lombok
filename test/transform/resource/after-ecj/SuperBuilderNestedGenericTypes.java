@@ -1,5 +1,5 @@
 public class SuperBuilderNestedGenericTypes {
-  public static abstract @lombok.experimental.SuperBuilder class Generic<T extends Generic<?>> {
+  public static abstract @lombok.SuperBuilder class Generic<T extends Generic<?>> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class GenericBuilder<T extends Generic<?>, C extends SuperBuilderNestedGenericTypes.Generic<T>, B extends SuperBuilderNestedGenericTypes.Generic.GenericBuilder<T, C, B>> {
       public GenericBuilder() {
         super();
@@ -14,7 +14,7 @@ public class SuperBuilderNestedGenericTypes {
       super();
     }
   }
-  public static abstract @lombok.experimental.SuperBuilder class NestedGeneric<T extends OtherGeneric<?>> extends Generic<NestedGeneric<? extends OtherGeneric<?>>> {
+  public static abstract @lombok.SuperBuilder class NestedGeneric<T extends OtherGeneric<?>> extends Generic<NestedGeneric<? extends OtherGeneric<?>>> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class NestedGenericBuilder<T extends OtherGeneric<?>, C extends SuperBuilderNestedGenericTypes.NestedGeneric<T>, B extends SuperBuilderNestedGenericTypes.NestedGeneric.NestedGenericBuilder<T, C, B>> extends Generic.GenericBuilder<NestedGeneric<? extends OtherGeneric<?>>, C, B> {
       public NestedGenericBuilder() {
         super();

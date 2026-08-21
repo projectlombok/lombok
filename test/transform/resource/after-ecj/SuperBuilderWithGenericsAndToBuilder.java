@@ -1,6 +1,6 @@
 import java.util.Map;
 public class SuperBuilderWithGenericsAndToBuilder {
-  public static @lombok.experimental.SuperBuilder(toBuilder = true) class Parent<A> {
+  public static @lombok.SuperBuilder(toBuilder = true) class Parent<A> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ParentBuilder<A, C extends SuperBuilderWithGenericsAndToBuilder.Parent<A>, B extends SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder<A, C, B>> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated A field1;
       private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<Integer> items$key;
@@ -103,7 +103,7 @@ public class SuperBuilderWithGenericsAndToBuilder {
       return new SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilderImpl<A>();
     }
   }
-  public static @lombok.experimental.SuperBuilder(toBuilder = true) class Child<A> extends Parent<A> {
+  public static @lombok.SuperBuilder(toBuilder = true) class Child<A> extends Parent<A> {
     public static abstract @java.lang.SuppressWarnings("all") @lombok.Generated class ChildBuilder<A, C extends SuperBuilderWithGenericsAndToBuilder.Child<A>, B extends SuperBuilderWithGenericsAndToBuilder.Child.ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
       private @java.lang.SuppressWarnings("all") @lombok.Generated double field3;
       public ChildBuilder() {

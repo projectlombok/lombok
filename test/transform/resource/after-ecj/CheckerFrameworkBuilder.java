@@ -8,7 +8,7 @@ import lombok.Singular;
     private @java.lang.SuppressWarnings("all") @lombok.Generated int y;
     private @java.lang.SuppressWarnings("all") @lombok.Generated int z;
     private @java.lang.SuppressWarnings("all") @lombok.Generated java.util.ArrayList<String> names;
-    @java.lang.SuppressWarnings("all") @lombok.Generated CheckerFrameworkBuilderBuilder() {
+    @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") @lombok.Generated CheckerFrameworkBuilderBuilder() {
       super();
     }
     /**
@@ -82,7 +82,7 @@ import lombok.Singular;
   private static @java.lang.SuppressWarnings("all") @lombok.Generated int $default$x() {
     return 5;
   }
-  @java.lang.SuppressWarnings("all") @lombok.Generated CheckerFrameworkBuilder(final int x, final int y, final int z, final List<String> names) {
+  @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") @lombok.Generated CheckerFrameworkBuilder(final int x, final int y, final int z, final List<String> names) {
     super();
     this.x = x;
     this.y = y;

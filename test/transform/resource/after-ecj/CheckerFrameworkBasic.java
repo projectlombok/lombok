@@ -58,7 +58,7 @@ import lombok.With;
   public @java.lang.Override @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") @lombok.Generated java.lang.String toString() {
     return (((((("CheckerFrameworkBasic(x=" + this.getX()) + ", y=") + this.getY()) + ", z=") + this.getZ()) + ")");
   }
-  public @java.lang.SuppressWarnings("all") @lombok.Generated CheckerFrameworkBasic(final int x, final int y, final int z) {
+  public @org.checkerframework.dataflow.qual.SideEffectFree @java.lang.SuppressWarnings("all") @lombok.Generated CheckerFrameworkBasic(final int x, final int y, final int z) {
     super();
     this.x = x;
     this.y = y;

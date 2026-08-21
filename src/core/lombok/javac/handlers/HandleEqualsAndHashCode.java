@@ -228,6 +228,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		}
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
+		addCheckReturnValue(mods, typeNode, source);
 		JCExpression returnType = maker.TypeIdent(CTC_INT);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
@@ -439,6 +440,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genTypeRef(typeNode, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE), List.<JCExpression>nil()));
 		}
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annsOnMethod);
+		addCheckReturnValue(mods, typeNode, source);
 		JCExpression objectType;
 		if (annsOnParamOnMethod.isEmpty()) {
 			objectType = genJavaLangTypeRef(typeNode, "Object");

@@ -2,14 +2,14 @@
 import java.util.List;
 
 public class SuperBuilderWithNonNull {
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Parent {
 		@lombok.NonNull
 		@lombok.Builder.Default
 		final String nonNullParentField = "default";
 	}
 	
-	@lombok.experimental.SuperBuilder
+	@lombok.SuperBuilder
 	public static class Child extends Parent {
 		@lombok.NonNull
 		String nonNullChildField;
