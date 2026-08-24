@@ -44,7 +44,8 @@ public class CommentCatcher {
 		setInCompiler(compiler, context);
 		
 		compiler.keepComments = true;
-		compiler.genEndPos = true;
+		// genEndPos no longer exists as of javac27.
+		if (!Javac.endPosStoredOnTree()) compiler.genEndPos = true;
 		
 		return new CommentCatcher(compiler);
 	}
@@ -105,6 +106,9 @@ public class CommentCatcher {
 				parserFactory = Class.forName("lombok.javac.java7.CommentCollectingParserFactory");
 			} else if (javaCompilerVersion == 8) {
 				parserFactory = Class.forName("lombok.javac.java8.CommentCollectingParserFactory");
+			} else if (Javac.endPosStoredOnTree()) {
+				// JDK-8372948 also reshaped JavacParser's constructors.
+				parserFactory = Class.forName("lombok.javac.java27.CommentCollectingParserFactory");
 			} else {
 				parserFactory = Class.forName("lombok.javac.java9.CommentCollectingParserFactory");
 			}

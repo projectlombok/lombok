@@ -152,6 +152,13 @@ public class DocCommentIntegrator {
 							return pos;
 						}
 						
+						@SuppressWarnings("unused") // As of JDK27 this is the only getEndPosition; EndPosTable is gone.
+						public int getEndPosition() {
+							int end = Javac.getTreeEndPos(node);
+							if (end > pos) return end;
+							return pos + docCommentContent_.length();
+						}
+						
 						@SuppressWarnings("unused") // We compile against very old versions of javac intentionally (to support old stuff), but this is the method for newer impls.
 						public int getEndPosition(EndPosTable endPosTable) {
 							int end = endPosTable == null ? 0 : endPosTable.getEndPos(node);

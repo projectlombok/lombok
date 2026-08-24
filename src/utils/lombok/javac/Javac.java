@@ -213,37 +213,51 @@ public class Javac {
 	
 	private static final Method getExtendsClause, getEndPosition, storeEnd;
 	
+	/** As of javac27 (JDK-8372948), end positions live in {@code JCTree.endpos} and {@code EndPosTable} no longer exists. */
+	private static final boolean ENDPOS_ON_TREE;
+	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
 		
 		if (getJavaCompilerVersion() < 8) {
+			ENDPOS_ON_TREE = false;
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
 			storeEnd = getMethod(java.util.Map.class, "put", Object.class, Object.class);
 		} else {
-			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", "com.sun.tools.javac.tree.EndPosTable");
-			Method storeEndMethodTemp;
 			Class<?> endPosTable;
 			try {
 				endPosTable = Class.forName("com.sun.tools.javac.tree.EndPosTable");
 			} catch (ClassNotFoundException ex) {
-				throw sneakyThrow(ex);
+				endPosTable = null;
 			}
-			try {
-				storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
-			} catch (NoSuchMethodException e) {
+			ENDPOS_ON_TREE = endPosTable == null;
+			if (ENDPOS_ON_TREE) {
+				getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", new Class<?>[0]);
+				storeEnd = null;
+			} else {
+				getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", endPosTable);
+				Method storeEndMethodTemp;
 				try {
-					endPosTable = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
 					storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
-				} catch (NoSuchMethodException ex) {
-					throw sneakyThrow(ex);
-				} catch (ClassNotFoundException ex) {
-					throw sneakyThrow(ex);
+				} catch (NoSuchMethodException e) {
+					try {
+						endPosTable = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
+						storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
+					} catch (NoSuchMethodException ex) {
+						throw sneakyThrow(ex);
+					} catch (ClassNotFoundException ex) {
+						throw sneakyThrow(ex);
+					}
 				}
+				storeEnd = storeEndMethodTemp;
 			}
-			storeEnd = storeEndMethodTemp;
 		}
 		Permit.setAccessible(getEndPosition);
-		Permit.setAccessible(storeEnd);
+		if (storeEnd != null) Permit.setAccessible(storeEnd);
+	}
+	
+	static boolean endPosStoredOnTree() {
+		return ENDPOS_ON_TREE;
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
@@ -423,6 +437,7 @@ public class Javac {
 	
 	public static int getEndPosition(DiagnosticPosition pos, JCCompilationUnit top) {
 		try {
+			if (ENDPOS_ON_TREE) return (Integer) getEndPosition.invoke(pos);
 			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
 			return (Integer) getEndPosition.invoke(pos, endPositions);
 		} catch (IllegalAccessException e) {
@@ -432,8 +447,22 @@ public class Javac {
 		}
 	}
 
+	/** Returns -1 if this javac has no {@code JCTree.endpos} field (pre-27). */
+	public static int getTreeEndPos(JCTree tree) {
+		if (JCTREE_ENDPOS == null) return -1;
+		try {
+			return JCTREE_ENDPOS.getInt(tree);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		}
+	}
+	
 	public static void storeEnd(JCTree tree, int pos, JCCompilationUnit top) {
 		try {
+			if (ENDPOS_ON_TREE) {
+				if (JCTREE_ENDPOS != null) JCTREE_ENDPOS.setInt(tree, pos);
+				return;
+			}
 			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
 			if (endPositions == null) return;
 			storeEnd.invoke(endPositions, tree, pos);
@@ -511,6 +540,15 @@ public class Javac {
 		public <R, P> R accept(TypeVisitor<R, P> v, P p) {
 			return v.visitNoType(this, p);
 		}
+	}
+	
+	private static final Field JCTREE_ENDPOS;
+	static {
+		Field f = null;
+		try {
+			f = Permit.getField(JCTree.class, "endpos");
+		} catch (NoSuchFieldException e) {}
+		JCTREE_ENDPOS = f;
 	}
 	
 	private static final Field JCCOMPILATIONUNIT_ENDPOSITIONS, JCCOMPILATIONUNIT_DOCCOMMENTS;

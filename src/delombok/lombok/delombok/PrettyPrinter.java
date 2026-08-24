@@ -86,7 +86,6 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
@@ -1615,35 +1614,16 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 	}
 	
-	private static final Method getExtendsClause, getEndPosition;
+	private static final Method getExtendsClause;
 	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
-		
-		if (getJavaCompilerVersion() < 8) {
-			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
-		} else {
-			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", "com.sun.tools.javac.tree.EndPosTable");
-		}
-		Permit.setAccessible(getEndPosition);
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
 		try {
 			return Permit.getMethod(clazz, name, paramTypes);
 		} catch (NoSuchMethodException e) {
-			throw sneakyThrow(e);
-		}
-	}
-	
-	private static Method getMethod(Class<?> clazz, String name, String... paramTypes) {
-		try {
-			Class<?>[] c = new Class[paramTypes.length];
-			for (int i = 0; i < paramTypes.length; i++) c[i] = Class.forName(paramTypes[i]);
-			return Permit.getMethod(clazz, name, c);
-		} catch (NoSuchMethodException e) {
-			throw sneakyThrow(e);
-		} catch (ClassNotFoundException e) {
 			throw sneakyThrow(e);
 		}
 	}
