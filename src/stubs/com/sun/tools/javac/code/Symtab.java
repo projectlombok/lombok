@@ -7,6 +7,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.ModuleSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Name;
 
 public class Symtab {
 	// Shared by JDK6-9
@@ -21,4 +22,5 @@ public class Symtab {
 
 	// JDK 9
 	public ModuleSymbol unnamedModule;
+	public ModuleSymbol inferModule(Name packageName) {return null;}
 }

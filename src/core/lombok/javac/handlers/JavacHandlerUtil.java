@@ -323,7 +323,7 @@ public class JavacHandlerUtil {
 		return typeMatches(type, node, typeName);
 	}
 
-	private static boolean typeMatches(String type, JavacNode node, String typeName) {
+	static boolean typeMatches(String type, JavacNode node, String typeName) {
 		if (typeName == null || typeName.length() == 0) return false;
 		int lastIndexA = typeName.lastIndexOf('.') + 1;
 		int lastIndexB = Math.max(type.lastIndexOf('.'), type.lastIndexOf('$')) + 1;
@@ -334,7 +334,7 @@ public class JavacHandlerUtil {
 		return resolver.typeMatches(node, type, typeName);
 	}
 
-	private static String getTypeName(JCTree typeNode) {
+	static String getTypeName(JCTree typeNode) {
 		return typeNode == null ? null : typeNode.toString();
 	}
 
