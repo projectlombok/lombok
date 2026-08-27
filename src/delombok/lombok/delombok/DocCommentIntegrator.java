@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2025 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -152,14 +152,14 @@ public class DocCommentIntegrator {
 							return pos;
 						}
 						
-						@SuppressWarnings("unused") // As of JDK27 this is the only getEndPosition; EndPosTable is gone.
+						@SuppressWarnings("unused") // We compile against very old versions of javac intentionally (to support old stuff), but this is the method for javac 27+
 						public int getEndPosition() {
 							int end = Javac.getTreeEndPos(node);
 							if (end > pos) return end;
 							return pos + docCommentContent_.length();
 						}
 						
-						@SuppressWarnings("unused") // We compile against very old versions of javac intentionally (to support old stuff), but this is the method for newer impls.
+						@SuppressWarnings("unused") // We compile against very old versions of javac intentionally (to support old stuff), but this is the method for javac 9(?)-26.
 						public int getEndPosition(EndPosTable endPosTable) {
 							int end = endPosTable == null ? 0 : endPosTable.getEndPos(node);
 							if (end > pos) return end;

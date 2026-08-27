@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019 The Project Lombok Authors.
+ * Copyright (C) 2011-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,11 +106,12 @@ public class CommentCatcher {
 				parserFactory = Class.forName("lombok.javac.java7.CommentCollectingParserFactory");
 			} else if (javaCompilerVersion == 8) {
 				parserFactory = Class.forName("lombok.javac.java8.CommentCollectingParserFactory");
-			} else if (Javac.endPosStoredOnTree()) {
+			} else if (!Javac.endPosStoredOnTree()) {
+				parserFactory = Class.forName("lombok.javac.java9.CommentCollectingParserFactory");
+			} else {
+				assert javaCompilerVersion > 26;
 				// JDK-8372948 also reshaped JavacParser's constructors.
 				parserFactory = Class.forName("lombok.javac.java27.CommentCollectingParserFactory");
-			} else {
-				parserFactory = Class.forName("lombok.javac.java9.CommentCollectingParserFactory");
 			}
 			Permit.getMethod(parserFactory, "setInCompiler", JavaCompiler.class, Context.class).invoke(null, compiler, context);
 		} catch (InvocationTargetException e) {
