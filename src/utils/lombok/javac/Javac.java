@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2025 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -125,15 +125,7 @@ public class Javac {
 		return version;
 	}
 	
-	private static final Class<?> DOCCOMMENTTABLE_CLASS;
-	
-	static {
-		Class<?> c = null;
-		try {
-			c = Class.forName("com.sun.tools.javac.tree.DocCommentTable");
-		} catch (Throwable ignore) {}
-		DOCCOMMENTTABLE_CLASS = c;
-	}
+	private static final Class<?> DOCCOMMENTTABLE_CLASS = Permit.permissiveGetClass("com.sun.tools.javac.tree.DocCommentTable");
 	
 	public static boolean instanceOfDocCommentTable(Object o) {
 		return DOCCOMMENTTABLE_CLASS != null && DOCCOMMENTTABLE_CLASS.isInstance(o);
@@ -213,55 +205,61 @@ public class Javac {
 	
 	private static final Method getExtendsClause, getEndPosition, storeEnd;
 	
+	/**
+	 * Do JCTree objects track their own endpos (true) or are they stored in a separate EndPos table (false)?
+	 * As of javac27 (JDK-8372948), end positions live in {@code JCTree.endpos} and {@code EndPosTable} no longer exists.
+	 */
+	private static final boolean ENDPOS_ON_TREE;
+	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
 		
 		if (getJavaCompilerVersion() < 8) {
+			ENDPOS_ON_TREE = false;
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
 			storeEnd = getMethod(java.util.Map.class, "put", Object.class, Object.class);
 		} else {
-			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", "com.sun.tools.javac.tree.EndPosTable");
-			Method storeEndMethodTemp;
-			Class<?> endPosTable;
+			Class<?> endPosTableType;
 			try {
-				endPosTable = Class.forName("com.sun.tools.javac.tree.EndPosTable");
+				endPosTableType = Class.forName("com.sun.tools.javac.tree.EndPosTable");
 			} catch (ClassNotFoundException ex) {
-				throw sneakyThrow(ex);
+				endPosTableType = null;
 			}
-			try {
-				storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
-			} catch (NoSuchMethodException e) {
+			if (endPosTableType == null) {
+				ENDPOS_ON_TREE = true;
+				getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", new Class<?>[0]);
+				storeEnd = null;
+			} else {
+				ENDPOS_ON_TREE = false;
+				getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", endPosTableType);
+				Method storeEndMethodTemp;
 				try {
-					endPosTable = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
-					storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
-				} catch (NoSuchMethodException ex) {
-					throw sneakyThrow(ex);
-				} catch (ClassNotFoundException ex) {
-					throw sneakyThrow(ex);
+					storeEndMethodTemp = Permit.getMethod(endPosTableType, "storeEnd", JCTree.class, int.class);
+				} catch (NoSuchMethodException e) {
+					try {
+						endPosTableType = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
+						storeEndMethodTemp = Permit.getMethod(endPosTableType, "storeEnd", JCTree.class, int.class);
+					} catch (NoSuchMethodException ex) {
+						throw sneakyThrow(ex);
+					} catch (ClassNotFoundException ex) {
+						throw sneakyThrow(ex);
+					}
 				}
+				storeEnd = storeEndMethodTemp;
 			}
-			storeEnd = storeEndMethodTemp;
 		}
 		Permit.setAccessible(getEndPosition);
-		Permit.setAccessible(storeEnd);
+		if (storeEnd != null) Permit.setAccessible(storeEnd);
+	}
+	
+	static boolean endPosStoredOnTree() {
+		return ENDPOS_ON_TREE;
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
 		try {
 			return Permit.getMethod(clazz, name, paramTypes);
 		} catch (NoSuchMethodException e) {
-			throw sneakyThrow(e);
-		}
-	}
-	
-	private static Method getMethod(Class<?> clazz, String name, String... paramTypes) {
-		try {
-			Class<?>[] c = new Class[paramTypes.length];
-			for (int i = 0; i < paramTypes.length; i++) c[i] = Class.forName(paramTypes[i]);
-			return Permit.getMethod(clazz, name, c);
-		} catch (NoSuchMethodException e) {
-			throw sneakyThrow(e);
-		} catch (ClassNotFoundException e) {
 			throw sneakyThrow(e);
 		}
 	}
@@ -423,6 +421,7 @@ public class Javac {
 	
 	public static int getEndPosition(DiagnosticPosition pos, JCCompilationUnit top) {
 		try {
+			if (ENDPOS_ON_TREE) return (Integer) getEndPosition.invoke(pos);
 			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
 			return (Integer) getEndPosition.invoke(pos, endPositions);
 		} catch (IllegalAccessException e) {
@@ -432,8 +431,22 @@ public class Javac {
 		}
 	}
 
+	/** Returns -1 if this javac has no {@code JCTree.endpos} field (JDK[6,26]). */
+	public static int getTreeEndPos(JCTree tree) {
+		if (JCTREE_ENDPOS == null) return -1;
+		try {
+			return JCTREE_ENDPOS.getInt(tree);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		}
+	}
+	
 	public static void storeEnd(JCTree tree, int pos, JCCompilationUnit top) {
 		try {
+			if (ENDPOS_ON_TREE) {
+				if (JCTREE_ENDPOS != null) JCTREE_ENDPOS.setInt(tree, pos);
+				return;
+			}
 			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
 			if (endPositions == null) return;
 			storeEnd.invoke(endPositions, tree, pos);
@@ -444,30 +457,9 @@ public class Javac {
 		}
 	}
 
-	private static final Class<?> JC_VOID_TYPE, JC_NO_TYPE;
-	
-	static {
-		Class<?> c = null;
-		try {
-			c = Class.forName("com.sun.tools.javac.code.Type$JCVoidType");
-		} catch (Throwable ignore) {}
-		JC_VOID_TYPE = c;
-		c = null;
-		try {
-			c = Class.forName("com.sun.tools.javac.code.Type$JCNoType");
-		} catch (Throwable ignore) {}
-		JC_NO_TYPE = c;
-	}
-	
-	private static final Field symtabVoidType = getFieldIfExists(Symtab.class, "voidType");
-	
-	private static Field getFieldIfExists(Class<?> c, String fieldName) {
-		try {
-			return Permit.getField(c, "voidType");
-		} catch (Exception e) {
-			return null;
-		}
-	}
+	private static final Class<?> JC_VOID_TYPE = Permit.permissiveGetClass("com.sun.tools.javac.code.Type$JCVoidType");
+	private static final Class<?> JC_NO_TYPE = Permit.permissiveGetClass("com.sun.tools.javac.code.Type$JCNoType");
+	private static final Field symtabVoidType = Permit.permissiveGetField(Symtab.class, "voidType");
 	
 	public static Type createVoidType(Symtab symbolTable, TypeTag tag) {
 		if (symtabVoidType != null) try {
@@ -513,20 +505,9 @@ public class Javac {
 		}
 	}
 	
-	private static final Field JCCOMPILATIONUNIT_ENDPOSITIONS, JCCOMPILATIONUNIT_DOCCOMMENTS;
-	static {
-		Field f = null;
-		try {
-			f = Permit.getField(JCCompilationUnit.class, "endPositions");
-		} catch (NoSuchFieldException e) {}
-		JCCOMPILATIONUNIT_ENDPOSITIONS = f;
-		
-		f = null;
-		try {
-			f = Permit.getField(JCCompilationUnit.class, "docComments");
-		} catch (NoSuchFieldException e) {}
-		JCCOMPILATIONUNIT_DOCCOMMENTS = f;
-	}
+	private static final Field JCTREE_ENDPOS = Permit.permissiveGetField(JCTree.class, "endpos");
+	private static final Field JCCOMPILATIONUNIT_ENDPOSITIONS = Permit.permissiveGetField(JCCompilationUnit.class, "endPositions");
+	private static final Field JCCOMPILATIONUNIT_DOCCOMMENTS = Permit.permissiveGetField(JCCompilationUnit.class, "docComments");
 	
 	static RuntimeException sneakyThrow(Throwable t) {
 		if (t == null) throw new NullPointerException("t");
@@ -536,6 +517,6 @@ public class Javac {
 	
 	@SuppressWarnings("unchecked")
 	private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
-		throw (T)t;
+		throw (T) t;
 	}
 }
