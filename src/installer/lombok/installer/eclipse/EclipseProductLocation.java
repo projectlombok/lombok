@@ -211,7 +211,7 @@ public final class EclipseProductLocation extends IdeLocation {
 						fos.close();
 					}
 				} catch (IOException e) {
-					throw new UninstallException("Cannot uninstall lombok from " + name + generateWriteErrorMessage(), e);
+					throw new UninstallException("Cannot uninstall lombok from " + getName() + generateWriteErrorMessage(), e);
 				}
 			}
 			
@@ -321,7 +321,7 @@ public final class EclipseProductLocation extends IdeLocation {
 							"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
 							"http://groups.google.com/group/project-lombok - Thanks!\n\n[DEBUG INFO] " + e.getClass() + ": " + e.getMessage() + "\nBase: " + OsUtils.class.getResource("OsUtils.class"), e);
 					}
-					throw new InstallException("I can't write to your " + descriptor.getProductName() + " directory at " + name + generateWriteErrorMessage(), e);
+					throw new InstallException("I can't write to your " + descriptor.getProductName() + " directory at " + getName() + generateWriteErrorMessage(), e);
 				}
 			}
 			
@@ -381,7 +381,7 @@ public final class EclipseProductLocation extends IdeLocation {
 				}
 				installSucceeded = true;
 			} catch (IOException e) {
-				throw new InstallException("Cannot install lombok at " + name + generateWriteErrorMessage(), e);
+				throw new InstallException("Cannot install lombok at " + getName() + generateWriteErrorMessage(), e);
 			} finally {
 				if (!installSucceeded) try {
 					lombokJar.delete();
