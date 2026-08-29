@@ -4,7 +4,7 @@ class UtilityClassInner {
 		@java.lang.SuppressWarnings("all")
 		@lombok.Generated
 		private UtilClass() {
-			throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+			throw new java.lang.AssertionError("This is a utility class and cannot be instantiated");
 		}
 	}
 }
