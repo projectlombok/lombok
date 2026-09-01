@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.49 "Edgy Guinea Pig"
+* No changes since v1.18.48 yet.
+
 ### v1.18.48 (September 1st, 2026)
 * PLATFORM: JDK27 support added [#4072](https://github.com/projectlombok/lombok/issues/4072).
 * BUGFIX: `@SneakyThrows` usage on JDK26 no longer results in class files that require `lombok.jar` to be on the runtime classpath (which should not be neccessary). [#4040](https://github.com/projectlombok/lombok/issues/4040).
