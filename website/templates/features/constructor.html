@@ -55,7 +55,7 @@
 		</p><p>
 			The <code>@java.beans.ConstructorProperties</code> annotation is never generated for a constructor with no arguments. This also explains why <code>@NoArgsConstructor</code> lacks the <code>suppressConstructorProperties</code> annotation method. The generated static factory methods also do not get <code>@ConstructorProperties</code>, as this annotation can only be added to real constructors.
 		</p><p>
-			<code>@XArgsConstructor</code> can also be used on an enum definition. The generated constructor will always be private, because non-private constructors aren't legal in enums. You don't have to specify <code>AccessLevel.PRIVATE</code>.
+			<code>@NoArgsConstructor</code>, <code>@RequiredArgsConstructor</code>, and <code>@AllArgsConstructor</code> can also be used on an enum definition. The generated constructor will always be private, because non-private constructors aren't legal in enums. You don't have to specify <code>AccessLevel.PRIVATE</code>.
 		</p><p>
 			Various well known annotations about nullity cause null checks to be inserted and will be copied to the parameter. See <a href="/features/GetterSetter">Getter/Setter</a> documentation's small print for more information.
 		</p><p>
