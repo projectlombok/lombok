@@ -196,14 +196,34 @@ final class PatchFixesHider {
 				
 				for (Object searchBundle : bundles) {
 					if (searchBundle.toString().startsWith("org.eclipse.jdt.core_")) {
-						Method getModuleClassLoaderMethod = Permit.getMethod(searchBundle.getClass(), "getModuleClassLoader", boolean.class);
-						return (ClassLoader) Permit.invoke(getModuleClassLoaderMethod, searchBundle, false);
+						return getBundleClassLoader(searchBundle);
 					}
 				}
 			} catch (Throwable t) {
 				// Ignore
 			}
 			return null;
+		}
+
+		private static ClassLoader getBundleClassLoader(Object bundle) {
+			try {
+				Class<?> bundleWiringClass = Class.forName("org.osgi.framework.wiring.BundleWiring", false, bundle.getClass().getClassLoader());
+				Method adaptMethod = Permit.getMethod(bundle.getClass(), "adapt", Class.class);
+				Object bundleWiring = Permit.invoke(adaptMethod, bundle, bundleWiringClass);
+				if (bundleWiring != null) {
+					Method getClassLoaderMethod = Permit.getMethod(bundleWiringClass, "getClassLoader");
+					return (ClassLoader) Permit.invoke(getClassLoaderMethod, bundleWiring);
+				}
+			} catch (Throwable t) {
+				// Fall back to the old Equinox API.
+			}
+
+			try {
+				Method getModuleClassLoaderMethod = Permit.getMethod(bundle.getClass(), "getModuleClassLoader", boolean.class);
+				return (ClassLoader) Permit.invoke(getModuleClassLoaderMethod, bundle, false);
+			} catch (Throwable t) {
+				return null;
+			}
 		}
 	}
 	
