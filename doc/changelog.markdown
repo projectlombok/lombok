@@ -5,6 +5,7 @@ Lombok Changelog
 * No changes since v1.18.48 yet.
 
 ### v1.18.48 (September 1st, 2026)
+* BREAKING CHANGE/BUGFIX: `@Builder(builderClassName = "Builder")` now generates an error, because the type names collide. [#3857](https://github.com/projectlombok/lombok/issues/3857)  (found after release)
 * PLATFORM: JDK27 support added [#4072](https://github.com/projectlombok/lombok/issues/4072).
 * BUGFIX: `@SneakyThrows` usage on JDK26 no longer results in class files that require `lombok.jar` to be on the runtime classpath (which should not be neccessary). [#4040](https://github.com/projectlombok/lombok/issues/4040).
 * FEATURE: New [config key](https://projectlombok.org/features/configuration) `lombok.checkReturnValueAnnotation` (values: `none`, `lombok`; default: `none`) lets lombok generate `@lombok.CheckReturnValue` on generated methods where the return value should not be ignored, such as `@With` methods and `@Builder.build()`. A future lombok release may flip the default to `lombok`. [#4013](https://github.com/projectlombok/lombok/pull/4013).
