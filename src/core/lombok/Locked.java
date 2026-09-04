@@ -41,6 +41,22 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Locked {
 	/**
+	 * Configures locks that lombok generates for {@link Locked}, {@link Locked.Read}, and {@link Locked.Write}.
+	 * <p>
+	 * This policy does not affect user-declared locks, including locks selected by the {@code value} parameter.
+	 */
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Policy {
+		/**
+		 * Whether lombok-generated locks should use a fair ordering policy.
+		 *
+		 * @return {@code true} to generate fair locks.
+		 */
+		boolean fairness() default false;
+	}
+
+	/**
 	 * Locks using a {@link java.util.concurrent.locks.ReadWriteLock#readLock()}.
 	 */
 	@Target(ElementType.METHOD)

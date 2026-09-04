@@ -1,5 +1,6 @@
 import lombok.Locked;
 
+@Locked.Policy(fairness = true)
 public class LockedExample {
 	private int value = 0;
 	
