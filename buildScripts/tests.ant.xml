@@ -167,6 +167,11 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.javacX version="26" />
 	</target>
 	
+	<!-- 27 is non-LTS, not yet released -->
+	<target name="test.javac27" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using javac27 as underlying compiler">
+		<test.javacX version="27" />
+	</target>
+	
 	<target name="test.javacCurrent" depends="test.compile, test.formatter.compile" description="runs the tests on your default VM, using its javac as underlying compiler">
 		<echo>Running TestJavac on JVM${ant.java.version}, with the javac built into your VM distributon.</echo>
 		<junit haltonfailure="yes" fork="true" forkmode="once">

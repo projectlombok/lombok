@@ -370,4 +370,12 @@ public class Permit {
 			return null;
 		}
 	}
+	
+	public static Class<?> permissiveGetClass(String fullyQualifiedTypeName) {
+		try {
+			return Class.forName(fullyQualifiedTypeName);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 }
