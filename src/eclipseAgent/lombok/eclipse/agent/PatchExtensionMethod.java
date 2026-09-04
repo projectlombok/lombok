@@ -319,6 +319,7 @@ public class PatchExtensionMethod {
 				}
 				
 				MethodBinding fixedBinding = scope.getMethod(extensionMethod.declaringClass, methodCall.selector, argumentTypes.toArray(new TypeBinding[0]), methodCall);
+				boolean polyExpression = false;
 				if (fixedBinding instanceof ProblemMethodBinding) {
 					methodCall.arguments = originalArgs;
 					// Sometimes the declaring class is null, in that case we have to create a new ProblemMethodBinding using the extension method's declaring class
@@ -327,11 +328,12 @@ public class PatchExtensionMethod {
 					}
 					PostponedInvalidMethodError.invoke(scope.problemReporter(), methodCall, fixedBinding, scope);
 				} else {
+					polyExpression = fixedBinding.returnType.isParameterizedType() && methodCall.isPolyExpression(fixedBinding);
 					// If the extension method uses varargs, the last fixed binding parameter is an array but 
 					// the method arguments are not. Even thought we already know that the method is fine we still
 					// have to compare each parameter with the type of the array to support autoboxing/unboxing.
 					boolean isVarargs = fixedBinding.isVarargs();
-					for (int i = 0, iend = arguments.size(); i < iend; i++) {
+					for (int i = 0, iend = polyExpression ? 0 : arguments.size(); i < iend; i++) {
 						Expression arg = arguments.get(i);
 						TypeBinding[] parameters = fixedBinding.parameters;
 						TypeBinding param;
@@ -353,6 +355,13 @@ public class PatchExtensionMethod {
 					
 					methodCall.receiver = createNameRef(extensionMethod.declaringClass, methodCall);
 					methodCall.actualReceiverType = extensionMethod.declaringClass;
+					if (Reflection.receiverIsType != null) {
+						try {
+							Permit.set(Reflection.receiverIsType, methodCall, true);
+						} catch (IllegalAccessException ignore) {
+							// ignore
+						}
+					}
 					methodCall.binding = fixedBinding;
 					methodCall.resolvedType = methodCall.binding.returnType;
 					methodCall.statementEnd = methodCall.sourceEnd;
@@ -363,6 +372,10 @@ public class PatchExtensionMethod {
 							// ignore
 						}
 					}
+				}
+				if (polyExpression) {
+					TypeBinding polyType = Reflection.getPolyTypeBinding(methodCall);
+					if (polyType != null) return polyType;
 				}
 				return methodCall.resolvedType;
 			}
@@ -419,6 +432,7 @@ public class PatchExtensionMethod {
 		public static final Field argumentTypes = Permit.permissiveGetField(MessageSend.class, "argumentTypes");
 		public static final Field argumentsHaveErrors = Permit.permissiveGetField(MessageSend.class, "argumentsHaveErrors");
 		public static final Field inferenceContexts = Permit.permissiveGetField(MessageSend.class, "inferenceContexts");
+		public static final Field receiverIsType = Permit.permissiveGetField(MessageSend.class, "receiverIsType");
 		private static final Method isPolyExpression = Permit.permissiveGetMethod(Expression.class, "isPolyExpression");
 		private static final Class<?> functionalExpression;
 		private static final Constructor<?> polyTypeBindingConstructor;
