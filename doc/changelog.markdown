@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.49 "Edgy Guinea Pig"
-* No changes since v1.18.48 yet.
+* FEATURE: `@Builder(toBuilder = true)` now lets you customize the generated method's name via `toBuilderMethodName`, or globally via the config key `lombok.builder.toBuilderMethodName` [#4056](https://github.com/projectlombok/lombok/issues/4056).
 
 ### v1.18.48 (September 1st, 2026)
 * BREAKING CHANGE/BUGFIX: `@Builder(builderClassName = "Builder")` now generates an error, because the type names collide. [#3857](https://github.com/projectlombok/lombok/issues/3857)  (found after release)

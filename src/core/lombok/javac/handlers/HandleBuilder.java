@@ -97,7 +97,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	static final String BUILDER_TEMP_VAR = "builder";
 	static final String TO_BUILDER_NOT_SUPPORTED = "@Builder(toBuilder=true) is only supported if you return your own type.";
 	static final String BUILDER_CLASS_NAME_ANNOTATION_CONFLICT = "builderClassName cannot be \"%s\" when using @%s; use @%s or choose another builder class name.";
-	
+
 	private static final boolean toBoolean(Object expr, boolean defaultValue) {
 		if (expr == null) return defaultValue;
 		if (expr instanceof JCLiteral) return ((Integer) ((JCLiteral) expr).value) != 0;
@@ -111,12 +111,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		return true;
 	}
-	
+
 	static class BuilderJob {
 		CheckerFrameworkVersion checkerFramework;
 		JavacNode parentType;
 		boolean checkReturnValue;
-		String builderMethodName, buildMethodName;
+		String builderMethodName, buildMethodName, toBuilderMethodName;
 		boolean isStatic;
 		List<JCTypeParameter> typeParams;
 		List<JCTypeParameter> builderTypeParams;
@@ -144,7 +144,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			buildMethodName = ann.buildMethodName();
 			builderClassName = getBuilderClassNameTemplate(node, ann.builderClassName());
 			toBuilder = ann.toBuilder();
-			
+			toBuilderMethodName = getToBuilderMethodName(node, ann.toBuilderMethodName());
+
 			if (builderMethodName == null) builderMethodName = "builder";
 			if (buildMethodName == null) buildMethodName = "build";
 			if (builderClassName == null) builderClassName = "";
@@ -156,7 +157,14 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (override != null && !override.isEmpty()) return override;
 			return "*Builder";
 		}
-		
+
+		static String getToBuilderMethodName(JavacNode node, String override) {
+			if (override != null && !override.isEmpty()) return override;
+			override = node.getAst().readConfiguration(ConfigurationKeys.TO_BUILDER_METHOD_NAME);
+			if (override != null && !override.isEmpty()) return override;
+			return TO_BUILDER_METHOD_NAME;
+		}
+
 		String replaceBuilderClassName(Name name) {
 			return replaceBuilderClassName(name.toString(), builderClassName);
 		}
@@ -263,7 +271,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			job.builderClassName = job.replaceBuilderClassName(td.name);
 			if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 			if (!checkBuilderClassNameAnnotationConflict("Builder", "lombok.Builder", job.builderClassName, ast, annotationNode)) return;
-			
+
 			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(parent, true)) {
@@ -432,7 +440,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		if (!checkName("builderClassName", job.builderClassName, annotationNode)) return;
 		if (!checkBuilderClassNameAnnotationConflict("Builder", "lombok.Builder", job.builderClassName, ast, annotationNode)) return;
-		
+
 		if (fillParametersFrom != null) {
 			for (JavacNode param : fillParametersFrom.down()) {
 				if (param.getKind() != Kind.ARGUMENT) continue;
@@ -548,9 +556,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (job.toBuilder) {
-			switch (methodExists(TO_BUILDER_METHOD_NAME, job.parentType, 0)) {
+			switch (methodExists(job.toBuilderMethodName, job.parentType, 0)) {
 			case EXISTS_BY_USER:
-				annotationNode.addWarning("Not generating toBuilder() as it already exists.");
+				annotationNode.addWarning("Not generating " + job.toBuilderMethodName + "() as it already exists.");
 				return;
 			case NOT_EXISTS:
 				List<JCTypeParameter> tps = job.typeParams;
@@ -711,7 +719,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCBlock body = maker.Block(0, statements.toList());
 		List<JCAnnotation> annsOnParamType = List.nil();
 		if (job.checkerFramework.generateUnique()) annsOnParamType = List.of(maker.Annotation(genTypeRef(job.parentType, CheckerFrameworkVersion.NAME__UNIQUE), List.<JCExpression>nil()));
-		JCMethodDecl methodDef = maker.MethodDef(maker.Modifiers(toJavacModifier(job.accessOuters)), job.toName(TO_BUILDER_METHOD_NAME), namePlusTypeParamsToTypeReference(maker, job.parentType, job.getBuilderClassName(), !job.isStatic, typeParameters, annsOnParamType), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		JCMethodDecl methodDef = maker.MethodDef(maker.Modifiers(toJavacModifier(job.accessOuters)), job.toName(job.toBuilderMethodName), namePlusTypeParamsToTypeReference(maker, job.parentType, job.getBuilderClassName(), !job.isStatic, typeParameters, annsOnParamType), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 		createRelevantNonNullAnnotation(job.parentType, methodDef);
 		return methodDef;
 	}
