@@ -357,7 +357,7 @@ public class HandleWithBy extends EclipseAnnotationHandler<WithBy> {
 			
 			AllocationExpression constructorCall = new AllocationExpression();
 			constructorCall.arguments = args.toArray(new Expression[0]);
-			constructorCall.type = cloneSelfType(fieldNode, source);
+			constructorCall.type = cloneSelfTypeForConstructor(fieldNode, source);
 			
 			Statement returnStatement = new ReturnStatement(constructorCall, pS, pE);
 			method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
