@@ -99,7 +99,7 @@ public class Delombok {
 	private boolean onlyChanged;
 	private boolean force = false;
 	private boolean disablePreview;
-	private String classpath, sourcepath, bootclasspath, modulepath;
+	private String classpath, sourcepath, bootclasspath, modulepath, source;
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
 	private Map<String, String> formatPrefs = new HashMap<String, String>();
@@ -154,6 +154,9 @@ public class Delombok {
 		@Description("Module path (analogous to javac --module-path option)")
 		@FullName("module-path")
 		private String modulepath;
+		
+		@Description("Source version (analogous to javac -source option)")
+		private String source;
 		
 		@Description("Files to delombok. Provide either a file, or a directory. If you use a directory, all files in it (recursive) are delombok-ed")
 		@Sequential
@@ -309,6 +312,7 @@ public class Delombok {
 		if (args.sourcepath != null) delombok.setSourcepath(args.sourcepath);
 		if (args.bootclasspath != null) delombok.setBootclasspath(args.bootclasspath);
 		if (args.modulepath != null) delombok.setModulepath(args.modulepath);
+		if (args.source != null) delombok.setSource(args.source);
 		
 		try {
 			for (String in : args.input) {
@@ -561,6 +565,10 @@ public class Delombok {
 		this.modulepath = modulepath;
 	}
 	
+	public void setSource(String source) {
+		this.source = source;
+	}
+	
 	public void addDirectory(File base) throws IOException {
 		addDirectory0(false, base, "", 0);
 	}
@@ -687,6 +695,7 @@ public class Delombok {
 		if (classpath != null) options.putJavacOption("CLASSPATH", unpackClasspath(classpath));
 		if (sourcepath != null) options.putJavacOption("SOURCEPATH", sourcepath);
 		if (bootclasspath != null) options.putJavacOption("BOOTCLASSPATH", unpackClasspath(bootclasspath));
+		if (source != null) options.putJavacOption("SOURCE", source);
 		options.setFormatPreferences(new FormatPreferences(formatPrefs));
 		options.put("compilePolicy", "check");
 		
@@ -704,6 +713,14 @@ public class Delombok {
 			if (bootclasspath != null) {
 				argsList.add("--boot-class-path");
 				argsList.add(options.get("--boot-class-path"));
+			}
+			if (source != null) {
+				argsList.add("-source");
+				if (Javac.getJavaCompilerVersion() < 12) {
+					argsList.add(options.get("-source"));
+				} else {
+					argsList.add(options.get("--source"));
+				}
 			}
 			if (charset != null) {
 				argsList.add("-encoding");
