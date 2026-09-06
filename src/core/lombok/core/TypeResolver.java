@@ -21,6 +21,8 @@
  */
 package lombok.core;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.core.AST.Kind;
@@ -32,7 +34,7 @@ import lombok.core.AST.Kind;
  *  and this importer also can't find inner types from superclasses/interfaces.
  */
 public class TypeResolver {
-	private ImportList imports;
+	private final ImportList imports;
 	
 	/**
 	 * Creates a new TypeResolver that can be used to resolve types in a source file with the given package and import statements.
@@ -53,6 +55,14 @@ public class TypeResolver {
 		// When asking if 'lombok.Getter' could possibly be referring to 'lombok.Getter', the answer is obviously yes.
 		if (qualifieds.contains(typeRef)) return LombokInternalAliasing.processAliases(typeRef);
 		
+		// Types defined on the containing type, or on any of its parents in the source file, take precedence over any imports
+		String nestedTypeFqn = new NestedTypeFinder(typeRef).findNestedType(context);
+		if (nestedTypeFqn != null) {
+			// we found a nestedType - check edge case where nestedType is in type library
+			qualifieds = library.toQualifieds(nestedTypeFqn);
+			return qualifieds == null || !qualifieds.contains(nestedTypeFqn) ? null : nestedTypeFqn;
+		}
+
 		// When asking if 'Getter' could possibly be referring to 'lombok.Getter' if 'import lombok.Getter;' is in the source file, the answer is yes.
 		int firstDot = typeRef.indexOf('.');
 		if (firstDot == -1) firstDot = typeRef.length();
@@ -96,12 +106,7 @@ public class TypeResolver {
 					continue mainLoop;
 				}
 				
-				if (n.getKind() == Kind.TYPE || n.getKind() == Kind.COMPILATION_UNIT) {
-					for (LombokNode<?, ?, ?> child : n.down()) {
-						// Inner class that's visible to us has 'typeRef' as name, so that's the one being referred to, not one of our type library classes.
-						if (child.getKind() == Kind.TYPE && firstTypeRef.equals(child.getName())) return null;
-					}
-				}
+				// don't need to check for inner class shadowing, we already do that in NestedTypeFinder
 				
 				n = n.directUp();
 			}
@@ -112,5 +117,91 @@ public class TypeResolver {
 		
 		// No star import matches either.
 		return null;
+	}
+
+	/**
+	 * Traverse up the containing types until we find a match, or hit the package. At each level,
+	 * we check for a type with matching name (including traversing into child types if typeRef is
+	 * not a simple name).
+	 */
+	private static class NestedTypeFinder {
+
+		private final String typeRef;
+		private final List<String> typeRefElements;
+
+		public NestedTypeFinder(String typeRef) {
+			this.typeRef = typeRef;
+			this.typeRefElements = Arrays.asList(typeRef.split("\\.", -1));
+		}
+
+		/** Finds a matching nestedType and returns its FQN, or {@code null} if no match found. */
+		public String findNestedType(LombokNode<?, ?, ?> context) {
+			LombokNode<?, ?, ?> nearestType = traverseUpToNearestType(context);
+			if (nearestType == null) {
+				return null;
+			}
+
+			boolean found = findTypeRef(nearestType, 0);
+			if (found) {
+				// return FQN
+				return getFoundFqn(nearestType);
+			}
+
+			return findNestedType(nearestType.up());
+		}
+
+		/** Traverse up to the nearest type or package (including {@code node} if it is a type). */
+		private LombokNode<?, ?, ?> traverseUpToNearestType(LombokNode<?, ?, ?> node) {
+			if (node == null) {
+				return null; // parent is null once we hit the package
+			}
+			if (node.getKind() == Kind.COMPILATION_UNIT || node.getKind() == Kind.TYPE) {
+				return node;
+			}
+			return traverseUpToNearestType(node.up());
+		}
+
+		/** Check whether {@code typeRef[nameIndex]} exists as a child of {@code typeNode}. */
+		private boolean findTypeRef(LombokNode<?, ?, ?> typeNode, int nameIndex) {
+			for (LombokNode<?, ?, ?> child : typeNode.down()) {
+				if (child.getKind() == Kind.TYPE) {
+					// check if this node matches the first element
+					if (child.getName().equals(typeRefElements.get(nameIndex))) {
+						if (nameIndex == typeRefElements.size() - 1) {
+							// we've found a match as we've matched all elements of typeRef
+							return true;
+						}
+						// otherwise, check match of remaining typeRef elements
+						boolean found = findTypeRef(child, nameIndex + 1);
+						if (found) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+
+		private String getFoundFqn(LombokNode<?, ?, ?> typeNode) {
+			List<String> elements = new ArrayList<String>();
+			while (typeNode.getKind() != Kind.COMPILATION_UNIT) {
+				elements.add(typeNode.getName());
+				typeNode = traverseUpToNearestType(typeNode.up());
+			}
+
+			String pkg = typeNode.getPackageDeclaration();
+			StringBuilder fqn;
+			if (pkg == null) { // pkg can be null e.g. if top-level type is in default package
+				fqn = new StringBuilder(elements.size() * 10);
+			} else {
+				fqn = new StringBuilder(pkg.length() + elements.size() * 10);
+				fqn.append(pkg).append('.');
+			}
+			for (int i = elements.size() - 1; i >= 0; i--) {
+				fqn.append(elements.get(i)).append('.');
+			}
+			fqn.append(typeRef);
+			return fqn.toString();
+		}
 	}
 }
