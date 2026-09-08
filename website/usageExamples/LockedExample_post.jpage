@@ -1,5 +1,5 @@
 public class LockedExample {
-	private final ReadWriteLock lock = new ReentrantReadWriteLock();
+	private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 	private final Lock baseLock = new ReentrantLock();
 	private int value = 0;
 	
