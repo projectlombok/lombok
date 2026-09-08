@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
+import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.Eclipse;
 import lombok.javac.Javac;
 
@@ -170,9 +171,12 @@ public class DirectoryRunner extends Runner {
 			
 			notifier.fireTestStarted(testDescription);
 			try {
+				HandlerUtil.incrementRunningInTest();
 				tester.runTest();
 			} catch (Throwable t) {
 				notifier.fireTestFailure(new Failure(testDescription, t));
+			} finally {
+				HandlerUtil.decrementRunningInTest();
 			}
 			notifier.fireTestFinished(testDescription);
 		}
