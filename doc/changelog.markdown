@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.49 "Edgy Guinea Pig"
-* No changes since v1.18.48 yet.
+* BUGFIX: `@SuperBuilder` now works properly when your class names contain non-ASCII characters. [#3857](https://github.com/projectlombok/lombok/issues/4070)
 
 ### v1.18.48 (September 1st, 2026)
 * BREAKING CHANGE/BUGFIX: `@Builder(builderClassName = "Builder")` now generates an error, because the type names collide. [#3857](https://github.com/projectlombok/lombok/issues/3857)  (found after release)
