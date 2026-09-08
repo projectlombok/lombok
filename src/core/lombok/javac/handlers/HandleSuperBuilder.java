@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2025 The Project Lombok Authors.
+ * Copyright (C) 2013-2026 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -269,6 +269,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			String superclassBuilderClassName = job.replaceBuilderClassName(superclassName.toString(), builderClassNameTemplate);
 			superclassBuilderClass = chainDots(parent, superclassName.toString(), superclassBuilderClassName);
 		} else if (extendsClause != null) {
+			// This is dangerous; `toString()` breaks on non-ascii. We should optimally never get here. This fallback mechanism will remain (better than hardcrash; `toString()` is likely to work in _some_ cases).
 			String builderClassNameTemplate = BuilderJob.getBuilderClassNameTemplate(annotationNode, null);
 			String superclassBuilderClassName = job.replaceBuilderClassName(extendsClause.toString(), builderClassNameTemplate);
 			superclassBuilderClass = chainDots(parent, extendsClause.toString(), superclassBuilderClassName);
