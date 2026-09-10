@@ -328,28 +328,30 @@ public class PatchExtensionMethod {
 					}
 					PostponedInvalidMethodError.invoke(scope.problemReporter(), methodCall, fixedBinding, scope);
 				} else {
-					polyExpression = fixedBinding.returnType.isParameterizedType() && methodCall.isPolyExpression(fixedBinding);
-					// If the extension method uses varargs, the last fixed binding parameter is an array but 
-					// the method arguments are not. Even thought we already know that the method is fine we still
-					// have to compare each parameter with the type of the array to support autoboxing/unboxing.
-					boolean isVarargs = fixedBinding.isVarargs();
-					for (int i = 0, iend = polyExpression ? 0 : arguments.size(); i < iend; i++) {
-						Expression arg = arguments.get(i);
-						TypeBinding[] parameters = fixedBinding.parameters;
-						TypeBinding param;
-						if (isVarargs && i >= parameters.length - 1) {
-							// Extract the array element type for all vararg arguments
-							param = parameters[parameters.length - 1].leafComponentType();
-						} else {
-							param = parameters[i];
-						}
-						// Resolve types for polys
-						if (requiresPolyBinding(arg)) {
-							arg.setExpectedType(param);
-							arg.resolveType(scope);
-						}
-						if (arg.resolvedType != null) {
-							arg.computeConversion(scope, param, arg.resolvedType);
+					polyExpression = fixedBinding.returnType.isParameterizedType() && Reflection.isPolyExpression(methodCall, fixedBinding);
+					if (!polyExpression) {
+						// If the extension method uses varargs, the last fixed binding parameter is an array but
+						// the method arguments are not. Even thought we already know that the method is fine we still
+						// have to compare each parameter with the type of the array to support autoboxing/unboxing.
+						boolean isVarargs = fixedBinding.isVarargs();
+						for (int i = 0, iend = arguments.size(); i < iend; i++) {
+							Expression arg = arguments.get(i);
+							TypeBinding[] parameters = fixedBinding.parameters;
+							TypeBinding param;
+							if (isVarargs && i >= parameters.length - 1) {
+								// Extract the array element type for all vararg arguments
+								param = parameters[parameters.length - 1].leafComponentType();
+							} else {
+								param = parameters[i];
+							}
+							// Resolve types for polys
+							if (requiresPolyBinding(arg)) {
+								arg.setExpectedType(param);
+								arg.resolveType(scope);
+							}
+							if (arg.resolvedType != null) {
+								arg.computeConversion(scope, param, arg.resolvedType);
+							}
 						}
 					}
 					
@@ -434,6 +436,7 @@ public class PatchExtensionMethod {
 		public static final Field inferenceContexts = Permit.permissiveGetField(MessageSend.class, "inferenceContexts");
 		public static final Field receiverIsType = Permit.permissiveGetField(MessageSend.class, "receiverIsType");
 		private static final Method isPolyExpression = Permit.permissiveGetMethod(Expression.class, "isPolyExpression");
+		private static final Method isPolyExpressionWithBinding = Permit.permissiveGetMethod(MessageSend.class, "isPolyExpression", MethodBinding.class);
 		private static final Class<?> functionalExpression;
 		private static final Constructor<?> polyTypeBindingConstructor;
 		
@@ -469,6 +472,16 @@ public class PatchExtensionMethod {
 			return false;
 		}
 		
+		public static boolean isPolyExpression(MessageSend methodCall, MethodBinding binding) {
+			if (isPolyExpressionWithBinding == null) return false;
+			try {
+				return (Boolean) isPolyExpressionWithBinding.invoke(methodCall, binding);
+			} catch (Exception e) {
+				// Ignore
+			}
+			return false;
+		}
+
 		public static TypeBinding getPolyTypeBinding(Expression expression) {
 			if (polyTypeBindingConstructor == null) return null;
 			try {
