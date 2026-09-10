@@ -87,7 +87,8 @@ public @interface ToString {
 	 * @return If {@code true}, don't include non-static fields automatically (default: {@code false}).
 	 */
 	boolean onlyExplicitlyIncluded() default false;
-	
+	boolean skipNull() default false;
+
 	/**
 	 * If present, do not include this field in the generated {@code toString}.
 	 */

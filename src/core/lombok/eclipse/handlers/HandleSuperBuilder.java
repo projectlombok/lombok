@@ -400,7 +400,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				}
 			}
 			// Let toString() call super.toString() if there is a superclass, so that it also shows fields from the superclass' builder.
-			MethodDeclaration md = HandleToString.createToString(job.builderType, fieldNodes, true, superclassBuilderClass != null, ast, FieldAccess.ALWAYS_FIELD);
+			MethodDeclaration md = HandleToString.createToString(job.builderType, fieldNodes, true, superclassBuilderClass != null, ast, FieldAccess.ALWAYS_FIELD, false);
 			if (md != null) injectMethod(job.builderType, md);
 		}
 		
