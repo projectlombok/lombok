@@ -111,7 +111,7 @@ import java.lang.annotation.Target;
  * @see Singular
  */
 @Target({TYPE, METHOD, CONSTRUCTOR})
-@Retention(SOURCE)
+@Retention(RetentionPolicy.SOURCE)
 public @interface Builder {
 	/**
 	 * The field annotated with {@code @Default} must have an initializing expression; that expression is taken as the default to be used if not explicitly set during building.
