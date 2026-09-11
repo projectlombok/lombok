@@ -143,7 +143,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			builderMethodName = ann.builderMethodName();
 			buildMethodName = ann.buildMethodName();
 			builderClassName = getBuilderClassNameTemplate(node, ann.builderClassName());
-			toBuilder = ann.toBuilder();
+			toBuilder = ann.toBuilder() || (ann.toBuilderMethodName() != null && !ann.toBuilderMethodName().isEmpty());
 			toBuilderMethodName = getToBuilderMethodName(node, ann.toBuilderMethodName());
 
 			if (builderMethodName == null) builderMethodName = "builder";
