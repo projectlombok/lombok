@@ -1,0 +1,30 @@
+public enum MyEnum {
+    final int value;
+    final String name;
+
+    ONE(1,"one"),
+    TWO(2,"two");
+
+    private MyEnum(int value, String name) {
+        this.value = value;
+        this.name = name;
+    }
+
+    public static MyEnum findByValue(int value) {
+        for(MyEnum VVVV : values()) {
+            if (VVVV.value == value) {
+                return VVVV;
+            }
+        }
+        return null;
+    }
+
+    public static MyEnum findByName(String name) {
+        for(MyEnum VVVV : values()) {
+            if (VVVV.name.equals(name)) {
+                return VVVV;
+            }
+        }
+        return null;
+    }
+}
