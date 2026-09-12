@@ -37,7 +37,10 @@ public final class GuavaTypeMap {
 		m.put("java.util.Map", "ImmutableMap");
 		m.put("java.util.Collection", "ImmutableList");
 		m.put("java.util.List", "ImmutableList");
-		
+		m.put("java.util.SequencedSet", "ImmutableSortedSet");
+		m.put("java.util.SequencedMap", "ImmutableSortedMap");
+		m.put("java.util.SequencedCollection", "ImmutableList");
+
 		m.put("com.google.common.collect.ImmutableSet", "ImmutableSet");
 		m.put("com.google.common.collect.ImmutableSortedSet", "ImmutableSortedSet");
 		m.put("com.google.common.collect.ImmutableMap", "ImmutableMap");
