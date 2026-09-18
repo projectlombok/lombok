@@ -73,7 +73,7 @@ exists as a separate dependency solely because it is itself dependent on both lo
 		<jar destfile="dist/lombok-mapstruct-binding-${mapstruct-binding.version}-javadoc.jar" basedir="build/mapstruct-binding/api" includes="**" />
 	</target>
 	
-	<target name="-mapstructBinding.jar" depends="dist, -mapstructBinding.prepare">
+	<target name="-mapstructBinding.classes" depends="-mapstructBinding.compile">
 		<mkdir dir="build/mapstruct-binding/classes" />
 		<echo file="build/mapstruct-binding/classes/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.mapstruct.NotifierHider$AstModificationNotifier</echo>
 		
@@ -82,6 +82,9 @@ exists as a separate dependency solely because it is itself dependent on both lo
 			<exclude name="module-info.java" />
 			<classpath location="build/mapstruct" />
 		</javac>
+	</target>
+	
+	<target name="-mapstructBinding.jar" depends="dist, -mapstructBinding.prepare, -mapstructBinding.classes">
 		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/mapstruct-binding/classes" modulepath="build/mapstruct-module-path">
 			<src path="src/bindings/mapstruct" />
 			<include name="module-info.java" />

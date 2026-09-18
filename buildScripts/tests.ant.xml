@@ -73,6 +73,19 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		</ivy:compile>
 	</target>
 	
+	<target name="test.mapstruct.compile" depends="deps, compile" description="compiles the mapstruct integration tests" unless="skip.tests">
+		<mkdir dir="build/tests" />
+		<ivy:compile destdir="build/tests" source="1.8" target="1.8" ecj="true" nowarn="true">
+			<bootclasspath path="${jdk8-rt.loc}" />
+			<classpath refid="cp.mapstruct" />
+			<classpath refid="cp.test" />
+			<classpath refid="cp.javac8" />
+			<classpath refid="packing.basedirs.path" />
+			<classpath path="build/tests" />
+			<src path="test/mapstruct/src" />
+		</ivy:compile>
+	</target>
+	
 	<target name="test.ecj11.call" depends="deps, dist" description="Runs a few ecj-specific tests" unless="skip.tests">
 		<java jar="lib/ecj11/org.eclipse.jdt-ecj.jar" fork="true" failonerror="true">
 			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
@@ -359,6 +372,22 @@ This buildfile is part of projectlombok.org. It takes care of compiling and runn
 		<test.ecj-X version="19" />
 	</target>
 	
-	<target name="test" depends="test.javacCurrent, test.eclipse-202503" description="runs the tests against the default JVM, javac, and eclipse" />
+	<target name="test.mapstruct" depends="test.compile, test.mapstruct.compile, test.formatter.compile, -mapstructBinding.classes" description="runs the mapstruct integration tests on your default VM">
+		<echo>Running TestWithMapStruct on JVM${ant.java.version}.</echo>
+		<junit haltonfailure="yes" fork="true" forkmode="once">
+			<formatter classname="lombok.ant.SimpleTestFormatter" usefile="false" unless="tests.quiet" />
+			<classpath location="build/ant" />
+			<classpath refid="cp.test" />
+			<classpath refid="cp.stripe" />
+			<classpath refid="cp.mapstruct" />
+			<classpath refid="packing.basedirs.path" />
+			<classpath location="build/tests" />
+			<classpath location="build/teststubs" />
+			<classpath location="build/mapstruct-binding/classes" />
+			<test name="lombok.transform.TestWithMapStruct" />
+		</junit>
+	</target>
+	
+	<target name="test" depends="test.javacCurrent, test.eclipse-202503, test.mapstruct" description="runs the tests against the default JVM, javac, and eclipse" />
 	<target name="test.broad" depends="test.javac8, test.javac17, test.javac21, test.javac25, test.javac26, test.eclipse-oxygen, test.eclipse-202503, test.eclipse-202006-jdk8" description="runs the tests against the default JVM, javac, and eclipse" />
 </project>
