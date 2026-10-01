@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2025 The Project Lombok Authors.
+ * Copyright (C) 2013-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -262,6 +262,12 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	
 	private void handle0(Annotation ast, EclipseNode annotationNode, boolean force) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.NON_NULL_FLAG_USAGE, "@NonNull");
+		
+		if (annotationNode.up().getKind() == Kind.TYPE) {
+			// @NonNull on a class/interface/enum/record declaration is legal via TYPE_USE, but lombok does nothing with it.
+			annotationNode.addWarning("@NonNull is meaningless on a type.");
+			return;
+		}
 		
 		final EclipseNode node;
 		if (annotationNode.up().getKind() == Kind.TYPE_USE) {
