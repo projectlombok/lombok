@@ -42,6 +42,12 @@ import java.lang.annotation.Target;
 public @interface Locked {
 	/**
 	 * Locks using a {@link java.util.concurrent.locks.ReadWriteLock#readLock()}.
+	 * <p>
+	 * For non-static methods, a field named {@code $lock} is used, and for static methods,
+	 * {@code $LOCK} is used. These will be generated if needed and if they aren't already present, as a {@link java.util.concurrent.locks.ReentrantReadWriteLock}.
+	 * <p>
+	 * Because {@link Locked} uses a different type of lock from {@link Locked.Read} and {@link Locked.Write}, using both in
+	 * the same class using the default names will result in a compile time error.
 	 */
 	@Target(ElementType.METHOD)
 	@Retention(RetentionPolicy.SOURCE)
@@ -57,6 +63,12 @@ public @interface Locked {
 	
 	/**
 	 * Locks using a {@link java.util.concurrent.locks.ReadWriteLock#writeLock()}.
+	 * <p>
+	 * For non-static methods, a field named {@code $lock} is used, and for static methods,
+	 * {@code $LOCK} is used. These will be generated if needed and if they aren't already present, as a {@link java.util.concurrent.locks.ReentrantReadWriteLock}.
+	 * <p>
+	 * Because {@link Locked} uses a different type of lock from {@link Locked.Read} and {@link Locked.Write}, using both in
+	 * the same class using the default names will result in a compile time error.
 	 */
 	@Target(ElementType.METHOD)
 	@Retention(RetentionPolicy.SOURCE)
