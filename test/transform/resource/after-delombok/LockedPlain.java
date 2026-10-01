@@ -82,3 +82,38 @@ class LockedPlainWrite {
 		}
 	}
 }
+class LockedFair {
+	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
+	private final java.util.concurrent.locks.Lock $lock = new java.util.concurrent.locks.ReentrantLock(true);
+	void test() {
+		this.$lock.lock();
+		try {
+			System.out.println("nine");
+		} finally {
+			this.$lock.unlock();
+		}
+	}
+}
+class LockedFairReadWrite {
+	@java.lang.SuppressWarnings("all")
+	@lombok.Generated
+	private final java.util.concurrent.locks.ReadWriteLock $lock = new java.util.concurrent.locks.ReentrantReadWriteLock(true);
+	private int value;
+	int get() {
+		this.$lock.readLock().lock();
+		try {
+			return value;
+		} finally {
+			this.$lock.readLock().unlock();
+		}
+	}
+	void set(int value) {
+		this.$lock.writeLock().lock();
+		try {
+			this.value = value;
+		} finally {
+			this.$lock.writeLock().unlock();
+		}
+	}
+}

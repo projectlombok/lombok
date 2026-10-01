@@ -1,5 +1,5 @@
 import java.util.concurrent.locks.*;
-class LockedName {
+@lombok.Locked.Policy(fairness = true) class LockedName {
   private final Lock basicLock = new ReentrantLock();
   private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
   LockedName() {
