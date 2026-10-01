@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -765,7 +765,7 @@ public class Delombok {
 		for (File fileToParse : filesToParse) {
 			JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());
 			if (Javac.getJavaCompilerVersion() >= 9) try {
-				MODULE_FIELD.set(unit, unnamedModule);
+				Permit.set(MODULE_FIELD, unit, unnamedModule);
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}

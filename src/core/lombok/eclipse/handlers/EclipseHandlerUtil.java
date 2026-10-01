@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2025 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -365,7 +365,7 @@ public class EclipseHandlerUtil {
 		
 		public static void reflectSet(Field f, Object o, Object v) {
 			try {
-				f.set(o, v);
+				Permit.set(f, o, v);
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2025 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1277,7 +1277,7 @@ public class JavacHandlerUtil {
 		static void setAnnotations(JCTree obj, List<JCAnnotation> anns) {
 			if (ANNOTATIONS == null) return;
 			try {
-				ANNOTATIONS.set(obj, anns);
+				Permit.set(ANNOTATIONS, obj, anns);
 			} catch (Exception e) {
 				// Ignore
 			}

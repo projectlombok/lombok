@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -170,7 +170,7 @@ public class LombokProcessor extends AbstractProcessor {
 				JavaFileManager newFilerManager = new InterceptingJavaFileManager(originalFiler, receiver);
 				ht.put(key, newFilerManager);
 				Field filerFileManagerField = Permit.getField(JavacFiler.class, "fileManager");
-				filerFileManagerField.set(javacFiler, newFilerManager);
+				Permit.set(filerFileManagerField, javacFiler, newFilerManager);
 				
 				if (lombok.javac.handlers.JavacHandlerUtil.inNetbeansCompileOnSave(context)) return;
 				
@@ -220,13 +220,13 @@ public class LombokProcessor extends AbstractProcessor {
 		context.put(classWriterKey, (ClassWriter) null);
 		ClassWriter writer = ClassWriter.instance(context);
 		context.put(ClassWriter.class, writer);
-		writerField.set(compiler, writer);
+		Permit.set(writerField, compiler, writer);
 	}
 	
 	private void forceMultipleRoundsInNetBeansEditor() {
 		try {
 			Field f = Permit.getField(JavacProcessingEnvironment.class, "isBackgroundCompilation");
-			f.set(javacProcessingEnv, true);
+			Permit.set(f, javacProcessingEnv, true);
 		} catch (NoSuchFieldException e) {
 			// only NetBeans has it
 		} catch (Throwable t) {
@@ -243,7 +243,7 @@ public class LombokProcessor extends AbstractProcessor {
 			Field parserField = Permit.getField(cancelService.getClass(), "parser");
 			Object parser = parserField.get(cancelService);
 			Field supportsReparseField = Permit.getField(parser.getClass(), "supportsReparse");
-			supportsReparseField.set(parser, false);
+			Permit.set(supportsReparseField, parser, false);
 		} catch (ClassNotFoundException e) {
 			// only NetBeans has it
 		} catch (NoSuchFieldException e) {
@@ -300,7 +300,7 @@ public class LombokProcessor extends AbstractProcessor {
 			ClassLoader unwrapped = (ClassLoader) f.get(javacProcessingEnv);
 			if (unwrapped == null) return;
 			ClassLoader wrapped = wrapClassLoader(unwrapped);
-			f.set(javacProcessingEnv, wrapped);
+			Permit.set(f, javacProcessingEnv, wrapped);
 		} catch (NoSuchFieldException e) {
 			// Some versions of javac have this (and call close on it), some don't. I guess this one doesn't have it.
 		} catch (Throwable t) {

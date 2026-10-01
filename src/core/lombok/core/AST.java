@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -310,7 +310,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			if (o == null) return false;
 			
 			if (o == oldN) {
-				fa.field.set(statement, newN);
+				Permit.set(fa.field, statement, newN);
 				return true;
 			}
 			

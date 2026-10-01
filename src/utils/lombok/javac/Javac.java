@@ -411,7 +411,7 @@ public class Javac {
 	
 	public static void initDocComments(JCCompilationUnit cu) {
 		try {
-			JCCOMPILATIONUNIT_DOCCOMMENTS.set(cu, new HashMap<Object, String>());
+			Permit.set(JCCOMPILATIONUNIT_DOCCOMMENTS, cu, new HashMap<Object, String>());
 		} catch (IllegalArgumentException e) {
 			// That's fine - we're on JDK8, we'll fix that later.
 		} catch (IllegalAccessException e) {

@@ -86,7 +86,7 @@ public class CommentCatcher {
 				scannerFactory = Class.forName("lombok.javac.java7.CommentCollectingScannerFactory");
 			} else {
 				scannerFactory = Class.forName("lombok.javac.java8.CommentCollectingScannerFactory");
-				if (findTextBlocks) Permit.getField(scannerFactory, "findTextBlocks").set(null, true);
+				if (findTextBlocks) Permit.set(Permit.getField(scannerFactory, "findTextBlocks"), null, true);
 			}
 			Permit.getMethod(scannerFactory, "preRegister", Context.class).invoke(null, context);
 		} catch (InvocationTargetException e) {

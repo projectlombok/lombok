@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2025 The Project Lombok Authors.
+ * Copyright (C) 2011-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -200,7 +200,7 @@ public class JavacResolution {
 	private static void setEnvOfMemberEnter(MemberEnter memberEnter, Env<AttrContext> env) {
 		Field f = getMemberEnterDotEnv();
 		try {
-			f.set(memberEnter, env);
+			Permit.set(f, memberEnter, env);
 		} catch (Exception e) {
 			return;
 		}

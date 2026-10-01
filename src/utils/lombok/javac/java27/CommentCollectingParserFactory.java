@@ -58,7 +58,7 @@ public class CommentCollectingParserFactory extends ParserFactory {
 		Field field;
 		try {
 			field = Permit.getField(JavaCompiler.class, "parserFactory");
-			field.set(compiler, new CommentCollectingParserFactory(context));
+			Permit.set(field, compiler, new CommentCollectingParserFactory(context));
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not set comment sensitive parser in the compiler", e);
 		}
