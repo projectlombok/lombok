@@ -65,6 +65,10 @@ public class HandleVal extends JavacASTAdapter {
 	public void endVisitLocal(JavacNode localNode, JCVariableDecl local) {
 		JCTree typeTree = local.vartype;
 		if (typeTree == null) return;
+		// JDK 27 parses the `var` keyword as JCVarType. A star import of lombok makes
+		// typeMatches(lombok.var) succeed for that node, and wrapping it in an annotation
+		// crashes javac when the annotation type is attributed.
+		if (isLanguageVar(typeTree)) return;
 		String typeTreeToString = typeTree.toString();
 		JavacNode typeNode = localNode.getNodeFor(typeTree);
 		
@@ -211,6 +215,10 @@ public class HandleVal extends JavacASTAdapter {
 			} catch (Exception ignore) {}
 			return null;
 		}
+	}
+	
+	private static boolean isLanguageVar(JCTree typeTree) {
+		return "JCVarType".equals(typeTree.getClass().getSimpleName());
 	}
 	
 	private static class VarDeclDeclKind {
