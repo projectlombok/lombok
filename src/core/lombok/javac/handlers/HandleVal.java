@@ -65,14 +65,15 @@ public class HandleVal extends JavacASTAdapter {
 	public void endVisitLocal(JavacNode localNode, JCVariableDecl local) {
 		JCTree typeTree = local.vartype;
 		if (typeTree == null) return;
-		// JDK 27 parses the `var` keyword as JCVarType. A star import of lombok makes
-		// typeMatches(lombok.var) succeed for that node, and wrapping it in an annotation
-		// crashes javac when the annotation type is attributed.
-		if (isLanguageVar(typeTree)) return;
 		String typeTreeToString = typeTree.toString();
 		JavacNode typeNode = localNode.getNodeFor(typeTree);
 		
 		if (!(eq(typeTreeToString, "val") || eq(typeTreeToString, "var"))) return;
+		// JDK 27 parses the `var` keyword as JCVarType, and toString() is "var".
+		// A star import of lombok then makes typeMatches(lombok.var) succeed, and
+		// wrapping that node in an annotation crashes javac. Only check once the
+		// name already matches. This method runs for every local.
+		if (isLanguageVar(typeTree)) return;
 		boolean isVal = typeMatches(val.class, localNode, typeTree);
 		boolean isVar = typeMatches(var.class, localNode, typeTree);
 		if (!(isVal || isVar)) return;
@@ -217,8 +218,10 @@ public class HandleVal extends JavacASTAdapter {
 		}
 	}
 	
+	private static final Class<?> JC_VAR_TYPE = Permit.permissiveGetClass("com.sun.tools.javac.tree.JCTree$JCVarType");
+	
 	private static boolean isLanguageVar(JCTree typeTree) {
-		return "JCVarType".equals(typeTree.getClass().getSimpleName());
+		return JC_VAR_TYPE != null && JC_VAR_TYPE.isInstance(typeTree);
 	}
 	
 	private static class VarDeclDeclKind {
