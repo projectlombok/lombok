@@ -91,6 +91,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		}
 		delombok.addAdditionalAnnotationProcessor(new ValidateTypesProcessor());
 		delombok.addAdditionalAnnotationProcessor(new ValidateNoDuplicateTreeNodeProcessor());
+		for (AbstractProcessor processor : parameters.getAdditionalProcessors()) delombok.addAdditionalAnnotationProcessor(processor);
 		
 		delombok.addFile(file.getAbsoluteFile().getParentFile(), file.getName());
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());
