@@ -50,12 +50,12 @@ import com.sun.tools.javac.util.Name;
 @Provides(JavacSingularizer.class)
 public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
+		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap", "java.util.SequencedMap");
 	}
 	
 	@Override protected String getEmptyMaker(String target) {
+		if (target.endsWith("SortedMap") || target.endsWith("SequencedMap")) return "java.util.Collections.emptySortedMap";
 		if (target.endsWith("NavigableMap")) return "java.util.Collections.emptyNavigableMap";
-		if (target.endsWith("SortedMap")) return "java.util.Collections.emptySortedMap";
 		return "java.util.Collections.emptyMap";
 	}
 	
@@ -171,6 +171,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		
 		if (data.getTargetFqn().equals("java.util.Map")) {
 			statements.appendList(createJavaUtilSetMapInitialCapacitySwitchStatements(maker, data, builderType, true, "emptyMap", "singletonMap", "LinkedHashMap", source, builderVariable));
+		} else if (data.getTargetFqn().equals("java.util.SequencedMap")) {
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, true, true, false, true, "LinkedHashMap", source, builderVariable));
 		} else {
 			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, true, true, false, true, "TreeMap", source, builderVariable));
 		}
