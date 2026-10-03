@@ -777,6 +777,11 @@ public class EclipseHandlerUtil {
 			Annotation annotation = (Annotation) child.get();
 			for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, annotation.type)) return true;
 		}
+		if (node.get() instanceof AbstractVariableDeclaration) {
+			AbstractVariableDeclaration variable = (AbstractVariableDeclaration) node.get();
+			Annotation[] typeUseAnns = getTypeUseAnnotations(variable.type);
+			if (typeUseAnns != null && hasNonNullAnnotations(node, Arrays.asList(typeUseAnns))) return true;
+		}
 		return false;
 	}
 	
