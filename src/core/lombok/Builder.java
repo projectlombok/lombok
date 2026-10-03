@@ -139,13 +139,24 @@ public @interface Builder {
 	
 	/**
 	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
+	 * Note that explicitly setting {@link #toBuilderMethodName()} implicitly enables this feature, as if {@code toBuilder = true} were set.
 	 * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns
 	 * an instance of the declaring type.
-	 * 
+	 *
 	 * @return Whether to generate a {@code toBuilder()} method.
 	 */
 	boolean toBuilder() default false;
-	
+
+	/**
+	 * Name of the method that creates a builder initialized with the values of this instance.
+	 * <p>
+	 * Explicitly setting this to a non-empty method name implicitly enables {@link #toBuilder()}, as if {@code toBuilder = true} were set.
+	 * If omitted or left empty, and {@code toBuilder = true} is specified, the default method name {@code "toBuilder"} will be used.
+	 *
+	 * @return Name of the generated {@code toBuilder} method.
+	 */
+	String toBuilderMethodName() default "";
+
 	/**
 	 * Sets the access level of the generated builder class. By default, generated builder classes are {@code public}.
 	 * Note: This does nothing if you write your own builder class (we won't change its access level).
