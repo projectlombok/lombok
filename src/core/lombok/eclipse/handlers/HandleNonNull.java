@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2025 The Project Lombok Authors.
+ * Copyright (C) 2013-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -200,6 +200,8 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 			cd.statements[i] = new Assignment(lhs, rhs, cmp.sourceEnd);
 		}
 		
+		addConstructorCallToStatementsIfRequired(cd);
+		
 		setGeneratedBy(cd, annotationNode.get());
 		for (int i = 0; i < cd.arguments.length; i++) {
 			FieldDeclaration cmp = recordComponents.get(i);
@@ -358,6 +360,9 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 						idx = 0;
 						continue;
 					}
+					if (isExplicitConstructorCall(stat)) {
+						continue;
+					}
 					char[] varNameOfNullCheck = returnVarNameIfNullCheck(stat);
 					if (varNameOfNullCheck == null) break;
 					if (Arrays.equals(varNameOfNullCheck, expectedName)) return;
@@ -368,6 +373,7 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 			int skipOver = 0;
 			for (Statement stat : declaration.statements) {
 				if (isGenerated(stat) && isNullCheck(stat)) skipOver++;
+				if (isExplicitConstructorCall(stat)) skipOver++;
 				else break;
 			}
 			System.arraycopy(declaration.statements, 0, newStatements, 0, skipOver);
@@ -379,6 +385,10 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	
 	public boolean isNullCheck(Statement stat) {
 		return returnVarNameIfNullCheck(stat) != null;
+	}
+	
+	public boolean isExplicitConstructorCall(Statement stat) {
+		return stat instanceof ExplicitConstructorCall;
 	}
 	
 	public char[] returnVarNameIfNullCheck(Statement stat) {

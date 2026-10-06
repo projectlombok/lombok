@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -165,32 +165,62 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 			return;
 		}
 		
-		if (method.statements == null || method.statements.length == 0) {
+		Statement[] contents = method.statements;
+		
+		if (contents == null || contents.length == 0) {
 			boolean hasConstructorCall = false;
 			if (method instanceof ConstructorDeclaration) {
 				ExplicitConstructorCall constructorCall = ((ConstructorDeclaration) method).constructorCall;
 				hasConstructorCall = constructorCall != null && !constructorCall.isImplicitSuper() && !constructorCall.isImplicitThis();
 			}
-			
-			if (hasConstructorCall) {
-				annotation.addWarning("Calls to sibling / super constructors are always excluded from @SneakyThrows; @SneakyThrows has been ignored because there is no other code in this constructor.");
-			} else {
-				annotation.addWarning("This method or constructor is empty; @SneakyThrows has been ignored.");
-			}
-			
+			generateEmptyBlockWarning(annotation, hasConstructorCall);
 			return;
 		}
 		
-		Statement[] contents = method.statements;
+		Statement constructorCall = null;
+		if (isConstructorCall(contents[0])) {
+			constructorCall = contents[0];
+			Statement[] newStatements = new Statement[contents.length - 1];
+			System.arraycopy(contents, 1, newStatements, 0, newStatements.length);
+			contents = newStatements;
+		}
+		if (contents.length == 0) {
+			generateEmptyBlockWarning(annotation, true);
+			return;
+		}
+		
+//		boolean onlyConstructorCall = false;
+//		if (method instanceof ConstructorDeclaration) {
+//			ExplicitConstructorCall constructorCall = ((ConstructorDeclaration) method).constructorCall;
+//			boolean hasConstructorCall = constructorCall != null && !constructorCall.isImplicitSuper() && !constructorCall.isImplicitThis();
+//			
+//			onlyConstructorCall = hasConstructorCall && (emptyBody || contents.length == 1 && contents[0] == constructorCall);
+//		}
+		
 		
 		for (DeclaredException exception : exceptions) {
 			contents = new Statement[] { buildTryCatchBlock(contents, exception, exception.node, method) };
 		}
 		
+		if (constructorCall != null) {
+			contents = new Statement[] {constructorCall, contents[0]};
+		}
 		method.statements = contents;
 		annotation.up().rebuild();
 	}
+
+	private void generateEmptyBlockWarning(EclipseNode annotation, boolean hasConstructorCall) {
+		if (hasConstructorCall) {
+			annotation.addWarning("Calls to sibling / super constructors are always excluded from @SneakyThrows; @SneakyThrows has been ignored because there is no other code in this constructor.");
+		} else {
+			annotation.addWarning("This method or constructor is empty; @SneakyThrows has been ignored.");
+		}
+	}
 	
+	private boolean isConstructorCall(Statement statement) {
+		return statement instanceof ExplicitConstructorCall;
+	}
+
 	public Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source, AbstractMethodDeclaration method) {
 		int methodStart = method.bodyStart;
 		int methodEnd = method.bodyEnd;
