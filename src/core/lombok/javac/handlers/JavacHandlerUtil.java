@@ -1724,8 +1724,7 @@ public class JavacHandlerUtil {
 				for (String nn : NONNULL_ANNOTATIONS) {
 					// Javac initially stores prefix type-use annotations among the declaration annotations.
 					// TYPE_USE-only @NonNull annotations in this position apply to the array's element type.
-					if ((nn.equals("lombok.NonNull") || nn.equals("org.jspecify.annotations.NonNull")) &&
-						!isTypeUseAnnotationOnValue(node, annotation)) continue;
+					if (TYPE_USE_ONLY_ANNOTATIONS.contains(nn) && !isTypeUseAnnotationOnValue(node, annotation)) continue;
 					if (typeMatches(nn, node, annotationTypeName)) return true;
 				}
 			}
@@ -1750,8 +1749,7 @@ public class JavacHandlerUtil {
 		for (JCAnnotation ann : anns) {
 			String annotationTypeName = getTypeName(ann.annotationType);
 			for (String nn : NONNULL_ANNOTATIONS) {
-				if ((nn.equals("lombok.NonNull") || nn.equals("org.jspecify.annotations.NonNull")) &&
-					!isTypeUseAnnotationOnValue(node, ann)) continue;
+				if (TYPE_USE_ONLY_ANNOTATIONS.contains(nn) && !isTypeUseAnnotationOnValue(node, ann)) continue;
 				if (typeMatches(nn, node, annotationTypeName)) return true;
 			}
 		}

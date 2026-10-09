@@ -778,8 +778,7 @@ public class EclipseHandlerUtil {
 			for (String bn : NONNULL_ANNOTATIONS) {
 				// ECJ initially stores prefix type-use annotations among the declaration annotations.
 				// TYPE_USE-only @NonNull annotations in this position apply to the array's element type.
-				if ((bn.equals("lombok.NonNull") || bn.equals("org.jspecify.annotations.NonNull")) &&
-					!isTypeUseAnnotationOnValue(node, annotation)) continue;
+				if (TYPE_USE_ONLY_ANNOTATIONS.contains(bn) && !isTypeUseAnnotationOnValue(node, annotation)) continue;
 				if (typeMatches(bn, node, annotation.type)) return true;
 			}
 		}
@@ -809,8 +808,7 @@ public class EclipseHandlerUtil {
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName() != null) {
 				for (String bn : NONNULL_ANNOTATIONS) {
-					if ((bn.equals("lombok.NonNull") || bn.equals("org.jspecify.annotations.NonNull")) &&
-						!isTypeUseAnnotationOnValue(node, annotation)) continue;
+					if (TYPE_USE_ONLY_ANNOTATIONS.contains(bn) && !isTypeUseAnnotationOnValue(node, annotation)) continue;
 					if (typeMatches(bn, node, typeRef)) return true;
 				}
 			}
