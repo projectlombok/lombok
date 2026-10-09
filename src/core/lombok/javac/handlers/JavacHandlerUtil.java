@@ -1725,6 +1725,10 @@ public class JavacHandlerUtil {
 			}
 		}
 		
+		// Only annotations on the outermost type apply to the value itself, not its elements or type arguments.
+		if (node.get() instanceof JCVariableDecl) {
+			return hasNonNullAnnotations(node, getTypeUseAnnotations(((JCVariableDecl) node.get()).vartype));
+		}
 		return false;
 	}
 	

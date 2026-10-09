@@ -777,6 +777,13 @@ public class EclipseHandlerUtil {
 			Annotation annotation = (Annotation) child.get();
 			for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, annotation.type)) return true;
 		}
+		// Only annotations on the outermost type apply to the value itself, not its elements or type arguments.
+		if (node.get() instanceof AbstractVariableDeclaration) {
+			Annotation[] anns = EclipseAST.getTopLevelTypeReferenceAnnotations(((AbstractVariableDeclaration) node.get()).type);
+			if (anns != null) for (Annotation ann : anns) {
+				for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, ann.type)) return true;
+			}
+		}
 		return false;
 	}
 	

@@ -31,6 +31,12 @@ import java.lang.annotation.Target;
  * If put on a parameter, lombok will insert a null-check at the start of the method / constructor's body, throwing a
  * {@code NullPointerException} with the parameter's name as message. If put on a field, any generated method assigning
  * a value to this field will also produce these null-checks.
+ * <p>
+ * When used as a type-use annotation, only an annotation on the outermost type triggers a null-check.
+ * For example, {@code String @NonNull []} marks the array reference as non-null, whereas
+ * {@code String[] @NonNull []} marks its elements and does not trigger a check of the array reference.
+ * An annotation before a field or parameter type, such as {@code @NonNull String[]}, is also a
+ * declaration annotation and continues to trigger a check of the array reference.
  */
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.CLASS)

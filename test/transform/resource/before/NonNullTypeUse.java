@@ -16,4 +16,14 @@ class NonNullTypeUse {
 	}
 	void test7(java.lang.String @NonNull [][] weird) {
 	}
+	void test8(@NonNull String... args) {
+	}
+	void test9(String @NonNull ... args) {
+	}
+	void test10(java.lang.@NonNull String[] elements) {
+	}
+	void test11(String[] @NonNull ... elements) {
+	}
+	void test12(java.util.List<@NonNull String> elements) {
+	}
 }

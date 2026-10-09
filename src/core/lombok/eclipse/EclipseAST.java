@@ -306,6 +306,9 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 			if (annss != null) return annss[0];
 		} catch (Throwable ignore) {}
 		
+		// For arrays, annotations on the element type do not annotate the array reference.
+		if (tr.dimensions() > 0) return null;
+
 		try {
 			Field f = EcjReflectionCheck.typeReferenceAnnotations;
 			if (f == null) return null;

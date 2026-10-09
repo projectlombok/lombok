@@ -37,4 +37,22 @@ class NonNullTypeUse {
           throw new java.lang.NullPointerException("weird is marked non-null but is null");
         }
   }
+  void test8(@NonNull String... args) {
+    if ((args == null))
+        {
+          throw new java.lang.NullPointerException("args is marked non-null but is null");
+        }
+  }
+  void test9(String @NonNull ... args) {
+    if ((args == null))
+        {
+          throw new java.lang.NullPointerException("args is marked non-null but is null");
+        }
+  }
+  void test10(java.lang.@NonNull String[] elements) {
+  }
+  void test11(String[] @NonNull ... elements) {
+  }
+  void test12(java.util.List<@NonNull String> elements) {
+  }
 }
