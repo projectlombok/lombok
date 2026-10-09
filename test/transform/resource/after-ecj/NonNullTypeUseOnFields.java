@@ -1,19 +1,15 @@
 import lombok.NonNull;
 @lombok.RequiredArgsConstructor @lombok.AllArgsConstructor @lombok.Setter @lombok.With class NonNullTypeUseOnFields {
-  @NonNull String[] declaration;
+  @NonNull String[] elementType;
   String @NonNull [] array;
   String @NonNull [][] outerArray;
   String[] @NonNull [] innerArray;
   java.lang.@NonNull String[] elements;
   java.util.List<@NonNull String> listElements;
   java.util.Map<@NonNull String, java.util.List<Object @NonNull []>> nested;
-  @NonNull java.util.List<String> list;
-  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields(final @NonNull String[] declaration, final String[] array, final String[][] outerArray, final @NonNull java.util.List<String> list) {
+  java.util. @NonNull List<String> list;
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields(final String[] array, final String[][] outerArray, final java.util. @NonNull List<String> list) {
     super();
-    if ((declaration == null))
-        {
-          throw new java.lang.NullPointerException("declaration is marked non-null but is null");
-        }
     if ((array == null))
         {
           throw new java.lang.NullPointerException("array is marked non-null but is null");
@@ -26,17 +22,12 @@ import lombok.NonNull;
         {
           throw new java.lang.NullPointerException("list is marked non-null but is null");
         }
-    this.declaration = declaration;
     this.array = array;
     this.outerArray = outerArray;
     this.list = list;
   }
-  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields(final @NonNull String[] declaration, final String[] array, final String[][] outerArray, final String[][] innerArray, final java.lang.@NonNull String[] elements, final java.util.List<@NonNull String> listElements, final java.util.Map<@NonNull String, java.util.List<Object[]>> nested, final @NonNull java.util.List<String> list) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields(final @NonNull String[] elementType, final String[] array, final String[][] outerArray, final String[][] innerArray, final java.lang.@NonNull String[] elements, final java.util.List<@NonNull String> listElements, final java.util.Map<@NonNull String, java.util.List<Object[]>> nested, final java.util. @NonNull List<String> list) {
     super();
-    if ((declaration == null))
-        {
-          throw new java.lang.NullPointerException("declaration is marked non-null but is null");
-        }
     if ((array == null))
         {
           throw new java.lang.NullPointerException("array is marked non-null but is null");
@@ -49,7 +40,7 @@ import lombok.NonNull;
         {
           throw new java.lang.NullPointerException("list is marked non-null but is null");
         }
-    this.declaration = declaration;
+    this.elementType = elementType;
     this.array = array;
     this.outerArray = outerArray;
     this.innerArray = innerArray;
@@ -58,12 +49,8 @@ import lombok.NonNull;
     this.nested = nested;
     this.list = list;
   }
-  public @java.lang.SuppressWarnings("all") @lombok.Generated void setDeclaration(final @NonNull String[] declaration) {
-    if ((declaration == null))
-        {
-          throw new java.lang.NullPointerException("declaration is marked non-null but is null");
-        }
-    this.declaration = declaration;
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setElementType(final @NonNull String[] elementType) {
+    this.elementType = elementType;
   }
   public @java.lang.SuppressWarnings("all") @lombok.Generated void setArray(final String[] array) {
     if ((array == null))
@@ -91,7 +78,7 @@ import lombok.NonNull;
   public @java.lang.SuppressWarnings("all") @lombok.Generated void setNested(final java.util.Map<@NonNull String, java.util.List<Object[]>> nested) {
     this.nested = nested;
   }
-  public @java.lang.SuppressWarnings("all") @lombok.Generated void setList(final @NonNull java.util.List<String> list) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated void setList(final java.util. @NonNull List<String> list) {
     if ((list == null))
         {
           throw new java.lang.NullPointerException("list is marked non-null but is null");
@@ -101,12 +88,8 @@ import lombok.NonNull;
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields withDeclaration(final @NonNull String[] declaration) {
-    if ((declaration == null))
-        {
-          throw new java.lang.NullPointerException("declaration is marked non-null but is null");
-        }
-    return ((this.declaration == declaration) ? this : new NonNullTypeUseOnFields(declaration, this.array, this.outerArray, this.innerArray, this.elements, this.listElements, this.nested, this.list));
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields withElementType(final @NonNull String[] elementType) {
+    return ((this.elementType == elementType) ? this : new NonNullTypeUseOnFields(elementType, this.array, this.outerArray, this.innerArray, this.elements, this.listElements, this.nested, this.list));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
@@ -116,7 +99,7 @@ import lombok.NonNull;
         {
           throw new java.lang.NullPointerException("array is marked non-null but is null");
         }
-    return ((this.array == array) ? this : new NonNullTypeUseOnFields(this.declaration, array, this.outerArray, this.innerArray, this.elements, this.listElements, this.nested, this.list));
+    return ((this.array == array) ? this : new NonNullTypeUseOnFields(this.elementType, array, this.outerArray, this.innerArray, this.elements, this.listElements, this.nested, this.list));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
@@ -126,40 +109,40 @@ import lombok.NonNull;
         {
           throw new java.lang.NullPointerException("outerArray is marked non-null but is null");
         }
-    return ((this.outerArray == outerArray) ? this : new NonNullTypeUseOnFields(this.declaration, this.array, outerArray, this.innerArray, this.elements, this.listElements, this.nested, this.list));
+    return ((this.outerArray == outerArray) ? this : new NonNullTypeUseOnFields(this.elementType, this.array, outerArray, this.innerArray, this.elements, this.listElements, this.nested, this.list));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
   public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields withInnerArray(final String[][] innerArray) {
-    return ((this.innerArray == innerArray) ? this : new NonNullTypeUseOnFields(this.declaration, this.array, this.outerArray, innerArray, this.elements, this.listElements, this.nested, this.list));
+    return ((this.innerArray == innerArray) ? this : new NonNullTypeUseOnFields(this.elementType, this.array, this.outerArray, innerArray, this.elements, this.listElements, this.nested, this.list));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
   public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields withElements(final java.lang.@NonNull String[] elements) {
-    return ((this.elements == elements) ? this : new NonNullTypeUseOnFields(this.declaration, this.array, this.outerArray, this.innerArray, elements, this.listElements, this.nested, this.list));
+    return ((this.elements == elements) ? this : new NonNullTypeUseOnFields(this.elementType, this.array, this.outerArray, this.innerArray, elements, this.listElements, this.nested, this.list));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
   public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields withListElements(final java.util.List<@NonNull String> listElements) {
-    return ((this.listElements == listElements) ? this : new NonNullTypeUseOnFields(this.declaration, this.array, this.outerArray, this.innerArray, this.elements, listElements, this.nested, this.list));
+    return ((this.listElements == listElements) ? this : new NonNullTypeUseOnFields(this.elementType, this.array, this.outerArray, this.innerArray, this.elements, listElements, this.nested, this.list));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
   public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields withNested(final java.util.Map<@NonNull String, java.util.List<Object[]>> nested) {
-    return ((this.nested == nested) ? this : new NonNullTypeUseOnFields(this.declaration, this.array, this.outerArray, this.innerArray, this.elements, this.listElements, nested, this.list));
+    return ((this.nested == nested) ? this : new NonNullTypeUseOnFields(this.elementType, this.array, this.outerArray, this.innerArray, this.elements, this.listElements, nested, this.list));
   }
   /**
    * @return a clone of this object, except with this updated property (returns {@code this} if an identical value is passed).
    */
-  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields withList(final @NonNull java.util.List<String> list) {
+  public @java.lang.SuppressWarnings("all") @lombok.Generated NonNullTypeUseOnFields withList(final java.util. @NonNull List<String> list) {
     if ((list == null))
         {
           throw new java.lang.NullPointerException("list is marked non-null but is null");
         }
-    return ((this.list == list) ? this : new NonNullTypeUseOnFields(this.declaration, this.array, this.outerArray, this.innerArray, this.elements, this.listElements, this.nested, list));
+    return ((this.list == list) ? this : new NonNullTypeUseOnFields(this.elementType, this.array, this.outerArray, this.innerArray, this.elements, this.listElements, this.nested, list));
   }
 }

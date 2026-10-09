@@ -32,13 +32,15 @@ import java.lang.annotation.Target;
  * {@code NullPointerException} with the parameter's name as message. If put on a field, any generated method assigning
  * a value to this field will also produce these null-checks.
  * <p>
- * When used as a type-use annotation, only an annotation on the outermost type triggers a null-check.
+ * This is a type-use annotation: only an annotation on the outermost type triggers a null-check.
  * For example, {@code String @NonNull []} marks the array reference as non-null, whereas
- * {@code String[] @NonNull []} marks its elements and does not trigger a check of the array reference.
- * An annotation before a field or parameter type, such as {@code @NonNull String[]}, is also a
- * declaration annotation and continues to trigger a check of the array reference.
+ * {@code @NonNull String[]} marks its element type and {@code String[] @NonNull []} marks its
+ * inner array references. Neither element annotation triggers a check of the outer array reference.
+ * The same distinction applies to varargs: {@code String @NonNull ...} checks the array reference,
+ * whereas {@code @NonNull String...} only annotates the element type.
+ * Annotations on type arguments do not trigger null-checks of the enclosing reference either.
  */
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE})
+@Target(ElementType.TYPE_USE)
 @Retention(RetentionPolicy.CLASS)
 @Documented
 public @interface NonNull {

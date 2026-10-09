@@ -26,4 +26,10 @@ class NonNullTypeUse {
 	}
 	void test12(java.util.List<@NonNull String> elements) {
 	}
+	void test13(@NonNull String @NonNull [] args) {
+	}
+	void test14(@NonNull String[] @NonNull [] elements) {
+	}
+	void test15(java.util.@NonNull List<String> args) {
+	}
 }

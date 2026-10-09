@@ -777,9 +777,9 @@ public class EclipseHandlerUtil {
 			Annotation annotation = (Annotation) child.get();
 			for (String bn : NONNULL_ANNOTATIONS) {
 				// ECJ initially stores prefix type-use annotations among the declaration annotations.
-				// JSpecify's @NonNull only targets TYPE_USE, so on an array it applies to the element type.
-				if (bn.equals("org.jspecify.annotations.NonNull") && node.get() instanceof AbstractVariableDeclaration &&
-					((AbstractVariableDeclaration) node.get()).type.dimensions() > 0) continue;
+				// TYPE_USE-only @NonNull annotations in this position apply to the array's element type.
+				if ((bn.equals("lombok.NonNull") || bn.equals("org.jspecify.annotations.NonNull")) &&
+					!isTypeUseAnnotationOnValue(node, annotation)) continue;
 				if (typeMatches(bn, node, annotation.type)) return true;
 			}
 		}
@@ -793,12 +793,26 @@ public class EclipseHandlerUtil {
 		return false;
 	}
 	
+	/** Whether a TYPE_USE-only annotation marks the value rather than an array element. */
+	public static boolean isTypeUseAnnotationOnValue(EclipseNode node, Annotation annotation) {
+		if (!(node.get() instanceof AbstractVariableDeclaration)) return true;
+		TypeReference type = ((AbstractVariableDeclaration) node.get()).type;
+		if (type == null || type.dimensions() == 0) return true;
+		Annotation[] anns = EclipseAST.getTopLevelTypeReferenceAnnotations(type);
+		if (anns != null) for (Annotation ann : anns) if (ann == annotation) return true;
+		return false;
+	}
+
 	public static boolean hasNonNullAnnotations(EclipseNode node, List<Annotation> anns) {
 		if (anns == null) return false;
 		for (Annotation annotation : anns) {
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName() != null) {
-				for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) return true;
+				for (String bn : NONNULL_ANNOTATIONS) {
+					if ((bn.equals("lombok.NonNull") || bn.equals("org.jspecify.annotations.NonNull")) &&
+						!isTypeUseAnnotationOnValue(node, annotation)) continue;
+					if (typeMatches(bn, node, typeRef)) return true;
+				}
 			}
 		}
 		return false;
