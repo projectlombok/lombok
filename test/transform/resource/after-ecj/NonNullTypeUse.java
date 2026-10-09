@@ -55,10 +55,18 @@ class NonNullTypeUse {
   }
   void test14(@NonNull String[] @NonNull [] elements) {
   }
-  void test15(java.util. @NonNull List<String> args) {
+  void test15(String[] @NonNull [] elements) {
+  }
+  void test16(java.util. @NonNull List<String> args) {
     if ((args == null))
         {
           throw new java.lang.NullPointerException("args is marked non-null but is null");
+        }
+  }
+  void test17(String @NonNull []... elements) {
+    if ((elements == null))
+        {
+          throw new java.lang.NullPointerException("elements is marked non-null but is null");
         }
   }
 }
