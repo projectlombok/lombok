@@ -1721,7 +1721,13 @@ public class JavacHandlerUtil {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
 				String annotationTypeName = getTypeName(annotation.annotationType);
-				for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
+				for (String nn : NONNULL_ANNOTATIONS) {
+					// Javac initially stores prefix type-use annotations among the declaration annotations.
+					// JSpecify's @NonNull only targets TYPE_USE, so on an array it applies to the element type.
+					if (nn.equals("org.jspecify.annotations.NonNull") && node.get() instanceof JCVariableDecl &&
+						removeTypeUseAnnotations(((JCVariableDecl) node.get()).vartype) instanceof JCArrayTypeTree) continue;
+					if (typeMatches(nn, node, annotationTypeName)) return true;
+				}
 			}
 		}
 		
