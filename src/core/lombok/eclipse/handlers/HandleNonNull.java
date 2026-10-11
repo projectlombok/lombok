@@ -181,18 +181,17 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 		
 		ConstructorDeclaration cd = new ConstructorDeclaration(((CompilationUnitDeclaration) typeNode.top().get()).compilationResult);
 		cd.modifiers = ClassFileConstants.AccPublic;
-		cd.bits = ASTNode.Bit32 | ECLIPSE_DO_NOT_TOUCH_FLAG | IsCanonicalConstructor;
+		cd.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG | IsCanonicalConstructor;
 		cd.selector = td.name;
 		cd.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
 		if (recordComponents == null) recordComponents = getRecordComponents(typeNode);
 		cd.arguments = new Argument[recordComponents.size()];
 		cd.statements = new Statement[recordComponents.size()];
-		cd.bits = IsCanonicalConstructor;
 		
 		for (int i = 0; i < cd.arguments.length; i++) {
 			FieldDeclaration cmp = recordComponents.get(i);
 			cd.arguments[i] = new Argument(cmp.name, cmp.sourceStart, cmp.type, cmp.modifiers);
-			cd.arguments[i].bits = ASTNode.IsArgument | ASTNode.IgnoreRawTypeCheck | ASTNode.IsReachable;
+			cd.arguments[i].bits |= ASTNode.IsArgument | ASTNode.IgnoreRawTypeCheck;
 			cd.arguments[i].annotations = cmp.annotations;
 			FieldReference lhs = new FieldReference(cmp.name, 0);
 			lhs.receiver = new ThisReference(0, 0);
