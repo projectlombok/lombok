@@ -12,6 +12,7 @@
 /.project
 /.classpath
 /.factorypath
+/.metadata
 /lombok.iml
 /.idea
 *.iml
