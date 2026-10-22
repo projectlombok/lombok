@@ -115,16 +115,16 @@ public class HandleVal extends JavacASTAdapter {
 		
 		if (isVal) local.mods.flags |= Flags.FINAL;
 		
-		if (!localNode.shouldDeleteLombokAnnotations()) {
-			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), typeNode);
-			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
-		}
-		
 		if (localNode.getSourceVersion() >= 10) {
 			local.vartype = null;
 			localNode.getAst().setChanged();
 			VarDeclDeclKind.setDeclKindToVar(local);
 			return;
+		}
+		
+		if (!localNode.shouldDeleteLombokAnnotations()) {
+			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), typeNode);
+			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
 		if (JavacResolution.platformHasTargetTyping()) {
