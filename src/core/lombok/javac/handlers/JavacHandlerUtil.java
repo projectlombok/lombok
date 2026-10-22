@@ -2369,6 +2369,12 @@ public class JavacHandlerUtil {
 			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
 				return applySetter(cu, node, "WITHBY|WITH_BY");
 			}
+		},
+		FIELD_NAME_CONSTANT {
+			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
+				String javadoc = Javac.getDocComment(cu, node.get());
+				return stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), JavadocTag.PARAM, JavadocTag.RETURN);
+			}
 		};
 		
 		public abstract String apply(final JCCompilationUnit cu, final JavacNode node);

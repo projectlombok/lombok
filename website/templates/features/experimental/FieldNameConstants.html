@@ -59,6 +59,8 @@
 		</p><p>
 			Like other lombok handlers that touch fields, any field whose name starts with a dollar (<code>$</code>) symbol is skipped entirely. Such a field will not be modified at all. Static fields are also skipped.
 		</p><p>
+			The javadoc on a field is copied to its generated constant, minus any <code>@param</code> and <code>@return</code> lines and any <code>--- GETTER ---</code>-style sections. This is currently only done by javac (and thus delombok), not by eclipse.
+		</p><p>
 			<em>MapStruct interop:</em> When making references to field name constants inside MapStruct's <code>@Mapping</code>, and you use that annotation more than once on a node, you must manually wrap these in the <code>@Mappings</code> 'container annotation'. Like so: <code>@Mappings({@Mapping(target = Entity.Fields.entityProperty, source = "dtoProperty")})</code>.
 		</p>
 	</@f.smallPrint>

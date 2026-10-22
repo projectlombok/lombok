@@ -185,6 +185,7 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 			JCVariableDecl constantField = maker.VarDef(constantValueMods, fName, returnType, init);
 			injectField(fieldsType, constantField, false, true);
 			setGeneratedBy(constantField, errorNode);
+			copyJavadoc(field, constantField, CopyJavadoc.FIELD_NAME_CONSTANT);
 			generated.add(constantField);
 		}
 		for (JCVariableDecl cf : generated) recursiveSetGeneratedBy(cf, errorNode);
