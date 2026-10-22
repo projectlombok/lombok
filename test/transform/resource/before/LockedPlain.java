@@ -31,3 +31,19 @@ class LockedPlainWrite {
 		System.out.println("eight");
 	}
 }
+@Locked.Policy(fairness = true)
+class LockedFair {
+	@Locked void test() {
+		System.out.println("nine");
+	}
+}
+@Locked.Policy(fairness = true)
+class LockedFairReadWrite {
+	private int value;
+	@Locked.Read int get() {
+		return value;
+	}
+	@Locked.Write void set(int value) {
+		this.value = value;
+	}
+}
