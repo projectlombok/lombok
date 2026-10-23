@@ -88,6 +88,7 @@ public abstract class AbstractRunTests {
 				testParameters.setFormatPreferences(sourceDirectives_.getFormatPreferences());
 				testParameters.setMinVersion(sourceDirectives_.minVersion());
 				testParameters.setVerifyDiet(sourceDirectives_.isVerifyDiet());
+				testParameters.setAdditionalProcessors(params.getAdditionalProcessors());
 				boolean checkPositions = !(params instanceof TestLombokFilesIdempotent || params instanceof TestSourceFiles) && !sourceDirectives_.isSkipCompareContent();
 				testParameters.setCheckPositions(checkPositions);
 				String javaVersionString = System.getProperty("compiler.compliance.level");

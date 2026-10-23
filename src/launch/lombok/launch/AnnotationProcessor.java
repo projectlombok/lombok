@@ -22,7 +22,9 @@
 package lombok.launch;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Completion;
@@ -34,6 +36,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVisitor;
 
 import sun.misc.Unsafe;
 
@@ -41,6 +45,34 @@ class AnnotationProcessorHider {
 
 	public static class AstModificationNotifierData {
 		public volatile static boolean lombokInvoked = false;
+		
+		// Each running lombok processor registers an oracle that answers null for types it does not own. Held weakly: this class outlives compilations in daemons and IDEs.
+		private static final Set<TypeVisitor<Boolean, Void>> oracles = Collections.newSetFromMap(new WeakHashMap<TypeVisitor<Boolean, Void>, Boolean>());
+		
+		public static void registerOracle(TypeVisitor<Boolean, Void> oracle) {
+			synchronized (oracles) {
+				oracles.add(oracle);
+			}
+			lombokInvoked = true;
+		}
+		
+		public static void unregisterOracle(TypeVisitor<Boolean, Void> oracle) {
+			synchronized (oracles) {
+				oracles.remove(oracle);
+			}
+		}
+		
+		public static boolean isTypeComplete(TypeMirror type) {
+			// javac initializes processors lazily in path order; before lombok has run at all nothing is complete, which keeps mapstruct-first setups working.
+			if (!lombokInvoked) return false;
+			synchronized (oracles) {
+				for (TypeVisitor<Boolean, Void> oracle : oracles) {
+					Boolean complete = type.accept(oracle, null);
+					if (complete != null) return complete;
+				}
+			}
+			return true;
+		}
 	}
 	
 	public static class AnnotationProcessor extends AbstractProcessor {

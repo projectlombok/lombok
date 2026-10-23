@@ -45,6 +45,9 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeVisitor;
+import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager;
 
@@ -107,6 +110,22 @@ public class LombokProcessor extends AbstractProcessor {
 			for (Long prio : p) this.priorityLevels[i++] = prio;
 			this.priorityLevelsRequiringResolutionReset = transformer.getPrioritiesRequiringResolutionReset();
 		}
+		if (registerOracle != null) Permit.invokeSneaky(registerOracle, null, completenessOracle);
+	}
+	
+	private static final Method registerOracle = getLaunchMethod("registerOracle");
+	private static final Method unregisterOracle = getLaunchMethod("unregisterOracle");
+	
+	private static Method getLaunchMethod(String name) {
+		// The shadow loader defines its own copy of lombok.launch; the mapstruct binding sees the outermost loader's copy, so register there.
+		List<ClassLoader> loaders = new ArrayList<ClassLoader>();
+		for (ClassLoader cl = LombokProcessor.class.getClassLoader(); cl != null; cl = cl.getParent()) loaders.add(0, cl);
+		for (ClassLoader cl : loaders) {
+			try {
+				return Permit.getMethod(Class.forName("lombok.launch.AnnotationProcessorHider$AstModificationNotifierData", false, cl), name, TypeVisitor.class);
+			} catch (Exception e) {}
+		}
+		return null;
 	}
 	
 	private static final String JPE = "com.sun.tools.javac.processing.JavacProcessingEnvironment";
@@ -313,11 +332,23 @@ public class LombokProcessor extends AbstractProcessor {
 	private Set<Long> priorityLevelsRequiringResolutionReset;
 	private CleanupRegistry cleanup = new CleanupRegistry();
 	
+	private final TypeVisitor<Boolean, Void> completenessOracle = new SimpleTypeVisitor6<Boolean, Void>() {
+		@Override public Boolean visitDeclared(DeclaredType type, Void p) {
+			JCCompilationUnit unit = toUnit(type.asElement());
+			if (unit == null || !roots.containsKey(unit)) return null;
+			if (roots.get(unit) == null) return true;
+			// Mapstruct writes nothing when it defers a mapper, so this is what guarantees the round it retries in.
+			forceNewRound(javacFiler);
+			return false;
+		}
+	};
+	
 	/** {@inheritDoc} */
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		if (lombokDisabled) return false;
 		if (roundEnv.processingOver()) {
 			cleanup.run();
+			if (unregisterOracle != null) Permit.invokeSneaky(unregisterOracle, null, completenessOracle);
 			return false;
 		}
 		

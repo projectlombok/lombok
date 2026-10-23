@@ -25,9 +25,12 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import javax.annotation.processing.AbstractProcessor;
 
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -89,6 +92,10 @@ public class DirectoryRunner extends Runner {
 		public abstract boolean expectChanges();
 		public String testNamePrefix() {
 			return "";
+		}
+		
+		public List<AbstractProcessor> getAdditionalProcessors() {
+			return Collections.emptyList();
 		}
 	}
 	

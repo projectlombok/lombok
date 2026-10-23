@@ -21,7 +21,10 @@
  */
 package lombok;
 
+import java.util.List;
 import java.util.Map;
+
+import javax.annotation.processing.AbstractProcessor;
 
 public class TestParameters {
 	private Long sourceVersion;
@@ -32,6 +35,7 @@ public class TestParameters {
 	private String encoding;
 	private Map<String, String> formatPreferences;
 	private boolean checkPositions;
+	private List<AbstractProcessor> additionalProcessors;
 	
 	// Eclipse/Ecj only
 	private boolean verifyDiet;
@@ -82,6 +86,14 @@ public class TestParameters {
 	
 	public void setCheckPositions(boolean checkPositions) {
 		this.checkPositions = checkPositions;
+	}
+	
+	public List<AbstractProcessor> getAdditionalProcessors() {
+		return additionalProcessors;
+	}
+	
+	public void setAdditionalProcessors(List<AbstractProcessor> additionalProcessors) {
+		this.additionalProcessors = additionalProcessors;
 	}
 	
 	public boolean isVerifyDiet() {
