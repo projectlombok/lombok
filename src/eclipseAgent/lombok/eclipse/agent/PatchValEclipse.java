@@ -53,13 +53,6 @@ import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 
-// The behaviour of the javac version of this is:
-// - on JDK <10, resolve the initialising expression and replace the vardecl's type with the resolved expression, then, add an annotation to the vardecl's type (unless it already exists) of the val/var type used, i.e,
-//    `var x = 10;` turns into `@var int x = 10`.
-// - on JDK >=10, replace lombok type `var`/`val` with keyword `var`/`final var`; do not add the annotation (from JDK27 onwards, that annotation causes issues; `@var` or `@lombok.var` simply isn't legal on JDK10+ javac, hence internals choking on it is not all that surprising.
-//
-// However, the eclipse behavior is always the pre-10 JDK behaviour: Resolve initialising expression, replace vardecl's type, and add the annotation. It is an extraordinary step to have the generating behaviour of eclipse vs javac differ, but it's warranted here - javac chokes on doing it,
-// but on the eclipse side we can't replace with keyword var/val (eclipse already 'moved on', it'd get a lot more complicated to do that), and the annotations do help with java searches for references.
 public class PatchValEclipse {
 	public static void copyInitializationOfForEachIterable(Parser parser) {
 		ASTNode[] astStack;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2026 The Project Lombok Authors.
+ * Copyright (C) 2011-2025 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,25 +134,25 @@ public final class CompilerMessageSuppressor {
 			if (Boolean.TRUE.equals(deferDiagnosticsField.get(log))) {
 				queueCache.set((Queue<?>) deferredDiagnosticsField.get(log));
 				Queue<?> empty = new LinkedList<Object>();
-				Permit.set(deferredDiagnosticsField, log, empty);
+				deferredDiagnosticsField.set(log, empty);
 			}
 		} catch (Exception e) {}
 		
 		if (dumpOnErrorField != null) try {
 			dumpOnError = (Boolean) dumpOnErrorField.get(log);
-			Permit.set(dumpOnErrorField, log, false);
+			dumpOnErrorField.set(log, false);
 		} catch (Exception e) {
 		}
 		
 		if (promptOnErrorField != null) try {
 			promptOnError = (Boolean) promptOnErrorField.get(log);
-			Permit.set(promptOnErrorField, log, false);
+			promptOnErrorField.set(log, false);
 		} catch (Exception e) {
 		}
 		
 		if (diagnosticListenerField != null) try {
 			logDiagnosticListener = (DiagnosticListener<?>) diagnosticListenerField.get(log);
-			Permit.set(diagnosticListenerField, log, null);
+			diagnosticListenerField.set(log, null);
 		} catch (Exception e) {
 		}
 		
@@ -184,22 +184,22 @@ public final class CompilerMessageSuppressor {
 		noticeWriterField.resume(log);
 		
 		if (dumpOnError != null) try {
-			Permit.set(dumpOnErrorField, log, dumpOnError);
+			dumpOnErrorField.set(log, dumpOnError);
 			dumpOnError = null;
 		} catch (Exception e) {}
 		
 		if (promptOnError != null) try {
-			Permit.set(promptOnErrorField, log, promptOnError);
+			promptOnErrorField.set(log, promptOnError);
 			promptOnError = null;
 		} catch (Exception e) {}
 		
 		if (logDiagnosticListener != null) try {
-			Permit.set(diagnosticListenerField, log, logDiagnosticListener);
+			diagnosticListenerField.set(log, logDiagnosticListener);
 			logDiagnosticListener = null;
 		} catch (Exception e) {}
 		
 		if (deferDiagnosticsField != null && queueCache.get() != null) try {
-			Permit.set(deferredDiagnosticsField, log, queueCache.get());
+			deferredDiagnosticsField.set(log, queueCache.get());
 			queueCache.set(null);
 		} catch (Exception e) {}
 		
@@ -249,7 +249,7 @@ public final class CompilerMessageSuppressor {
 					newDeferredDiagnostics.add(diag);
 				}
 			}
-			Permit.set(field, receiver, newDeferredDiagnostics);
+			field.set(receiver, newDeferredDiagnostics);
 		} catch (Exception e) {
 			// We do not expect failure here; if failure does occur, the best course of action is to silently continue; the result will be that the error output of
 			// javac will contain rather a lot of messages, but this is a lot better than just crashing during compilation!
@@ -311,7 +311,7 @@ public final class CompilerMessageSuppressor {
 		@Override public void pauze(Log log) {
 			try {
 				writer = (PrintWriter) field.get(log);
-				Permit.set(field, log, NO_WRITER);
+				field.set(log, NO_WRITER);
 			} catch (Exception e) {
 			}
 		}
@@ -319,7 +319,7 @@ public final class CompilerMessageSuppressor {
 		@Override public void resume(Log log) {
 			if (writer != null) {
 				try {
-					Permit.set(field, log, writer);
+					field.set(log, writer);
 				} catch (Exception e) {
 				}
 			}
