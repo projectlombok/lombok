@@ -83,8 +83,17 @@ public class HandlerUtil {
 		return 43;
 	}
 	
-	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, JACKSON_COPY_TO_GETTER_ANNOTATIONS, JACKSON_COPY_TO_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS, IMPLIES_CHECK_RETURN_VALUE_ANNOTATIONS;
+	public static final List<String> NONNULL_ANNOTATIONS, TYPE_USE_ONLY_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, JACKSON_COPY_TO_GETTER_ANNOTATIONS, JACKSON_COPY_TO_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_SINGULAR_SETTER_ANNOTATIONS, JACKSON_COPY_TO_BUILDER_ANNOTATIONS, IMPLIES_CHECK_RETURN_VALUE_ANNOTATIONS;
 	static {
+		// These annotations only target types (rather than declaration sites), so their placement on an array element
+		// must not be mistaken for an annotation on the array reference itself.
+		TYPE_USE_ONLY_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"lombok.NonNull",
+			"org.checkerframework.checker.nullness.qual.NonNull",
+			"org.checkerframework.checker.nullness.compatqual.NonNullType",
+			"org.eclipse.jdt.annotation.NonNull",
+			"org.jspecify.annotations.NonNull",
+		}));
 		// This is a list of annotations with a __highly specific meaning__: All annotations in this list indicate that passing null for the relevant item is __never__ acceptable, regardless of settings or circumstance.
 		// In other words, things like 'this models a database table, and the db table column has a nonnull constraint', or 'this represents a web form, and if this is null, the form is invalid' __do not count__ and should not be in this list;
 		// after all, you should be able to model invalid rows, or invalid forms.

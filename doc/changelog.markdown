@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.49 "Edgy Guinea Pig"
+* BREAKING CHANGE: `lombok.NonNull` now only targets `TYPE_USE`, aligning its placement semantics with JSpecify. `@NonNull String[]` and `@NonNull String...` annotate array elements and no longer trigger array-reference null checks or make an array field required by `@RequiredArgsConstructor`. Use `String @NonNull []` or `String @NonNull ...` to retain those checks. Annotations on inner array dimensions and generic type arguments do not trigger checks of the outer reference. Declaration-only uses (such as annotations on `void` methods) are no longer allowed. Lombok's automatic runtime checks for outermost parameter and record-component annotations remain supported.
 * BUGFIX: `@SuperBuilder` now works properly when your class names contain non-ASCII characters. [#3857](https://github.com/projectlombok/lombok/issues/4070)
 * BUGFIX: `import lombok.*;` together with a `var` local no longer crashes javac on JDK 27. [#4082](https://github.com/projectlombok/lombok/issues/4082)
 

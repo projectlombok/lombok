@@ -1721,18 +1721,37 @@ public class JavacHandlerUtil {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
 				String annotationTypeName = getTypeName(annotation.annotationType);
-				for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
+				for (String nn : NONNULL_ANNOTATIONS) {
+					// Javac initially stores prefix type-use annotations among the declaration annotations.
+					// TYPE_USE-only @NonNull annotations in this position apply to the array's element type.
+					if (TYPE_USE_ONLY_ANNOTATIONS.contains(nn) && !isTypeUseAnnotationOnValue(node, annotation)) continue;
+					if (typeMatches(nn, node, annotationTypeName)) return true;
+				}
 			}
 		}
 		
+		// Only annotations on the outermost type apply to the value itself, not its elements or type arguments.
+		if (node.get() instanceof JCVariableDecl) {
+			return hasNonNullAnnotations(node, getTypeUseAnnotations(((JCVariableDecl) node.get()).vartype));
+		}
 		return false;
 	}
 	
+	/** Whether a TYPE_USE-only annotation marks the value rather than an array element. */
+	public static boolean isTypeUseAnnotationOnValue(JavacNode node, JCAnnotation annotation) {
+		if (!(node.get() instanceof JCVariableDecl)) return true;
+		JCExpression type = ((JCVariableDecl) node.get()).vartype;
+		return !(removeTypeUseAnnotations(type) instanceof JCArrayTypeTree) || getTypeUseAnnotations(type).contains(annotation);
+	}
+
 	public static boolean hasNonNullAnnotations(JavacNode node, List<JCAnnotation> anns) {
 		if (anns == null) return false;
 		for (JCAnnotation ann : anns) {
 			String annotationTypeName = getTypeName(ann.annotationType);
-			for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotationTypeName)) return true;
+			for (String nn : NONNULL_ANNOTATIONS) {
+				if (TYPE_USE_ONLY_ANNOTATIONS.contains(nn) && !isTypeUseAnnotationOnValue(node, ann)) continue;
+				if (typeMatches(nn, node, annotationTypeName)) return true;
+			}
 		}
 		
 		return false;
@@ -2082,6 +2101,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static List<JCAnnotation> getTypeUseAnnotations(JCExpression from) {
+		if (from instanceof JCTypeApply) return getTypeUseAnnotations(((JCTypeApply) from).clazz);
 		if (!JCAnnotatedTypeReflect.is(from)) return List.nil();
 		return JCAnnotatedTypeReflect.getAnnotations(from);
 	}

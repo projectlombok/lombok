@@ -775,17 +775,42 @@ public class EclipseHandlerUtil {
 		for (EclipseNode child : node.down()) {
 			if (child.getKind() != Kind.ANNOTATION) continue;
 			Annotation annotation = (Annotation) child.get();
-			for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, annotation.type)) return true;
+			for (String bn : NONNULL_ANNOTATIONS) {
+				// ECJ initially stores prefix type-use annotations among the declaration annotations.
+				// TYPE_USE-only @NonNull annotations in this position apply to the array's element type.
+				if (TYPE_USE_ONLY_ANNOTATIONS.contains(bn) && !isTypeUseAnnotationOnValue(node, annotation)) continue;
+				if (typeMatches(bn, node, annotation.type)) return true;
+			}
+		}
+		// Only annotations on the outermost type apply to the value itself, not its elements or type arguments.
+		if (node.get() instanceof AbstractVariableDeclaration) {
+			Annotation[] anns = EclipseAST.getTopLevelTypeReferenceAnnotations(((AbstractVariableDeclaration) node.get()).type);
+			if (anns != null) for (Annotation ann : anns) {
+				for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, ann.type)) return true;
+			}
 		}
 		return false;
 	}
 	
+	/** Whether a TYPE_USE-only annotation marks the value rather than an array element. */
+	public static boolean isTypeUseAnnotationOnValue(EclipseNode node, Annotation annotation) {
+		if (!(node.get() instanceof AbstractVariableDeclaration)) return true;
+		TypeReference type = ((AbstractVariableDeclaration) node.get()).type;
+		if (type == null || type.dimensions() == 0) return true;
+		Annotation[] anns = EclipseAST.getTopLevelTypeReferenceAnnotations(type);
+		if (anns != null) for (Annotation ann : anns) if (ann == annotation) return true;
+		return false;
+	}
+
 	public static boolean hasNonNullAnnotations(EclipseNode node, List<Annotation> anns) {
 		if (anns == null) return false;
 		for (Annotation annotation : anns) {
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName() != null) {
-				for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) return true;
+				for (String bn : NONNULL_ANNOTATIONS) {
+					if (TYPE_USE_ONLY_ANNOTATIONS.contains(bn) && !isTypeUseAnnotationOnValue(node, annotation)) continue;
+					if (typeMatches(bn, node, typeRef)) return true;
+				}
 			}
 		}
 		return false;

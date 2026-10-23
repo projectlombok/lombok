@@ -55,6 +55,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTry;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -360,6 +361,12 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
 		}
 		
+		if (typeUse instanceof JCTypeApply) {
+			List<JavacNode> childNodes = new ArrayList<JavacNode>();
+			addIfNotNull(childNodes, buildTypeUse(((JCTypeApply) typeUse).clazz));
+			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
+		}
+
 		if (typeUse instanceof JCWildcard) {
 			JCTree inner = ((JCWildcard) typeUse).inner;
 			List<JavacNode> childNodes = inner == null ? Collections.<JavacNode>emptyList() : new ArrayList<JavacNode>();

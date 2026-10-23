@@ -7,11 +7,15 @@
 	
 	<@f.overview>
 		<p>
-			You can use <code>@NonNull</code> on a record component, or a parameter of a method or constructor. This will cause lombok to generate a null-check statement for you.
+			<code>@NonNull</code> is a type-use-only annotation, with the same array and type-argument placement semantics as JSpecify's <code>@NonNull</code>. Annotating the outermost type of a record component or a method or constructor parameter causes lombok to generate a null-check statement for you.
 		</p><p>
 			Lombok has always treated various annotations generally named <code>@NonNull</code> on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via for example <a href="/features/Data"><code>@Data</code></a>. However, using lombok's own <code>@lombok.NonNull</code> on a parameter or record component results in the insertion of the null-check at the top of that method.
 		</p><p>
 			The null-check looks like <code>if (param == null) throw new NullPointerException("param is marked non-null but is null");</code> and will be inserted at the very top of your method. For constructors, the null-check will be inserted immediately following any explicit <code>this()</code> or <code>super()</code> calls. For record components, the null-check will be inserted in the 'compact constructor' (the one that has no argument list at all), which will be generated if you have no constructor. If you have written out the record constructor in long form (with parameters matching your components exactly), then nothing happens - you'd have to annotate the parameters of this long-form constructor instead.
+		</p><p>
+			For arrays, <code>String @NonNull []</code> marks the array reference and triggers a null-check, while <code>@NonNull String[]</code> only marks the element type and does not check the array reference. Likewise, <code>String @NonNull ...</code> checks a varargs array, but <code>@NonNull String...</code> does not. Annotations on inner dimensions or generic type arguments do not trigger checks of the enclosing reference. Lombok does not generate element-by-element checks.
+		</p><p>
+			<strong>Migration:</strong> To retain an array-reference check previously requested by <code>@NonNull String[]</code>, move the annotation to <code>String @NonNull []</code> (or before <code>...</code> for varargs). This can also change which fields are included by <code>@RequiredArgsConstructor</code>. For qualified types, annotate the type name (for example, <code>java.util.@NonNull List&lt;String&gt;</code>) or import the type; <code>@NonNull java.util.List&lt;String&gt;</code> is not valid type-use syntax. Declaration-only uses, such as annotations on <code>void</code> methods, are no longer allowed.
 		</p><p>
 			If a null-check is already present at the top, no additional null-check will be generated.
 		</p>
@@ -39,7 +43,7 @@
 		</p><p>
 			A <code>@NonNull</code> on a primitive parameter results in a warning. No null-check will be generated.
 		</p><p>
-			A <code>@NonNull</code> on a parameter of an abstract method used to generate a warning; starting with version 1.16.8, this is no longer the case, to acknowledge the notion that <code>@NonNull</code> also has a documentary role. For the same reason, you can annotate a method as <code>@NonNull</code>; this is allowed, generates no warning, and does not generate any code.
+			A <code>@NonNull</code> on a parameter of an abstract method used to generate a warning; starting with version 1.16.8, this is no longer the case, to acknowledge the notion that <code>@NonNull</code> also has a documentary role. For the same reason, you can annotate a method's reference return type as <code>@NonNull</code>; this generates no warning and does not generate any code.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>
