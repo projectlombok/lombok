@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.49 "Edgy Guinea Pig"
+* FEATURE: `@FieldNameConstants` now copies the javadoc of each field to its generated constant (javac/delombok only). [#4090](https://github.com/projectlombok/lombok/issues/4090)
 * BUGFIX: `@SuperBuilder` now works properly when your class names contain non-ASCII characters. [#3857](https://github.com/projectlombok/lombok/issues/4070)
 * BUGFIX: `import lombok.*;` together with a `var` local no longer crashes javac on JDK 27. [#4082](https://github.com/projectlombok/lombok/issues/4082)
 
