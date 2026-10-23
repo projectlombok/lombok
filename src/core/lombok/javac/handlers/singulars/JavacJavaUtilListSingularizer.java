@@ -41,7 +41,7 @@ import com.sun.tools.javac.util.Name;
 @Provides(JavacSingularizer.class)
 public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.lang.Iterable");
+		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.util.SequencedCollection", "java.lang.Iterable");
 	}
 	
 	@Override protected String getEmptyMaker(String target) {

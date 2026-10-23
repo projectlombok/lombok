@@ -50,7 +50,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 @Provides(EclipseSingularizer.class)
 public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.lang.Iterable");
+		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.util.SequencedCollection", "java.lang.Iterable");
 	}
 	
 	private static final char[] EMPTY_LIST = {'e', 'm', 'p', 't', 'y', 'L', 'i', 's', 't'};
