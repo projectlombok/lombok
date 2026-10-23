@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2025 The Project Lombok Authors.
+ * Copyright (C) 2013-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -181,24 +181,25 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 		
 		ConstructorDeclaration cd = new ConstructorDeclaration(((CompilationUnitDeclaration) typeNode.top().get()).compilationResult);
 		cd.modifiers = ClassFileConstants.AccPublic;
-		cd.bits = ASTNode.Bit32 | ECLIPSE_DO_NOT_TOUCH_FLAG | IsCanonicalConstructor;
+		cd.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG | IsCanonicalConstructor;
 		cd.selector = td.name;
 		cd.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
 		if (recordComponents == null) recordComponents = getRecordComponents(typeNode);
 		cd.arguments = new Argument[recordComponents.size()];
 		cd.statements = new Statement[recordComponents.size()];
-		cd.bits = IsCanonicalConstructor;
 		
 		for (int i = 0; i < cd.arguments.length; i++) {
 			FieldDeclaration cmp = recordComponents.get(i);
 			cd.arguments[i] = new Argument(cmp.name, cmp.sourceStart, cmp.type, cmp.modifiers);
-			cd.arguments[i].bits = ASTNode.IsArgument | ASTNode.IgnoreRawTypeCheck | ASTNode.IsReachable;
+			cd.arguments[i].bits |= ASTNode.IsArgument | ASTNode.IgnoreRawTypeCheck;
 			cd.arguments[i].annotations = cmp.annotations;
 			FieldReference lhs = new FieldReference(cmp.name, 0);
 			lhs.receiver = new ThisReference(0, 0);
 			SingleNameReference rhs = new SingleNameReference(cmp.name, 0);
 			cd.statements[i] = new Assignment(lhs, rhs, cmp.sourceEnd);
 		}
+		
+		addConstructorCallToStatementsIfRequired(cd);
 		
 		setGeneratedBy(cd, annotationNode.get());
 		for (int i = 0; i < cd.arguments.length; i++) {
@@ -358,6 +359,9 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 						idx = 0;
 						continue;
 					}
+					if (isExplicitConstructorCall(stat)) {
+						continue;
+					}
 					char[] varNameOfNullCheck = returnVarNameIfNullCheck(stat);
 					if (varNameOfNullCheck == null) break;
 					if (Arrays.equals(varNameOfNullCheck, expectedName)) return;
@@ -368,6 +372,7 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 			int skipOver = 0;
 			for (Statement stat : declaration.statements) {
 				if (isGenerated(stat) && isNullCheck(stat)) skipOver++;
+				if (isExplicitConstructorCall(stat)) skipOver++;
 				else break;
 			}
 			System.arraycopy(declaration.statements, 0, newStatements, 0, skipOver);
@@ -379,6 +384,10 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	
 	public boolean isNullCheck(Statement stat) {
 		return returnVarNameIfNullCheck(stat) != null;
+	}
+	
+	public boolean isExplicitConstructorCall(Statement stat) {
+		return stat instanceof ExplicitConstructorCall;
 	}
 	
 	public char[] returnVarNameIfNullCheck(Statement stat) {

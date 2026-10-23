@@ -96,6 +96,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
+import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.CaptureBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
@@ -342,6 +343,7 @@ public class EclipseHandlerUtil {
 		public static final Field TYPE_DECLARATION_RECORD_COMPONENTS;
 		public static final Class<?> COMPILATION_UNIT;
 		public static final Method COMPILATION_UNIT_ORIGINAL_FROM_CLONE;
+		public static final Method CONSTRUCTOR_DECLARATION_BUILD_BODY; // Used as a marker to detect explicit constructor call statements introduced in https://github.com/eclipse-jdt/eclipse.jdt.core/pull/5350
 		static {
 			STRING_LITERAL__LINE_NUMBER = getField(StringLiteral.class, "lineNumber");
 			ANNOTATION__MEMBER_VALUE_PAIR_NAME = getField(Annotation.class, "memberValuePairName");
@@ -353,6 +355,7 @@ public class EclipseHandlerUtil {
 			TYPE_DECLARATION_RECORD_COMPONENTS = getField(TypeDeclaration.class, "recordComponents");
 			COMPILATION_UNIT = getClass("org.eclipse.jdt.internal.core.CompilationUnit");
 			COMPILATION_UNIT_ORIGINAL_FROM_CLONE = COMPILATION_UNIT == null ? null : Permit.permissiveGetMethod(COMPILATION_UNIT, "originalFromClone");
+			CONSTRUCTOR_DECLARATION_BUILD_BODY = Permit.permissiveGetMethod(ConstructorDeclaration.class, "buildBody", ASTNode[].class, int.class, int.class, CompilerOptions.class);
 		}
 		
 		public static int reflectInt(Field f, Object o) {
@@ -3063,5 +3066,18 @@ public class EclipseHandlerUtil {
 			parent = parent.up();
 		}
 		return false;
+	}
+	
+	public static void addConstructorCallToStatementsIfRequired(ConstructorDeclaration constructorDeclaration) {
+		if (CONSTRUCTOR_DECLARATION_BUILD_BODY != null) {
+			if (constructorDeclaration.statements == null) {
+				constructorDeclaration.statements = new Statement[] {constructorDeclaration.constructorCall};
+			} else {
+				Statement[] newStatements = new Statement[constructorDeclaration.statements.length + 1];
+				newStatements[0] = constructorDeclaration.constructorCall;
+				System.arraycopy(constructorDeclaration.statements, 0, newStatements, 1, constructorDeclaration.statements.length);
+				constructorDeclaration.statements = newStatements;
+			}
+		}
 	}
 }

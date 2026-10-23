@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2025 The Project Lombok Authors.
+ * Copyright (C) 2013-2026 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -610,6 +610,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (job.checkerFramework.generateSideEffectFree()) {
 			constructor.annotations = new Annotation[] {generateNamedAnnotation(job.source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE)};
 		}
+		addConstructorCallToStatementsIfRequired(constructor);
 		
 		constructor.traverse(new SetGeneratedByVisitor(job.source), typeDeclaration.scope);
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2021 The Project Lombok Authors.
+ * Copyright (C) 2015-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -172,6 +172,7 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		
 		constructor.statements = new Statement[] {throwStatement};
 		
+		addConstructorCallToStatementsIfRequired(constructor);
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		injectMethod(typeNode, constructor);
 	}
