@@ -39,6 +39,13 @@ public interface ImportList {
 	 * Returns true if the package name is explicitly star-imported, OR the packageName refers to this source file's own package name, OR packageName is 'java.lang'.
 	 */
 	boolean hasStarImport(String packageName);
+
+	/**
+	 * Resolves the original compiler-specific type reference in its lexical context.
+	 * Returns the qualified type name, or an empty string if the reference is unresolved or ambiguous.
+	 * Returning {@code null} leaves type resolution to the existing syntactic import lookup.
+	 */
+	String resolveTypeReference(Object typeReference, LombokNode<?, ?, ?> context);
 	
 	/**
 	 * Takes all explicit non-static star imports whose first element is equal to {@code startsWith}, replaces the star with {@code unqualified}, and returns these.

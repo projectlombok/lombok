@@ -42,16 +42,27 @@ public class TypeResolver {
 	}
 	
 	public boolean typeMatches(LombokNode<?, ?, ?> context, String fqn, String typeRef) {
-		return typeRefToFullyQualifiedName(context, TypeLibrary.createLibraryForSingleType(fqn), typeRef) != null;
+		return typeMatches(context, fqn, typeRef, null);
+	}
+
+	public boolean typeMatches(LombokNode<?, ?, ?> context, String fqn, String typeRef, Object typeReference) {
+		return typeRefToFullyQualifiedName(context, TypeLibrary.createLibraryForSingleType(fqn), typeRef, typeReference) != null;
 	}
 	
 	public String typeRefToFullyQualifiedName(LombokNode<?, ?, ?> context, TypeLibrary library, String typeRef) {
+		return typeRefToFullyQualifiedName(context, library, typeRef, null);
+	}
+
+	public String typeRefToFullyQualifiedName(LombokNode<?, ?, ?> context, TypeLibrary library, String typeRef, Object typeReference) {
 		// When asking if 'Foo' could possibly be referring to 'bar.Baz', the answer is obviously no.
 		List<String> qualifieds = library.toQualifieds(typeRef);
 		if (qualifieds == null || qualifieds.isEmpty()) return null;
-		
+
 		// When asking if 'lombok.Getter' could possibly be referring to 'lombok.Getter', the answer is obviously yes.
 		if (qualifieds.contains(typeRef)) return LombokInternalAliasing.processAliases(typeRef);
+
+		String resolved = imports.resolveTypeReference(typeReference, context);
+		if (resolved != null) return qualifieds.contains(resolved) ? LombokInternalAliasing.processAliases(resolved) : null;
 		
 		// When asking if 'Getter' could possibly be referring to 'lombok.Getter' if 'import lombok.Getter;' is in the source file, the answer is yes.
 		int firstDot = typeRef.indexOf('.');

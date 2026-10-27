@@ -158,7 +158,8 @@ public class HandleStandardException extends JavacAnnotationHandler<StandardExce
 		for (int i = 0; i < a.size(); i++) {
 			JCVariableDecl param = a.get(i);
 			Class<?> c = b[i];
-			if (!typeMatches(c, node, param.vartype)) return false;
+			JavacNode parameterNode = node.getNodeFor(param);
+			if (!typeMatches(c, parameterNode == null ? node : parameterNode, param.vartype)) return false;
 		}
 		
 		return true;

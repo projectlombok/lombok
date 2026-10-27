@@ -244,7 +244,7 @@ public class HandlerLibrary {
 	public void handleAnnotation(JCCompilationUnit unit, JavacNode node, JCAnnotation annotation, long priority) {
 		TypeResolver resolver = new TypeResolver(node.getImportList());
 		String rawType = annotation.annotationType.toString();
-		String fqn = resolver.typeRefToFullyQualifiedName(node, typeLibrary, rawType);
+		String fqn = resolver.typeRefToFullyQualifiedName(node, typeLibrary, rawType, annotation.annotationType);
 		if (fqn == null) return;
 		List<AnnotationHandlerContainer<?>> containers = annotationHandlers.get(fqn);
 		if (containers == null) return;

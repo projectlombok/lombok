@@ -21,12 +21,19 @@
  */
 package lombok.javac;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 import lombok.core.ImportList;
 import lombok.core.LombokInternalAliasing;
+import lombok.core.LombokNode;
+import lombok.permit.Permit;
 
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -36,10 +43,13 @@ import com.sun.tools.javac.util.List;
 public class JavacImportList implements ImportList {
 	private final String pkgStr;
 	private final List<JCTree> defs;
+	private final JCCompilationUnit compilationUnit;
+	private final Map<JCTree, String> typeBindings = new IdentityHashMap<JCTree, String>();
 	
 	public JavacImportList(JCCompilationUnit cud) {
 		this.pkgStr = PackageName.getPackageName(cud);
 		this.defs = cud.defs;
+		this.compilationUnit = cud;
 	}
 	
 	@Override public String getFullyQualifiedNameForSimpleName(String unqualified) {
@@ -77,6 +87,52 @@ public class JavacImportList implements ImportList {
 		}
 		
 		return false;
+	}
+
+	@Override public String resolveTypeReference(Object typeReference, LombokNode<?, ?, ?> context) {
+		return ModuleImports.resolve(compilationUnit, (JCTree) typeReference, (JavacNode) context, typeBindings);
+	}
+
+	private static class ModuleImports {
+		private static final Field MODULE_IMPORT_SCOPE = Permit.permissiveGetField(JCCompilationUnit.class, "moduleImportScope");
+		private static final Method IS_FILLED;
+
+		static {
+			try {
+				IS_FILLED = MODULE_IMPORT_SCOPE == null ? null : Permit.getMethod(MODULE_IMPORT_SCOPE.getType(), "isFilled");
+			} catch (Exception e) {
+				throw new ExceptionInInitializerError(e);
+			}
+		}
+
+		static String resolve(JCCompilationUnit unit, JCTree reference, JavacNode context, Map<JCTree, String> typeBindings) {
+			if (MODULE_IMPORT_SCOPE == null || reference == null) return null;
+			try {
+				Object moduleScope = Permit.get(MODULE_IMPORT_SCOPE, unit);
+				if (moduleScope == null || !((Boolean) Permit.invokeSneaky(IS_FILLED, moduleScope)).booleanValue()) return null;
+				if (reference.type != null) {
+					String resolved = qualifiedName(reference);
+					typeBindings.put(reference, resolved);
+					return resolved;
+				}
+				String cached = typeBindings.get(reference);
+				if (cached != null) return cached;
+				// Method-entry environments miss preceding local classes; resolve a copy of the body
+				// so attribution does not modify the original source tree.
+				Map<JCTree, JCTree> mirror = new JavacResolution(context.getContext()).resolveMethodMember(context);
+				JCTree copy = mirror.get(reference);
+				if (copy == null || copy.type == null) return null;
+				String resolved = qualifiedName(copy);
+				typeBindings.put(reference, resolved);
+				return resolved;
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException("Cannot read javac module import scopes", e);
+			}
+		}
+
+		private static String qualifiedName(JCTree reference) {
+			return reference != null && reference.type != null && reference.type.tsym instanceof ClassSymbol ? reference.type.tsym.getQualifiedName().toString() : "";
+		}
 	}
 	
 	@Override public Collection<String> applyNameToStarImports(String startsWith, String name) {

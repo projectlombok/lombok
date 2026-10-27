@@ -144,22 +144,20 @@ public class JavacResolution {
 		@Override public void visitTree(JCTree that) {
 		}
 	}
+
+	private static EnvFinder findEnv(JavacNode node) {
+		ArrayDeque<JCTree> stack = new ArrayDeque<JCTree>();
+		for (JavacNode n = node; n != null; n = n.up()) stack.push(n.get());
+		EnvFinder finder = new EnvFinder(node.getContext());
+		while (!stack.isEmpty()) stack.pop().accept(finder);
+		return finder;
+	}
 	
 	public Map<JCTree, JCTree> resolveMethodMember(JavacNode node) {
-		ArrayDeque<JCTree> stack = new ArrayDeque<JCTree>();
-		
-		{
-			JavacNode n = node;
-			while (n != null) {
-				stack.push(n.get());
-				n = n.up();
-			}
-		}
-		
 		messageSuppressor.disableLoggers();
 		try {
-			EnvFinder finder = new EnvFinder(node.getContext());
-			while (!stack.isEmpty()) stack.pop().accept(finder);
+			EnvFinder finder = findEnv(node);
+			if (finder.copyAt() == null) return java.util.Collections.emptyMap();
 			
 			TreeMirrorMaker mirrorMaker = new TreeMirrorMaker(node.getTreeMaker(), node.getContext());
 			JCTree copy = mirrorMaker.copy(finder.copyAt());
@@ -222,22 +220,9 @@ public class JavacResolution {
 	}
 	
 	public void resolveClassMember(JavacNode node) {
-		ArrayDeque<JCTree> stack = new ArrayDeque<JCTree>();
-		
-		{
-			JavacNode n = node;
-			while (n != null) {
-				stack.push(n.get());
-				n = n.up();
-			}
-		}
-		
 		messageSuppressor.disableLoggers();
 		try {
-			EnvFinder finder = new EnvFinder(node.getContext());
-			while (!stack.isEmpty()) stack.pop().accept(finder);
-			
-			attrib(node.get(), finder.get());
+			attrib(node.get(), findEnv(node).get());
 		} finally {
 			messageSuppressor.enableLoggers();
 		}

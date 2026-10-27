@@ -30,6 +30,7 @@ import java.util.List;
 
 import lombok.core.ImportList;
 import lombok.core.LombokInternalAliasing;
+import lombok.core.LombokNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -65,6 +66,11 @@ public class EclipseImportList implements ImportList {
 		return null;
 	}
 	
+	@Override public String resolveTypeReference(Object typeReference, LombokNode<?, ?, ?> context) {
+		// Returning null preserves Eclipse's existing syntactic import lookup.
+		return null;
+	}
+
 	@Override public boolean hasStarImport(String packageName) {
 		if (isEqual(packageName, pkg)) return true;
 		if ("java.lang".equals(packageName)) return true;
