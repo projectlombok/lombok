@@ -1,0 +1,5 @@
+diff --git a/src/spiProcessor/lombok/spi/SpiProcessorPersistence.java b/src/spiProcessor/lombok/spi/SpiProcessorPersistence.java
+--- a/src/spiProcessor/lombok/spi/SpiProcessorPersistence.java
++++ b/src/spiProcessor/lombok/spi/SpiProcessorPersistence.java
+@@ -144 +143,0 @@ class SpiProcessorPersistence {
+-		writer.write("# " + new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(new Date()) + "\n");
