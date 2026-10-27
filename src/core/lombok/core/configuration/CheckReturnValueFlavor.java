@@ -21,6 +21,8 @@
  */
 package lombok.core.configuration;
 
+import java.util.Locale;
+
 /** Used for lombok configuration to select which {@code @CheckReturnValue} annotation flavor(s) to emit on generated methods. */
 public enum CheckReturnValueFlavor implements MappedConfigEnum {
 	LOMBOK,
@@ -28,11 +30,11 @@ public enum CheckReturnValueFlavor implements MappedConfigEnum {
 	;
 	
 	@Override public boolean matches(String value) {
-		return value.equals(this.name().toLowerCase());
+		return value.equals(this.name().toLowerCase(Locale.ROOT));
 	}
 	
 	@Override public String toString() {
-		return this.name().toLowerCase();
+		return this.name().toLowerCase(Locale.ROOT);
 	}
 	
 	public String getMarkerAnnotationFullyQualifiedName() {

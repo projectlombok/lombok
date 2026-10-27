@@ -26,6 +26,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public final class NullAnnotationLibrary implements ConfigurationValueType {
 	private final String key;
@@ -114,7 +115,7 @@ public final class NullAnnotationLibrary implements ConfigurationValueType {
 	}
 	
 	public static NullAnnotationLibrary valueOf(String in) {
-		String ci = in == null ? "" : in.toLowerCase();
+		String ci = in == null ? "" : in.toLowerCase(Locale.ROOT);
 		if (ci.length() == 0) return NONE;
 		for (NullAnnotationLibrary nal : ALL_AVAILABLE) if (nal.key.equals(ci)) return nal;
 		if (!ci.startsWith("custom:")) {
