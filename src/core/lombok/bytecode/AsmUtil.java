@@ -30,7 +30,7 @@ import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 class AsmUtil {
 	private AsmUtil() {
-		throw new UnsupportedOperationException();
+		throw new AssertionError();
 	}
 	
 	static byte[] fixJSRInlining(byte[] byteCode) {

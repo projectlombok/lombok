@@ -21,7 +21,7 @@ final @lombok.experimental.UtilityClass class UtilityClass {
   }
   private @java.lang.SuppressWarnings("all") @lombok.Generated UtilityClass() {
     super();
-    throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    throw new java.lang.AssertionError("This is a utility class and cannot be instantiated");
   }
 }
 class UtilityInner {
@@ -32,7 +32,7 @@ class UtilityInner {
       }
       private @java.lang.SuppressWarnings("all") @lombok.Generated InnerInnerInner() {
         super();
-        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        throw new java.lang.AssertionError("This is a utility class and cannot be instantiated");
       }
     }
     InnerInner() {
@@ -46,7 +46,7 @@ class UtilityInner {
       }
       private @java.lang.SuppressWarnings("all") @lombok.Generated InsideEnum() {
         super();
-        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        throw new java.lang.AssertionError("This is a utility class and cannot be instantiated");
       }
     }
     FOO(),
@@ -64,7 +64,7 @@ class UtilityInner {
       }
       private @java.lang.SuppressWarnings("all") @lombok.Generated InsideInterface() {
         super();
-        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        throw new java.lang.AssertionError("This is a utility class and cannot be instantiated");
       }
     }
   }
