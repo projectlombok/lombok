@@ -26,6 +26,6 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({TestConfiguration.class})
+@SuiteClasses({TestConfiguration.class, TestConfigurationValueLocale.class})
 public class RunConfigurationTests {
 }
