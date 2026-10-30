@@ -490,11 +490,26 @@ public class LombokProcessor extends AbstractProcessor {
 			"com.sun.tools.javac.jvm",
 		};
 		
+		long firstFieldOffset = getFirstFieldOffset(unsafe);
+		
 		try {
 			Method m = cModule.getDeclaredMethod("implAddOpens", String.class, cModule);
-			long firstFieldOffset = getFirstFieldOffset(unsafe);
 			unsafe.putBooleanVolatile(m, firstFieldOffset, true);
 			for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
+		} catch (Exception ignore) {}
+		
+		// Also open the packages to every unnamed module, not just lombok's own.
+		// Build tools (e.g. gradle's incremental compiler) and setups where lombok is
+		// loaded by a different classloader can run the annotation processor from an
+		// unnamed module that is not the one that loaded LombokProcessor. Opening only to
+		// ownModule leaves those with an IllegalAccessError ("module jdk.compiler does not
+		// export com.sun.tools.javac... to unnamed module @..."), which users currently have
+		// to work around with manual --add-opens=...=ALL-UNNAMED flags. This mirrors that
+		// workaround. See https://github.com/projectlombok/lombok/issues/3219
+		try {
+			Method m = cModule.getDeclaredMethod("implAddOpensToAllUnnamed", String.class);
+			unsafe.putBooleanVolatile(m, firstFieldOffset, true);
+			for (String p : allPkgs) m.invoke(jdkCompilerModule, p);
 		} catch (Exception ignore) {}
 	}
 	
