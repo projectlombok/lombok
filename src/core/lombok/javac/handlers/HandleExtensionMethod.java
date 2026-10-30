@@ -67,7 +67,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
  * Handles the {@link ExtensionMethod} annotation for javac.
  */
 @Provides
-@HandlerPriority(66560) // 2^16 + 2^10; we must run AFTER HandleVal which is at 2^16
+@HandlerPriority(65536 + 50) // run after HandleDelegate (2^16) but before HandleVal (2^16 + 100), so that `var`/`val` initializers whose inferred type depends on an extension method call can be resolved. See issue #3280.
 public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMethod> {
 	@Override
 	public void handle(final AnnotationValues<ExtensionMethod> annotation, final JCAnnotation source, final JavacNode annotationNode) {
