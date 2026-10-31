@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2025 The Project Lombok Authors.
+ * Copyright (C) 2009-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,11 +36,6 @@ import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
-import lombok.core.AST;
-import lombok.core.CleanupRegistry;
-import lombok.core.CleanupTask;
-import lombok.permit.Permit;
-
 import com.sun.tools.javac.code.Lint.LintCategory;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symtab;
@@ -69,6 +64,11 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
+
+import lombok.core.AST;
+import lombok.core.CleanupRegistry;
+import lombok.core.CleanupTask;
+import lombok.permit.Permit;
 
 /**
  * Wraps around javac's internal AST view to add useful features as well as the ability to visit parents from children,
@@ -604,7 +604,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	/** {@inheritDoc} */
 	@Override protected void setElementInASTCollection(Field field, Object refField, List<Collection<?>> chain, Collection<?> collection, int idx, JCTree newN) throws IllegalAccessException {
 		com.sun.tools.javac.util.List<?> list = setElementInConsList(chain, collection, ((List<?>)collection).get(idx), newN);
-		field.set(refField, list);
+		Permit.set(field, refField, list);
 	}
 	
 	private com.sun.tools.javac.util.List<?> setElementInConsList(List<Collection<?>> chain, Collection<?> current, Object oldO, Object newO) {
@@ -665,7 +665,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			if (field == null) return;
 			try {
 				int val = ((Number)field.get(messager)).intValue();
-				field.set(messager, val +1);
+				Permit.set(field, messager, val + 1);
 			} catch (Throwable t) {
 				//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.
 			}

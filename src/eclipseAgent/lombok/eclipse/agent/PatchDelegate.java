@@ -983,7 +983,7 @@ public class PatchDelegate {
 	
 	private static Set<String> findAlreadyImplementedMethods(TypeDeclaration decl) {
 		Set<String> sigs = new HashSet<String>();
-		for (AbstractMethodDeclaration md : decl.methods) {
+		if (decl.methods != null) for (AbstractMethodDeclaration md : decl.methods) {
 			if (md.isStatic()) continue;
 			if ((md.modifiers & ClassFileConstants.AccBridge) != 0) continue;
 			if (md.isConstructor()) continue;

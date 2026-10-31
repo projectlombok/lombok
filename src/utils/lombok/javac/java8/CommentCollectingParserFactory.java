@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,7 @@ public class CommentCollectingParserFactory extends ParserFactory {
 		Field field;
 		try {
 			field = Permit.getField(JavaCompiler.class, "parserFactory");
-			field.set(compiler, new CommentCollectingParserFactory(context));
+			Permit.set(field, compiler, new CommentCollectingParserFactory(context));
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not set comment sensitive parser in the compiler", e);
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2025 The Project Lombok Authors.
+ * Copyright (C) 2013-2026 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -384,7 +384,7 @@ public class JavacTreeMaker {
 	private static <J> void set(Object owner, FieldId<J> f, J val) {
 		Field field = getFromCache(f);
 		try {
-			field.set(owner, val);
+			Permit.set(field, owner, val);
 		} catch (IllegalAccessException e) {
 			throw Javac.sneakyThrow(e);
 		} catch (IllegalArgumentException e) {
