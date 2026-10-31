@@ -272,7 +272,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		
 		/* Generate annotations that must be put on the generated method, and attach them. */ {
 			Annotation[] deprecated = null, checkerFramework = null;
-			if (isFieldDeprecated(fieldNode)) deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
+			if (isFieldDeprecated(fieldNode)) deprecated = new Annotation[] { generateDeprecatedAnnotation(source, fieldNode) };
 			if (fieldNode.isFinal()) {
 				if (getCheckerFrameworkVersion(fieldNode).generatePure()) checkerFramework = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__PURE) };
 			} else {

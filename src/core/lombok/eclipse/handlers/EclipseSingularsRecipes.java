@@ -301,8 +301,9 @@ public class EclipseSingularsRecipes {
 		
 		// -- Utility methods --
 		
-		protected Annotation[] generateSelfReturnAnnotations(boolean deprecate, ASTNode source) {
-			Annotation deprecated = deprecate ? generateDeprecatedAnnotation(source) : null;
+		protected Annotation[] generateSelfReturnAnnotations(boolean deprecate, SingularData data, ASTNode source) {
+			EclipseNode originalField = (data != null && data.getAnnotation() != null) ? data.getAnnotation().up() : null;
+			Annotation deprecated = deprecate ? generateDeprecatedAnnotation(source, originalField) : null;
 			if (deprecated == null) return null;
 			return new Annotation[] {deprecated};
 		}

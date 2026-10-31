@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.49 "Edgy Guinea Pig"
+* BUGFIX: Generated getters, setters, withers, and builder methods now copy `@Deprecated(since, forRemoval)` from the field. [#3107](https://github.com/projectlombok/lombok/issues/3107).
 * BUGFIX: `@SuperBuilder` now works properly when your class names contain non-ASCII characters. [#3857](https://github.com/projectlombok/lombok/issues/4070)
 * BUGFIX: `import lombok.*;` together with a `var` local no longer crashes javac on JDK 27. [#4082](https://github.com/projectlombok/lombok/issues/4082)
 

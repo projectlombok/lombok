@@ -232,7 +232,7 @@ public class HandleWith extends EclipseAnnotationHandler<With> {
 		if (method.returnType == null) return null;
 		
 		Annotation[] deprecated = null, checkerFramework = null;
-		if (isFieldDeprecated(fieldNode)) deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
+		if (isFieldDeprecated(fieldNode)) deprecated = new Annotation[] { generateDeprecatedAnnotation(source, fieldNode) };
 		if (getCheckerFrameworkVersion(fieldNode).generateSideEffectFree()) checkerFramework = new Annotation[] { generateNamedAnnotation(source, CheckerFrameworkVersion.NAME__SIDE_EFFECT_FREE) };
 		
 		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), checkerFramework, deprecated);

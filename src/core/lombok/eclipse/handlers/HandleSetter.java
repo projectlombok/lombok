@@ -228,7 +228,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		}
 		Annotation[] deprecated = null;
 		if (isFieldDeprecated(fieldNode) || deprecate) {
-			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
+			deprecated = new Annotation[] { generateDeprecatedAnnotation(source, fieldNode) };
 		}
 		// Copying Jackson annotations is required for fluent accessors (otherwise Jackson would not find the accessor).
 		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated, findCopyableToSetterAnnotations(fieldNode, fluent));

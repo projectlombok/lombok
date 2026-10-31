@@ -1001,9 +1001,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			if (Arrays.equals(setterName.toCharArray(), existingName) && !isTolerate(fieldNode, existing[i])) return;
 		}
 		
-		List<Annotation> methodAnnsList = Arrays.asList(EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode, true));
+		List<Annotation> methodAnnsList = new ArrayList<Annotation>();
+		Collections.addAll(methodAnnsList, EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode, true));
+		if (deprecate) methodAnnsList.add(0, generateDeprecatedAnnotation(job.source, originalFieldNode));
 		addCheckerFrameworkReturnsReceiver(returnType, job.source, job.checkerFramework);
-		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, paramName, nameOfSetFlag, returnType, returnStatement, ClassFileConstants.AccPublic,
+		MethodDeclaration setter = HandleSetter.createSetter(td, false, fieldNode, setterName, paramName, nameOfSetFlag, returnType, returnStatement, ClassFileConstants.AccPublic,
 			job.sourceNode, methodAnnsList, annosOnParam != null ? Arrays.asList(copyAnnotations(job.source, annosOnParam)) : Collections.<Annotation>emptyList(), false);
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
 			copyJavadocFromParam(originalFieldNode.up(), setter, td, paramName.toString());

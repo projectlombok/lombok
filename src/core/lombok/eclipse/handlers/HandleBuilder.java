@@ -1064,11 +1064,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (Arrays.equals(setterName.toCharArray(), existingName) && !isTolerate(fieldNode, existing[i])) return;
 		}
 		
-		List<Annotation> methodAnnsList = Collections.<Annotation>emptyList();
+		List<Annotation> methodAnnsList = new ArrayList<Annotation>();
 		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(bfd.originalFieldNode, true);
-		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
+		if (methodAnns != null && methodAnns.length > 0) Collections.addAll(methodAnnsList, methodAnns);
 		ASTNode source = job.sourceNode.get();
-		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, toEclipseModifier(job.accessInners),
+		if (deprecate) methodAnnsList.add(0, generateDeprecatedAnnotation(source, bfd.originalFieldNode));
+		MethodDeclaration setter = HandleSetter.createSetter(td, false, fieldNode, setterName, bfd.name, bfd.nameOfSetFlag, job.oldChain, toEclipseModifier(job.accessInners),
 			job.sourceNode, methodAnnsList, bfd.annotations != null ? Arrays.asList(copyAnnotations(source, bfd.annotations)) : Collections.<Annotation>emptyList(), false);
 		if (job.sourceNode.up().getKind() == Kind.METHOD) {
 			copyJavadocFromParam(bfd.originalFieldNode.up(), setter, td, new String(bfd.name));

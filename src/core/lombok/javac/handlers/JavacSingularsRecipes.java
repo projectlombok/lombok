@@ -182,8 +182,12 @@ public class JavacSingularsRecipes {
 			return this;
 		}
 		
-		protected JCModifiers makeMods(JavacTreeMaker maker, JavacNode node, boolean deprecate, AccessLevel access, List<JCAnnotation> methodAnnotations) {
-			JCAnnotation deprecateAnn = deprecate ? maker.Annotation(genJavaLangTypeRef(node, "Deprecated"), List.<JCExpression>nil()) : null;
+		protected JCModifiers makeMods(JavacTreeMaker maker, JavacNode node, SingularData data, boolean deprecate, AccessLevel access, List<JCAnnotation> methodAnnotations) {
+			JCAnnotation deprecateAnn = null;
+			if (deprecate) {
+				JavacNode originalField = (data != null && data.getAnnotation() != null) ? data.getAnnotation().up() : node;
+				deprecateAnn = generateDeprecatedAnnotation(originalField);
+			}
 			
 			List<JCAnnotation> annsOnMethod = (deprecateAnn != null) ? List.of(deprecateAnn) : List.<JCAnnotation>nil();
 			annsOnMethod = mergeAnnotations(annsOnMethod,methodAnnotations);
@@ -276,7 +280,7 @@ public class JavacSingularsRecipes {
 		private void finishAndInjectMethod(CheckerFrameworkVersion cfv, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JavacNode source, boolean deprecate, ListBuffer<JCStatement> statements, Name methodName, List<JCVariableDecl> jcVariableDecls, List<JCAnnotation> methodAnnotations, AccessLevel access, Boolean ignoreNullCollections) {
 			if (returnStatement != null) statements.append(returnStatement);
 			JCBlock body = maker.Block(0, statements.toList());
-			JCModifiers mods = makeMods(maker, builderType, deprecate, access, methodAnnotations);
+			JCModifiers mods = makeMods(maker, builderType, data, deprecate, access, methodAnnotations);
 			List<JCTypeParameter> typeParams = List.nil();
 			List<JCExpression> thrown = List.nil();
 			
