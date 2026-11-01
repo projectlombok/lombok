@@ -68,6 +68,7 @@ import com.sun.tools.javac.tree.TreeScanner;
 import lombok.delombok.Delombok;
 import lombok.javac.CapturingDiagnosticListener;
 import lombok.javac.Javac;
+import lombok.javac.handlers.JavacHandlerUtil;
 
 public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
@@ -187,6 +188,9 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 						}
 						if (check && Javac.getEndPosition(tree, unit) == -1) {
 							fail(craftFailMsg("End position of node not set: ", astContext));
+						}
+						if (check && JavacHandlerUtil.isGenerated(tree) && Javac.getEndPosition(tree, unit) != tree.pos) {
+							fail(craftFailMsg(String.format("Expected end position %d, actual end position %d: ", tree.pos, Javac.getEndPosition(tree, unit)), astContext));
 						}
 					} finally {
 						try {
