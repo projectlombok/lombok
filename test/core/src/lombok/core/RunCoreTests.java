@@ -25,7 +25,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import lombok.eclipse.TestEclipseIsClass;
+
 @RunWith(Suite.class)
-@SuiteClasses({TestSingulars.class})
+@SuiteClasses({TestSingulars.class, TestEclipseIsClass.class})
 public class RunCoreTests {
 }

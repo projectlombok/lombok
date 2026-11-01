@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.49 "Edgy Guinea Pig"
 * BUGFIX: `@SuperBuilder` now works properly when your class names contain non-ASCII characters. [#3857](https://github.com/projectlombok/lombok/issues/4070)
 * BUGFIX: `import lombok.*;` together with a `var` local no longer crashes javac on JDK 27. [#4082](https://github.com/projectlombok/lombok/issues/4082)
+* BUGFIX: Eclipse/VSCode: handlers such as `@Value` no longer crash with `ClassCastException` on JDT `CompletionOnFieldType` nodes during autocompletion (e.g. `@Jacksonized` + `@Builder` on an inner class of a sealed interface). [#4051](https://github.com/projectlombok/lombok/issues/4051).
 
 ### v1.18.48 (September 1st, 2026)
 * BREAKING CHANGE/BUGFIX: `@Builder(builderClassName = "Builder")` now generates an error, because the type names collide. [#3857](https://github.com/projectlombok/lombok/issues/3857)  (found after release)

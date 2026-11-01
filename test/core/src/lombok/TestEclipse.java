@@ -26,6 +26,6 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({lombok.transform.TestWithEcj.class})
+@SuiteClasses({lombok.eclipse.TestEclipseIsClass.class, lombok.transform.TestWithEcj.class})
 public class TestEclipse {
 }
