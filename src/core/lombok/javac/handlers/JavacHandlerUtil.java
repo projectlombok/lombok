@@ -182,7 +182,7 @@ public class JavacHandlerUtil {
 		if (inNetbeansEditor(sourceNode.getContext()) && !isParameter(node)) return node;
 		
 		node.pos = sourceNode.getStartPos();
-		storeEnd(node, sourceNode.getEndPosition(), (JCCompilationUnit) sourceNode.top().get());
+		storeEnd(node, sourceNode.getStartPos(), (JCCompilationUnit) sourceNode.top().get());
 		return node;
 	}
 
