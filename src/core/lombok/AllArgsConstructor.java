@@ -28,7 +28,8 @@ import java.lang.annotation.Target;
 
 /**
  * Generates an all-args constructor.
- * An all-args constructor requires one argument for every field in the class.
+ * An all-args constructor takes one argument for each instance field declared in the class,
+ * skipping {@code final} fields with initializers and fields whose names start with {@code $}.
  * <p>
  * Complete documentation is found at <a href="https://projectlombok.org/features/constructor">the project lombok features page for &#64;Constructor</a>.
  * <p>
