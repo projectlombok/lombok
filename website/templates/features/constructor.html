@@ -1,7 +1,7 @@
 <#import "_features.html" as f>
 
 <@f.scaffold title="@NoArgsConstructor, @RequiredArgsConstructor, @AllArgsConstructor"
-	logline="Constructors made to order: Generates constructors that take no arguments, one argument per final / non-null field, or one argument for every field.">
+	logline="Constructors made to order: Generates constructors that take no arguments, one argument per final / non-null field, or one argument per eligible instance field.">
 
 	<@f.overview>
 		<p>
@@ -11,7 +11,7 @@
 		</p><p>
 			<code>@RequiredArgsConstructor</code> generates a constructor with 1 parameter for each field that requires special handling. All non-initialized <code>final</code> fields get a parameter, as well as any fields that are marked as <code>@NonNull</code> that aren't initialized where they are declared. For those fields marked with <code>@NonNull</code>, an explicit null check is also generated. The constructor will throw a <code>NullPointerException</code> if any of the parameters intended for the fields marked with <code>@NonNull</code> contain <code>null</code>. The order of the parameters match the order in which the fields appear in your class.
 		</p><p>
-			<code>@AllArgsConstructor</code> generates a constructor with 1 parameter for each field in your class. Fields marked with <code>@NonNull</code> result in null checks on those parameters.
+			<code>@AllArgsConstructor</code> generates a constructor with 1 parameter for each instance field declared in your class. It skips <code>final</code> fields with initializers and fields whose names start with <code>$</code>. Fields marked with <code>@NonNull</code> result in null checks on those parameters.
 		</p><p>
 			Each of these annotations allows an alternate form, where the generated constructor is always private, and an additional static factory method that wraps around the private constructor is generated. This mode is enabled by supplying the <code>staticName</code> value for the annotation, like so: <code>@RequiredArgsConstructor(staticName="of")</code>. Such a static factory method will infer generics, unlike a normal constructor. This means your API users get write <code>MapEntry.of("foo", 5)</code> instead of the much longer <code>new MapEntry&lt;String, Integer&gt;("foo", 5)</code>.
 		</p><p>
