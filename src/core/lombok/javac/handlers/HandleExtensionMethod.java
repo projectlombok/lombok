@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.lang.model.element.ElementKind;
 
 import lombok.ConfigurationKeys;
+import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.experimental.ExtensionMethod;
@@ -142,6 +143,8 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		final List<Extension> extensions;
 		final boolean suppressBaseMethods;
 		final Set<String> names = new HashSet<String>();
+		private JCTree resolvedMember;
+		private Map<JCTree, JCTree> resolution;
 		
 		public ExtensionMethodReplaceVisitor(JavacNode annotationNode, List<Extension> extensions, boolean suppressBaseMethods) {
 			this.annotationNode = annotationNode;
@@ -184,7 +187,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			
 			if (!names.contains(methodName)) return;
 			if ("this".equals(receiver.toString()) || "this".equals(methodName) || "super".equals(methodName)) return;
-			Map<JCTree, JCTree> resolution = new JavacResolution(methodCallNode.getContext()).resolveMethodMember(methodCallNode);
+			Map<JCTree, JCTree> resolution = resolve(methodCallNode);
 			
 			JCTree resolvedMethodCall = resolution.get(methodCall);
 			if (resolvedMethodCall == null || resolvedMethodCall.type == null) return;
@@ -214,12 +217,35 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 					if (!MethodType.class.isInstance(extensionMethodType) && !ForAll.class.isInstance(extensionMethodType)) continue;
 					Type firstArgType = types.erasure(extensionMethodType.asMethodType().argtypes.get(0));
 					if (!types.isAssignable(receiverType, firstArgType)) continue;
+					// The other calls resolve the same when the replaced call keeps its type
+					boolean sameType = MethodType.class.isInstance(extensionMethodType) && !(resolvedMethodCall.type instanceof ErrorType) && types.isSameType(extensionMethodType.getReturnType(), resolvedMethodCall.type);
 					methodCall.args = methodCall.args.prepend(receiver);
 					methodCall.meth = chainDotsString(annotationNode, extensionProvider.toString() + "." + methodName);
 					recursiveSetGeneratedBy(methodCall.meth, methodCallNode);
+					if (!sameType) this.resolution = null;
 					return;
 				}
 			}
+		}
+		
+		// Attributing the member is the expensive part, so its result is reused until a replacement changes a type in it.
+		private Map<JCTree, JCTree> resolve(final JavacNode methodCallNode) {
+			JCTree member = outermostMember(methodCallNode);
+			if (resolution == null || member == null || member != resolvedMember) {
+				resolution = new JavacResolution(methodCallNode.getContext()).resolveMethodMember(methodCallNode);
+				resolvedMember = member;
+			}
+			return resolution;
+		}
+		
+		// The method, field or initializer that JavacResolution.resolveMethodMember copies and attributes.
+		private JCTree outermostMember(final JavacNode node) {
+			JCTree member = null;
+			for (JavacNode n = node; n != null; n = n.up()) {
+				Kind kind = n.getKind();
+				if (kind == Kind.METHOD || kind == Kind.FIELD || kind == Kind.INITIALIZER) member = n.get();
+			}
+			return member;
 		}
 		
 		private String methodNameOf(final JCMethodInvocation methodCall) {
