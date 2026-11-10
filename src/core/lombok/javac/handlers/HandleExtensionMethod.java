@@ -50,6 +50,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.ErrorType;
@@ -145,6 +146,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		final Set<String> names = new HashSet<String>();
 		private JCTree resolvedMember;
 		private Map<JCTree, JCTree> resolution;
+		private final Set<JCTree> changed = new HashSet<JCTree>();
 		
 		public ExtensionMethodReplaceVisitor(JavacNode annotationNode, List<Extension> extensions, boolean suppressBaseMethods) {
 			this.annotationNode = annotationNode;
@@ -187,7 +189,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			
 			if (!names.contains(methodName)) return;
 			if ("this".equals(receiver.toString()) || "this".equals(methodName) || "super".equals(methodName)) return;
-			Map<JCTree, JCTree> resolution = resolve(methodCallNode);
+			Map<JCTree, JCTree> resolution = resolve(methodCallNode, suppressBaseMethods ? receiver : methodCall);
 			
 			JCTree resolvedMethodCall = resolution.get(methodCall);
 			if (resolvedMethodCall == null || resolvedMethodCall.type == null) return;
@@ -222,20 +224,45 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 					methodCall.args = methodCall.args.prepend(receiver);
 					methodCall.meth = chainDotsString(annotationNode, extensionProvider.toString() + "." + methodName);
 					recursiveSetGeneratedBy(methodCall.meth, methodCallNode);
-					if (!sameType) this.resolution = null;
+					if (!sameType) changed.add(methodCall);
 					return;
 				}
 			}
 		}
 		
-		// Attributing the member is the expensive part, so its result is reused until a replacement changes a type in it.
-		private Map<JCTree, JCTree> resolve(final JavacNode methodCallNode) {
+		// Attributing the member is the expensive part, so its result is reused until a call that may change a type
+		// is replaced, and then only attributed again for an expression that can see that type.
+		private Map<JCTree, JCTree> resolve(final JavacNode methodCallNode, final JCTree dependent) {
 			JCTree member = outermostMember(methodCallNode);
-			if (resolution == null || member == null || member != resolvedMember) {
+			if (resolution == null || member == null || member != resolvedMember || (!changed.isEmpty() && dependsOnChange(dependent))) {
 				resolution = new JavacResolution(methodCallNode.getContext()).resolveMethodMember(methodCallNode);
 				resolvedMember = member;
+				changed.clear();
 			}
 			return resolution;
+		}
+		
+		// A replaced call, or a local variable or parameter, which takes its type from an expression of the member.
+		private boolean dependsOnChange(final JCTree tree) {
+			final boolean[] found = {false};
+			new TreeScanner<Void, Void>() {
+				@Override public Void scan(com.sun.source.tree.Tree node, Void p) {
+					if (found[0] || node == null) return null;
+					if (changed.contains(node) || isLocal(node)) {
+						found[0] = true;
+						return null;
+					}
+					return super.scan(node, p);
+				}
+			}.scan(tree, null);
+			return found[0];
+		}
+		
+		private boolean isLocal(final com.sun.source.tree.Tree node) {
+			if (!(node instanceof JCIdent)) return false;
+			JCTree resolved = resolution.get((JCTree) node);
+			Symbol sym = resolved instanceof JCIdent ? ((JCIdent) resolved).sym : null;
+			return sym instanceof VarSymbol && sym.owner instanceof MethodSymbol;
 		}
 		
 		// The method, field or initializer that JavacResolution.resolveMethodMember copies and attributes.
