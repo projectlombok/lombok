@@ -47,7 +47,6 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
@@ -298,9 +297,11 @@ public class PatchExtensionMethod {
 				
 				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
 				for (Expression argument : arguments) {
-					TypeBinding argumentType = argument.resolvedType;
-					if (argumentType == null && requiresPolyBinding(argument)) {
-						argumentType = Reflection.getPolyTypeBinding(argument);
+					TypeBinding argumentType = requiresPolyBinding(argument)
+						? Reflection.getPolyTypeBinding(argument)
+						: argument.resolvedType;
+					if (argumentType == null) {
+						argumentType = argument.resolvedType;
 					}
 					if (argumentType == null) {
 						argumentType = TypeBinding.NULL;
@@ -387,7 +388,7 @@ public class PatchExtensionMethod {
 	}
 
 	private static boolean requiresPolyBinding(Expression argument) {
-		return Reflection.isFunctionalExpression(argument) || argument instanceof ConditionalExpression && Reflection.isPolyExpression(argument);
+		return Reflection.isFunctionalExpression(argument) || Reflection.isPolyExpression(argument);
 	}
 	
 	private static NameReference createNameRef(TypeBinding typeBinding, ASTNode source) {
