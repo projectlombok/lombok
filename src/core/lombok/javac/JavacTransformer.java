@@ -21,6 +21,7 @@
  */
 package lombok.javac;
 
+import java.net.URI;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -54,6 +55,17 @@ public class JavacTransformer {
 	
 	public SortedSet<Long> getPrioritiesRequiringResolutionReset() {
 		return handlers.getPrioritiesRequiringResolutionReset();
+	}
+	
+	/**
+	 * Whether {@link #transform} could change the unit at any priority level. If not, the unit needs no {@link JavacAST}.
+	 */
+	public boolean mayApplyTo(JCCompilationUnit unit) {
+		URI location = JavacAST.getAbsoluteFileLocation(unit);
+		// HandleFieldDefaults applies these to types that name nothing of lombok.
+		if (Boolean.TRUE.equals(LombokConfiguration.read(ConfigurationKeys.FIELD_DEFAULTS_PRIVATE_EVERYWHERE, location))) return true;
+		if (Boolean.TRUE.equals(LombokConfiguration.read(ConfigurationKeys.FIELD_DEFAULTS_FINAL_EVERYWHERE, location))) return true;
+		return handlers.mayApplyTo(unit);
 	}
 	
 	public void transform(long priority, Context context, List<JCCompilationUnit> compilationUnits, CleanupRegistry cleanup) {

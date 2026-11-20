@@ -29,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -44,12 +46,17 @@ import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.ConfigurationKeysLoader;
+import lombok.javac.handlers.HandleFieldDefaults;
+import lombok.javac.handlers.HandleVal;
 import lombok.javac.handlers.JavacHandlerUtil;
 
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.TreeScanner;
 
 /**
  * This class tracks 'handlers' and knows how to invoke them for any given AST node.
@@ -61,6 +68,11 @@ public class HandlerLibrary {
 	private final TypeLibrary typeLibrary = new TypeLibrary();
 	private final Map<String, List<AnnotationHandlerContainer<?>>> annotationHandlers = new HashMap<String, List<AnnotationHandlerContainer<?>>>();
 	private final Collection<VisitorContainer> visitorHandlers = new ArrayList<VisitorContainer>();
+	/** The packages a unit has to name for a handler or visitor to act on it: lombok's own, and those of any other handled annotation. */
+	private final Set<String> handledPackages = new HashSet<String>(Collections.singleton("lombok"));
+	/** The first identifier of each of {@link #handledPackages}. */
+	private final Set<String> handledPackageRoots = new HashSet<String>(Collections.singleton("lombok"));
+	private boolean appliesToAnyUnit;
 	private final Messager messager;
 	
 	/**
@@ -187,6 +199,7 @@ public class HandlerLibrary {
 			if (list == null) lib.annotationHandlers.put(annotationClassName, list = new ArrayList<AnnotationHandlerContainer<?>>(1));
 			list.add(container);
 			lib.typeLibrary.addType(container.annotationClass.getName());
+			lib.addHandledPackageOf(container.annotationClass.getName());
 		}
 	}
 	
@@ -196,6 +209,71 @@ public class HandlerLibrary {
 		for (JavacASTVisitor visitor : SpiLoadUtil.findServices(JavacASTVisitor.class, JavacASTVisitor.class.getClassLoader())) {
 			visitor.setTrees(trees);
 			lib.visitorHandlers.add(new VisitorContainer(visitor));
+			// HandleVal acts only where lombok's val or var is named.
+			// JavacTransformer.mayApplyTo covers the configuration that HandleFieldDefaults reads.
+			Class<?> visitorClass = visitor.getClass();
+			if (visitorClass != HandleVal.class && visitorClass != HandleFieldDefaults.class) lib.appliesToAnyUnit = true;
+		}
+	}
+	
+	private void addHandledPackageOf(String typeName) {
+		int dot = typeName.lastIndexOf('.');
+		if (dot == -1) {
+			// Any unit in the unnamed package can name such a type without an import.
+			appliesToAnyUnit = true;
+			return;
+		}
+		String pkg = typeName.substring(0, dot);
+		// JavacImportList counts java.lang as star-imported by every unit, so the simple name alone reaches such a handler.
+		if (pkg.equals("java.lang")) appliesToAnyUnit = true;
+		if (inHandledPackage(pkg + ".")) return;
+		handledPackages.add(pkg);
+		int firstDot = pkg.indexOf('.');
+		handledPackageRoots.add(firstDot == -1 ? pkg : pkg.substring(0, firstDot));
+	}
+	
+	private boolean inHandledPackage(String qualifiedNameOrPackageWithDot) {
+		for (String pkg : handledPackages) {
+			if (qualifiedNameOrPackageWithDot.startsWith(pkg + ".")) return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Whether an annotation handler or visitor could act on the unit. They find their types by the name as written,
+	 * the unit's imports and its package, so a unit that names nothing of lombok is left alone at every priority level.
+	 */
+	public boolean mayApplyTo(JCCompilationUnit unit) {
+		if (appliesToAnyUnit) return true;
+		String pkg = PackageName.getPackageName(unit);
+		if (pkg != null && inHandledPackage(pkg + ".")) return true;
+		for (JCTree def : unit.defs) {
+			// A module import can bring in lombok's packages without naming them. Lombok does not resolve types through one,
+			// but processing such a unit keeps this check right if it starts to. The tree class is absent from older javac versions.
+			if (def.getClass().getName().endsWith("JCModuleImport")) return true;
+		}
+		HandledPackageScanner scanner = new HandledPackageScanner();
+		scanner.scan(unit);
+		return scanner.found;
+	}
+	
+	/** Looks for a qualified name, in an import or anywhere else, that starts with one of {@link #handledPackages}. */
+	private class HandledPackageScanner extends TreeScanner {
+		boolean found;
+		
+		@Override public void scan(JCTree tree) {
+			if (!found) super.scan(tree);
+		}
+		
+		@Override public void visitSelect(JCFieldAccess tree) {
+			JCTree leftmost = tree;
+			while (leftmost instanceof JCFieldAccess) leftmost = ((JCFieldAccess) leftmost).selected;
+			if (leftmost instanceof JCIdent) {
+				// A prefix of a name is in a handled package only if the whole name is, so this check covers the selects below.
+				if (handledPackageRoots.contains(((JCIdent) leftmost).name.toString()) && inHandledPackage(tree.toString())) found = true;
+				return;
+			}
+			scan(leftmost);
 		}
 	}
 	
