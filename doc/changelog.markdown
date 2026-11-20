@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.49 "Edgy Guinea Pig"
 * BUGFIX: `@SuperBuilder` now works properly when your class names contain non-ASCII characters. [#3857](https://github.com/projectlombok/lombok/issues/4070)
 * BUGFIX: `import lombok.*;` together with a `var` local no longer crashes javac on JDK 27. [#4082](https://github.com/projectlombok/lombok/issues/4082)
+* PERFORMANCE: javac no longer processes source files that don't reference lombok, which removes most of lombok's compile time overhead for those files. [#4112](https://github.com/projectlombok/lombok/issues/4112)
 
 ### v1.18.48 (September 1st, 2026)
 * BREAKING CHANGE/BUGFIX: `@Builder(builderClassName = "Builder")` now generates an error, because the type names collide. [#3857](https://github.com/projectlombok/lombok/issues/3857)  (found after release)

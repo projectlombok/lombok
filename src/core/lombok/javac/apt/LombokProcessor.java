@@ -323,13 +323,17 @@ public class LombokProcessor extends AbstractProcessor {
 		
 		// We have: A sorted set of all priority levels: 'priorityLevels'
 		
-		// Step 1: Take all CUs which aren't already in the map. Give them the first priority level.
+		// Step 1: Take all CUs which aren't already in the map. Give them the first priority level, or null if nothing can apply to them.
 		
 		for (Element element : roundEnv.getRootElements()) {
 			JCCompilationUnit unit = toUnit(element);
 			if (unit == null) continue;
 			if (roots.containsKey(unit)) continue;
-			roots.put(unit, priorityLevels[0]);
+			if (transformer.mayApplyTo(unit)) {
+				roots.put(unit, priorityLevels[0]);
+			} else {
+				roots.put(unit, null);
+			}
 		}
 		
 		while (true) {
