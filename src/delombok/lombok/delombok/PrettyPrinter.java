@@ -555,7 +555,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(">");
 		}
 		
-		if (isRecord) printRecordConstructor(tree.defs);
+		if (isRecord) printRecordConstructor(tree, tree.defs);
 		
 		JCTree extendsClause = getExtendsClause(tree);
 		if (extendsClause != null) {
@@ -583,17 +583,40 @@ public class PrettyPrinter extends JCTree.Visitor {
 		currentTypeName = prevTypeName;
 	}
 	
-	private void printRecordConstructor(List<JCTree> members) {
+	private static final Field JC_CLASS_DECL_RECORD_COMPONENTS = Permit.permissiveGetField(JCClassDecl.class, "recordComponents");
+
+	private void printRecordConstructor(JCClassDecl tree, List<JCTree> members) {
+		List<?> recordComponents = null;
+		if (JC_CLASS_DECL_RECORD_COMPONENTS != null) {
+			try {
+				recordComponents = (List<?>) JC_CLASS_DECL_RECORD_COMPONENTS.get(tree);
+			} catch (Throwable t) {
+				// Ignore
+			}
+		}
+		
 		boolean first = true;
 		print("(");
-		for (JCTree member : members) {
-			if (member instanceof JCVariableDecl) {
-			JCVariableDecl variableDecl = (JCVariableDecl) member;
-				if ((variableDecl.mods.flags & GENERATED_MEMBER) != 0) {
+		if (recordComponents != null && !recordComponents.isEmpty()) {
+			for (Object comp : recordComponents) {
+				if (comp instanceof JCVariableDecl) {
+					JCVariableDecl variableDecl = (JCVariableDecl) comp;
 					if (!first) print(", ");
 					first = false;
 					printAnnotations(variableDecl.mods.annotations, false);
 					printVarDef0(variableDecl);
+				}
+			}
+		} else {
+			for (JCTree member : members) {
+				if (member instanceof JCVariableDecl) {
+					JCVariableDecl variableDecl = (JCVariableDecl) member;
+					if ((variableDecl.mods.flags & GENERATED_MEMBER) != 0) {
+						if (!first) print(", ");
+						first = false;
+						printAnnotations(variableDecl.mods.annotations, false);
+						printVarDef0(variableDecl);
+					}
 				}
 			}
 		}
