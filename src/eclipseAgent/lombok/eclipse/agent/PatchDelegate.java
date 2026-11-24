@@ -902,7 +902,24 @@ public class PatchDelegate {
 			initCause = c;
 		}
 	}
-	
+
+	private static final class DefaultAbstractReflection {
+		// Removed in ECJ 3.47 (eclipse.jdt.core#5638); the flag it tested was no longer ever set.
+		private static final Method methodBindingIsDefaultAbstract;
+		static {
+			Method m = null;
+			try {
+				m = Permit.getMethod(MethodBinding.class, "isDefaultAbstract");
+			} catch (Throwable ignore) {}
+			methodBindingIsDefaultAbstract = m;
+		}
+
+		static boolean isDefaultAbstract(MethodBinding mb) {
+			if (methodBindingIsDefaultAbstract == null) return false;
+			return Boolean.TRUE.equals(Permit.invokeSneaky(methodBindingIsDefaultAbstract, mb));
+		}
+	}
+
 	private static void addAllMethodBindings(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
 		banList.addAll(METHODS_IN_OBJECT);
 		addAllMethodBindings0(list, binding, banList, fieldName, responsible);
@@ -967,7 +984,7 @@ public class PatchDelegate {
 			if (mb.isStatic()) continue;
 			if (mb.isBridge()) continue;
 			if (mb.isConstructor()) continue;
-			if (mb.isDefaultAbstract()) continue;
+			if (DefaultAbstractReflection.isDefaultAbstract(mb)) continue;
 			if (!mb.isPublic()) continue;
 			if (mb.isSynthetic()) continue;
 			if (!banList.add(sig)) continue; // If add returns false, it was already in there.
